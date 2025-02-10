@@ -195,8 +195,15 @@ class _RumUserActionDetectorState extends State<RumUserActionDetector> {
 
   _RumTreeAnnotation? _findElementInnerText(Element element, bool allowText) {
     String? elementDescription;
+    Map<String, Object?>? attributes;
+    // visitChildren will visit siblings for widget collections like Columns,
+    // but if we encounter a RumUserActionAnnotation somewhere in the tree, that
+    // is likely the text we want and siblings can be ignored.
+    bool stopSiblingVisits = false;
 
     void visitor(Element element) {
+      if (stopSiblingVisits) return;
+
       bool stopVisits = false;
 
       var widget = element.widget;
@@ -215,6 +222,11 @@ class _RumUserActionDetectorState extends State<RumUserActionDetector> {
           elementDescription = widget.semanticLabel!;
           stopVisits = true;
         }
+      } else if (widget is RumUserActionAnnotation) {
+        elementDescription = widget.description;
+        attributes = widget.attributes;
+        stopVisits = true;
+        stopSiblingVisits = true;
       }
 
       if (!stopVisits) {
@@ -224,7 +236,7 @@ class _RumUserActionDetectorState extends State<RumUserActionDetector> {
 
     element.visitChildren(visitor);
 
-    return _RumTreeAnnotation(elementDescription);
+    return _RumTreeAnnotation(elementDescription, attributes);
   }
 
   _ElementDescription? _getDetectingElementAtPosition(Offset position) {
@@ -433,6 +445,9 @@ Element? _findGestureDetectorElement(
 /// Note, because this will override all actions detected in its [child] tree, it
 /// is best to put it as close to the [GestureDetector] or button that it is
 /// providing information about.
+///
+/// [RumUserActionAnnotation] can also be used to specify the description and attributes
+/// of elements under a [GestureDetector]. This can be useful for
 @immutable
 class RumUserActionAnnotation extends StatelessWidget {
   final String description;

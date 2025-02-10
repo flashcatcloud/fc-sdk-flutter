@@ -11,6 +11,16 @@ import 'package:mocktail/mocktail.dart';
 
 class MockDdRum extends Mock implements DatadogRum {}
 
+Widget _testWidgetBuilder(Widget? child) {
+  return SizedBox.square(
+    dimension: 5,
+    child: Container(
+      color: Colors.white,
+      child: child,
+    ),
+  );
+}
+
 class _DescriptiveWidget extends StatelessWidget {
   final Widget? child;
 
@@ -18,13 +28,7 @@ class _DescriptiveWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox.square(
-      dimension: 5,
-      child: Container(
-        color: Colors.white,
-        child: child,
-      ),
-    );
+    return _testWidgetBuilder(child);
   }
 }
 
@@ -35,13 +39,7 @@ class _VagueWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox.square(
-      dimension: 5,
-      child: Container(
-        color: Colors.white,
-        child: child,
-      ),
-    );
+    return _testWidgetBuilder(child);
   }
 }
 
@@ -455,6 +453,56 @@ void main() {
     verifyNoMoreInteractions(mockRum);
   });
 
+  testWidgets('tap BottomNavigationBar reports child annotation',
+      (tester) async {
+    final mockRum = MockDdRum();
+
+    final app = RumUserActionDetector(
+      rum: mockRum,
+      child: MaterialApp(
+        home: Scaffold(
+          body: const Center(
+            child: Text('Test'),
+          ),
+          bottomNavigationBar: BottomNavigationBar(
+            items: const <BottomNavigationBarItem>[
+              BottomNavigationBarItem(
+                icon: Icon(Icons.home),
+                label: 'Home',
+              ),
+              BottomNavigationBarItem(
+                icon: RumUserActionAnnotation(
+                  description: 'Custom Annotation',
+                  attributes: {'custom_attribute': 12345},
+                  child: Icon(Icons.business),
+                ),
+                label: 'Business',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.school),
+                label: 'School',
+              ),
+            ],
+            currentIndex: 0,
+            onTap: (_) {},
+          ),
+        ),
+      ),
+    );
+
+    await tester.pumpWidget(app);
+
+    final navItem = find.byIcon(Icons.business).first;
+    await tester.tap(navItem);
+
+    verify(() => mockRum.addAction(
+          RumActionType.tap,
+          'BottomNavigationBarItem(Custom Annotation)',
+          {'custom_attribute': 12345},
+        ));
+    verifyNoMoreInteractions(mockRum);
+  });
+
   testWidgets('tap TabBar reports tap', (tester) async {
     final mockRum = MockDdRum();
 
@@ -688,6 +736,37 @@ void main() {
 
       verify(() => mockRum.addAction(
           RumActionType.tap, 'DescriptiveWidget($annotation)'));
+      verifyNoMoreInteractions(mockRum);
+    });
+
+    testWidgets('with annotation in subtree reports description',
+        (tester) async {
+      final mockRum = MockDdRum();
+
+      final annotation = randomString();
+      final attributes = {'test_key': randomString()};
+      await tester.pumpWidget(
+        _buildSimpleApp(
+          mockRum,
+          _VagueWidget(
+            child: RumUserActionAnnotation(
+              description: annotation,
+              attributes: attributes,
+              child: Semantics(
+                child: SizedBox.shrink(),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      final text = find.byType(_VagueWidget);
+      await tester.tap(text);
+
+      verify(
+        () => mockRum.addAction(
+            RumActionType.tap, 'VagueWidget($annotation)', attributes),
+      );
       verifyNoMoreInteractions(mockRum);
     });
   });

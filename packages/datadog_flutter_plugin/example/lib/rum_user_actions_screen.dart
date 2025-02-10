@@ -60,7 +60,36 @@ class _RumUserActionsScreenState extends State<RumUserActionsScreen> {
               _dropDownValue = value;
             });
           },
-        )
+        ),
+        // When wrapping a tappable widget with the RumUserActionAnnotation, the description
+        // and attributes will be sent to Datadog when the user interacts with the inner widget
+        // (ElevatedButton in this case).
+        //
+        // Here Datadog will receive a user action with the description 'ElevatedButton(Alternative Button A)'
+        // and the attribute 'custom_attribute'.
+        RumUserActionAnnotation(
+          description: 'Alternative Button A',
+          attributes: {'custom_attribute': 'can be added too'},
+          child: ElevatedButton(
+            onPressed: () => _buttonPressed('Button A'),
+            child: const Text('Button A'),
+          ),
+        ),
+        // You can also create a custom button widget that wraps the inner widget with
+        // a RumUserActionAnnotation. This way you can reuse the custom button in multiple
+        // places in your app and still benefits for correct reports in Datadog.
+        //
+        // Note: to get "CustomButton" type in the Datadog action, you need to set this type
+        // as a custom gesture detector in RumUserActionDetector (see example below).
+        //
+        // Here Datadog will receive a user action with the description 'CustomButton(Custom Button A)'
+        // and the attribute 'custom_attribute'.
+        CustomButton(
+          debugActionLabel: 'Custom Button A',
+          attributes: {'custom_attribute': 'can be added too'},
+          text: 'Button A',
+          onPressed: () => _buttonPressed('Button A'),
+        ),
       ],
     );
   }
@@ -116,6 +145,12 @@ class _RumUserActionsScreenState extends State<RumUserActionsScreen> {
   Widget build(BuildContext context) {
     return RumUserActionDetector(
       rum: DatadogSdk.instance.rum,
+      customGestureDetector: (widget) {
+        if (widget is CustomButton) {
+          return RumGestureDetectorInfo('CustomButton');
+        }
+        return null;
+      },
       child: Scaffold(
         appBar: AppBar(
           title: const Text('User Action Examples'),
@@ -137,6 +172,33 @@ class _RumUserActionsScreenState extends State<RumUserActionsScreen> {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class CustomButton extends StatelessWidget {
+  final String debugActionLabel;
+  final Map<String, Object?>? attributes;
+  final String? text;
+  final VoidCallback? onPressed;
+
+  const CustomButton({
+    required this.debugActionLabel,
+    this.attributes,
+    this.text,
+    this.onPressed,
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return RumUserActionAnnotation(
+      description: debugActionLabel,
+      attributes: attributes,
+      child: ElevatedButton(
+        onPressed: onPressed,
+        child: text != null ? Text(text!) : null,
       ),
     );
   }
