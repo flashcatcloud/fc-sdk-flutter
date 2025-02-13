@@ -343,8 +343,7 @@ public class DatadogSdkPlugin: NSObject, FlutterPlugin {
             // other work around for https://github.com/flutter/flutter/issues/126671
             if let flutterViewController =
                 UIApplication.shared.keyWindow?.rootViewController as? FlutterViewController {
-                let engine = flutterViewController.engine
-                if engine?.isolateId == nil {
+                if let engine = flutterViewController.engine as FlutterEngine?, engine.isolateId == nil {
                     return
                 }
             }
