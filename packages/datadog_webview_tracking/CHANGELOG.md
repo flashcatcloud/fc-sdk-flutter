@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.2.0
+
+* Fix use of webview_flutter in iOS due to API change.
+
 ## 2.1.0
 
 * Update constraints on compatible versions of `datadog-sdk-android-webview`.
