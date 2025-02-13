@@ -114,7 +114,9 @@ class DatadogNavigationObserver extends RouteObserver<ModalRoute<dynamic>>
         if (kIsWeb) {
           // On web, Flutter is informing us of the change in Route before the
           // browser has had a chance to update the `location`. Wait a frame so
-          // the Browser SDK can properly capture the location
+          // the Browser SDK can properly capture the location. Because of this wait,
+          // we don't track "First Build Complete" on web, as it would be skewed
+          // by this wait.
           Future.delayed(const Duration(milliseconds: 1)).then((_) {
             // Make sure the view wasn't overwritten in the last ~1ms
             if (_currentView == viewInfo) {
@@ -124,6 +126,9 @@ class DatadogNavigationObserver extends RouteObserver<ModalRoute<dynamic>>
           });
         } else {
           datadogSdk.rum?.startView(viewInfo.name, null, viewInfo.attributes);
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            datadogSdk.rum?.markViewFirstBuildComplete(viewInfo.name);
+          });
         }
       } else {
         _pendingView = viewInfo;
@@ -273,8 +278,13 @@ mixin DatadogRouteAwareMixin<T extends StatefulWidget> on State<T>, RouteAware {
   void _startView() {
     if (_routeObserver != null) {
       final info = rumViewInfo;
-      _routeObserver?.datadogSdk.rum
-          ?.startView(info.name, null, info.attributes);
+      final rum = _routeObserver?.datadogSdk.rum;
+      if (rum != null) {
+        rum.startView(info.name, null, info.attributes);
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          rum.markViewFirstBuildComplete(info.name);
+        });
+      }
     }
   }
 

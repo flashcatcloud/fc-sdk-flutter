@@ -16,7 +16,7 @@ class DdRumMethodChannel extends DdRumPlatform {
       const MethodChannel('datadog_sdk_flutter.rum');
 
   @visibleForTesting
-  DatadogTimeProvider timeProvider = defaultTimeProvider;
+  DatadogTimeProvider timeProvider = DefaultTimeProvider();
 
   @override
   Future<void> enable(
@@ -60,7 +60,7 @@ class DdRumMethodChannel extends DdRumPlatform {
   @override
   Future<void> startView(
       String key, String name, Map<String, Object?> attributes) {
-    final timestamp = timeProvider();
+    final timestamp = timeProvider.nowMs();
     return methodChannel.invokeMethod(
       'startView',
       {
@@ -76,7 +76,7 @@ class DdRumMethodChannel extends DdRumPlatform {
 
   @override
   Future<void> stopView(String key, Map<String, Object?> attributes) {
-    final timestamp = timeProvider();
+    final timestamp = timeProvider.nowMs();
     return methodChannel.invokeMethod(
       'stopView',
       {
@@ -96,7 +96,7 @@ class DdRumMethodChannel extends DdRumPlatform {
     String url, [
     Map<String, Object?> attributes = const {},
   ]) {
-    final timestamp = timeProvider();
+    final timestamp = timeProvider.nowMs();
     return methodChannel.invokeMethod('startResource', {
       'key': key,
       'httpMethod': httpMethod.toString(),
@@ -111,7 +111,7 @@ class DdRumMethodChannel extends DdRumPlatform {
   @override
   Future<void> stopResource(String key, int? statusCode, RumResourceType kind,
       [int? size, Map<String, Object?> attributes = const {}]) {
-    final timestamp = timeProvider();
+    final timestamp = timeProvider.nowMs();
     return methodChannel.invokeMethod('stopResource', {
       'key': key,
       'statusCode': statusCode,
@@ -138,7 +138,7 @@ class DdRumMethodChannel extends DdRumPlatform {
     String type, [
     Map<String, Object?> attributes = const {},
   ]) {
-    final timestamp = timeProvider();
+    final timestamp = timeProvider.nowMs();
     return methodChannel.invokeMethod('stopResourceWithError', {
       'key': key,
       'message': message,
@@ -176,7 +176,7 @@ class DdRumMethodChannel extends DdRumPlatform {
       StackTrace? stackTrace,
       String? errorType,
       Map<String, Object?> attributes) {
-    final timestamp = timeProvider();
+    final timestamp = timeProvider.nowMs();
     return methodChannel.invokeMethod('addError', {
       'message': message,
       'source': source.toString(),
@@ -192,7 +192,7 @@ class DdRumMethodChannel extends DdRumPlatform {
   @override
   Future<void> addAction(
       RumActionType type, String? name, Map<String, Object?> attributes) {
-    final timestamp = timeProvider();
+    final timestamp = timeProvider.nowMs();
     return methodChannel.invokeMethod('addAction', {
       'type': type.toString(),
       'name': name,
@@ -206,7 +206,7 @@ class DdRumMethodChannel extends DdRumPlatform {
   @override
   Future<void> startAction(
       RumActionType type, String name, Map<String, Object?> attributes) {
-    final timestamp = timeProvider();
+    final timestamp = timeProvider.nowMs();
     return methodChannel.invokeMethod('startAction', {
       'type': type.toString(),
       'name': name,
@@ -220,7 +220,7 @@ class DdRumMethodChannel extends DdRumPlatform {
   @override
   Future<void> stopAction(
       RumActionType type, String name, Map<String, Object?> attributes) {
-    final timestamp = timeProvider();
+    final timestamp = timeProvider.nowMs();
     return methodChannel.invokeMethod('stopAction', {
       'type': type.toString(),
       'name': name,

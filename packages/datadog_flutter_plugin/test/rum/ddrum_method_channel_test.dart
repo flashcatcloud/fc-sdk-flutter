@@ -8,8 +8,10 @@ import 'dart:math';
 import 'package:datadog_flutter_plugin/datadog_internal.dart';
 import 'package:datadog_flutter_plugin/src/rum/ddrum.dart';
 import 'package:datadog_flutter_plugin/src/rum/ddrum_method_channel.dart';
+import 'package:datadog_flutter_plugin/src/time_provider.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 
 class MockType {
   final int value;
@@ -22,23 +24,23 @@ class MockType {
   }
 }
 
+class MockTimeProvider extends Mock implements DatadogTimeProvider {}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   late DdRumMethodChannel ddRumPlatform;
+  MockTimeProvider timeProvider = MockTimeProvider();
   final List<MethodCall> log = [];
 
-  int nextTimestamp = 0;
   final random = Random();
-  void randomizeTimestamp() {
-    nextTimestamp = random.nextInt(1 << 32);
+  int randomizeTimestampMs() {
+    return random.nextInt(1 << 32);
   }
 
   setUp(() {
     ddRumPlatform = DdRumMethodChannel();
-    ddRumPlatform.timeProvider = () {
-      return nextTimestamp;
-    };
+    ddRumPlatform.timeProvider = timeProvider;
     ambiguate(TestDefaultBinaryMessengerBinding.instance)
         ?.defaultBinaryMessenger
         .setMockMethodCallHandler(ddRumPlatform.methodChannel, (message) {
@@ -64,7 +66,8 @@ void main() {
   });
 
   test('startView calls to platform', () async {
-    randomizeTimestamp();
+    final timestamp = randomizeTimestampMs();
+    when(() => timeProvider.nowMs()).thenReturn(timestamp);
     await ddRumPlatform.startView('my_key', 'my_name', {'attribute': 'value'});
 
     expect(log, [
@@ -73,14 +76,15 @@ void main() {
         'name': 'my_name',
         'attributes': {
           'attribute': 'value',
-          '_dd.timestamp': nextTimestamp,
+          '_dd.timestamp': timestamp,
         }
       })
     ]);
   });
 
   test('stopView calls to platform', () async {
-    randomizeTimestamp();
+    final timestamp = randomizeTimestampMs();
+    when(() => timeProvider.nowMs()).thenReturn(timestamp);
     await ddRumPlatform.stopView('my_key', {'stop_attribute': 'my_value'});
 
     expect(log, [
@@ -88,7 +92,7 @@ void main() {
         'key': 'my_key',
         'attributes': {
           'stop_attribute': 'my_value',
-          '_dd.timestamp': nextTimestamp,
+          '_dd.timestamp': timestamp,
         }
       })
     ]);
@@ -111,7 +115,8 @@ void main() {
   });
 
   test('startResource calls to platform', () async {
-    randomizeTimestamp();
+    final timestamp = randomizeTimestampMs();
+    when(() => timeProvider.nowMs()).thenReturn(timestamp);
     await ddRumPlatform.startResource('resource_key', RumHttpMethod.get,
         'https://fakeresource.com/url', {'attribute_key': 'attribute_value'});
 
@@ -122,14 +127,15 @@ void main() {
         'url': 'https://fakeresource.com/url',
         'attributes': {
           'attribute_key': 'attribute_value',
-          '_dd.timestamp': nextTimestamp,
+          '_dd.timestamp': timestamp,
         }
       })
     ]);
   });
 
   test('stopResource calls to platform', () async {
-    randomizeTimestamp();
+    final timestamp = randomizeTimestampMs();
+    when(() => timeProvider.nowMs()).thenReturn(timestamp);
     await ddRumPlatform.stopResource('resource_key', 202, RumResourceType.image,
         41123, {'attribute_key': 'attribute_value'});
 
@@ -141,14 +147,15 @@ void main() {
         'size': 41123,
         'attributes': {
           'attribute_key': 'attribute_value',
-          '_dd.timestamp': nextTimestamp,
+          '_dd.timestamp': timestamp,
         }
       })
     ]);
   });
 
   test('stopResourceWithError calls to platform with info', () async {
-    randomizeTimestamp();
+    final timestamp = randomizeTimestampMs();
+    when(() => timeProvider.nowMs()).thenReturn(timestamp);
     final exception = TimeoutException(
         'Timeout retrieving resource', const Duration(seconds: 5));
     await ddRumPlatform.stopResourceWithError(
@@ -161,14 +168,15 @@ void main() {
         'type': exception.runtimeType.toString(),
         'attributes': {
           'attribute_key': 'attribute_value',
-          '_dd.timestamp': nextTimestamp,
+          '_dd.timestamp': timestamp,
         }
       })
     ]);
   });
 
   test('stopResourceWithErrorInfo calls to platform', () async {
-    randomizeTimestamp();
+    final timestamp = randomizeTimestampMs();
+    when(() => timeProvider.nowMs()).thenReturn(timestamp);
     await ddRumPlatform.stopResourceWithErrorInfo(
         'resource_key',
         'Exception message',
@@ -182,14 +190,15 @@ void main() {
         'type': 'Exception type',
         'attributes': {
           'attribute_key': 'attribute_value',
-          '_dd.timestamp': nextTimestamp,
+          '_dd.timestamp': timestamp,
         }
       })
     ]);
   });
 
   test('addError calls to platform with info', () async {
-    randomizeTimestamp();
+    final timestamp = randomizeTimestampMs();
+    when(() => timeProvider.nowMs()).thenReturn(timestamp);
     final exception = TimeoutException(
         'Timeout retrieving resource', const Duration(seconds: 5));
     await ddRumPlatform.addError(exception, RumErrorSource.source, null,
@@ -204,12 +213,13 @@ void main() {
     expect(call.arguments['errorType'], 'error_type');
     expect(call.arguments['attributes'], {
       'attribute_key': 'attribute_value',
-      '_dd.timestamp': nextTimestamp,
+      '_dd.timestamp': timestamp,
     });
   });
 
   test('addErrorInfo calls to platform with info', () async {
-    randomizeTimestamp();
+    final timestamp = randomizeTimestampMs();
+    when(() => timeProvider.nowMs()).thenReturn(timestamp);
     await ddRumPlatform.addErrorInfo('Exception message', RumErrorSource.source,
         null, 'error_type', {'attribute_key': 'attribute_value'});
 
@@ -222,12 +232,13 @@ void main() {
     expect(call.arguments['errorType'], 'error_type');
     expect(call.arguments['attributes'], {
       'attribute_key': 'attribute_value',
-      '_dd.timestamp': nextTimestamp,
+      '_dd.timestamp': timestamp,
     });
   });
 
   test('addError passes stack trace string', () async {
-    randomizeTimestamp();
+    final timestamp = randomizeTimestampMs();
+    when(() => timeProvider.nowMs()).thenReturn(timestamp);
     final stackTrace = StackTrace.current;
     final exception = TimeoutException(
         'Timeout retrieving resource', const Duration(seconds: 5));
@@ -243,12 +254,13 @@ void main() {
     expect(call.arguments['errorType'], isNull);
     expect(call.arguments['attributes'], {
       'attribute_key': 'attribute_value',
-      '_dd.timestamp': nextTimestamp,
+      '_dd.timestamp': timestamp,
     });
   });
 
   test('addErrorInfo passes stack trace string', () async {
-    randomizeTimestamp();
+    final timestamp = randomizeTimestampMs();
+    when(() => timeProvider.nowMs()).thenReturn(timestamp);
     final stackTrace = StackTrace.current;
     await ddRumPlatform.addErrorInfo('Exception message', RumErrorSource.source,
         stackTrace, 'error_type', {'attribute_key': 'attribute_value'});
@@ -262,12 +274,13 @@ void main() {
     expect(call.arguments['errorType'], 'error_type');
     expect(call.arguments['attributes'], {
       'attribute_key': 'attribute_value',
-      '_dd.timestamp': nextTimestamp,
+      '_dd.timestamp': timestamp,
     });
   });
 
   test('addAction calls to platform', () async {
-    randomizeTimestamp();
+    final timestamp = randomizeTimestampMs();
+    when(() => timeProvider.nowMs()).thenReturn(timestamp);
     await ddRumPlatform.addAction(RumActionType.tap, 'fake_user_action', {
       'attribute_name': 'attribute_value',
     });
@@ -278,14 +291,15 @@ void main() {
         'name': 'fake_user_action',
         'attributes': {
           'attribute_name': 'attribute_value',
-          '_dd.timestamp': nextTimestamp,
+          '_dd.timestamp': timestamp,
         }
       })
     ]);
   });
 
   test('startAction calls to platform', () async {
-    randomizeTimestamp();
+    final timestamp = randomizeTimestampMs();
+    when(() => timeProvider.nowMs()).thenReturn(timestamp);
     await ddRumPlatform.startAction(RumActionType.scroll, 'user_action_scroll',
         {'attribute_name': 'attribute_value'});
 
@@ -295,14 +309,15 @@ void main() {
         'name': 'user_action_scroll',
         'attributes': {
           'attribute_name': 'attribute_value',
-          '_dd.timestamp': nextTimestamp,
+          '_dd.timestamp': timestamp,
         }
       })
     ]);
   });
 
   test('stopAction calls to platform', () async {
-    randomizeTimestamp();
+    final timestamp = randomizeTimestampMs();
+    when(() => timeProvider.nowMs()).thenReturn(timestamp);
     await ddRumPlatform.stopAction(RumActionType.swipe, 'user_action_swipe',
         {'attribute_name': 'attribute_value'});
 
@@ -312,7 +327,7 @@ void main() {
         'name': 'user_action_swipe',
         'attributes': {
           'attribute_name': 'attribute_value',
-          '_dd.timestamp': nextTimestamp,
+          '_dd.timestamp': timestamp,
         }
       })
     ]);

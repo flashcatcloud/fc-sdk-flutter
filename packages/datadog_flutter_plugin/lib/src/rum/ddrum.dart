@@ -12,6 +12,7 @@ import 'package:meta/meta.dart';
 
 import '../../datadog_flutter_plugin.dart';
 import '../../datadog_internal.dart';
+import '../time_provider.dart';
 import 'ddrum_platform_interface.dart';
 import 'rum_long_task_observer.dart';
 
@@ -83,6 +84,15 @@ RumResourceType resourceTypeFromContentType(ContentType? type) {
   return RumResourceType.native;
 }
 
+@immutable
+class _ViewInfo {
+  final String viewKey;
+  final String viewName;
+  final DateTime viewStart;
+
+  const _ViewInfo(this.viewKey, this.viewName, this.viewStart);
+}
+
 class DatadogRum {
   static DdRumPlatform get _platform {
     return DdRumPlatform.instance;
@@ -96,10 +106,15 @@ class DatadogRum {
   @internal
   final TraceContextInjection traceContextInjection;
 
+  @visibleForTesting
+  DatadogTimeProvider timeProvider = DefaultTimeProvider();
+
   final _sampleRandom = Random();
   final InternalLogger logger;
-
   RumLongTaskObserver? _longTaskObserver;
+
+  // Used for FBC and INV vitals.
+  _ViewInfo? _currentViewInfo;
 
   static Future<DatadogRum?> enable(
       DatadogSdk core, DatadogRumConfiguration configuration) async {
@@ -200,6 +215,7 @@ class DatadogRum {
   void startView(String key,
       [String? name, Map<String, Object?> attributes = const {}]) {
     name ??= key;
+    _currentViewInfo = _ViewInfo(key, name, timeProvider.now());
     wrap('rum.startView', logger, attributes, () {
       return _platform.startView(key, name!, attributes);
     });
@@ -211,6 +227,7 @@ class DatadogRum {
   ///
   /// The [key] passed here must match the [key] passed to [startView].
   void stopView(String key, [Map<String, Object?> attributes = const {}]) {
+    _currentViewInfo = null;
     wrap('rum.stopView', logger, attributes, () {
       return _platform.stopView(key, attributes);
     });
@@ -444,6 +461,23 @@ class DatadogRum {
     wrap('rum.reportLongTask', logger, null, () {
       return _platform.reportLongTask(DateTime.now(), taskLengthMs);
     });
+  }
+
+  /// FOR INTERNAL USE ONLY
+  /// Mark the supplied view as completing its first `build`. If the supplied key
+  /// does not match the current view (meaning this view was stopped or a new view was
+  /// started prior to its build being completed) this method does nothing
+  @internal
+  void markViewFirstBuildComplete(String viewKey) {
+    if (_currentViewInfo case final currentViewInfo?) {
+      if (viewKey == currentViewInfo.viewKey) {
+        final fbcTime =
+            (timeProvider.now().difference(currentViewInfo.viewStart))
+                .inNanoseconds;
+        addAttribute(
+            DatadogRumPlatformAttributeKey.firstBuildComplete, fbcTime);
+      }
+    }
   }
 
   void _timingsCallback(List<FrameTiming> timings) {

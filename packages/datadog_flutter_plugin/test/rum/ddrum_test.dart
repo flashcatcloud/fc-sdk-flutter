@@ -3,12 +3,14 @@
 // Copyright 2019-2022 Datadog, Inc.
 
 import 'dart:io';
+import 'dart:math';
 
 import 'package:datadog_common_test/datadog_common_test.dart';
 import 'package:datadog_flutter_plugin/datadog_flutter_plugin.dart';
 import 'package:datadog_flutter_plugin/datadog_internal.dart';
 import 'package:datadog_flutter_plugin/src/rum/ddrum_noop_platform.dart';
 import 'package:datadog_flutter_plugin/src/rum/ddrum_platform_interface.dart';
+import 'package:datadog_flutter_plugin/src/time_provider.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -23,6 +25,8 @@ class MockDatadogPlatform extends Mock implements DatadogSdkPlatform {}
 class MockRumPlatform extends Mock
     with MockPlatformInterfaceMixin
     implements DdRumPlatform {}
+
+class MockTimeProvider extends Mock implements DatadogTimeProvider {}
 
 void main() {
   const numSamples = 500;
@@ -319,5 +323,77 @@ void main() {
     // Then
     verifyNever(() => rum.addError(any(), any(),
         stackTrace: any(), errorType: any(), attributes: any()));
+  });
+
+  group('markViewFirstBuildComplete', () {
+    late DatadogRum rum;
+    final random = Random();
+    final mockTimeProvider = MockTimeProvider();
+
+    setUp(() async {
+      DdRumPlatform.instance = mockRumPlatform;
+      final rumConfiguration = DatadogRumConfiguration(
+        applicationId: 'applicationId',
+        traceSampleRate: 23,
+        detectLongTasks: false,
+      );
+
+      when(() => mockRumPlatform.enable(any(), any()))
+          .thenAnswer((_) => Future.value());
+      when(() => mockRumPlatform.startView(any(), any(), any()))
+          .thenAnswer((_) => Future.value());
+      when(() => mockRumPlatform.stopView(any(), any()))
+          .thenAnswer((_) => Future.value());
+      when(() => mockRumPlatform.addAttribute(any(), any()))
+          .thenAnswer((_) => Future.value());
+
+      rum = (await DatadogRum.enable(mockDatadogSdk, rumConfiguration))!;
+      rum.timeProvider = mockTimeProvider;
+    });
+
+    test('markViewFirstBuildComplete adds ns timestamp as view attribute', () {
+      final startTime = DateTime.now();
+      final duration = random.nextInt(1 << 32);
+      final timeAnswers = [
+        startTime,
+        startTime.add(Duration(microseconds: duration)),
+      ];
+      when(() => mockTimeProvider.now())
+          .thenAnswer((_) => timeAnswers.removeAt(0));
+      rum.startView('test_view');
+      rum.markViewFirstBuildComplete('test_view');
+
+      verify(() => mockRumPlatform.addAttribute(
+          '_dd.performance.first_build_complete', duration * 1000));
+    });
+
+    test('markViewFirstBuildComplete adds no attribute if view not started',
+        () {
+      rum.markViewFirstBuildComplete('test_view');
+
+      verifyNever(() => mockRumPlatform.addAttribute(
+          '_dd.performance.first_build_complete', any()));
+    });
+
+    test(
+        'markViewFirstBuildComplete adds no attribute if different view started',
+        () {
+      when(() => mockTimeProvider.now()).thenAnswer((_) => DateTime.now());
+      rum.startView('test_view');
+      rum.markViewFirstBuildComplete('second_view');
+
+      verifyNever(() => mockRumPlatform.addAttribute(
+          '_dd.performance.first_build_complete', any()));
+    });
+
+    test('markViewFirstBuildComplete adds no attribute if view stopped', () {
+      when(() => mockTimeProvider.now()).thenAnswer((_) => DateTime.now());
+      rum.startView('test_view');
+      rum.stopView('test_view');
+      rum.markViewFirstBuildComplete('test_view');
+
+      verifyNever(() => mockRumPlatform.addAttribute(
+          '_dd.performance.first_build_complete', any()));
+    });
   });
 }
