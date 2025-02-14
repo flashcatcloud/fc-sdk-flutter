@@ -272,7 +272,7 @@ nightly-beta-test:
     - fvm exec dart pub global activate melos
     - fvm exec melos run analyze
     - fvm exec melos run build
-    - fvm exec melos run unit_test
+    - fvm exec melos run unit_test:all
   artifacts:
     when: always
     expire_in: "30 days"
