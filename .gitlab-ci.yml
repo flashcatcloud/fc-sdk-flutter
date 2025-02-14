@@ -20,8 +20,10 @@ stages:
   - ci-image
   - build
   - integration-test
-  - e2e-test
+  - beta-test
+  - e2e-test  
   - post
+  - post-nightly
 
 # Prebuild - install necessary tools
 
@@ -43,6 +45,16 @@ stages:
     - xcodebuild -runFirstLaunch
     - xcodebuild -downloadPlatform iOS
 
+.pre-android:
+  script:
+    # Kill all active emulators
+    - pushd tools/ci && dart pub get && dart run ci_helpers stop_emu && popd
+    - melos pub:get
+    - yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "build-tools;34.0.0" "platform-tools" "platforms;android-34" || true
+    - yes | flutter doctor --android-licenses || true
+    - flutter doctor
+
+  
 ci-image:
   when: manual
   stage: ci-image
@@ -124,12 +136,7 @@ android-integration-test:
     - specific:true
   script:
     - !reference [.pre, script]
-    # Kill all active emulators
-    - pushd tools/ci && dart pub get && dart run ci_helpers stop_emu && popd
-    - melos pub:get
-    - yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "build-tools;34.0.0" "platform-tools" "platforms;android-34" || true
-    - yes | flutter doctor --android-licenses || true
-    - flutter doctor
+    - !reference [.pre-android, script]
     - cd tools/ci && dart pub get && dart run ci_helpers start_sim --platform android --sdk "33"
     - melos run integration_test:android
   artifacts:
@@ -204,6 +211,18 @@ notify-pipeline-succeeded:
   script:
     - echo "Pipeline did succeed"
 
+notify-nightly-failed:
+  extends: .slack-notifier-base
+  stage: post-nightly
+  when: on_failure
+  only:
+    - develop
+    - schedules
+  script:
+    - BUILD_URL="$CI_PROJECT_URL/pipelines/$CI_PIPELINE_ID"
+    - 'MESSAGE_TEXT=":status_alert: $CI_PROJECT_NAME $CI_COMMIT_TAG Nightly develop pipeline <$BUILD_URL|$COMMIT_MESSAGE> failed."'
+    - postmessage "#mobile-sdk-ops" "$MESSAGE_TEXT"
+
 # Nightly
 
 .nightly-vars:
@@ -214,7 +233,6 @@ notify-pipeline-succeeded:
 
 .nightly:
   only: [ schedules ]
-  stage: e2e-test
   tags:
     - macos:sonoma
     - specific:true
@@ -226,12 +244,35 @@ nightly-ios:
     - !reference [.nightly-vars, script]
     - !reference [.pre, script]
     - !reference [.pre-ios, script]
-    
     - pod repo update
     - melos pub:get
     - cd tools/ci && dart pub get && dart run ci_helpers start_sim --platform ios --sdk "iOS-17" --device "iPhone 15"
     - melos pod_update --no-select
     - melos run e2e_tests:ios
+  artifacts:
+    when: always
+    expire_in: "30 days"
+    reports:
+      junit: $CI_PROJECT_DIR/.build/test-results/*.xml
+
+nightly-beta-test:
+  extends: .nightly
+  stage: beta-test
+  tags:
+    - macos:sonoma
+    - specific:true
+  script:
+    - !reference [.pre, script]
+    - !reference [.pre-ios, script]
+    - brew tap leoafarias/fvm
+    - brew install fvm
+    - fvm install beta
+    - fvm use beta
+    - fvm flutter upgrade
+    - fvm exec dart pub global activate melos
+    - fvm exec melos run analyze
+    - fvm exec melos run build
+    - fvm exec melos run unit_test
   artifacts:
     when: always
     expire_in: "30 days"
@@ -244,12 +285,7 @@ nightly-android:
   script:
     - !reference [.nightly-vars, script]
     - !reference [.pre, script]
-    # Kill all active emulators
-    - pushd tools/ci && dart pub get && dart run ci_helpers stop_emu && popd
-    - melos pub:get
-    - yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "build-tools;33.0.3" "platform-tools" "platforms;android-34" || true
-    - yes | flutter doctor --android-licenses || true
-    - flutter doctor
+    - !reference [.pre-android, script]
     - cd tools/ci && dart pub get && dart run ci_helpers start_sim --platform android --sdk "34"
     - melos run e2e_tests:android
   artifacts:
