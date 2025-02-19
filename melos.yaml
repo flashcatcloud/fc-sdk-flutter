@@ -20,7 +20,7 @@ scripts:
   build:android:
     exec:
       concurrency: 1
-    run: cd example && flutter build apk --release --verbose
+    run: cd example && flutter build apk --release
     packageFilters:
       dirExists: example/android
 

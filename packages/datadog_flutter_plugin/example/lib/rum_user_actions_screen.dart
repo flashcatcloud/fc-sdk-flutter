@@ -69,7 +69,7 @@ class _RumUserActionsScreenState extends State<RumUserActionsScreen> {
         // and the attribute 'custom_attribute'.
         RumUserActionAnnotation(
           description: 'Alternative Button A',
-          attributes: {'custom_attribute': 'can be added too'},
+          attributes: const {'custom_attribute': 'can be added too'},
           child: ElevatedButton(
             onPressed: () => _buttonPressed('Button A'),
             child: const Text('Button A'),
@@ -86,7 +86,7 @@ class _RumUserActionsScreenState extends State<RumUserActionsScreen> {
         // and the attribute 'custom_attribute'.
         CustomButton(
           debugActionLabel: 'Custom Button A',
-          attributes: {'custom_attribute': 'can be added too'},
+          attributes: const {'custom_attribute': 'can be added too'},
           text: 'Button A',
           onPressed: () => _buttonPressed('Button A'),
         ),
@@ -147,7 +147,7 @@ class _RumUserActionsScreenState extends State<RumUserActionsScreen> {
       rum: DatadogSdk.instance.rum,
       customGestureDetector: (widget) {
         if (widget is CustomButton) {
-          return RumGestureDetectorInfo('CustomButton');
+          return const RumGestureDetectorInfo('CustomButton');
         }
         return null;
       },
