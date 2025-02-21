@@ -233,6 +233,7 @@ notify-nightly-failed:
 
 .nightly:
   only: [ schedules ]
+  when: always
   tags:
     - macos:sonoma
     - specific:true
