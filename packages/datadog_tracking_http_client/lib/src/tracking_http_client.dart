@@ -130,9 +130,9 @@ class DatadogTrackingHttpClient implements HttpClient {
       request = await innerClient.openUrl(method, url);
       request =
           _DatadogTrackingHttpRequest(this, request, rumKey, userAttributes);
-      if (rum != null) {
+      if (rum != null && rumKey != null) {
         configuration.clientListener?.requestStarted(
-            resourceKey: rumKey!,
+            resourceKey: rumKey,
             request: request,
             userAttributes: userAttributes);
       }
@@ -367,7 +367,7 @@ class _DatadogTrackingHttpRequest implements HttpClientRequest {
           }
         }
       }
-    } catch (e, st) {      
+    } catch (e, st) {
       client.datadogSdk.internalLogger.sendToDatadog(
         '$DatadogTrackingHttpClient encountered an error while attempting '
         ' to track an _openUrl call: $e',
