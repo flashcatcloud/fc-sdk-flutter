@@ -1316,6 +1316,32 @@ void main() {
       expect(capturedAttributes['other_parameter'], 123);
       expect(capturedAttributes['extra_parameter'], 1928);
     });
+
+    test('ignorUrlPatterns does not call client listener on matching url',
+        () async {
+      var url = Uri.parse('https://test_url/path');
+      final completer = setupMockRequest(url);
+      final mockListener = MockTrackingHttpClientListener();
+
+      final client = DatadogTrackingHttpClient(
+        mockDatadog,
+        DdHttpTrackingPluginConfiguration(
+            ignoreUrlPatterns: [RegExp('test_url/path')],
+            clientListener: mockListener),
+        mockClient,
+      );
+      final request = await client.openUrl('get', url);
+
+      final mockResponse = setupMockClientResponse(200);
+      completer.complete(mockResponse);
+      var response = await request.done;
+
+      // Listen / close the response
+      response.listen((event) {});
+      await mockResponse.streamController.close();
+
+      verifyNoMoreInteractions(mockListener);
+    });
   });
 
   group(
