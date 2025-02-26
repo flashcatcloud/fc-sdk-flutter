@@ -2,7 +2,7 @@
 
 ## 2.3.0
 
-* Fix ignored URLs throwing an exception with a clientListener. See [#716](https://github.com/DataDog/dd-sdk-flutter/issues/716)
+* Fix ignored URLs throwing an exception with a `clientListener`. See [#716](https://github.com/DataDog/dd-sdk-flutter/issues/716)
 * Fix distributed tracing for Web.
 * Upgrade Android build to SDK 34. See [#639](https://github.com/DataDog/dd-sdk-flutter/issues/639)
 * Add the ability to ignore tracking on specific url patterns with `ignoreUrlPatterns` when using the attach configuration.
