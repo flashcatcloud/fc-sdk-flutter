@@ -407,8 +407,8 @@ class DatadogRumPlugin : MethodChannel.MethodCallHandler {
     }
 
     private fun reportLongTask(call: MethodCall, result: Result) {
-        val at = call.argument<Long>(PARAM_AT)
-        val duration = call.argument<Int>(PARAM_DURATION)
+        val at = call.argument<Number>(PARAM_AT)
+        val duration = call.argument<Number>(PARAM_DURATION)
         if (at != null && duration != null) {
             // Duration is in ms, convert to ns
             val durationNs = TimeUnit.MILLISECONDS.toNanos(duration.toLong())

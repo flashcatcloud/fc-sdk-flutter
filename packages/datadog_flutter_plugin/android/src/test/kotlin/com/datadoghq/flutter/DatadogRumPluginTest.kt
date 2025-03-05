@@ -797,9 +797,14 @@ class DatadogRumPluginTest {
         Contract("removeAttribute", mapOf(
             "key" to ContractParameter.Type(SupportedContractType.STRING)
         )),
+        // Make sure `reportLongTask` can use both Ints and Longs in both parameters.
+        Contract("reportLongTask", mapOf(
+            "at" to ContractParameter.Type(SupportedContractType.INT),
+            "duration" to ContractParameter.Type(SupportedContractType.INT)
+        )),
         Contract("reportLongTask", mapOf(
             "at" to ContractParameter.Type(SupportedContractType.LONG),
-            "duration" to ContractParameter.Type(SupportedContractType.INT)
+            "duration" to ContractParameter.Type(SupportedContractType.LONG)
         )),
         Contract("updatePerformanceMetrics", mapOf(
             "buildTimes" to ContractParameter.Type(SupportedContractType.LIST),
