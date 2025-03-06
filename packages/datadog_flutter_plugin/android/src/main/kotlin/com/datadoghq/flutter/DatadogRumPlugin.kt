@@ -123,6 +123,7 @@ class DatadogRumPlugin : MethodChannel.MethodCallHandler {
                 "reportLongTask" -> reportLongTask(call, result)
                 "updatePerformanceMetrics" -> updatePerformanceMetrics(call, result)
                 "addFeatureFlagEvaluation" -> addFeatureFlagEvaluation(call, result)
+                "setInternalViewAttribute" -> setInternalViewAttribute(call, result)
                 "stopSession" -> stopSession(call, result)
                 else -> {
                     result.notImplemented()
@@ -446,6 +447,17 @@ class DatadogRumPlugin : MethodChannel.MethodCallHandler {
         val value = call.argument<Any>(PARAM_VALUE)
         if (name != null && value != null) {
             rum?.addFeatureFlagEvaluation(name, value)
+            result.success(null)
+        } else {
+            result.missingParameter(call.method)
+        }
+    }
+
+    private fun setInternalViewAttribute(call: MethodCall, result: Result) {
+        val key = call.argument<String>(PARAM_KEY)
+        val value = call.argument<Any>(PARAM_VALUE)
+        if (key != null && value != null) {
+            rum?._getInternal()?.setInternalViewAttribute(key, value)
             result.success(null)
         } else {
             result.missingParameter(call.method)

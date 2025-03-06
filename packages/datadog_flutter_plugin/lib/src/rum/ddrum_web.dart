@@ -73,6 +73,11 @@ class DdRumWeb extends DdRumPlatform {
   }
 
   @override
+  Future<void> setInternalViewAttribute(String key, Object value) async {
+    // NOOP - Not supported by the Browser SDK
+  }
+
+  @override
   Future<void> addError(
     Object error,
     RumErrorSource source,

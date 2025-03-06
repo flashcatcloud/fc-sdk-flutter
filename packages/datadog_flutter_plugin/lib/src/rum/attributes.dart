@@ -17,6 +17,6 @@ class DatadogRumPlatformAttributeKey {
   /// Expects `double` value between `0.0` and `1.0`.
   static const rulePsr = '_dd.rule_psr';
 
-  /// View attribute that specifies with the first build of a Flutter view is complete.
+  /// Internal attribute that specifies with the first build of a Flutter view is complete.
   static const firstBuildComplete = '_dd.performance.first_build_complete';
 }

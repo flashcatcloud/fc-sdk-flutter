@@ -172,6 +172,22 @@ class Vital {
   });
 }
 
+class Performance {
+  final Map<String, Object?> encoded;
+
+  int? get fbc {
+    final fbcObj = encoded['fbc'];
+    if (fbcObj is Map<String, Object?>) {
+      final fbcTimeStamp = fbcObj['timestamp'];
+      if (fbcTimeStamp is int) return fbcTimeStamp;
+    }
+
+    return null;
+  }
+
+  Performance(this.encoded);
+}
+
 class RumViewEventDecoder extends RumEventDecoder {
   final RumViewDecoder view;
 
@@ -198,6 +214,14 @@ class RumViewEventDecoder extends RumEventDecoder {
         maxTime: buildTime['max'] as double,
         avgTime: buildTime['average'] as double,
       );
+    }
+    return null;
+  }
+
+  Performance? get performance {
+    final perf = rumEvent['view']['performance'] as Map<String, Object?>?;
+    if (perf != null) {
+      return Performance(perf);
     }
     return null;
   }

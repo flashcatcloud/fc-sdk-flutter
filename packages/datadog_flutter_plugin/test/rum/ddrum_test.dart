@@ -48,10 +48,11 @@ void main() {
     mockDatadogPlatform = MockDatadogPlatform();
     when(() => mockDatadogPlatform.updateTelemetryConfiguration(any(), any()))
         .thenAnswer((_) => Future.value());
-
     when(() => mockDatadogSdk.platform).thenReturn(mockDatadogPlatform);
 
     mockRumPlatform = MockRumPlatform();
+    when(() => mockRumPlatform.setInternalViewAttribute(any(), any()))
+        .thenAnswer((_) => Future.value());
   });
 
   test('RumResourceType parses simple mimeTypes from ContentType', () {
@@ -363,7 +364,7 @@ void main() {
       rum.startView('test_view');
       rum.markViewFirstBuildComplete('test_view');
 
-      verify(() => mockRumPlatform.addAttribute(
+      verify(() => mockRumPlatform.setInternalViewAttribute(
           '_dd.performance.first_build_complete', duration * 1000));
     });
 
@@ -371,7 +372,7 @@ void main() {
         () {
       rum.markViewFirstBuildComplete('test_view');
 
-      verifyNever(() => mockRumPlatform.addAttribute(
+      verifyNever(() => mockRumPlatform.setInternalViewAttribute(
           '_dd.performance.first_build_complete', any()));
     });
 
@@ -382,7 +383,7 @@ void main() {
       rum.startView('test_view');
       rum.markViewFirstBuildComplete('second_view');
 
-      verifyNever(() => mockRumPlatform.addAttribute(
+      verifyNever(() => mockRumPlatform.setInternalViewAttribute(
           '_dd.performance.first_build_complete', any()));
     });
 
@@ -392,7 +393,7 @@ void main() {
       rum.stopView('test_view');
       rum.markViewFirstBuildComplete('test_view');
 
-      verifyNever(() => mockRumPlatform.addAttribute(
+      verifyNever(() => mockRumPlatform.setInternalViewAttribute(
           '_dd.performance.first_build_complete', any()));
     });
   });

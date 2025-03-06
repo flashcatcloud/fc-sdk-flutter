@@ -238,6 +238,12 @@ class DdRumMethodChannel extends DdRumPlatform {
   }
 
   @override
+  Future<void> setInternalViewAttribute(String key, Object value) {
+    return methodChannel
+        .invokeMethod('setInternalViewAttribute', {'key': key, 'value': value});
+  }
+
+  @override
   Future<void> removeAttribute(String key) {
     return methodChannel.invokeMethod('removeAttribute', {'key': key});
   }

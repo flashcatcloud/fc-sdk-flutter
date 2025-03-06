@@ -71,6 +71,7 @@ void main() {
       // Web doesn't support performance metrics
       expect(view1.viewEvents.last.flutterBuildTime, isNotNull);
       expect(view1.viewEvents.last.flutterRasterTime, isNotNull);
+      expect(view1.viewEvents.last.performance?.fbc, isNotNull);
 
       // Web doesn't support action tracking from Flutter
       var actionEvent = view1.actionEvents.last;
@@ -87,6 +88,10 @@ void main() {
       // Web doesn't support performance metrics
       expect(view2.viewEvents.last.flutterBuildTime, isNotNull);
       expect(view2.viewEvents.last.flutterRasterTime, isNotNull);
+
+      // Second screen build time should delay
+      expect(view2.viewEvents.last.performance?.fbc,
+          greaterThan(const Duration(milliseconds: 10).inNanoseconds));
 
       // Web doesn't support action tracking from Flutter
       var actionEvent = view2.actionEvents[0];

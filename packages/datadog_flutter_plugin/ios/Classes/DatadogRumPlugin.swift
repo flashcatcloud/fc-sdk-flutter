@@ -317,6 +317,21 @@ public class DatadogRumPlugin: NSObject, FlutterPlugin {
                     FlutterError.missingParameter(methodName: call.method)
                 )
             }
+        case "setInternalViewAttribute":
+            if let key = arguments["key"] as? String,
+               let value = arguments["value"] {
+                let encodedValue = castAnyToEncodable(value)
+                // swiftlint:disable:next todo
+                // TODO: Time isn't that important here, but in the future we should get it either
+                // from Flutter or from the timeProvider anyway
+                let date = Date()
+                rum?._internal?.setInternalViewAttribute(at: date, key: key, value: encodedValue)
+                result(nil)
+            } else {
+                result(
+                    FlutterError.missingParameter(methodName: call.method)
+                )
+            }
         case "stopSession":
             rum?.stopSession()
             result(nil)

@@ -474,8 +474,10 @@ class DatadogRum {
         final fbcTime =
             (timeProvider.now().difference(currentViewInfo.viewStart))
                 .inNanoseconds;
-        addAttribute(
-            DatadogRumPlatformAttributeKey.firstBuildComplete, fbcTime);
+        wrap('rum.setInternalViewAttribute', logger, null, () {
+          _platform.setInternalViewAttribute(
+              DatadogRumPlatformAttributeKey.firstBuildComplete, fbcTime);
+        });
       }
     }
   }
