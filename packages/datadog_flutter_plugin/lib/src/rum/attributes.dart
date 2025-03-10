@@ -16,4 +16,7 @@ class DatadogRumPlatformAttributeKey {
   /// configured at the SDK level. This gets displayed on APM's traffic ingestion control page.
   /// Expects `double` value between `0.0` and `1.0`.
   static const rulePsr = '_dd.rule_psr';
+
+  /// Internal attribute that specifies with the first build of a Flutter view is complete.
+  static const firstBuildComplete = '_dd.performance.first_build_complete';
 }

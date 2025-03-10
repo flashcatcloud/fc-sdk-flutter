@@ -737,6 +737,38 @@ class DatadogRumPluginTest {
         verify { mockResult.success(null) }
     }
 
+    @Test
+    fun `M call internal setInternalViewAttribute W setInternalViewAtttribute is called`(
+        forge: Forge,
+    ) {
+        // GIVEN
+        val key = forge.anAlphabeticalString()
+        val value = forge.aValueFrom(
+            listOf(
+                forge.aBool(),
+                forge.anInt(),
+                forge.aLong(),
+                forge.aFloat(),
+                forge.aDouble(),
+                forge.anAsciiString(),
+                forge.aList { anAlphabeticalString() },
+            ).associateBy { forge.anAlphabeticalString() }
+        )
+        val call = MethodCall( "setInternalViewAttribute", mapOf(
+            "key" to key,
+            "value" to value,
+        ))
+        val mockResult = mockk<MethodChannel.Result>()
+        every { mockResult.success(any()) } returns Unit
+
+        // WHEN
+        plugin.onMethodCall(call, mockResult)
+
+        // THEN
+        verify { monitorProxy.mockInternalProxy.setInternalViewAttribute(key, value) }
+        verify { mockResult.success(null) }
+    }
+
     private val contracts = listOf(
         Contract("startView", mapOf(
             "key" to ContractParameter.Type(SupportedContractType.STRING),
@@ -812,6 +844,10 @@ class DatadogRumPluginTest {
         )),
         Contract("addFeatureFlagEvaluation", mapOf(
             "name" to ContractParameter.Type(SupportedContractType.STRING),
+            "value" to ContractParameter.Type(SupportedContractType.ANY),
+        )),
+        Contract("setInternalViewAttribute", mapOf(
+            "key" to ContractParameter.Type(SupportedContractType.STRING),
             "value" to ContractParameter.Type(SupportedContractType.ANY),
         )),
         Contract("stopSession", mapOf())

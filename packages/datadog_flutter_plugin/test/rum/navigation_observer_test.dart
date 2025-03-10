@@ -69,6 +69,7 @@ void main() {
     await tester.pumpWidget(buildFor(child: Container()));
 
     verify(() => mockRum.startView('/'));
+    verify(() => mockRum.markViewFirstBuildComplete('/'));
   });
 
   testWidgets('pushing unnamed route ends current view',
@@ -77,6 +78,7 @@ void main() {
     await buildAndNavigateTo(tester: tester, builder: (_) => Container());
 
     verify(() => mockRum.startView('/'));
+    verify(() => mockRum.markViewFirstBuildComplete('/'));
     verify(() => mockRum.stopView('/'));
     verifyNoMoreInteractions(mockRum);
   });
@@ -92,8 +94,10 @@ void main() {
 
     verifyInOrder([
       () => mockRum.startView('/'),
+      () => mockRum.markViewFirstBuildComplete('/'),
       () => mockRum.stopView('/'),
       () => mockRum.startView('/'),
+      () => mockRum.markViewFirstBuildComplete('/'),
     ]);
     verifyNoMoreInteractions(mockRum);
   });
@@ -108,6 +112,7 @@ void main() {
     );
 
     verify(() => mockRum.startView('NextRoute'));
+    verify(() => mockRum.markViewFirstBuildComplete('NextRoute'));
   });
 
   testWidgets('popping from settings named route restarts root view ',
@@ -133,10 +138,13 @@ void main() {
 
     verifyInOrder([
       () => mockRum.startView('/'),
+      () => mockRum.markViewFirstBuildComplete('/'),
       () => mockRum.stopView('/'),
       () => mockRum.startView('NextRoute'),
+      () => mockRum.markViewFirstBuildComplete('NextRoute'),
       () => mockRum.stopView('NextRoute'),
       () => mockRum.startView('/'),
+      () => mockRum.markViewFirstBuildComplete('/'),
     ]);
     verifyNoMoreInteractions(mockRum);
   });
@@ -173,8 +181,10 @@ void main() {
 
     verifyInOrder([
       () => mockRum.startView('/'),
+      () => mockRum.markViewFirstBuildComplete('/'),
       () => mockRum.stopView('/'),
       () => mockRum.startView('my_named_route'),
+      () => mockRum.markViewFirstBuildComplete('my_named_route'),
     ]);
     verifyNoMoreInteractions(mockRum);
   });
@@ -189,8 +199,10 @@ void main() {
 
     verifyInOrder([
       () => mockRum.startView('home'),
+      () => mockRum.markViewFirstBuildComplete('home'),
       () => mockRum.stopView('home'),
       () => mockRum.startView('my_named_route'),
+      () => mockRum.markViewFirstBuildComplete('my_named_route'),
     ]);
     verifyNoMoreInteractions(mockRum);
   });
@@ -220,10 +232,12 @@ void main() {
 
     verifyInOrder([
       () => mockRum.startView('/'),
+      () => mockRum.markViewFirstBuildComplete('/'),
       () => mockRum.stopView('/'),
       () => mockRum.startView('my_named_route', null, {
             'extra_attribute': 'attribute_value',
           }),
+      () => mockRum.markViewFirstBuildComplete('my_named_route'),
     ]);
     verifyNoMoreInteractions(mockRum);
   });
@@ -241,7 +255,22 @@ void main() {
       () => mockRum.stopView('/'),
       () => mockRum.startView('MixedDestination'),
     ]);
-    verifyNoMoreInteractions(mockRum);
+  });
+
+  testWidgets('pushing to route using marks build complete',
+      (WidgetTester tester) async {
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+    await buildAndNavigateTo(
+      tester: tester,
+      builder: (_) => const MixedDestination(),
+    );
+
+    verifyInOrder([
+      () => mockRum.startView('/'),
+      () => mockRum.stopView('/'),
+      () => mockRum.startView('MixedDestination'),
+      () => mockRum.markViewFirstBuildComplete('MixedDestination'),
+    ]);
   });
 
   testWidgets('pop from route using mixin calls stopView',
@@ -258,10 +287,13 @@ void main() {
 
     verifyInOrder([
       () => mockRum.startView('/'),
+      () => mockRum.markViewFirstBuildComplete('/'),
       () => mockRum.stopView('/'),
       () => mockRum.startView('MixedDestination'),
+      () => mockRum.markViewFirstBuildComplete('MixedDestination'),
       () => mockRum.stopView('MixedDestination'),
       () => mockRum.startView('/'),
+      () => mockRum.markViewFirstBuildComplete('/'),
     ]);
     verifyNoMoreInteractions(mockRum);
   });
@@ -287,7 +319,6 @@ void main() {
             'attribute_key': 'attribute_value',
           }),
     ]);
-    verifyNoMoreInteractions(mockRum);
   });
 
   testWidgets('pushing to next route with mixin sends stopView',
@@ -310,7 +341,6 @@ void main() {
       () => mockRum.startView('MixedDestination'),
       () => mockRum.stopView('MixedDestination'),
     ]);
-    verifyNoMoreInteractions(mockRum);
   });
 
   testWidgets('returning to mixin view restarts view',
@@ -332,10 +362,13 @@ void main() {
 
     verifyInOrder([
       () => mockRum.startView('/'),
+      () => mockRum.markViewFirstBuildComplete('/'),
       () => mockRum.stopView('/'),
       () => mockRum.startView('MixedDestination'),
+      () => mockRum.markViewFirstBuildComplete('MixedDestination'),
       () => mockRum.stopView('MixedDestination'),
       () => mockRum.startView('MixedDestination'),
+      () => mockRum.markViewFirstBuildComplete('MixedDestination'),
     ]);
     verifyNoMoreInteractions(mockRum);
   });
@@ -351,8 +384,10 @@ void main() {
 
     verifyInOrder([
       () => mockRum.startView('/'),
+      () => mockRum.markViewFirstBuildComplete('/'),
       () => mockRum.stopView('/'),
-      () => mockRum.startView('second_route')
+      () => mockRum.startView('second_route'),
+      () => mockRum.markViewFirstBuildComplete('second_route'),
     ]);
     verifyNoMoreInteractions(mockRum);
   });

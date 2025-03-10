@@ -65,6 +65,7 @@ abstract class DdRumPlatform extends PlatformInterface {
 
   Future<void> addAttribute(String key, dynamic value);
   Future<void> removeAttribute(String key);
+  Future<void> setInternalViewAttribute(String key, Object value);
 
   Future<void> addFeatureFlagEvaluation(String name, Object value);
   Future<void> stopSession();

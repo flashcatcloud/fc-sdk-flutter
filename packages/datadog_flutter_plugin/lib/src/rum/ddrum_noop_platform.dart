@@ -13,6 +13,9 @@ class DdNoOpRumPlatform extends DdRumPlatform {
   Future<void> addAttribute(String key, value) => Future.value();
 
   @override
+  Future<void> setInternalViewAttribute(String key, value) => Future.value();
+
+  @override
   Future<void> addError(
       Object error,
       RumErrorSource source,

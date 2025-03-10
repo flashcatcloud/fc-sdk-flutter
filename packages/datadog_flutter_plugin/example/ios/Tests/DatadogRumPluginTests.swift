@@ -161,6 +161,10 @@ class DatadogRumPluginTests: XCTestCase {
             "name": .string,
             "value": .string
         ]),
+        Contract(methodName: "setInternalViewAttribute", requiredParameters: [
+            "key": .string,
+            "value": .string
+        ]),
         Contract(methodName: "stopSession", requiredParameters: [:])
     ]
 
@@ -590,6 +594,30 @@ class DatadogRumPluginTests: XCTestCase {
             XCTAssertEqual((commands[4] as! RUMUpdatePerformanceMetric).value, 68.1)
             XCTAssertEqual((commands[5] as! RUMUpdatePerformanceMetric).metric, .flutterRasterTime)
             XCTAssertEqual((commands[5] as! RUMUpdatePerformanceMetric).value, 0.223)
+        }
+        XCTAssertEqual(resultStatus, .called(value: nil))
+    }
+
+    func testSetInternalViewAttribute_CallsInternal() {
+        let key = String.mockRandom()
+        let value = String.mockRandom()
+
+        let call = FlutterMethodCall(methodName: "setInternalViewAttribute", arguments: [
+            "key": key,
+            "value": value
+        ])
+
+        var resultStatus = ResultStatus.notCalled
+        plugin.handle(call) { result in
+            resultStatus = .called(value: result)
+        }
+
+        let commands = mock.commands
+        XCTAssertEqual(commands.count, 1)
+        if commands.count == 1 {
+            let command = commands[0] as! RUMSetInternalViewAttributeCommand
+            XCTAssertEqual(command.key, key)
+            XCTAssertEqual(command.value.dd.decode(), value)
         }
         XCTAssertEqual(resultStatus, .called(value: nil))
     }
