@@ -466,7 +466,7 @@ class DatadogRum {
   /// FOR INTERNAL USE ONLY
   /// Mark the supplied view as completing its first `build`. If the supplied key
   /// does not match the current view (meaning this view was stopped or a new view was
-  /// started prior to its build being completed) this method does nothing
+  /// started prior to its build being completed) this method does nothing.
   @internal
   void markViewFirstBuildComplete(String viewKey) {
     if (_currentViewInfo case final currentViewInfo?) {

@@ -3,8 +3,8 @@
 // Copyright 2025-Present Datadog, Inc.
 
 /// Internal interface to provide the current timestamp for events, either in
-/// milliseconds (the default for most events) or nanoseconds (the default)
-/// for some performance events
+/// milliseconds (the default for most events) or nanoseconds (the default
+/// for some performance events).
 abstract interface class DatadogTimeProvider {
   int nowMs();
   int nowNs();
