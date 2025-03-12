@@ -271,6 +271,9 @@ nightly-beta-test:
     - fvm use beta
     - fvm flutter upgrade
     - fvm exec dart pub global activate melos
+    - pod repo update
+    - fvm exec melos melos pub:get
+    - fvm exec melos melos pod_update --no-select
     - fvm exec melos run analyze
     - fvm exec melos run build
     - fvm exec melos run unit_test:all
