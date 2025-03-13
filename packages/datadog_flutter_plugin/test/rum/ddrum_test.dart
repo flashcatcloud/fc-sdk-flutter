@@ -5,7 +5,8 @@
 import 'dart:io';
 import 'dart:math';
 
-import 'package:datadog_common_test/datadog_common_test.dart';
+import 'package:datadog_common_test/datadog_common_test.dart'
+    hide DurationHelpers;
 import 'package:datadog_flutter_plugin/datadog_flutter_plugin.dart';
 import 'package:datadog_flutter_plugin/datadog_internal.dart';
 import 'package:datadog_flutter_plugin/src/rum/ddrum_noop_platform.dart';
@@ -341,9 +342,9 @@ void main() {
 
       when(() => mockRumPlatform.enable(any(), any()))
           .thenAnswer((_) => Future.value());
-      when(() => mockRumPlatform.startView(any(), any(), any()))
+      when(() => mockRumPlatform.startView(any(), any(), any(), any()))
           .thenAnswer((_) => Future.value());
-      when(() => mockRumPlatform.stopView(any(), any()))
+      when(() => mockRumPlatform.stopView(any(), any(), any()))
           .thenAnswer((_) => Future.value());
       when(() => mockRumPlatform.addAttribute(any(), any()))
           .thenAnswer((_) => Future.value());
@@ -395,6 +396,87 @@ void main() {
 
       verifyNever(() => mockRumPlatform.setInternalViewAttribute(
           '_dd.performance.first_build_complete', any()));
+    });
+  });
+
+  group('interaction to next view', () {
+    late DatadogRum rum;
+    final random = Random();
+    final mockTimeProvider = MockTimeProvider();
+
+    setUp(() async {
+      DdRumPlatform.instance = mockRumPlatform;
+      final rumConfiguration = DatadogRumConfiguration(
+        applicationId: 'applicationId',
+        traceSampleRate: 23,
+        detectLongTasks: false,
+      );
+
+      registerFallbackValue(RumActionType.custom);
+
+      when(() => mockRumPlatform.enable(any(), any()))
+          .thenAnswer((_) => Future.value());
+      when(() => mockRumPlatform.startView(any(), any(), any(), any()))
+          .thenAnswer((_) => Future.value());
+      when(() => mockRumPlatform.stopView(any(), any(), any()))
+          .thenAnswer((_) => Future.value());
+      when(() => mockRumPlatform.addAction(any(), any(), any(), any()))
+          .thenAnswer((_) => Future.value());
+      when(() => mockRumPlatform.addAttribute(any(), any()))
+          .thenAnswer((_) => Future.value());
+
+      rum = (await DatadogRum.enable(mockDatadogSdk, rumConfiguration))!;
+      rum.timeProvider = mockTimeProvider;
+    });
+
+    test('markFirstBuildComplete sets inv attribute', () {
+      // Given
+      final startTime = DateTime.now();
+      final actionTime = startTime.add(Duration(seconds: 1));
+      final startTime2 = actionTime.add(Duration(milliseconds: 10));
+      final fbcTime =
+          startTime2.add(Duration(microseconds: random.nextInt(1 << 8)));
+      final timeAnswers = [
+        startTime,
+        actionTime,
+        startTime2,
+        fbcTime,
+      ];
+      when(() => mockTimeProvider.now())
+          .thenAnswer((_) => timeAnswers.removeAt(0));
+
+      // When
+      rum.startView('test_view');
+      rum.addAction(RumActionType.tap, 'Test Action');
+      rum.startView('test_view_2');
+      rum.markViewFirstBuildComplete('test_view_2');
+
+      verify(() => mockRumPlatform.setInternalViewAttribute(
+          '_dd.view.custom_inv_value',
+          (fbcTime.difference(actionTime)).inNanoseconds));
+    });
+
+    test('markFirstBuildComplete does not set inv attribute if missing', () {
+      // Given
+      final startTime = DateTime.now();
+      final startTime2 = startTime.add(Duration(seconds: 10));
+      final fbcTime =
+          startTime2.add(Duration(microseconds: random.nextInt(1 << 8)));
+      final timeAnswers = [
+        startTime,
+        startTime2,
+        fbcTime,
+      ];
+      when(() => mockTimeProvider.now())
+          .thenAnswer((_) => timeAnswers.removeAt(0));
+
+      // When
+      rum.startView('test_view');
+      rum.startView('test_view_2');
+      rum.markViewFirstBuildComplete('test_view_2');
+
+      verifyNever(() => mockRumPlatform.setInternalViewAttribute(
+          '_dd.view.custom_inv_value', any()));
     });
   });
 }

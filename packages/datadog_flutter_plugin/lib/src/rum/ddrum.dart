@@ -14,6 +14,7 @@ import '../../datadog_flutter_plugin.dart';
 import '../../datadog_internal.dart';
 import '../time_provider.dart';
 import 'ddrum_platform_interface.dart';
+import 'inv_metric_provider.dart';
 import 'rum_long_task_observer.dart';
 
 /// HTTP method of the resource
@@ -116,6 +117,8 @@ class DatadogRum {
   // Used for FBC and INV vitals.
   _ViewInfo? _currentViewInfo;
 
+  final InvMetricProvider _invMetricProvider = InvMetricProvider();
+
   static Future<DatadogRum?> enable(
       DatadogSdk core, DatadogRumConfiguration configuration) async {
     DatadogRum? rum;
@@ -215,9 +218,11 @@ class DatadogRum {
   void startView(String key,
       [String? name, Map<String, Object?> attributes = const {}]) {
     name ??= key;
-    _currentViewInfo = _ViewInfo(key, name, timeProvider.now());
+    final currentTime = timeProvider.now();
+    _currentViewInfo = _ViewInfo(key, name, currentTime);
     wrap('rum.startView', logger, attributes, () {
-      return _platform.startView(key, name!, attributes);
+      _invMetricProvider.trackViewStart(key, currentTime);
+      return _platform.startView(currentTime, key, name!, attributes);
     });
   }
 
@@ -228,8 +233,10 @@ class DatadogRum {
   /// The [key] passed here must match the [key] passed to [startView].
   void stopView(String key, [Map<String, Object?> attributes = const {}]) {
     _currentViewInfo = null;
+    final currentTime = timeProvider.now();
     wrap('rum.stopView', logger, attributes, () {
-      return _platform.stopView(key, attributes);
+      _invMetricProvider.trackViewStop(key, currentTime);
+      return _platform.stopView(currentTime, key, attributes);
     });
   }
 
@@ -237,8 +244,9 @@ class DatadogRum {
   /// timing duration will be computed as the number of nanoseconds between the
   /// time the View was started and the time the timing was added.
   void addTiming(String name) {
+    final currentTime = timeProvider.now();
     wrap('rum.addTiming', logger, null, () {
-      return _platform.addTiming(name);
+      return _platform.addTiming(currentTime, name);
     });
   }
 
@@ -274,7 +282,9 @@ class DatadogRum {
       }
     }
     wrap('rum.addError', logger, attributes, () {
-      return _platform.addError(error, source, stackTrace, errorType, {
+      final currentTime = timeProvider.now();
+      return _platform.addError(
+          currentTime, error, source, stackTrace, errorType, {
         DatadogPlatformAttributeKey.errorSourceType: 'flutter',
         ...attributes
       });
@@ -300,7 +310,9 @@ class DatadogRum {
       return;
     }
     wrap('rum.addErrorInfo', logger, attributes, () {
-      return _platform.addErrorInfo(message, source, stackTrace, errorType, {
+      final currentTime = timeProvider.now();
+      return _platform.addErrorInfo(
+          currentTime, message, source, stackTrace, errorType, {
         DatadogPlatformAttributeKey.errorSourceType: 'flutter',
         ...attributes
       });
@@ -336,7 +348,9 @@ class DatadogRum {
   void startResource(String key, RumHttpMethod httpMethod, String url,
       [Map<String, Object?> attributes = const {}]) {
     wrap('rum.startResource', logger, attributes, () {
-      return _platform.startResource(key, httpMethod, url, attributes);
+      final currentTime = timeProvider.now();
+      return _platform.startResource(
+          currentTime, key, httpMethod, url, attributes);
     });
   }
 
@@ -347,7 +361,9 @@ class DatadogRum {
   void stopResource(String key, int? statusCode, RumResourceType kind,
       [int? size, Map<String, Object?> attributes = const {}]) {
     wrap('rum.stopResource', logger, attributes, () {
-      return _platform.stopResource(key, statusCode, kind, size, attributes);
+      final currentTime = timeProvider.now();
+      return _platform.stopResource(
+          currentTime, key, statusCode, kind, size, attributes);
     });
   }
 
@@ -357,7 +373,9 @@ class DatadogRum {
   void stopResourceWithError(String key, Exception error,
       [Map<String, Object?> attributes = const {}]) {
     wrap('rum.stopResourceWithError', logger, attributes, () {
-      return _platform.stopResourceWithError(key, error, attributes);
+      final currentTime = timeProvider.now();
+      return _platform.stopResourceWithError(
+          currentTime, key, error, attributes);
     });
   }
 
@@ -367,8 +385,9 @@ class DatadogRum {
   void stopResourceWithErrorInfo(String key, String message, String type,
       [Map<String, Object?> attributes = const {}]) {
     wrap('rum.stopResourceWithErrorInfo', logger, attributes, () {
+      final currentTime = timeProvider.now();
       return _platform.stopResourceWithErrorInfo(
-          key, message, type, attributes);
+          currentTime, key, message, type, attributes);
     });
   }
 
@@ -380,7 +399,12 @@ class DatadogRum {
   void addAction(RumActionType type, String name,
       [Map<String, Object?> attributes = const {}]) {
     wrap('rum.addAction', logger, attributes, () {
-      return _platform.addAction(type, name, attributes);
+      final currentTime = timeProvider.now();
+      if (_currentViewInfo != null) {
+        _invMetricProvider.trackAction(
+            _currentViewInfo!.viewKey, currentTime, type);
+      }
+      return _platform.addAction(currentTime, type, name, attributes);
     });
   }
 
@@ -392,7 +416,8 @@ class DatadogRum {
   void startAction(RumActionType type, String name,
       [Map<String, Object?> attributes = const {}]) {
     wrap('rum.startAction', logger, attributes, () {
-      return _platform.startAction(type, name, attributes);
+      final currentTime = timeProvider.now();
+      return _platform.startAction(currentTime, type, name, attributes);
     });
   }
 
@@ -402,7 +427,8 @@ class DatadogRum {
   void stopAction(RumActionType type, String name,
       [Map<String, Object?> attributes = const {}]) {
     wrap('rum.stopAction', logger, attributes, () {
-      return _platform.stopAction(type, name, attributes);
+      final currentTime = timeProvider.now();
+      return _platform.stopAction(currentTime, type, name, attributes);
     });
   }
 
@@ -471,12 +497,19 @@ class DatadogRum {
   void markViewFirstBuildComplete(String viewKey) {
     if (_currentViewInfo case final currentViewInfo?) {
       if (viewKey == currentViewInfo.viewKey) {
+        final currentTime = timeProvider.now();
         final fbcTime =
-            (timeProvider.now().difference(currentViewInfo.viewStart))
-                .inNanoseconds;
+            (currentTime.difference(currentViewInfo.viewStart)).inNanoseconds;
         wrap('rum.setInternalViewAttribute', logger, null, () {
           _platform.setInternalViewAttribute(
               DatadogRumPlatformAttributeKey.firstBuildComplete, fbcTime);
+          _invMetricProvider.trackViewFirstBuildComplete(viewKey, currentTime);
+
+          final invValue = _invMetricProvider.valueForView(viewKey);
+          if (invValue != null) {
+            _platform.setInternalViewAttribute(
+                DatadogRumPlatformAttributeKey.customInvValue, invValue);
+          }
         });
       }
     }

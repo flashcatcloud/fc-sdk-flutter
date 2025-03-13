@@ -218,6 +218,11 @@ class RumViewEventDecoder extends RumEventDecoder {
     return null;
   }
 
+  int? get inv {
+    final invValue = rumEvent['view']['interaction_to_next_view_time'];
+    return invValue as int?;
+  }
+
   Performance? get performance {
     final perf = rumEvent['view']['performance'] as Map<String, Object?>?;
     if (perf != null) {

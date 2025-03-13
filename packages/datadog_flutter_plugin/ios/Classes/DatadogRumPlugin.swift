@@ -350,6 +350,8 @@ public class DatadogRumPlugin: NSObject, FlutterPlugin {
             if let configArg = configArg,
                var config = RUM.Configuration(fromEncoded: configArg) {
                 attachEventMappers(configArg: configArg, config: &config)
+                // Disable INV as the Flutter calculations for it are different
+                config.nextViewActionPredicate = nil
 
                 RUM.enable(with: config)
                 rum = RUMMonitor.shared()

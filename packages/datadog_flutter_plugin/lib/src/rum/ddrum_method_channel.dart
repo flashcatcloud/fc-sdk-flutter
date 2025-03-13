@@ -7,16 +7,12 @@ import 'package:flutter/services.dart';
 
 import '../../datadog_flutter_plugin.dart';
 import '../../datadog_internal.dart';
-import '../time_provider.dart';
 import 'ddrum_platform_interface.dart';
 
 class DdRumMethodChannel extends DdRumPlatform {
   @visibleForTesting
   final MethodChannel methodChannel =
       const MethodChannel('datadog_sdk_flutter.rum');
-
-  @visibleForTesting
-  DatadogTimeProvider timeProvider = DefaultTimeProvider();
 
   @override
   Future<void> enable(
@@ -50,7 +46,7 @@ class DdRumMethodChannel extends DdRumPlatform {
   }
 
   @override
-  Future<void> addTiming(String name) {
+  Future<void> addTiming(DateTime timeStamp, String name) {
     return methodChannel.invokeMethod(
       'addTiming',
       {'name': name},
@@ -58,9 +54,9 @@ class DdRumMethodChannel extends DdRumPlatform {
   }
 
   @override
-  Future<void> startView(
-      String key, String name, Map<String, Object?> attributes) {
-    final timestamp = timeProvider.nowMs();
+  Future<void> startView(DateTime timeStamp, String key, String name,
+      Map<String, Object?> attributes) {
+    final timestampMs = timeStamp.millisecondsSinceEpoch;
     return methodChannel.invokeMethod(
       'startView',
       {
@@ -68,22 +64,23 @@ class DdRumMethodChannel extends DdRumPlatform {
         'name': name,
         'attributes': {
           ...attributes,
-          DatadogPlatformAttributeKey.timestamp: timestamp,
+          DatadogPlatformAttributeKey.timestamp: timestampMs,
         }
       },
     );
   }
 
   @override
-  Future<void> stopView(String key, Map<String, Object?> attributes) {
-    final timestamp = timeProvider.nowMs();
+  Future<void> stopView(
+      DateTime timeStamp, String key, Map<String, Object?> attributes) {
+    final timestampMs = timeStamp.millisecondsSinceEpoch;
     return methodChannel.invokeMethod(
       'stopView',
       {
         'key': key,
         'attributes': {
           ...attributes,
-          DatadogPlatformAttributeKey.timestamp: timestamp,
+          DatadogPlatformAttributeKey.timestamp: timestampMs,
         }
       },
     );
@@ -91,27 +88,29 @@ class DdRumMethodChannel extends DdRumPlatform {
 
   @override
   Future<void> startResource(
+    DateTime timeStamp,
     String key,
     RumHttpMethod httpMethod,
     String url, [
     Map<String, Object?> attributes = const {},
   ]) {
-    final timestamp = timeProvider.nowMs();
+    final timestampMs = timeStamp.millisecondsSinceEpoch;
     return methodChannel.invokeMethod('startResource', {
       'key': key,
       'httpMethod': httpMethod.toString(),
       'url': url,
       'attributes': {
         ...attributes,
-        DatadogPlatformAttributeKey.timestamp: timestamp,
+        DatadogPlatformAttributeKey.timestamp: timestampMs,
       },
     });
   }
 
   @override
-  Future<void> stopResource(String key, int? statusCode, RumResourceType kind,
+  Future<void> stopResource(
+      DateTime timeStamp, String key, int? statusCode, RumResourceType kind,
       [int? size, Map<String, Object?> attributes = const {}]) {
-    final timestamp = timeProvider.nowMs();
+    final timestampMs = timeStamp.millisecondsSinceEpoch;
     return methodChannel.invokeMethod('stopResource', {
       'key': key,
       'statusCode': statusCode,
@@ -119,39 +118,42 @@ class DdRumMethodChannel extends DdRumPlatform {
       'size': size,
       'attributes': {
         ...attributes,
-        DatadogPlatformAttributeKey.timestamp: timestamp,
+        DatadogPlatformAttributeKey.timestamp: timestampMs,
       },
     });
   }
 
   @override
-  Future<void> stopResourceWithError(String key, Exception error,
+  Future<void> stopResourceWithError(
+      DateTime timeStamp, String key, Exception error,
       [Map<String, Object?> attributes = const {}]) {
-    return stopResourceWithErrorInfo(
-        key, error.toString(), error.runtimeType.toString(), attributes);
+    return stopResourceWithErrorInfo(timeStamp, key, error.toString(),
+        error.runtimeType.toString(), attributes);
   }
 
   @override
   Future<void> stopResourceWithErrorInfo(
+    DateTime timeStamp,
     String key,
     String message,
     String type, [
     Map<String, Object?> attributes = const {},
   ]) {
-    final timestamp = timeProvider.nowMs();
+    final timestampMs = timeStamp.millisecondsSinceEpoch;
     return methodChannel.invokeMethod('stopResourceWithError', {
       'key': key,
       'message': message,
       'type': type,
       'attributes': {
         ...attributes,
-        DatadogPlatformAttributeKey.timestamp: timestamp,
+        DatadogPlatformAttributeKey.timestamp: timestampMs,
       },
     });
   }
 
   @override
   Future<void> addError(
+    DateTime timeStamp,
     Object error,
     RumErrorSource source,
     StackTrace? stackTrace,
@@ -159,7 +161,7 @@ class DdRumMethodChannel extends DdRumPlatform {
     Map<String, Object?> attributes,
   ) {
     return addErrorInfo(
-        error.toString(), source, stackTrace, errorType, attributes);
+        timeStamp, error.toString(), source, stackTrace, errorType, attributes);
   }
 
   @override
@@ -171,12 +173,13 @@ class DdRumMethodChannel extends DdRumPlatform {
 
   @override
   Future<void> addErrorInfo(
+      DateTime timeStamp,
       String message,
       RumErrorSource source,
       StackTrace? stackTrace,
       String? errorType,
       Map<String, Object?> attributes) {
-    final timestamp = timeProvider.nowMs();
+    final timestampMs = timeStamp.millisecondsSinceEpoch;
     return methodChannel.invokeMethod('addError', {
       'message': message,
       'source': source.toString(),
@@ -184,49 +187,49 @@ class DdRumMethodChannel extends DdRumPlatform {
       'errorType': errorType,
       'attributes': {
         ...attributes,
-        DatadogPlatformAttributeKey.timestamp: timestamp,
+        DatadogPlatformAttributeKey.timestamp: timestampMs,
       },
     });
   }
 
   @override
-  Future<void> addAction(
-      RumActionType type, String? name, Map<String, Object?> attributes) {
-    final timestamp = timeProvider.nowMs();
+  Future<void> addAction(DateTime timeStamp, RumActionType type, String? name,
+      Map<String, Object?> attributes) {
+    final timestampMs = timeStamp.millisecondsSinceEpoch;
     return methodChannel.invokeMethod('addAction', {
       'type': type.toString(),
       'name': name,
       'attributes': {
         ...attributes,
-        DatadogPlatformAttributeKey.timestamp: timestamp,
+        DatadogPlatformAttributeKey.timestamp: timestampMs,
       },
     });
   }
 
   @override
-  Future<void> startAction(
-      RumActionType type, String name, Map<String, Object?> attributes) {
-    final timestamp = timeProvider.nowMs();
+  Future<void> startAction(DateTime timeStamp, RumActionType type, String name,
+      Map<String, Object?> attributes) {
+    final timestampMs = timeStamp.millisecondsSinceEpoch;
     return methodChannel.invokeMethod('startAction', {
       'type': type.toString(),
       'name': name,
       'attributes': {
         ...attributes,
-        DatadogPlatformAttributeKey.timestamp: timestamp,
+        DatadogPlatformAttributeKey.timestamp: timestampMs,
       },
     });
   }
 
   @override
-  Future<void> stopAction(
-      RumActionType type, String name, Map<String, Object?> attributes) {
-    final timestamp = timeProvider.nowMs();
+  Future<void> stopAction(DateTime timeStamp, RumActionType type, String name,
+      Map<String, Object?> attributes) {
+    final timestampMs = timeStamp.millisecondsSinceEpoch;
     return methodChannel.invokeMethod('stopAction', {
       'type': type.toString(),
       'name': name,
       'attributes': {
         ...attributes,
-        DatadogPlatformAttributeKey.timestamp: timestamp,
+        DatadogPlatformAttributeKey.timestamp: timestampMs,
       }
     });
   }
