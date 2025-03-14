@@ -731,7 +731,7 @@ class DatadogRumPluginTest {
         verify { mockResult.success(null) }
     }
 
-    @Test()
+    @Test
     fun `M call internal setInternalViewAttribute W setInternalViewAtttribute is called`(
         forge: Forge,
     ) {
