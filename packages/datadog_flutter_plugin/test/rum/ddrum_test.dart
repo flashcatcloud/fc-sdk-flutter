@@ -429,7 +429,7 @@ void main() {
       rum.timeProvider = mockTimeProvider;
     });
 
-    test('markFirstBuildComplete sets inv attribute', () {
+    test('markViewFirstBuildComplete sets inv attribute', () {
       // Given
       final startTime = DateTime.now();
       final actionTime = startTime.add(Duration(seconds: 1));
@@ -456,7 +456,7 @@ void main() {
           (fbcTime.difference(actionTime)).inNanoseconds));
     });
 
-    test('markFirstBuildComplete does not set inv attribute if missing', () {
+    test('markViewFirstBuildComplete does not set inv attribute if missing', () {
       // Given
       final startTime = DateTime.now();
       final startTime2 = startTime.add(Duration(seconds: 10));
