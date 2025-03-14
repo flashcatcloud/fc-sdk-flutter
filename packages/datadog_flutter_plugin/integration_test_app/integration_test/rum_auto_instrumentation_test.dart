@@ -72,6 +72,8 @@ void main() {
       expect(view1.viewEvents.last.flutterBuildTime, isNotNull);
       expect(view1.viewEvents.last.flutterRasterTime, isNotNull);
       expect(view1.viewEvents.last.performance?.fbc, isNotNull);
+      // Should not have INV as no interaction led here
+      expect(view1.viewEvents.last.inv, isNull);
 
       // Web doesn't support action tracking from Flutter
       var actionEvent = view1.actionEvents.last;
@@ -90,8 +92,13 @@ void main() {
       expect(view2.viewEvents.last.flutterRasterTime, isNotNull);
 
       // Second screen build time should delay
-      expect(view2.viewEvents.last.performance?.fbc,
-          greaterThan(const Duration(milliseconds: 10).inNanoseconds));
+      final firstBuildComplete = view2.viewEvents.last.performance?.fbc;
+      final tenMsInNs = const Duration(milliseconds: 10).inNanoseconds;
+      expect(firstBuildComplete, greaterThan(tenMsInNs));
+
+      // INV should be at least 10 milliseconds later, as the tap action also takes up 10 ms
+      expect(view2.viewEvents.last.inv,
+          greaterThan(firstBuildComplete! + tenMsInNs));
 
       // Web doesn't support action tracking from Flutter
       var actionEvent = view2.actionEvents[0];

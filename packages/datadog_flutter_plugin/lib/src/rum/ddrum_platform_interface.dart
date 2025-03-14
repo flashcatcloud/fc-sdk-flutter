@@ -26,22 +26,24 @@ abstract class DdRumPlatform extends PlatformInterface {
 
   Future<String?> getCurrentSessionId();
 
-  Future<void> startView(
-      String key, String name, Map<String, Object?> attributes);
-  Future<void> stopView(String key, Map<String, Object?> attributes);
-  Future<void> addTiming(String name);
+  Future<void> startView(DateTime timestamp, String key, String name,
+      Map<String, Object?> attributes);
+  Future<void> stopView(
+      DateTime timestamp, String key, Map<String, Object?> attributes);
+  Future<void> addTiming(DateTime timestamp, String name);
   Future<void> addViewLoadingTime(bool overwrite);
 
-  Future<void> startResource(String key, RumHttpMethod httpMethod, String url,
-      Map<String, Object?> attributes);
-  Future<void> stopResource(String key, int? statusCode, RumResourceType kind,
-      int? size, Map<String, Object?> attributes);
-  Future<void> stopResourceWithError(
-      String key, Exception error, Map<String, Object?> attributes);
-  Future<void> stopResourceWithErrorInfo(
-      String key, String message, String type, Map<String, Object?> attributes);
+  Future<void> startResource(DateTime timestamp, String key,
+      RumHttpMethod httpMethod, String url, Map<String, Object?> attributes);
+  Future<void> stopResource(DateTime timestamp, String key, int? statusCode,
+      RumResourceType kind, int? size, Map<String, Object?> attributes);
+  Future<void> stopResourceWithError(DateTime timestamp, String key,
+      Exception error, Map<String, Object?> attributes);
+  Future<void> stopResourceWithErrorInfo(DateTime timestamp, String key,
+      String message, String type, Map<String, Object?> attributes);
 
   Future<void> addError(
+    DateTime timestamp,
     Object error,
     RumErrorSource source,
     StackTrace? stackTrace,
@@ -49,6 +51,7 @@ abstract class DdRumPlatform extends PlatformInterface {
     Map<String, Object?> attributes,
   );
   Future<void> addErrorInfo(
+    DateTime timestamp,
     String message,
     RumErrorSource source,
     StackTrace? stackTrace,
@@ -56,12 +59,12 @@ abstract class DdRumPlatform extends PlatformInterface {
     Map<String, Object?> attributes,
   );
 
-  Future<void> addAction(
-      RumActionType type, String name, Map<String, Object?> attributes);
-  Future<void> startAction(
-      RumActionType type, String name, Map<String, Object?> attributes);
-  Future<void> stopAction(
-      RumActionType type, String name, Map<String, Object?> attributes);
+  Future<void> addAction(DateTime timestamp, RumActionType type, String name,
+      Map<String, Object?> attributes);
+  Future<void> startAction(DateTime timestamp, RumActionType type, String name,
+      Map<String, Object?> attributes);
+  Future<void> stopAction(DateTime timestamp, RumActionType type, String name,
+      Map<String, Object?> attributes);
 
   Future<void> addAttribute(String key, dynamic value);
   Future<void> removeAttribute(String key);

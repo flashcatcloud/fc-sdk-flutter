@@ -79,6 +79,7 @@ class DdRumWeb extends DdRumPlatform {
 
   @override
   Future<void> addError(
+    DateTime timestamp,
     Object error,
     RumErrorSource source,
     StackTrace? stackTrace,
@@ -100,6 +101,7 @@ class DdRumWeb extends DdRumPlatform {
 
   @override
   Future<void> addErrorInfo(
+    DateTime timestamp,
     String message,
     RumErrorSource source,
     StackTrace? stackTrace,
@@ -120,7 +122,7 @@ class DdRumWeb extends DdRumPlatform {
   }
 
   @override
-  Future<void> addTiming(String name) async {
+  Future<void> addTiming(DateTime timestamp, String name) async {
     DD_RUM?.addTiming(name);
   }
 
@@ -130,8 +132,8 @@ class DdRumWeb extends DdRumPlatform {
   }
 
   @override
-  Future<void> addAction(
-      RumActionType type, String name, Map<String, dynamic> attributes) async {
+  Future<void> addAction(DateTime timestamp, RumActionType type, String name,
+      Map<String, dynamic> attributes) async {
     DD_RUM?.addAction(name, attributesToJs(attributes, 'attributes'));
   }
 
@@ -141,49 +143,54 @@ class DdRumWeb extends DdRumPlatform {
   }
 
   @override
-  Future<void> startResource(String key, RumHttpMethod httpMethod, String url,
+  Future<void> startResource(
+      DateTime timestamp,
+      String key,
+      RumHttpMethod httpMethod,
+      String url,
       Map<String, dynamic> attributes) async {
     // NOOP
   }
 
   @override
-  Future<void> startAction(
-      RumActionType type, String name, Map<String, dynamic> attributes) async {
+  Future<void> startAction(DateTime timestamp, RumActionType type, String name,
+      Map<String, dynamic> attributes) async {
     // NOOP
   }
 
   @override
-  Future<void> startView(
-      String key, String name, Map<String, dynamic> attributes) async {
+  Future<void> startView(DateTime timestamp, String key, String name,
+      Map<String, dynamic> attributes) async {
     DD_RUM?.startView(name);
   }
 
   @override
-  Future<void> stopResource(String key, int? statusCode, RumResourceType kind,
-      int? size, Map<String, dynamic> attributes) async {
+  Future<void> stopResource(DateTime timestamp, String key, int? statusCode,
+      RumResourceType kind, int? size, Map<String, dynamic> attributes) async {
     // NOOP
   }
 
   @override
-  Future<void> stopResourceWithError(
-      String key, Exception error, Map<String, dynamic> attributes) async {
+  Future<void> stopResourceWithError(DateTime timestamp, String key,
+      Exception error, Map<String, dynamic> attributes) async {
     // NOOP
   }
 
   @override
-  Future<void> stopResourceWithErrorInfo(String key, String message,
-      String type, Map<String, dynamic> attributes) async {
+  Future<void> stopResourceWithErrorInfo(DateTime timestamp, String key,
+      String message, String type, Map<String, dynamic> attributes) async {
     // NOOP
   }
 
   @override
-  Future<void> stopAction(
-      RumActionType type, String name, Map<String, dynamic> attributes) async {
+  Future<void> stopAction(DateTime timestamp, RumActionType type, String name,
+      Map<String, dynamic> attributes) async {
     // NOOP
   }
 
   @override
-  Future<void> stopView(String key, Map<String, dynamic> attributes) async {
+  Future<void> stopView(
+      DateTime timestamp, String key, Map<String, dynamic> attributes) async {
     // NOOP
   }
 

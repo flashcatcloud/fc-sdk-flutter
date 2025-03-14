@@ -19,4 +19,7 @@ class DatadogRumPlatformAttributeKey {
 
   /// Internal attribute that specifies with the first build of a Flutter view is complete.
   static const firstBuildComplete = '_dd.performance.first_build_complete';
+
+  /// Internal view attribute that specifies the "Interaction To Next View" timing.
+  static const customInvValue = '_dd.view.custom_inv_value';
 }

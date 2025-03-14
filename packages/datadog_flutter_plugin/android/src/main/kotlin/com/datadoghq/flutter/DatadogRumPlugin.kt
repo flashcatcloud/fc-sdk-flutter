@@ -162,6 +162,7 @@ class DatadogRumPlugin : MethodChannel.MethodCallHandler {
                 configBuilder = configBuilder
                     .disableUserInteractionTracking()
                     .useViewTrackingStrategy(NoOpViewTrackingStrategy)
+                    .setLastInteractionIdentifier(null)
 
                 // Mapper initialization
                 configBuilder = attachEventMappers(encodedConfig, configBuilder)
@@ -455,8 +456,15 @@ class DatadogRumPlugin : MethodChannel.MethodCallHandler {
 
     private fun setInternalViewAttribute(call: MethodCall, result: Result) {
         val key = call.argument<String>(PARAM_KEY)
-        val value = call.argument<Any>(PARAM_VALUE)
+        var value = call.argument<Any>(PARAM_VALUE)
         if (key != null && value != null) {
+            // TODO(RUM-9062): This is a bit of a hack. Flutter will provide int values if the value
+            // fits in 32-bits, but we cast to Long in the Android SDK. We'll fix the issue in the Android
+            // SDK and remove this cast another time.
+            value = when (value) {
+                is Int -> value.toLong()
+                else -> value
+            }
             rum?._getInternal()?.setInternalViewAttribute(key, value)
             result.success(null)
         } else {
