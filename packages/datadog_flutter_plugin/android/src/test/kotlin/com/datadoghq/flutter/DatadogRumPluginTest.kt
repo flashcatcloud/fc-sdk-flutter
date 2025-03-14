@@ -10,22 +10,17 @@ import assertk.assertThat
 import assertk.assertions.isEqualTo
 import assertk.assertions.isNotNull
 import com.datadog.android.Datadog
-import com.datadog.android.log.Logs
-import com.datadog.android.log.LogsConfiguration
 import com.datadog.android.rum.Rum
 import com.datadog.android.rum.RumActionType
 import com.datadog.android.rum.RumConfiguration
 import com.datadog.android.rum.RumErrorSource
-import com.datadog.android.rum.RumMonitor
 import com.datadog.android.rum.RumPerformanceMetric
 import com.datadog.android.rum.RumResourceKind
-import com.datadog.android.rum._RumInternalProxy
 import com.datadog.android.rum.configuration.VitalsUpdateFrequency
 import com.datadog.android.rum.metric.networksettled.TimeBasedInitialResourceIdentifier
 import fr.xgouchet.elmyr.Forge
 import fr.xgouchet.elmyr.annotation.BoolForgery
 import fr.xgouchet.elmyr.annotation.FloatForgery
-import fr.xgouchet.elmyr.annotation.Forgery
 import fr.xgouchet.elmyr.annotation.IntForgery
 import fr.xgouchet.elmyr.annotation.LongForgery
 import fr.xgouchet.elmyr.annotation.StringForgery
@@ -44,7 +39,6 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.kotlin.mock
 import java.util.concurrent.TimeUnit
-import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
 @ExtendWith(ForgeExtension::class)
@@ -737,7 +731,7 @@ class DatadogRumPluginTest {
         verify { mockResult.success(null) }
     }
 
-    @Test
+    @Test()
     fun `M call internal setInternalViewAttribute W setInternalViewAtttribute is called`(
         forge: Forge,
     ) {
@@ -754,18 +748,22 @@ class DatadogRumPluginTest {
                 forge.aList { anAlphabeticalString() },
             ).associateBy { forge.anAlphabeticalString() }
         )
-        val call = MethodCall( "setInternalViewAttribute", mapOf(
-            "key" to key,
-            "value" to value,
-        ))
         val mockResult = mockk<MethodChannel.Result>()
         every { mockResult.success(any()) } returns Unit
 
         // WHEN
+        val call = MethodCall( "setInternalViewAttribute", mapOf(
+            "key" to key,
+            "value" to value,
+        ))
         plugin.onMethodCall(call, mockResult)
 
         // THEN
-        verify { monitorProxy.mockInternalProxy.setInternalViewAttribute(key, value) }
+        val expectedValue = when (value) {
+            is Int -> value.toLong()
+            else -> value
+        }
+        verify { monitorProxy.mockInternalProxy.setInternalViewAttribute(key, expectedValue) }
         verify { mockResult.success(null) }
     }
 

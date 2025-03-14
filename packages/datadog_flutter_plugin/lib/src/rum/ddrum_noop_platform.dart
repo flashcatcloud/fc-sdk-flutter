@@ -17,7 +17,7 @@ class DdNoOpRumPlatform extends DdRumPlatform {
 
   @override
   Future<void> addError(
-      DateTime timeStamp,
+      DateTime timestamp,
       Object error,
       RumErrorSource source,
       StackTrace? stackTrace,
@@ -28,7 +28,7 @@ class DdNoOpRumPlatform extends DdRumPlatform {
 
   @override
   Future<void> addErrorInfo(
-      DateTime timeStamp,
+      DateTime timestamp,
       String message,
       RumErrorSource source,
       StackTrace? stackTrace,
@@ -43,7 +43,7 @@ class DdNoOpRumPlatform extends DdRumPlatform {
   }
 
   @override
-  Future<void> addTiming(DateTime timeStamp, String name) {
+  Future<void> addTiming(DateTime timestamp, String name) {
     return Future.value();
   }
 
@@ -53,7 +53,7 @@ class DdNoOpRumPlatform extends DdRumPlatform {
   }
 
   @override
-  Future<void> addAction(DateTime timeStamp, RumActionType type, String name,
+  Future<void> addAction(DateTime timestamp, RumActionType type, String name,
       Map<String, Object?> attributes) {
     return Future.value();
   }
@@ -77,37 +77,37 @@ class DdNoOpRumPlatform extends DdRumPlatform {
   }
 
   @override
-  Future<void> startResource(DateTime timeStamp, String key,
+  Future<void> startResource(DateTime timestamp, String key,
       RumHttpMethod httpMethod, String url, Map<String, Object?> attributes) {
     return Future.value();
   }
 
   @override
-  Future<void> startAction(DateTime timeStamp, RumActionType type, String name,
+  Future<void> startAction(DateTime timestamp, RumActionType type, String name,
       Map<String, Object?> attributes) {
     return Future.value();
   }
 
   @override
-  Future<void> startView(DateTime timeStamp, String key, String name,
+  Future<void> startView(DateTime timestamp, String key, String name,
       Map<String, Object?> attributes) {
     return Future.value();
   }
 
   @override
-  Future<void> stopResource(DateTime timeStamp, String key, int? statusCode,
+  Future<void> stopResource(DateTime timestamp, String key, int? statusCode,
       RumResourceType kind, int? size, Map<String, Object?> attributes) {
     return Future.value();
   }
 
   @override
-  Future<void> stopResourceWithError(DateTime timeStamp, String key,
+  Future<void> stopResourceWithError(DateTime timestamp, String key,
       Exception error, Map<String, Object?> attributes) {
     return Future.value();
   }
 
   @override
-  Future<void> stopResourceWithErrorInfo(DateTime timeStamp, String key,
+  Future<void> stopResourceWithErrorInfo(DateTime timestamp, String key,
       String message, String type, Map<String, Object?> attributes) {
     return Future.value();
   }
@@ -116,14 +116,14 @@ class DdNoOpRumPlatform extends DdRumPlatform {
   Future<void> stopSession() => Future.value();
 
   @override
-  Future<void> stopAction(DateTime timeStamp, RumActionType type, String name,
+  Future<void> stopAction(DateTime timestamp, RumActionType type, String name,
       Map<String, Object?> attributes) {
     return Future.value();
   }
 
   @override
   Future<void> stopView(
-      DateTime timeStamp, String key, Map<String, Object?> attributes) {
+      DateTime timestamp, String key, Map<String, Object?> attributes) {
     return Future.value();
   }
 

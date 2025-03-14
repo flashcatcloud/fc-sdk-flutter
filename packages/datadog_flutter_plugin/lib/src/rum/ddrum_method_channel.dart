@@ -46,7 +46,7 @@ class DdRumMethodChannel extends DdRumPlatform {
   }
 
   @override
-  Future<void> addTiming(DateTime timeStamp, String name) {
+  Future<void> addTiming(DateTime timestamp, String name) {
     return methodChannel.invokeMethod(
       'addTiming',
       {'name': name},
@@ -54,9 +54,9 @@ class DdRumMethodChannel extends DdRumPlatform {
   }
 
   @override
-  Future<void> startView(DateTime timeStamp, String key, String name,
+  Future<void> startView(DateTime timestamp, String key, String name,
       Map<String, Object?> attributes) {
-    final timestampMs = timeStamp.millisecondsSinceEpoch;
+    final timestampMs = timestamp.millisecondsSinceEpoch;
     return methodChannel.invokeMethod(
       'startView',
       {
@@ -72,8 +72,8 @@ class DdRumMethodChannel extends DdRumPlatform {
 
   @override
   Future<void> stopView(
-      DateTime timeStamp, String key, Map<String, Object?> attributes) {
-    final timestampMs = timeStamp.millisecondsSinceEpoch;
+      DateTime timestamp, String key, Map<String, Object?> attributes) {
+    final timestampMs = timestamp.millisecondsSinceEpoch;
     return methodChannel.invokeMethod(
       'stopView',
       {
@@ -88,13 +88,13 @@ class DdRumMethodChannel extends DdRumPlatform {
 
   @override
   Future<void> startResource(
-    DateTime timeStamp,
+    DateTime timestamp,
     String key,
     RumHttpMethod httpMethod,
     String url, [
     Map<String, Object?> attributes = const {},
   ]) {
-    final timestampMs = timeStamp.millisecondsSinceEpoch;
+    final timestampMs = timestamp.millisecondsSinceEpoch;
     return methodChannel.invokeMethod('startResource', {
       'key': key,
       'httpMethod': httpMethod.toString(),
@@ -108,9 +108,9 @@ class DdRumMethodChannel extends DdRumPlatform {
 
   @override
   Future<void> stopResource(
-      DateTime timeStamp, String key, int? statusCode, RumResourceType kind,
+      DateTime timestamp, String key, int? statusCode, RumResourceType kind,
       [int? size, Map<String, Object?> attributes = const {}]) {
-    final timestampMs = timeStamp.millisecondsSinceEpoch;
+    final timestampMs = timestamp.millisecondsSinceEpoch;
     return methodChannel.invokeMethod('stopResource', {
       'key': key,
       'statusCode': statusCode,
@@ -125,21 +125,21 @@ class DdRumMethodChannel extends DdRumPlatform {
 
   @override
   Future<void> stopResourceWithError(
-      DateTime timeStamp, String key, Exception error,
+      DateTime timestamp, String key, Exception error,
       [Map<String, Object?> attributes = const {}]) {
-    return stopResourceWithErrorInfo(timeStamp, key, error.toString(),
+    return stopResourceWithErrorInfo(timestamp, key, error.toString(),
         error.runtimeType.toString(), attributes);
   }
 
   @override
   Future<void> stopResourceWithErrorInfo(
-    DateTime timeStamp,
+    DateTime timestamp,
     String key,
     String message,
     String type, [
     Map<String, Object?> attributes = const {},
   ]) {
-    final timestampMs = timeStamp.millisecondsSinceEpoch;
+    final timestampMs = timestamp.millisecondsSinceEpoch;
     return methodChannel.invokeMethod('stopResourceWithError', {
       'key': key,
       'message': message,
@@ -153,7 +153,7 @@ class DdRumMethodChannel extends DdRumPlatform {
 
   @override
   Future<void> addError(
-    DateTime timeStamp,
+    DateTime timestamp,
     Object error,
     RumErrorSource source,
     StackTrace? stackTrace,
@@ -161,7 +161,7 @@ class DdRumMethodChannel extends DdRumPlatform {
     Map<String, Object?> attributes,
   ) {
     return addErrorInfo(
-        timeStamp, error.toString(), source, stackTrace, errorType, attributes);
+        timestamp, error.toString(), source, stackTrace, errorType, attributes);
   }
 
   @override
@@ -173,13 +173,13 @@ class DdRumMethodChannel extends DdRumPlatform {
 
   @override
   Future<void> addErrorInfo(
-      DateTime timeStamp,
+      DateTime timestamp,
       String message,
       RumErrorSource source,
       StackTrace? stackTrace,
       String? errorType,
       Map<String, Object?> attributes) {
-    final timestampMs = timeStamp.millisecondsSinceEpoch;
+    final timestampMs = timestamp.millisecondsSinceEpoch;
     return methodChannel.invokeMethod('addError', {
       'message': message,
       'source': source.toString(),
@@ -193,9 +193,9 @@ class DdRumMethodChannel extends DdRumPlatform {
   }
 
   @override
-  Future<void> addAction(DateTime timeStamp, RumActionType type, String? name,
+  Future<void> addAction(DateTime timestamp, RumActionType type, String? name,
       Map<String, Object?> attributes) {
-    final timestampMs = timeStamp.millisecondsSinceEpoch;
+    final timestampMs = timestamp.millisecondsSinceEpoch;
     return methodChannel.invokeMethod('addAction', {
       'type': type.toString(),
       'name': name,
@@ -207,9 +207,9 @@ class DdRumMethodChannel extends DdRumPlatform {
   }
 
   @override
-  Future<void> startAction(DateTime timeStamp, RumActionType type, String name,
+  Future<void> startAction(DateTime timestamp, RumActionType type, String name,
       Map<String, Object?> attributes) {
-    final timestampMs = timeStamp.millisecondsSinceEpoch;
+    final timestampMs = timestamp.millisecondsSinceEpoch;
     return methodChannel.invokeMethod('startAction', {
       'type': type.toString(),
       'name': name,
@@ -221,9 +221,9 @@ class DdRumMethodChannel extends DdRumPlatform {
   }
 
   @override
-  Future<void> stopAction(DateTime timeStamp, RumActionType type, String name,
+  Future<void> stopAction(DateTime timestamp, RumActionType type, String name,
       Map<String, Object?> attributes) {
-    final timestampMs = timeStamp.millisecondsSinceEpoch;
+    final timestampMs = timestamp.millisecondsSinceEpoch;
     return methodChannel.invokeMethod('stopAction', {
       'type': type.toString(),
       'name': name,
