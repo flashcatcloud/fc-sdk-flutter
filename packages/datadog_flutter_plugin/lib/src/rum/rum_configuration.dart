@@ -156,6 +156,15 @@ class DatadogRumConfiguration {
   /// Defaults to disabled (`null`).
   double? appHangThreshold;
 
+  /// Enables collection of anonymous user id across sessions.
+  ///
+  /// When enabled, the SDK generates a unique, non-personal anonymous user ID that is persisted across
+  /// app launches. This ID will be attached to each RUM Session, allowing you to link sessions
+  /// originating from the same user/device without collecting personal data.
+  ///
+  /// Defaults to `true`.
+  bool trackAnonymousUser = true;
+
   /// The amount of time after a view starts where a Resource should be
   /// considered when calculating Time to Network-Settled (TNS). TNS will be
   /// calculated using all resources that start withing the specified threshold,
@@ -204,6 +213,7 @@ class DatadogRumConfiguration {
     this.reportFlutterPerformance = false,
     this.trackNonFatalAnrs,
     this.appHangThreshold,
+    this.trackAnonymousUser = true,
     this.initialResourceThreshold = 0.1,
     this.customEndpoint,
     this.telemetrySampleRate = 20.0,
@@ -228,6 +238,7 @@ class DatadogRumConfiguration {
       'reportFlutterPerformance': reportFlutterPerformance,
       'trackNonFatalAnrs': trackNonFatalAnrs,
       'appHangThreshold': appHangThreshold,
+      'trackAnonymousUser': trackAnonymousUser,
       'initialResourceThreshold': initialResourceThreshold,
       'customEndpoint': customEndpoint,
       'telemetrySampleRate': telemetrySampleRate,

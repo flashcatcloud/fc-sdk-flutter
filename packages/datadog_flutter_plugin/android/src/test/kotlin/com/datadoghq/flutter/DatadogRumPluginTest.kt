@@ -170,12 +170,14 @@ class DatadogRumPluginTest {
     ) {
         // GIVEN
         val trackNonFatalAnrs = forge.aNullable { forge.aBool() }
+        val trackAnonymousUser = forge.aBool()
         val attributes = forge.exhaustiveAttributes()
         val configArg = mapOf(
             "sessionSampleRate" to sessionSampleRate,
             "longTaskThreshold" to longTaskThreshold,
             "trackFrustrations" to trackFrustration,
             "trackNonFatalAnrs" to trackNonFatalAnrs,
+            "trackAnonymousUser" to trackAnonymousUser,
             "initialResourceThreshold" to initialResourceThreshold,
             "customEndpoint" to endpoint,
             "vitalsUpdateFrequency" to "VitalsFrequency.frequent",
@@ -198,6 +200,7 @@ class DatadogRumPluginTest {
             // If null, default shouldn't be changed. Tests are run on a version that enables ANR tracking by default
             assertThat(featureConfiguration.getPrivate("trackNonFatalAnrs")).isEqualTo(true)
         }
+        assertThat(featureConfiguration.getPrivate("trackAnonymousUser")).isEqualTo(trackAnonymousUser)
         val initialResourceIdentifier = featureConfiguration.getPrivate("initialResourceIdentifier") as? TimeBasedInitialResourceIdentifier
         assertThat(initialResourceIdentifier).isNotNull()
         // The threshold is converted to configured in milliseconds, but held in nanoseconds.
