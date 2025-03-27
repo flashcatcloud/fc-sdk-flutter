@@ -195,6 +195,17 @@ class DatadogRumPluginTests: XCTestCase {
         XCTAssertEqual(predicate.threshold, initialResourceThreshold)
     }
 
+    func testRumConfiguration_WithTrackAnonymousUser_IsSetCorrectly() {
+        let trackAnonymousUser = Bool.mockRandom()
+        let encoded: [String: Any?] = [
+            "applicationId": "fake-application-id",
+            "trackAnonymousUser": trackAnonymousUser
+        ]
+
+        let config = RUM.Configuration.init(fromEncoded: encoded)
+        XCTAssertEqual(config?.trackAnonymousUser, trackAnonymousUser)
+    }
+
     func testRepeatEnable_FromMethodChannelSameOptions_DoesNothing() {
         // Uninitialize plugin
         plugin?.inject(rum: nil)

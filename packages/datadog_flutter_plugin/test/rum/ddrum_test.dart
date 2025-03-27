@@ -98,6 +98,7 @@ void main() {
       vitalUpdateFrequency: vitalUpdateFrequency,
       trackNonFatalAnrs: false,
       appHangThreshold: 0.332,
+      trackAnonymousUser: false,
       initialResourceThreshold: 1.23,
       customEndpoint: customEndpoint,
     );
@@ -110,6 +111,7 @@ void main() {
     expect(encoded['trackFrustrations'], trackFrustrations);
     expect(encoded['vitalsUpdateFrequency'], vitalUpdateFrequency.toString());
     expect(encoded['trackNonFatalAnrs'], false);
+    expect(encoded['trackAnonymousUser'], false);
     expect(encoded['appHangThreshold'], 0.332);
     expect(encoded['customEndpoint'], customEndpoint);
     expect(encoded['initialResourceThreshold'], 1.23);
@@ -456,7 +458,8 @@ void main() {
           (fbcTime.difference(actionTime)).inNanoseconds));
     });
 
-    test('markViewFirstBuildComplete does not set inv attribute if missing', () {
+    test('markViewFirstBuildComplete does not set inv attribute if missing',
+        () {
       // Given
       final startTime = DateTime.now();
       final startTime2 = startTime.add(Duration(seconds: 10));
