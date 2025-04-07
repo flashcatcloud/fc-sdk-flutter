@@ -64,7 +64,7 @@ class BumpVersionCommand extends Command {
         }
         break;
     }
-    
+
     logger.info('🔀 Bumping version to $newVersion');
     return updateVersions(
         args.packageRoot, newVersion.toString(), logger, args.dryRun);
@@ -162,28 +162,38 @@ Future<bool> _updateReadmeVersions(CommandArguments args, Logger logger) async {
   return true;
 }
 
-Future<bool> _updateNativeSDKVersions(CommandArguments args, Logger logger) async {
-  final nativeSDKVersionsFile = File(path.join(args.packageRoot, 'NATIVE_SDK_VERSIONS.md'));
-  final newVersionEntry ='| ${args.version} | ${args.iOSRelease} | ${args.androidRelease} |';
+Future<bool> _updateNativeSDKVersions(
+    CommandArguments args, Logger logger) async {
+  final nativeSDKVersionsFile =
+      File(path.join(args.packageRoot, 'NATIVE_SDK_VERSIONS.md'));
+  final newVersionEntry =
+      '| ${args.version} | ${args.iOSRelease} | ${args.androidRelease} |';
   final header = '| Flutter | iOS SDK | Android SDK |';
   final separator = '|---------|---------|-------------|';
 
   if (!nativeSDKVersionsFile.existsSync()) {
-    logger.warning('⚠️ NATIVE_SDK_VERSIONS.md does not exist, creating it now.');
-    await nativeSDKVersionsFile.writeAsString('''$header\n$separator\n$newVersionEntry''');
+    logger
+        .warning('⚠️ NATIVE_SDK_VERSIONS.md does not exist, creating it now.');
+    await nativeSDKVersionsFile
+        .writeAsString('$header\n$separator\n$newVersionEntry');
     return true;
   }
 
-  final content = await nativeSDKVersionsFile.readAsString();
+  final lines = await nativeSDKVersionsFile.readAsLines();
+  for (final line in lines) {
+    if (!line.startsWith('|')) continue;
 
-  if (content.contains(newVersionEntry)) {
-    logger.info('✅ Version ${args.version} already exists in NATIVE_SDK_VERSIONS.md, skipping.');
-    return true;
+    final parts = line.split('|').map((s) => s.trim()).toList();
+    if (parts.length > 1 && parts[1] == args.version) {
+      logger.info(
+          '✅ Version ${args.version} already exists in NATIVE_SDK_VERSIONS.md, skipping.');
+      return true;
+    }
   }
 
   await transformFile(nativeSDKVersionsFile, logger, args.dryRun, (line) {
     if (line.startsWith('|-')) {
-      return'''$separator\n$newVersionEntry''';
+      return '$separator\n$newVersionEntry';
     }
 
     return line;
