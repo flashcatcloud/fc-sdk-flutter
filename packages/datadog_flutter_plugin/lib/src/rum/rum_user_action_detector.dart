@@ -34,9 +34,15 @@ class _ElementDescription {
   }
 
   bool betterThan(_ElementDescription? other) {
-    // Literally anything is better than GestureDetector
-    if (element.widget is GestureDetector && other != null) {
-      return false;
+    if (other == null) {
+      // Something is always better than nothing
+      return true;
+    }
+
+    // Literally anything is better than GestureDetector...
+    if (element.widget is GestureDetector) {
+      // ... except another GestureDetector
+      return other.element.widget is GestureDetector;
     }
 
     return true;

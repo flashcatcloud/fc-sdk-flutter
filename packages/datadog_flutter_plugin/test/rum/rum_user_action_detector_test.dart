@@ -221,6 +221,44 @@ void main() {
     verifyNoMoreInteractions(mockRum);
   });
 
+  testWidgets('nested tap gesture detector uses lowest in tree',
+      (tester) async {
+    final mockRum = MockDdRum();
+
+    final firstAnnotation = randomString();
+    final firstButtonText = randomString();
+    final secondButtonText = randomString();
+    final secondAnnotation = randomString();
+
+    await tester.pumpWidget(_buildSimpleApp(
+      mockRum,
+      RumUserActionAnnotation(
+        description: firstAnnotation,
+        child: GestureDetector(
+          onTap: () {},
+          child: Column(children: [
+            Text(firstButtonText),
+            RumUserActionAnnotation(
+              description: secondAnnotation,
+              child: GestureDetector(
+                onTap: () {},
+                child: Text(secondButtonText),
+              ),
+            ),
+          ]),
+        ),
+      ),
+    ));
+
+    final text = find.byWidgetPredicate(
+        (widget) => widget is Text && widget.data == secondButtonText);
+    await tester.tap(text);
+
+    verify(() => mockRum.addAction(
+        RumActionType.tap, 'GestureDetector($secondAnnotation)'));
+    verifyNoMoreInteractions(mockRum);
+  });
+
   testWidgets('tap button with annotation reports annotation over text',
       (tester) async {
     final mockRum = MockDdRum();
