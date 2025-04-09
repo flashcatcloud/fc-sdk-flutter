@@ -7,7 +7,7 @@
 * Upgrade gson to 2.12.1. See [#725](https://github.com/DataDog/dd-sdk-flutter/issues/725)
 * Upgrade Android projects to AGP 8.6.0.
 * Add custom "Interaction To Next View" metric for Flutter.
-* Add First Build Complete vital attribute.
+* Add "First Build Complete" vital attribute.
 * Fix cast exception when reporting long task duration.
 * Ignore warnings for stricter Dart analyzer.
 * Support configuration of TNS.
