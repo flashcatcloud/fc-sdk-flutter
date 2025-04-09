@@ -1,5 +1,37 @@
 # Changelog
 
+## 2.11.0
+
+* Fix an issue where nested gesture detectors would always use the topmost. See [#738](https://github.com/DataDog/dd-sdk-flutter/issues/738)
+* Add configuration option for anonymous user tracking.
+* Upgrade gson to 2.12.1. See [#725](https://github.com/DataDog/dd-sdk-flutter/issues/725)
+* Upgrade Android projects to AGP 8.6.0.
+* Add custom "Interaction To Next View" metric for Flutter.
+* Add First Build Complete vital attribute.
+* Fix cast exception when reporting long task duration.
+* Ignore warnings for stricter Dart analyzer.
+* Support configuration of TNS.
+* Use Flutter timestamps for RUM actions.
+* Support `InAppWebView`. See [#624](https://github.com/DataDog/dd-sdk-flutter/issues/624)
+* Allow `RumUserActionAnnotation` in subtrees.
+* Update iOS SDK to 2.25.0. For a full list of changes, see the [iOS Changelog](https://github.com/DataDog/dd-sdk-ios/blob/develop/CHANGELOG.md#2250--03-04-2025).
+  * Fix sporadic file overwrite during consent change, ensuring event data integrity.
+  * Fix memory leak in Session Replay where privacy overrides retained UIViews.
+  * Add `addAttributes` and `removeAttributes` APIs.
+  * Adds anonymous identifier configuration for RUM Sessions linking.
+  * Fix view drop in SwiftUI modal navigation.
+  * Calculate Hang rate and Hitch rate in RUM.
+* Update Android SDK to 2.20.0. For a full list of changes, see the [Android Changelog](https://github.com/DataDog/dd-sdk-android/blob/develop/CHANGELOG.md#2200--2025-04-07).
+  * Don't warn about missing views on `PerformanceMetric` events.  
+  * Add warning log when initializing the SDK outside of the main process.
+  * Implement the basic logic for `time-to-network-settle` view metric.
+  * Implement the basic logic for `interaction-to-next-view-metric`.
+  * Fix `_dd.rule_psr` attribute calculation for RUM.
+  * Improve `updateFeatureContext` performances.
+  * RUM: Avoid logging initial `null` `viewLoadingTime` on first call to `addViewLoadingTime`.
+  * Support Flutter's FBC and custom INV values.
+  * Add missing builder function for anonymous user tracking.
+
 ## 2.10.2
 
 * Add missing `AP1` support to Flutter Web.
