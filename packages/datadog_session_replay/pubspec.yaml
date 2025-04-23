@@ -1,0 +1,33 @@
+name: datadog_session_replay
+description: "Support for Flutter Session Replay in Datadog"
+version: 0.1.0
+homepage: https://datadoghq.com
+
+environment:
+  sdk: ^3.7.2
+  flutter: '>=3.3.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_web_plugins:
+    sdk: flutter
+  web: ^1.0.0
+  plugin_platform_interface: ^2.0.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  plugin:
+    platforms:
+      android:
+        package: com.example.datadog_session_replay
+        pluginClass: DatadogSessionReplayPlugin
+      ios:
+        pluginClass: DatadogSessionReplayPlugin
+      web:
+        pluginClass: DatadogSessionReplayWeb
+        fileName: datadog_session_replay_web.dart
