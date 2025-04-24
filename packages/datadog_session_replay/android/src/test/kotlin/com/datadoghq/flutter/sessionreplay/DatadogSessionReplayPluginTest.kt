@@ -3,6 +3,11 @@
 // Copyright 2025-Present Datadog, Inc.
 package com.datadoghq.flutter.sessionreplay
 
+import org.junit.jupiter.api.Test
+
 internal class DatadogSessionReplayPluginTest {
-  
+    @Test
+    fun `Passing Placeholder`() {
+        assert(true)
+    }
 }

@@ -10,18 +10,16 @@ import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
 
 class DatadogSessionReplayPlugin : FlutterPlugin, MethodCallHandler {
-  private lateinit var channel : MethodChannel
+    private lateinit var channel: MethodChannel
 
-  override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
-    channel = MethodChannel(flutterPluginBinding.binaryMessenger, "datadog_session_replay")
-    channel.setMethodCallHandler(this)
-  }
+    override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
+        channel = MethodChannel(flutterPluginBinding.binaryMessenger, "datadog_session_replay")
+        channel.setMethodCallHandler(this)
+    }
 
-  override fun onMethodCall(call: MethodCall, result: Result) {
-  
-  }
+    override fun onMethodCall(call: MethodCall, result: Result) {}
 
-  override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
-    channel.setMethodCallHandler(null)
-  }
+    override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
+        channel.setMethodCallHandler(null)
+    }
 }
