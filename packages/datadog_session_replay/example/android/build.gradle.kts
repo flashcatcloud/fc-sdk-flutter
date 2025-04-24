@@ -1,3 +1,16 @@
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+        maven("https://plugins.gradle.org/m2/")
+    }
+
+    dependencies {
+        classpath("org.jlleitschuh.gradle:ktlint-gradle:11.6.0")
+        classpath("io.gitlab.arturbosch.detekt:detekt-gradle-plugin:1.19.0")
+    }
+}
+
 allprojects {
     repositories {
         google()
@@ -11,6 +24,9 @@ rootProject.layout.buildDirectory.value(newBuildDir)
 subprojects {
     val newSubprojectBuildDir: Directory = newBuildDir.dir(project.name)
     project.layout.buildDirectory.value(newSubprojectBuildDir)
+
+    apply(from = "${project.rootDir}/buildscripts/ktlint.gradle")
+    apply(from = "${project.rootDir}/buildscripts/detekt.gradle")
 }
 subprojects {
     project.evaluationDependsOn(":app")

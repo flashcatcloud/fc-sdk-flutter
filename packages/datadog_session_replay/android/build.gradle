@@ -1,4 +1,4 @@
-group = "com.example.datadog_session_replay"
+group = "com.datadoghq.datadog_session_replay"
 version = "1.0-SNAPSHOT"
 
 buildscript {
@@ -25,7 +25,7 @@ apply plugin: "com.android.library"
 apply plugin: "kotlin-android"
 
 android {
-    namespace = "com.example.datadog_session_replay"
+    namespace = "com.datadoghq.datadog_session_replay"
 
     compileSdk = 35
 

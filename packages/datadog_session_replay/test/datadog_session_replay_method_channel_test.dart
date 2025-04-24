@@ -12,12 +12,14 @@ void main() {
   // ignore: unused_local_variable
   MethodChannelDatadogSessionReplay platform =
       MethodChannelDatadogSessionReplay();
-  const MethodChannel channel = MethodChannel('datadog_session_replay');
+  const MethodChannel channel = MethodChannel(
+    'datadog_sdk_flutter.session_replay',
+  );
 
   setUp(() {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
-          return '42';
+          return null;
         });
   });
 

@@ -5,13 +5,13 @@
 Pod::Spec.new do |s|
   s.name             = 'datadog_flutter_plugin'
   s.version          = '0.0.1'
-  s.summary          = 'A new flutter plugin project.'
+  s.summary          = 'Instrument your application with Datadog.'
   s.description      = <<-DESC
-A new flutter plugin project.
+Instrument your application with Datadog.
                        DESC
-  s.homepage         = 'http://example.com'
+  s.homepage         = 'https://datadoghq.com'
   s.license          = { :file => '../LICENSE' }
-  s.author           = { 'Your Company' => 'email@example.com' }
+  s.author           = { 'Datadog' => 'info@datadoghq.com' }
   s.source           = { :path => '.' }
   s.source_files = 'Classes/**/*'
   s.static_framework = true

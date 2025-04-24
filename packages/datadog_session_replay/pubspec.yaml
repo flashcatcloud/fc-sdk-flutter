@@ -24,10 +24,10 @@ flutter:
   plugin:
     platforms:
       android:
-        package: com.example.datadog_session_replay
+        package: com.datadoghq.flutter.sessionreplay
         pluginClass: DatadogSessionReplayPlugin
       ios:
         pluginClass: DatadogSessionReplayPlugin
       web:
         pluginClass: DatadogSessionReplayWeb
-        fileName: datadog_session_replay_web.dart
+        fileName: src/datadog_session_replay_web.dart
