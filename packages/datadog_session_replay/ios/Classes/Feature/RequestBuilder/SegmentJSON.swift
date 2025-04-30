@@ -8,6 +8,7 @@ import Foundation
 // NOTE: This code is pulled from dd-sdk-ios
 
 internal struct SegmentJSON {
+    // swiftlint:disable line_length
     enum Constants {
         /// The `timestamp` is common to all records.
         /// see. https://github.com/DataDog/rum-events-format/blob/master/schemas/session-replay/common/_common-record-schema.json#L9
@@ -21,6 +22,7 @@ internal struct SegmentJSON {
         /// see. https://github.com/DataDog/rum-events-format/blob/master/schemas/session-replay/mobile/full-snapshot-record-schema.json#L14L19
         static let nativeFullsnapshotValue = 10
     }
+    // swiftlint:enable line_length
 
     enum CodingKeys: String, CodingKey {
         case applicationID = "application"

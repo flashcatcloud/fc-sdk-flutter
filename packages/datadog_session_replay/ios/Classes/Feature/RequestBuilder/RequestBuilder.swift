@@ -6,7 +6,7 @@ import Foundation
 import DatadogInternal
 
 internal struct RequestBuilder: FeatureRequestBuilder {
-    private static let newlineByte = "\n".data(using: .utf8)! // swiftlint:disable:this force_unwrapping
+    private static let newlineByte = Data("\n".utf8)
 
     /// Custom URL for uploading data to.
     let customUploadURL: URL?
@@ -15,7 +15,11 @@ internal struct RequestBuilder: FeatureRequestBuilder {
     /// Builds multipart form for request's body.
     var multipartBuilder: MultipartFormDataBuilder = MultipartFormData()
 
-    func request(for events: [Event], with context: DatadogContext, execution: DatadogInternal.ExecutionContext) throws -> URLRequest {
+    func request(
+        for events: [Event],
+        with context: DatadogContext,
+        execution: DatadogInternal.ExecutionContext
+    ) throws -> URLRequest {
         let source = context.source
 
         // If we can't decode `events: [Data]` there is no way to recover, so we throw an
@@ -100,6 +104,7 @@ internal struct RequestBuilder: FeatureRequestBuilder {
     }
 }
 
+// swiftlint:disable nesting
 internal struct Metadata: Codable {
     let application: Application
     let end: Int64
@@ -114,15 +119,15 @@ internal struct Metadata: Codable {
     let compressedSegmentSize: Int
 
     enum CodingKeys: String, CodingKey {
-        case application = "application"
-        case end = "end"
+        case application
+        case end
         case hasFullSnapshot = "has_full_snapshot"
         case indexInView = "index_in_view"
         case recordsCount = "records_count"
-        case session = "session"
-        case source = "source"
-        case start = "start"
-        case view = "view"
+        case session
+        case source
+        case start
+        case view
         case rawSegmentSize = "raw_segment_size"
         case compressedSegmentSize = "compressed_segment_size"
     }
@@ -132,7 +137,7 @@ internal struct Metadata: Codable {
         public let id: String
 
         enum CodingKeys: String, CodingKey {
-            case id = "id"
+            case id
         }
     }
 
@@ -142,7 +147,7 @@ internal struct Metadata: Codable {
         public let id: String
 
         enum CodingKeys: String, CodingKey {
-            case id = "id"
+            case id
         }
     }
 
@@ -151,7 +156,8 @@ internal struct Metadata: Codable {
         public let id: String
 
         enum CodingKeys: String, CodingKey {
-            case id = "id"
+            case id
         }
     }
 }
+// swiftlint:enable nesting

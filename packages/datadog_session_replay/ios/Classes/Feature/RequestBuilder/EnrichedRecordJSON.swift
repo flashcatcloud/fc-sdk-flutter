@@ -9,7 +9,7 @@ internal typealias JSONObject = [String: Any?]
 
 internal struct RecordWrapper: Codable {
     enum CodingKeys: String, CodingKey {
-        case recordJson = "recordJson"
+        case recordJson
     }
 
     let recordJson: String
@@ -78,8 +78,11 @@ private func read<T>(codingKey: EnrichedRecordJSON.CodingKeys, from object: JSON
 }
 
 /// An exception thrown by the SDK.
-/// It is always handled by SDK (keeps it functional) and never passed to the user unless SDK verbosity is configured (then it might be printed in debugger console).
-/// `InternalError` might be thrown due to programmer error (API misuse) or SDK internal inconsistency or external issues (e.g.  I/O errors).
+///
+/// It is always handled by SDK (keeps it functional) and never passed to the user unless SDK verbosity is configured
+/// (then it might be printed in debugger console). `InternalError` might be thrown due to programmer error (API misuse)
+/// or SDK internal inconsistency or external issues (e.g.  I/O errors).
+///
 /// The SDK should always recover from these failures (if it can not, `FatalError` should be used).
 internal struct InternalError: Error, CustomStringConvertible {
     let description: String

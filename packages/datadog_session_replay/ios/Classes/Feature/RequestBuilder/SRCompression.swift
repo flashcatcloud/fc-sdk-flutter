@@ -19,7 +19,8 @@ internal struct SRCompression {
         return try zcompress(
             data: data,
             level: 6,
-            // To ensure zlib has enough size in its buffer, we allocate chunk size for worst-case scenario (compression of 1 byte):
+            // To ensure zlib has enough size in its buffer, we allocate chunk size for worst-case scenario
+            // (compression of 1 byte):
             //
             // > Ref.: https://github.com/madler/zlib/blob/04f42ceca40f73e2978b50e93806c2a18c1281fc/compress.c#L15
             // > destination buffer (...) must be at least 0.1% larger than sourceLen plus 12 bytes
@@ -29,9 +30,9 @@ internal struct SRCompression {
 
     private static func zcompress(data: Data, level: Int, chunk: Int) throws -> Data {
         // z_streamp->next_in requires mutable bytes
-        var m_data = data
+        var mutableData = data
 
-        return try m_data.withUnsafeMutableBytes {
+        return try mutableData.withUnsafeMutableBytes {
             guard let ptr = $0.bindMemory(to: Bytef.self).baseAddress else {
                 throw InternalError(description: "zlib compress: failed to bind data memory")
             }
@@ -42,12 +43,14 @@ internal struct SRCompression {
             let stream = z_streamp.allocate(capacity: 1)
             defer { stream.deallocate() }
 
+            // swiftlint:disable line_length
             // Configure initial state of zlib:
             // - Setting `Z_NULL` for memory allocation routines means that zlib will use its default implementations.
             // - This mutable state is shared between our code and zlib. In later do / while iterations zlib will leverage
             // it to empower `deflate()` calls and walk through original `data` with `next_in` and `avail_in`.
             // - A good explanation of how to use `z_stream`: https://zlib.net/zlib_how.html
             // - A practical explanation of different ZLIB APIs: https://github.com/madler/zlib/blob/cacf7f1d4e3d44d871b605da3b647f07d718623f/zlib.h
+            // swiftlint:enable line_length
             stream.pointee.next_in = ptr // pointer to next input byte
             stream.pointee.avail_in = uInt(data.count) // number of bytes available at next_in
             stream.pointee.total_out = 0 // total number of bytes output so far
@@ -59,10 +62,11 @@ internal struct SRCompression {
             defer { deflateEnd(stream) } // free the allocated zlib state
 
             guard result == Z_OK else {
+                // swiftlint:disable:next line_length
                 throw InternalError(description: "zlib deflateInit_() error: \(zerror(result)) when compressing data of \(data.count) bytes")
             }
 
-            var c_data = Data()
+            var cData = Data()
             repeat {
                 stream.pointee.next_out = buffer
                 stream.pointee.avail_out = uInt(chunk)
@@ -71,14 +75,15 @@ internal struct SRCompression {
                 result = deflate(stream, flush)
 
                 let count = chunk - Int(stream.pointee.avail_out)
-                c_data.append(buffer, count: count)
+                cData.append(buffer, count: count)
             } while result == Z_OK
 
             guard result == Z_STREAM_END else {
+                // swiftlint:disable:next line_length
                 throw InternalError(description: "zlib deflate() error: \(zerror(result)) when compressing data of \(data.count) bytes")
             }
 
-            return c_data
+            return cData
         }
     }
 
