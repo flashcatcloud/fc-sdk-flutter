@@ -11,7 +11,8 @@ class FlutterSessionReplayFeature: DatadogRemoteFeature {
     let requestBuilder: DatadogInternal.FeatureRequestBuilder
     let messageReceiver: DatadogInternal.FeatureMessageReceiver
 
-    private weak var core: DatadogCoreProtocol?
+    private var core: DatadogCoreProtocol?
+    private var featureScope: FeatureScope?
 
     private var recordCountByViewId: [String: Int] = [:]
 
@@ -20,13 +21,13 @@ class FlutterSessionReplayFeature: DatadogRemoteFeature {
         configuration: FlutterSessionReplay.Configuration
     ) throws {
         self.core = core
+        self.featureScope = core.scope(for: FlutterSessionReplayFeature.self)
 
         self.requestBuilder = RequestBuilder(
             customUploadURL: configuration.customEndpoint,
             telemetry: core.telemetry
         )
 
-        self.core = core
         let contextReciever = RUMContextReceiver()
         if let onContextChanged = configuration.onContextChanged {
             contextReciever.observe(notify: { context in
@@ -47,7 +48,7 @@ class FlutterSessionReplayFeature: DatadogRemoteFeature {
 
     func writeSegment(segment: String) {
         let wrapper = RecordWrapper(recordJson: segment)
-        core?.scope(for: FlutterSessionReplayFeature.self).eventWriteContext(bypassConsent: true) { _, writer in
+        featureScope?.eventWriteContext(bypassConsent: true) { _, writer in
             writer.write(value: wrapper)
         }
     }

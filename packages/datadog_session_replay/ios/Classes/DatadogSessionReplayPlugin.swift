@@ -33,6 +33,8 @@ public class DatadogSessionReplayPlugin: NSObject, FlutterPlugin {
             setHasReplay(arguments: arguments, result: result)
         case "setRecordCount":
             setRecordCount(arguments: arguments, result: result)
+        case "writeSegment":
+            writeSegment(arguments: arguments, result: result)
         default:
             result(FlutterMethodNotImplemented)
         }
@@ -68,7 +70,6 @@ public class DatadogSessionReplayPlugin: NSObject, FlutterPlugin {
         feature?.setHasReplay(hasReplay)
 
         result(nil)
-
     }
 
     func setRecordCount(arguments: [String: Any?], result: @escaping FlutterResult) {
@@ -79,6 +80,17 @@ public class DatadogSessionReplayPlugin: NSObject, FlutterPlugin {
         }
 
         feature?.setRecordCount(for: viewId, count: count)
+
+        result(nil)
+    }
+
+    func writeSegment(arguments: [String: Any?], result: @escaping FlutterResult) {
+        guard let segmentJson = arguments["segment"] as? String else {
+            result(FlutterError.missingParameter(methodName: "writeSegment"))
+            return
+        }
+
+        feature?.writeSegment(segment: segmentJson)
 
         result(nil)
     }

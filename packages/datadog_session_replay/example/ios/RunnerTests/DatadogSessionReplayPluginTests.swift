@@ -162,6 +162,7 @@ class SessionReplayPluginTests {
 
     @Test
     func setsContext_WhenSetRecordCountMethodCall() throws {
+        // Given
         let plugin = DatadogSessionReplayPlugin(channel: FlutterMethodChannelMock())
         let expectedValue: Int = .mockRandom()
         let expectedViewId: String = .mockRandom()
@@ -214,5 +215,29 @@ class SessionReplayPluginTests {
                 #expect(argument["viewServerTimeOffset"] as? TimeInterval == expectedRumContext.viewServerTimeOffset)
             }
         }
+    }
+
+    @Test
+    func writesSegment_WhenWriteSegment() throws {
+        // Given
+        let plugin = DatadogSessionReplayPlugin(channel: FlutterMethodChannelMock())
+        let segment: String = .mockRandom(length: 100)
+        let arguments: [String: Any] = [
+            "segment": segment
+        ]
+        let methodCall = FlutterMethodCall(methodName: "writeSegment", arguments: arguments)
+
+        // When
+        plugin.enable(configuration: .init())
+        var status: ResultStatus = .notCalled
+        plugin.handle(methodCall) { result in
+            status = .called(value: result)
+        }
+
+        // Then
+        #expect(status == .called(value: nil))
+        #expect(mockCore.writer.events.count == 1)
+        let recordEvent = try #require(mockCore.writer.events[0] as? RecordWrapper)
+        #expect(recordEvent.recordJson == segment)
     }
 }

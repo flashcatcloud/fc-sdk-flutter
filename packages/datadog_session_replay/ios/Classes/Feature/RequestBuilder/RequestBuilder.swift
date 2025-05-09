@@ -24,20 +24,15 @@ internal struct RequestBuilder: FeatureRequestBuilder {
 
         // If we can't decode `events: [Data]` there is no way to recover, so we throw an
         // error to let the core delete the batch:
-        do {
-            let decoder = JSONDecoder()
-            let wrappers: [RecordWrapper] = try events.compactMap {
-                try decoder.decode(RecordWrapper.self, from: $0.data)
-            }
-            let segments = try wrappers.map { try $0.extractEnrichedRecord() }
-                .map { try SegmentJSON($0, source: source) }
-                .merge()
-
-            return try createRequest(segments: segments, context: context)
-        } catch let error {
-            print("Error \(error)")
-            throw error
+        let decoder = JSONDecoder()
+        let wrappers: [RecordWrapper] = try events.compactMap {
+            try decoder.decode(RecordWrapper.self, from: $0.data)
         }
+        let segments = try wrappers.map { try $0.extractEnrichedRecord() }
+            .map { try SegmentJSON($0, source: source) }
+            .merge()
+
+        return try createRequest(segments: segments, context: context)        
     }
 
     private func createRequest(segments: [SegmentJSON], context: DatadogContext) throws -> URLRequest {
