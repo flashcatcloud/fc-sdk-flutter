@@ -2,6 +2,7 @@ name: datadog_session_replay
 description: "Support for Flutter Session Replay in Datadog"
 version: 0.1.0
 homepage: https://datadoghq.com
+repository: https://github.com/DataDog/dd-sdk-flutter
 
 environment:
   sdk: ^3.7.2
@@ -14,6 +15,7 @@ dependencies:
     sdk: flutter
   web: ^1.0.0
   plugin_platform_interface: ^2.0.2
+  datadog_flutter_plugin: ^2.11.0
 
 dev_dependencies:
   flutter_test:
