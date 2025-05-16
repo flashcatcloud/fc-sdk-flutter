@@ -45,10 +45,10 @@ class DatadogContextForgeryFactory : ForgeryFactory<DatadogContext> {
                     forge.aWhitespaceString(),
                     null
                 ),
-                carrierId = forge.aNullable { forge.aLong(0, 10000) },
-                upKbps = forge.aNullable { forge.aLong(1, Long.MAX_VALUE) },
-                downKbps = forge.aNullable { forge.aLong(1, Long.MAX_VALUE) },
-                strength = forge.aNullable { forge.aLong(-100, -30) }, // dBm for wifi signal
+                carrierId = forge.aNullable { aLong(0, 10000) },
+                upKbps = forge.aNullable { aLong(1, Long.MAX_VALUE) },
+                downKbps = forge.aNullable { aLong(1, Long.MAX_VALUE) },
+                strength = forge.aNullable { aLong(-100, -30) }, // dBm for wifi signal
                 cellularTechnology = forge.aNullable { anAlphabeticalString() }
             ),
             deviceInfo = DeviceInfo(
@@ -61,15 +61,15 @@ class DatadogContextForgeryFactory : ForgeryFactory<DatadogContext> {
                 osVersion = forge.aString(),
                 osMajorVersion = forge.aString(),
                 architecture = forge.aString(),
-                numberOfDisplays = forge.aNullable { forge.anInt() }
+                numberOfDisplays = forge.aNullable {anInt() }
             ),
             userInfo = UserInfo(
                 id = forge.aNullable { anHexadecimalString() },
                 name = forge.aNullable {
-                    forge.aStringMatching("[A-Z][a-z]+ [A-Z]\\. [A-Z][a-z]+")
+                    aStringMatching("[A-Z][a-z]+ [A-Z]\\. [A-Z][a-z]+")
                 },
                 email = forge.aNullable {
-                    forge.aStringMatching("[a-z]+\\.[a-z]+@[a-z]+\\.[a-z]{3}")
+                    aStringMatching("[a-z]+\\.[a-z]+@[a-z]+\\.[a-z]{3}")
                 },
                 additionalProperties = mapOf()
             ),

@@ -30,7 +30,7 @@ internal fun JsonElement.safeGetAsJsonObject(internalLogger: InternalLogger): Js
             InternalLogger.Target.TELEMETRY,
             {
                 BROKEN_JSON_ERROR_MESSAGE_FORMAT.format(
-                    Locale.ENGLISH,
+                    Locale.US,
                     this.toString(),
                     JSON_OBJECT_TYPE
                 )
@@ -50,7 +50,7 @@ internal fun JsonPrimitive.safeGetAsLong(internalLogger: InternalLogger): Long? 
             InternalLogger.Target.TELEMETRY,
             {
                 BROKEN_JSON_ERROR_MESSAGE_FORMAT.format(
-                    Locale.ENGLISH,
+                    Locale.US,
                     this.toString(),
                     JSON_PRIMITIVE_TYPE
                 )
@@ -71,7 +71,7 @@ internal fun JsonElement.safeGetAsJsonArray(internalLogger: InternalLogger): Jso
             InternalLogger.Target.TELEMETRY,
             {
                 BROKEN_JSON_ERROR_MESSAGE_FORMAT.format(
-                    Locale.ENGLISH,
+                    Locale.US,
                     this.toString(),
                     JSON_ARRAY_TYPE
                 )

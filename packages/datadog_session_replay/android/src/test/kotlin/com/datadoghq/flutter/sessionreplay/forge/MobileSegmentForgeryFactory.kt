@@ -17,7 +17,7 @@ internal class MobileSegmentForgeryFactory : ForgeryFactory<MobileSegment> {
     override fun getForgery(forge: Forge): MobileSegment {
         val fakeRecords = JsonArray()
         forge.aList(size = forge.anInt(min = 1, max = 5)) {
-            forge.getForgery<JsonObject>()
+            getForgery<JsonObject>()
         }.forEach {
             fakeRecords.add(it)
         }
@@ -28,8 +28,8 @@ internal class MobileSegmentForgeryFactory : ForgeryFactory<MobileSegment> {
             start = forge.aPositiveLong(),
             end = forge.aPositiveLong(),
             recordsCount = forge.aPositiveLong(),
-            indexInView = forge.aNullable { forge.aPositiveLong() },
-            hasFullSnapshot = forge.aNullable { forge.aBool() },
+            indexInView = forge.aNullable { aPositiveLong() },
+            hasFullSnapshot = forge.aNullable { aBool() },
             source = forge.aString(),
             records = fakeRecords
         )
