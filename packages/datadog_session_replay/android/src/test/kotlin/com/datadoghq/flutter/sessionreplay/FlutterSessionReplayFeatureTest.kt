@@ -21,19 +21,12 @@ import io.mockk.every
 import io.mockk.invoke
 import io.mockk.mockk
 import io.mockk.verify
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 
 @ExtendWith(ForgeExtension::class)
 internal class FlutterSessionReplayFeatureTest {
-    lateinit var mockCore: FeatureSdkCore
-    lateinit var feature: FlutterSessionReplayFeature
-
-    @BeforeEach
-    fun beforeEach() {
-        mockCore = mockk(relaxed = true)
-    }
+    var mockCore: FeatureSdkCore = mockk(relaxed = true)
 
     @Test
     fun `M call context changed callback W onContextUpdate`(
@@ -45,7 +38,7 @@ internal class FlutterSessionReplayFeatureTest {
         // Given
         val onContextChanged = mockk<(Map<String, Any?>) -> Unit>(relaxed = true)
         val configuration = FlutterSessionReplay.Configuration()
-        feature = FlutterSessionReplayFeature(
+        val feature = FlutterSessionReplayFeature(
             mockCore,
             onContextChanged,
             configuration.customEndpointUrl
@@ -78,7 +71,7 @@ internal class FlutterSessionReplayFeatureTest {
         // Given
         val onContextChanged = mockk<(Map<String, Any?>) -> Unit>(relaxed = true)
         val configuration = FlutterSessionReplay.Configuration()
-        feature = FlutterSessionReplayFeature(
+        val feature = FlutterSessionReplayFeature(
             mockCore,
             onContextChanged,
             configuration.customEndpointUrl
@@ -111,7 +104,7 @@ internal class FlutterSessionReplayFeatureTest {
         // Given
         val onContextChanged = mockk<(Map<String, Any?>) -> Unit>(relaxed = true)
         val configuration = FlutterSessionReplay.Configuration()
-        feature = FlutterSessionReplayFeature(
+        val feature = FlutterSessionReplayFeature(
             mockCore,
             onContextChanged,
             configuration.customEndpointUrl

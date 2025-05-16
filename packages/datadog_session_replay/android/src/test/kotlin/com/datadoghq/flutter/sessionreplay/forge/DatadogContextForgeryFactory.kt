@@ -61,7 +61,7 @@ class DatadogContextForgeryFactory : ForgeryFactory<DatadogContext> {
                 osVersion = forge.aString(),
                 osMajorVersion = forge.aString(),
                 architecture = forge.aString(),
-                numberOfDisplays = forge.aNullable {anInt() }
+                numberOfDisplays = forge.aNullable { anInt() }
             ),
             userInfo = UserInfo(
                 id = forge.aNullable { anHexadecimalString() },

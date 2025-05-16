@@ -49,7 +49,7 @@ internal class DatadogSessionReplayPluginTest {
     }
 
     @Test
-    fun `M return NotImplemented W methodCall { unknown }`() {
+    fun `M return NotImplemented W onMethodCall { unknown }`() {
         // Given
         val plugin = DatadogSessionReplayPlugin()
         val result = mockk<MethodChannel.Result>(relaxed = true)
@@ -63,7 +63,7 @@ internal class DatadogSessionReplayPluginTest {
     }
 
     @Test
-    fun `M enable feature W enable methodCall`() {
+    fun `M enable feature W enable onMethodCall`() {
         // Given
         val plugin = DatadogSessionReplayPlugin()
         val result = mockk<MethodChannel.Result>(relaxed = true)
@@ -89,7 +89,7 @@ internal class DatadogSessionReplayPluginTest {
     }
 
     @Test
-    fun `M return error W enable methodCall { missing configuration }`() {
+    fun `M return error W enable onMethodCall { missing configuration }`() {
         // Given
         val plugin = DatadogSessionReplayPlugin()
         val result = mockk<MethodChannel.Result>(relaxed = true)
@@ -110,7 +110,7 @@ internal class DatadogSessionReplayPluginTest {
     }
 
     @Test
-    fun `M set context W setHasReplay methodCall`(
+    fun `M set context W setHasReplay onMethodCall`(
         @StringForgery viewId: String,
         @BoolForgery hasReplay: Boolean
     ) {
@@ -147,7 +147,7 @@ internal class DatadogSessionReplayPluginTest {
     }
 
     @Test
-    fun `M return error W setHasReplay methodCall { missing parameters }`() {
+    fun `M return error W setHasReplay onMethodCall { missing parameters }`() {
         // Given
         val plugin = DatadogSessionReplayPlugin()
         val result = mockk<MethodChannel.Result>(relaxed = true)
@@ -206,7 +206,7 @@ internal class DatadogSessionReplayPluginTest {
     }
 
     @Test
-    fun `M return error W setRecordCount methodCall { missing parameters }`() {
+    fun `M return error W setRecordCount onMethodCall { missing parameters }`() {
         // Given
         val plugin = DatadogSessionReplayPlugin()
         val result = mockk<MethodChannel.Result>(relaxed = true)
