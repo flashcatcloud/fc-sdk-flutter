@@ -78,6 +78,8 @@ typedef TraceIdRepresentation = TracingIdRepresentation;
 @visibleForTesting
 final lowTraceMask = (BigInt.from(0xffffffff) << 32) + BigInt.from(0xffffffff);
 
+final _maxRandInt = kIsWeb ? 1 << 31 : 1 << 32;
+
 /// [TracingId] is used as both a unsigned 64-bit "Span Id" and unsigned 128-bit "Trace Id"
 @immutable
 class TracingId {
@@ -152,8 +154,8 @@ class TracingId {
   static BigInt _generateTraceId() {
     final time = (DateTime.now().millisecondsSinceEpoch ~/ 1000);
 
-    final highBits = BigInt.from(_traceRandom.nextInt(1 << 32));
-    final lowBits = BigInt.from(_traceRandom.nextInt(1 << 32));
+    final highBits = BigInt.from(_traceRandom.nextInt(_maxRandInt));
+    final lowBits = BigInt.from(_traceRandom.nextInt(_maxRandInt));
 
     var traceId = BigInt.from(time) << 96;
     traceId += (highBits << 32);
@@ -168,7 +170,7 @@ class TracingId {
     // we assume it needs to be a positive signed 64-bit int, so only
     // use 63-bits.
     final highBits = _traceRandom.nextInt(1 << 31);
-    final lowBits = BigInt.from(_traceRandom.nextInt(1 << 32));
+    final lowBits = BigInt.from(_traceRandom.nextInt(_maxRandInt));
 
     var spanId = BigInt.from(highBits) << 32;
     spanId += lowBits;
