@@ -60,7 +60,6 @@ internal class SegmentRequestFactory(
         )
     }
 
-    @Suppress("ReturnCount")
     private fun resolveRequest(context: DatadogContext, body: RequestBody): Request {
         val bodyAsByteArray = extractByteArrayFromBody(body)
         val requestId = UUID.randomUUID().toString()
@@ -79,9 +78,7 @@ internal class SegmentRequestFactory(
 
     private fun extractByteArrayFromBody(body: RequestBody): ByteArray {
         val buffer = Buffer()
-        @Suppress("UnsafeThirdPartyFunctionCall")
         body.writeTo(buffer)
-        @Suppress("UnsafeThirdPartyFunctionCall")
         return buffer.readByteArray()
     }
 

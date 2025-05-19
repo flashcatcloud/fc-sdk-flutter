@@ -20,7 +20,6 @@ internal const val JSON_OBJECT_TYPE = "JsonObject"
 internal const val JSON_ARRAY_TYPE = "JsonArray"
 internal const val JSON_PRIMITIVE_TYPE = "JsonPrimitive"
 
-@Suppress("SwallowedException")
 internal fun JsonElement.safeGetAsJsonObject(internalLogger: InternalLogger): JsonObject? {
     return if (isJsonObject) {
         asJsonObject
@@ -40,7 +39,6 @@ internal fun JsonElement.safeGetAsJsonObject(internalLogger: InternalLogger): Js
     }
 }
 
-@Suppress("SwallowedException")
 internal fun JsonPrimitive.safeGetAsLong(internalLogger: InternalLogger): Long? {
     return try {
         asLong
@@ -61,7 +59,6 @@ internal fun JsonPrimitive.safeGetAsLong(internalLogger: InternalLogger): Long? 
     }
 }
 
-@Suppress("SwallowedException")
 internal fun JsonElement.safeGetAsJsonArray(internalLogger: InternalLogger): JsonArray? {
     return if (isJsonArray) {
         asJsonArray
