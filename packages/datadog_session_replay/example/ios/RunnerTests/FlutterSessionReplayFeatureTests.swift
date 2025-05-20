@@ -24,7 +24,7 @@ func setsReplayBaggage_WhenSetHasReplay() throws {
 }
 
 @Test
-func setsBackage_WhenSetRecordCount() throws {
+func setsBaggage_WhenSetRecordCount() throws {
     // Given
     let core = PassthroughCoreMock()
     let config = FlutterSessionReplay.Configuration()
@@ -42,7 +42,7 @@ func setsBackage_WhenSetRecordCount() throws {
 }
 
 @Test
-func setsBackage_WhenSetRecordCount_MultipleViews() throws {
+func setsBaggage_WhenSetRecordCount_MultipleViews() throws {
     // Given
     let core = PassthroughCoreMock()
     let config = FlutterSessionReplay.Configuration()

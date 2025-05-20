@@ -6,7 +6,7 @@ import UIKit
 
 public class DatadogSessionReplayPlugin: NSObject, FlutterPlugin {
     public static func register(with registrar: FlutterPluginRegistrar) {
-        let channel = FlutterMethodChannel(name: "datadog_session_replay", binaryMessenger: registrar.messenger())
+        let channel = FlutterMethodChannel(name: "datadog_sdk_flutter.session_replay", binaryMessenger: registrar.messenger())
         let instance = DatadogSessionReplayPlugin(channel: channel)
         registrar.addMethodCallDelegate(instance, channel: channel)
     }
