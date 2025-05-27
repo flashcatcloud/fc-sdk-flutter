@@ -2,7 +2,7 @@
 // This product includes software developed at Datadog (https://www.datadoghq.com/).
 // Copyright 2025-Present Datadog, Inc.
 
-import 'dart:ui';
+import 'package:flutter/widgets.dart' show Color;
 
 int _floatToInt8(double x) {
   return (x * 255.0).round() & 0xff;

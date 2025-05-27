@@ -78,7 +78,7 @@ internal class DatadogSessionReplayPluginTest {
         plugin.onMethodCall(call, result)
 
         // Then
-        verify { result.success(null) }
+        verify { result.success(true) }
         verify {
             mockCore.registerFeature(
                 withArg {

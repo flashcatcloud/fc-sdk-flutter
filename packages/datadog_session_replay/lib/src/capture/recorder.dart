@@ -26,9 +26,9 @@ class KeyGenerator {
   var nextKey = 0;
 
   final Expando<int> _nodeIdExpando = Expando('sr-key');
+  // ignore: unused_field
   final Expando<List<int>> _nodeIdsExpando = Expando('multi-sr-key');
 
-  @override
   int keyForElement(Element e) {
     var value = _nodeIdExpando[e];
     if (value != null) return value;
