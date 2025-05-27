@@ -1,25 +1,25 @@
 PODS:
   - datadog_flutter_plugin (0.0.1):
-    - DatadogCore (= 2.25.0)
-    - DatadogCrashReporting (= 2.25.0)
-    - DatadogInternal (= 2.25.0)
-    - DatadogLogs (= 2.25.0)
-    - DatadogRUM (= 2.25.0)
+    - DatadogCore (~> 2)
+    - DatadogCrashReporting (~> 2)
+    - DatadogInternal (~> 2)
+    - DatadogLogs (~> 2)
+    - DatadogRUM (~> 2)
     - DictionaryCoder (= 1.0.8)
     - Flutter
   - datadog_session_replay (0.0.1):
     - DatadogCore (~> 2)
     - Flutter
-  - DatadogCore (2.25.0):
-    - DatadogInternal (= 2.25.0)
-  - DatadogCrashReporting (2.25.0):
-    - DatadogInternal (= 2.25.0)
+  - DatadogCore (2.28.0):
+    - DatadogInternal (= 2.28.0)
+  - DatadogCrashReporting (2.28.0):
+    - DatadogInternal (= 2.28.0)
     - PLCrashReporter (~> 1.12.0)
-  - DatadogInternal (2.25.0)
-  - DatadogLogs (2.25.0):
-    - DatadogInternal (= 2.25.0)
-  - DatadogRUM (2.25.0):
-    - DatadogInternal (= 2.25.0)
+  - DatadogInternal (2.28.0)
+  - DatadogLogs (2.28.0):
+    - DatadogInternal (= 2.28.0)
+  - DatadogRUM (2.28.0):
+    - DatadogInternal (= 2.28.0)
   - DictionaryCoder (1.0.8)
   - Flutter (1.0.0)
   - integration_test (0.0.1):
@@ -53,13 +53,13 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/integration_test/ios"
 
 SPEC CHECKSUMS:
-  datadog_flutter_plugin: 0536db97da04dda6e0198a732efb599a179cd316
+  datadog_flutter_plugin: d7c707cfa57f67bc7bd71d275cf38d94eef1aa48
   datadog_session_replay: 50aac665d5a87dc45b9cb2df38c779e6cf43f9b0
-  DatadogCore: a068d264191f687d00125aafa8042110cf886cd7
-  DatadogCrashReporting: b19d80a98b1eb51bdb3ec5b1a7f339769fb70b95
-  DatadogInternal: e9b6cef84448ee32f73bc9b37646708a65c1b8ae
-  DatadogLogs: 623d89158ef3a4a7545a8fbce9afa4cedc576324
-  DatadogRUM: ff0661b42124d90c9ff2538c3cc1b806ddf7620c
+  DatadogCore: 5d6e64cd6f7413a767d786e8ccce792e8b4a085c
+  DatadogCrashReporting: 70b1f3aa65b101484f2cbd75cadd811c04f9a4dd
+  DatadogInternal: b92d09bd55e3d1d598ec34d162310151a7347a5b
+  DatadogLogs: de72f05ee0f759676cac4f4159512afcc7af504f
+  DatadogRUM: d3ad3310ae1b0af4575d6a5cc30ca89f2c19f217
   DictionaryCoder: 5f84fff69f54cb806071538430bdafe04a89d658
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
   integration_test: 252f60fa39af5e17c3aa9899d35d908a0721b573

@@ -8,11 +8,11 @@ import DatadogInternal
 internal class FlutterSessionReplay {
     public struct Configuration {
         public var customEndpoint: URL?
-        public var onContextChanged: ((RUMContext?) -> Void)?
+        public var onContextChanged: ((RUMCoreContext?) -> Void)?
 
         public init(
             customEndpoint: URL? = nil,
-            onContextChanged: ((RUMContext?) -> Void)? = nil
+            onContextChanged: ((RUMCoreContext?) -> Void)? = nil
         ) {
             self.customEndpoint = customEndpoint
             self.onContextChanged = onContextChanged

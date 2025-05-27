@@ -3,6 +3,7 @@
 // Copyright 2025-Present Datadog, Inc.
 import Flutter
 import UIKit
+import DatadogInternal
 
 public class DatadogSessionReplayPlugin: NSObject, FlutterPlugin {
     public static func register(with registrar: FlutterPluginRegistrar) {
@@ -49,7 +50,7 @@ public class DatadogSessionReplayPlugin: NSObject, FlutterPlugin {
 
         enable(configuration: configuration)
 
-        result(nil)
+        result(true)
     }
 
     // Visible for testing
@@ -79,7 +80,7 @@ public class DatadogSessionReplayPlugin: NSObject, FlutterPlugin {
             return
         }
 
-        feature?.setRecordCount(for: viewId, count: count)
+        feature?.setRecordCount(for: viewId, count: Int64(count))
 
         result(nil)
     }
@@ -95,7 +96,7 @@ public class DatadogSessionReplayPlugin: NSObject, FlutterPlugin {
         result(nil)
     }
 
-    private func onContextChanged(rumContext: RUMContext?) {
+    private func onContextChanged(rumContext: RUMCoreContext?) {
         if let dictionary = rumContext?.encodedForFlutter() {
             DispatchQueue.main.async {
                 self.channel.invokeMethod("onContextChanged", arguments: dictionary)

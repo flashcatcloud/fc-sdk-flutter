@@ -58,7 +58,7 @@ func writeSegmentWritesWrappedSegmentToCore() {
 func changeInRumContextCallOnContextChanged() throws {
     // Given
     var config: FlutterSessionReplay.Configuration = .init()
-    var recievedContext: RUMContext?
+    var recievedContext: RUMCoreContext?
     config.onContextChanged = { context in
         recievedContext = context
     }
@@ -66,11 +66,10 @@ func changeInRumContextCallOnContextChanged() throws {
     _ = FlutterSessionReplay.enable(with: config, in: mockCore)
 
     // When
-    let expectedRumContext: RUMContext = .mockRandom()
-    let datadogContext: DatadogContext = .mockRandom(
-        withBaggages: [
-            RUMContext.key: .init(expectedRumContext)]
-    )
+    let expectedRumContext: RUMCoreContext = .mockRandom()
+    var datadogContext: DatadogContext = .mockRandom()
+    datadogContext.set(additionalContext: expectedRumContext)
+
     mockCore.send(message: .context(datadogContext), else: {})
 
     // Then
