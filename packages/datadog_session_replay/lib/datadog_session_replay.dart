@@ -2,4 +2,25 @@
 // This product includes software developed at Datadog (https://www.datadoghq.com/).
 // Copyright 2025-Present Datadog, Inc.
 
-class DatadogSessionReplay {}
+import 'package:datadog_flutter_plugin/datadog_flutter_plugin.dart';
+
+import 'src/datadog_session_replay_plugin.dart';
+
+export 'src/datadog_session_replay.dart' show DatadogSessionReplay;
+export 'src/widgets.dart' show SessionReplayCapture;
+
+class DatadogSessionReplayConfiguration {
+  double replaySampleRate;
+  String? customEndpoint;
+
+  DatadogSessionReplayConfiguration({
+    required this.replaySampleRate,
+    this.customEndpoint,
+  });
+}
+
+extension SessionReplayExtension on DatadogConfiguration {
+  void enableSessionReplay(DatadogSessionReplayConfiguration config) {
+    addPlugin(DatadogSessionReplayPluginConfiguration(configuration: config));
+  }
+}

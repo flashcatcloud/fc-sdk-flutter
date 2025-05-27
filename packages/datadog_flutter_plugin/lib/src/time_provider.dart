@@ -13,6 +13,8 @@ abstract interface class DatadogTimeProvider {
 
 /// Default time provider which uses `DateTime` to provide the current timestamp.
 class DefaultTimeProvider implements DatadogTimeProvider {
+  const DefaultTimeProvider();
+
   @override
   int nowMs() {
     return DateTime.now().millisecondsSinceEpoch;

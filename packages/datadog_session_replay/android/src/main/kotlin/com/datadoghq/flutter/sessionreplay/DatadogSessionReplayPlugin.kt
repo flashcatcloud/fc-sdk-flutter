@@ -57,7 +57,7 @@ class DatadogSessionReplayPlugin : FlutterPlugin, MethodCallHandler {
         }
         val configuration = FlutterSessionReplay.fromFlutter(options)
         enable(configuration)
-        result.success(null)
+        result.success(true)
     }
 
     internal fun enable(configuration: FlutterSessionReplay.Configuration) {

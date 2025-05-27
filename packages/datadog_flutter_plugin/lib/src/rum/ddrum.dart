@@ -12,7 +12,6 @@ import 'package:meta/meta.dart';
 
 import '../../datadog_flutter_plugin.dart';
 import '../../datadog_internal.dart';
-import '../time_provider.dart';
 import 'ddrum_platform_interface.dart';
 import 'inv_metric_provider.dart';
 import 'rum_long_task_observer.dart';
@@ -107,7 +106,7 @@ class DatadogRum {
   @internal
   final TraceContextInjection traceContextInjection;
 
-  @visibleForTesting
+  @internal
   DatadogTimeProvider timeProvider = DefaultTimeProvider();
 
   final _sampleRandom = Random();

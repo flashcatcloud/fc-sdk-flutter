@@ -4,7 +4,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
+import '../datadog_session_replay.dart';
 import 'datadog_session_replay_platform_interface.dart';
+import 'rum_context.dart';
 
 /// An implementation of [DatadogSessionReplayPlatform] that uses method channels.
 class MethodChannelDatadogSessionReplay extends DatadogSessionReplayPlatform {
@@ -13,4 +15,43 @@ class MethodChannelDatadogSessionReplay extends DatadogSessionReplayPlatform {
   final methodChannel = const MethodChannel(
     'datadog_sdk_flutter.session_replay',
   );
+
+  @override
+  Future<bool> enable(
+    DatadogSessionReplayConfiguration configuration,
+    void Function(RUMContext) onContextChanged,
+  ) async {
+    // All we actually need at the moment is the customEndpoint if set
+    final arguments = {
+      'configuration': {'customEndpoint': configuration.customEndpoint},
+    };
+    methodChannel.setMethodCallHandler((call) async {
+      if (call.method == 'onContextChanged') {
+        final contextMap = call.arguments as Map<Object?, Object?>;
+        final context = RUMContext.fromMap(contextMap);
+        onContextChanged(context);
+      }
+    });
+    bool success = await methodChannel.invokeMethod('enable', arguments);
+    return success;
+  }
+
+  @override
+  Future<void> writeSegment(String record, String viewId) {
+    final arguments = {'segment': record, 'viewId': viewId};
+    return methodChannel.invokeMethod('writeSegment', arguments);
+  }
+
+  @override
+  Future<void> setHasReplay(bool hasReplay) {
+    return methodChannel.invokeMethod('setHasReplay', {'hasReplay': hasReplay});
+  }
+
+  @override
+  Future<void> setRecordCount(String viewId, int count) {
+    return methodChannel.invokeMethod('setRecordCount', {
+      'viewId': viewId,
+      'count': count,
+    });
+  }
 }
