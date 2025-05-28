@@ -31,7 +31,7 @@ void main() {
     var logs = <LogDecoder>[];
 
     await recordedSession.pollSessionRequests(
-      const Duration(seconds: 50),
+      const Duration(seconds: 30),
       (requests) {
         requests
             .map((e) {
