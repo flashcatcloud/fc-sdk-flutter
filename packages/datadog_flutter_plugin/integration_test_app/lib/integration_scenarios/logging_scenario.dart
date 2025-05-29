@@ -14,6 +14,9 @@ class LoggingScenario extends StatefulWidget {
 }
 
 class _LoggingScenarioState extends State<LoggingScenario> {
+  late DatadogLogger logger;
+  late DatadogLogger secondLogger;
+
   @override
   void initState() {
     super.initState();
@@ -27,7 +30,7 @@ class _LoggingScenarioState extends State<LoggingScenario> {
     );
     silentLogger.info('Interesting logging information');
 
-    var logger =
+    logger =
         DatadogSdk.instance.logs!.createLogger(DatadogLoggerConfiguration());
     logger.addTag('tag1', 'tag-value');
     logger.addTag('my-tag');
@@ -60,7 +63,7 @@ class _LoggingScenarioState extends State<LoggingScenario> {
       name: 'second_logger',
       networkInfoEnabled: false,
     );
-    final secondLogger = DatadogSdk.instance.logs!.createLogger(config);
+    secondLogger = DatadogSdk.instance.logs!.createLogger(config);
 
     secondLogger.addAttribute('second-logger-attribute', 'second-value');
     secondLogger.info('message on second logger');

@@ -11,7 +11,7 @@ import Compression
 
 // Records are encoded by Flutter, so the models aren't in
 // the Flutter SR feature for flutter, so we encode JSON manually.
-func createEnrichedRecordJson(context: RUMContext, records: [String] = []) -> String {
+func createEnrichedRecordJson(context: RUMCoreContext, records: [String] = []) -> String {
     let viewId = context.viewID ?? "null"
     let recordsString = "[\(records.joined(separator: ","))]"
     return """
@@ -47,7 +47,7 @@ func createEvents(_ records: [RecordWrapper]) throws -> [Event] {
 func requestBuildsURLRequest_WithCorrectHeaders() throws {
     // Given
     let mockCore = PassthroughCoreMock()
-    let rumContext = RUMContext.mockRandom()
+    let rumContext = RUMCoreContext.mockRandom()
     let requestBuilder = RequestBuilder(customUploadURL: nil, telemetry: mockCore.telemetry)
     let events = try createEvents([
         RecordWrapper(
@@ -56,9 +56,8 @@ func requestBuildsURLRequest_WithCorrectHeaders() throws {
     ])
 
     // When
-    let context: DatadogContext = .mockRandom(
-        withBaggages: [RUMContext.key: .init(rumContext)]
-    )
+    var context: DatadogContext = .mockRandom()
+    context.set(additionalContext: RUMCoreContext.mockRandom())
     let request = try requestBuilder.request(
         for: events,
         with: context,
@@ -82,7 +81,7 @@ func requestBuildsURLRequest_WithCorrectHeaders() throws {
 func requestBuilder_BuildsFormData_WithMultipartBuilder() throws {
     // Given
     let mockCore = PassthroughCoreMock()
-    let rumContext = RUMContext.mockRandom()
+    let rumContext = RUMCoreContext.mockRandom()
     let multipartSpy = MultipartBuilderSpy()
     let requestBuilder = RequestBuilder(customUploadURL: nil, telemetry: mockCore.telemetry, multipartBuilder: multipartSpy)
     let events = try createEvents([
@@ -92,9 +91,8 @@ func requestBuilder_BuildsFormData_WithMultipartBuilder() throws {
     ])
 
     // When
-    let context: DatadogContext = .mockRandom(
-        withBaggages: [RUMContext.key: .init(rumContext)]
-    )
+    var context: DatadogContext = .mockRandom()
+    context.set(additionalContext: rumContext)
     _ = try requestBuilder.request(
         for: events,
         with: context,
@@ -132,7 +130,7 @@ func requestBuilder_BuildsFormData_WithMultipartBuilder() throws {
 func requestBuilder_BuildsFormDataWithRecords_WithMultipartBuilder() throws {
     // Given
     let mockCore = PassthroughCoreMock()
-    let rumContext = RUMContext.mockRandom()
+    let rumContext = RUMCoreContext.mockRandom()
     let multipartSpy = MultipartBuilderSpy()
     let requestBuilder = RequestBuilder(customUploadURL: nil, telemetry: mockCore.telemetry, multipartBuilder: multipartSpy)
     let events = try createEvents([
@@ -145,9 +143,8 @@ func requestBuilder_BuildsFormDataWithRecords_WithMultipartBuilder() throws {
     ])
 
     // When
-    let context: DatadogContext = .mockRandom(
-        withBaggages: [RUMContext.key: .init(rumContext)]
-    )
+    var context: DatadogContext = .mockRandom()
+    context.set(additionalContext: rumContext)
     _ = try requestBuilder.request(
         for: events,
         with: context,
@@ -181,8 +178,8 @@ func requestBuilder_BuildsFormDataWithRecords_WithMultipartBuilder() throws {
 func requestBuilder_BuildsFormDataWithMultipleContexts_WithMultipartBuilder() throws {
     // Given
     let mockCore = PassthroughCoreMock()
-    let context0 = RUMContext.mockRandom()
-    let context1 = RUMContext.mockRandom()
+    let context0 = RUMCoreContext.mockRandom()
+    let context1 = RUMCoreContext.mockRandom()
     let multipartSpy = MultipartBuilderSpy()
     let requestBuilder = RequestBuilder(customUploadURL: nil, telemetry: mockCore.telemetry, multipartBuilder: multipartSpy)
     let events = try createEvents([
@@ -213,9 +210,8 @@ func requestBuilder_BuildsFormDataWithMultipleContexts_WithMultipartBuilder() th
     ])
 
     // When
-    let context: DatadogContext = .mockRandom(
-        withBaggages: [RUMContext.key: .init(context0)]
-    )
+    var context: DatadogContext = .mockRandom()
+    context.set(additionalContext: context0)
     _ = try requestBuilder.request(
         for: events,
         with: context,

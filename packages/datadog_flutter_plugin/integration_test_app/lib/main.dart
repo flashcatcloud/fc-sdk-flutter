@@ -40,6 +40,7 @@ Future<void> runScenario({
   }
 
   // Default runner
+  DatadogSdk.instance.sdkVerbosity = CoreLoggerLevel.debug;
   final configuration = DatadogConfiguration(
     clientToken: clientToken,
     env: dotenv.get('DD_ENV', fallback: ''),
@@ -97,6 +98,7 @@ Future<void> main() async {
     }
   }
 
+  DatadogSdk.instance.sdkVerbosity = CoreLoggerLevel.debug;
   await runScenario(
     clientToken: clientToken,
     applicationId: applicationId,

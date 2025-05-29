@@ -4,6 +4,7 @@
 
 import Foundation
 import Testing
+import DatadogInternal
 
 @testable import datadog_session_replay
 
@@ -19,8 +20,8 @@ func setsReplayBaggage_WhenSetHasReplay() throws {
     feature.setHasReplay(expectedValue)
 
     // Then
-    let value = try core.context.baggages["sr_has_replay"]?.encode() as? Bool
-    #expect(value == expectedValue)
+    let value = core.context.additionalContext(ofType: SessionReplayCoreContext.HasReplay.self)
+    #expect(value?.value == expectedValue)
 }
 
 @Test
@@ -32,12 +33,12 @@ func setsBaggage_WhenSetRecordCount() throws {
 
     // When
     let viewId: String = .mockRandom()
-    let expectedCount: Int = .mockRandom()
+    let expectedCount: Int64 = .mockRandom()
     feature.setRecordCount(for: viewId, count: expectedCount)
 
     // Then
-    let baggage = try core.context.baggages["sr_records_count_by_view_id"]?.encode() as? [String: Any]
-    let value = baggage?[viewId] as? Int
+    let baggage = core.context.additionalContext(ofType: SessionReplayCoreContext.RecordsCount.self)
+    let value = baggage?.value[viewId] as? Int64
     #expect(value == expectedCount)
 }
 
@@ -51,15 +52,15 @@ func setsBaggage_WhenSetRecordCount_MultipleViews() throws {
     // When
     let viewIdA: String = .mockRandom()
     let viewIdB: String = .mockRandom()
-    let expectedCountA: Int = .mockRandom()
-    let expectedCountB: Int = .mockRandom()
+    let expectedCountA: Int64 = .mockRandom()
+    let expectedCountB: Int64 = .mockRandom()
     feature.setRecordCount(for: viewIdA, count: expectedCountA)
     feature.setRecordCount(for: viewIdB, count: expectedCountB)
 
     // Then
-    let baggage = try core.context.baggages["sr_records_count_by_view_id"]?.encode() as? [String: Any]
-    let valueA = baggage?[viewIdA] as? Int
+    let baggage = core.context.additionalContext(ofType: SessionReplayCoreContext.RecordsCount.self)
+    let valueA = baggage?.value[viewIdA] as? Int64
     #expect(valueA == expectedCountA)
-    let valueB = baggage?[viewIdB] as? Int
+    let valueB = baggage?.value[viewIdB] as? Int64
     #expect(valueB == expectedCountB)
 }

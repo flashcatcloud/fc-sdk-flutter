@@ -96,7 +96,7 @@ class SessionReplayPluginTests {
         }
 
         // Then
-        #expect(status == .called(value: nil))
+        #expect(status == .called(value: true))
         #expect(mockCore.get(feature: FlutterSessionReplayFeature.self) != nil)
     }
 
@@ -136,8 +136,8 @@ class SessionReplayPluginTests {
 
         // Then
         #expect(status == .called(value: nil))
-        let value = try mockCore.context.baggages["sr_has_replay"]?.encode() as? Bool
-        #expect(value == expectedValue)
+        let value = mockCore.context.additionalContext(ofType: SessionReplayCoreContext.HasReplay.self)
+        #expect(value?.value == expectedValue)
     }
 
     @Test
@@ -164,7 +164,7 @@ class SessionReplayPluginTests {
     func setsContext_WhenSetRecordCountMethodCall() throws {
         // Given
         let plugin = DatadogSessionReplayPlugin(channel: FlutterMethodChannelMock())
-        let expectedValue: Int = .mockRandom()
+        let expectedValue: Int64 = .mockRandom()
         let expectedViewId: String = .mockRandom()
         let arguments: [String: Any] = [
             "viewId": expectedViewId,
@@ -181,9 +181,9 @@ class SessionReplayPluginTests {
 
         // Then
         #expect(status == .called(value: nil))
-        let value = try mockCore.context.baggages["sr_records_count_by_view_id"]?.encode() as? [String: Any]
-        #expect(value?.count == 1)
-        #expect(value?[expectedViewId] as? Int == expectedValue)
+        let value = mockCore.context.additionalContext(ofType: SessionReplayCoreContext.RecordsCount.self)
+        #expect(value?.value.count == 1)
+        #expect(value?.value[expectedViewId] as? Int64 == expectedValue)
     }
 
     @Test
@@ -194,11 +194,9 @@ class SessionReplayPluginTests {
         plugin.enable(configuration: .init())
 
         // When
-        let expectedRumContext: RUMContext = .mockRandom()
-        let datadogContext: DatadogContext = .mockRandom(
-            withBaggages: [
-                RUMContext.key: .init(expectedRumContext)]
-        )
+        let expectedRumContext: RUMCoreContext = .mockRandom()
+        var datadogContext: DatadogContext = .mockRandom()
+        datadogContext.set(additionalContext: expectedRumContext)
         mockCore.send(message: .context(datadogContext), else: {})
 
         // Then

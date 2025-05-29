@@ -36,8 +36,7 @@ extension DatadogContext {
         networkConnectionInfo: NetworkConnectionInfo? = .mockWith(reachability: .yes),
         carrierInfo: CarrierInfo? = .mockAny(),
         batteryStatus: BatteryStatus? = .mockAny(),
-        isLowPowerModeEnabled: Bool = false,
-        baggages: [String: FeatureBaggage] = [:]
+        isLowPowerModeEnabled: Bool = false
     ) -> DatadogContext {
         .init(
             site: site,
@@ -65,12 +64,11 @@ extension DatadogContext {
             networkConnectionInfo: networkConnectionInfo,
             carrierInfo: carrierInfo,
             batteryStatus: batteryStatus,
-            isLowPowerModeEnabled: isLowPowerModeEnabled,
-            baggages: baggages
+            isLowPowerModeEnabled: isLowPowerModeEnabled
         )
     }
 
-    public static func mockRandom(withBaggages: [String: FeatureBaggage] = [:]) -> DatadogContext {
+    public static func mockRandom() -> DatadogContext {
         .init(
             site: .mockRandom(),
             clientToken: .mockRandom(),
@@ -96,15 +94,14 @@ extension DatadogContext {
             networkConnectionInfo: .mockRandom(),
             carrierInfo: .mockRandom(),
             batteryStatus: nil,
-            isLowPowerModeEnabled: .mockRandom(),
-            baggages: withBaggages
+            isLowPowerModeEnabled: .mockRandom()
         )
     }
 }
 
-extension RUMContext {
+extension RUMCoreContext {
     public static func mockRandom() -> Self {
-        return RUMContext.init(
+        return RUMCoreContext.init(
             applicationID: .mockRandom(),
             sessionID: .mockRandom(),
             viewID: .mockRandom(),
