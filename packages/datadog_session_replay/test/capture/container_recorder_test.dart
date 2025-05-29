@@ -13,6 +13,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
+import '../test_utils.dart';
 import 'simple_test_capture.dart';
 
 // Note: to properly test recorders, we need to supply a full widget tree, as Element

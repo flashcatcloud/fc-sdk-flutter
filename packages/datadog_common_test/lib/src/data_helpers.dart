@@ -4,7 +4,6 @@
 import 'dart:math';
 
 import 'package:collection/collection.dart';
-import 'package:flutter/widgets.dart';
 
 final _random = Random();
 const _alphas = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -30,19 +29,6 @@ int randomInt() {
 
 double randomDouble({double min = -1000000, double max = 100000}) {
   return min + ((max - min) * _random.nextDouble());
-}
-
-Color randomColor({bool withRandomAlpha = false}) {
-  int randomColorComponent() {
-    return _random.nextInt(255);
-  }
-
-  return Color.fromARGB(
-    withRandomAlpha ? randomColorComponent() : 255,
-    randomColorComponent(),
-    randomColorComponent(),
-    randomColorComponent(),
-  );
 }
 
 extension RandomExtension<T> on List<T> {
