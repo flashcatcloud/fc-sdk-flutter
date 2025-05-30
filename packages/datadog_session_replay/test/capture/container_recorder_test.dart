@@ -9,7 +9,7 @@ import 'package:datadog_session_replay/src/capture/recorder.dart';
 import 'package:datadog_session_replay/src/extensions.dart';
 import 'package:datadog_session_replay/src/rum_context.dart';
 import 'package:datadog_session_replay/src/sr_data_models.dart';
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -38,96 +38,382 @@ void main() {
     recorder.updateContext(context);
   });
 
-  testWidgets('container returns captured node semantics', (tester) async {
-    // Given
-    final width = randomDouble(min: 10, max: 50);
-    final height = randomDouble(min: 10, max: 50);
-    final color = randomColor();
-    final tree = SimpleTestCapture(
-      key: Key('key'),
-      recorder: recorder,
-      child: Directionality(
-        textDirection: TextDirection.ltr,
-        child: Stack(
-          children: [
-            Container(
-              color: color,
-              width: width,
-              height: height,
-              child: Placeholder(),
-            ),
-          ],
+  group('container', () {
+    testWidgets('returns captured node semantics', (tester) async {
+      // Given
+      final width = randomDouble(min: 10, max: 50);
+      final height = randomDouble(min: 10, max: 50);
+      final color = randomColor();
+      final tree = SimpleTestCapture(
+        key: Key('key'),
+        recorder: recorder,
+        child: Directionality(
+          textDirection: TextDirection.ltr,
+          child: Stack(
+            children: [
+              Container(
+                color: color,
+                width: width,
+                height: height,
+                child: Placeholder(),
+              ),
+            ],
+          ),
         ),
-      ),
-    );
-    await tester.pumpWidget(tree);
+      );
+      await tester.pumpWidget(tree);
 
-    // When
-    final capture = recorder.performCapture();
+      // When
+      final capture = recorder.performCapture();
 
-    // Then
-    expect(capture, isNotNull);
-    final treeCapture = capture!.viewTreeSnapshot;
-    expect(treeCapture, isNotNull);
-    expect(treeCapture.nodes.length, 1);
-    final containerNode = treeCapture.nodes.first;
-    expect(containerNode.attributes.x, 0);
-    expect(containerNode.attributes.y, 0);
-    expect(containerNode.attributes.width, width.round());
-    expect(containerNode.attributes.height, height.round());
+      // Then
+      expect(capture, isNotNull);
+      final treeCapture = capture!.viewTreeSnapshot;
+      expect(treeCapture, isNotNull);
+      expect(treeCapture.nodes.length, 1);
+      final containerNode = treeCapture.nodes.first;
+      expect(containerNode.attributes.x, 0);
+      expect(containerNode.attributes.y, 0);
+      expect(containerNode.attributes.width, width.round());
+      expect(containerNode.attributes.height, height.round());
 
-    final builtWireframes = containerNode.buildWireframes();
-    expect(builtWireframes.length, 1);
-    final shapeWireframe = builtWireframes.first as SRShapeWireframe;
-    expect(shapeWireframe.x, 0);
-    expect(shapeWireframe.y, 0);
-    expect(shapeWireframe.width, width.round());
-    expect(shapeWireframe.height, height.round());
-    expect(shapeWireframe.shapeStyle!.backgroundColor, color.toHexString());
+      final builtWireframes = containerNode.buildWireframes();
+      expect(builtWireframes.length, 1);
+      final shapeWireframe = builtWireframes.first as SRShapeWireframe;
+      expect(shapeWireframe.x, 0);
+      expect(shapeWireframe.y, 0);
+      expect(shapeWireframe.width, width.round());
+      expect(shapeWireframe.height, height.round());
+      expect(shapeWireframe.shapeStyle!.backgroundColor, color.toHexString());
+    });
+
+    testWidgets('returns box decoration in wireframe', (tester) async {
+      // Given
+      final width = randomDouble(min: 10, max: 50);
+      final height = randomDouble(min: 10, max: 50);
+      final color = randomColor();
+      final tree = SimpleTestCapture(
+        key: Key('key'),
+        recorder: recorder,
+        child: Directionality(
+          textDirection: TextDirection.ltr,
+          child: Stack(
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  color: color,
+                  border: Border.all(width: 3.4, color: color),
+                  borderRadius: BorderRadius.circular(10.0),
+                ),
+                width: width,
+                height: height,
+                child: Placeholder(),
+              ),
+            ],
+          ),
+        ),
+      );
+      await tester.pumpWidget(tree);
+
+      // When
+      final capture = recorder.performCapture();
+
+      // Then
+      expect(capture, isNotNull);
+      final treeCapture = capture!.viewTreeSnapshot;
+      final containerNode = treeCapture.nodes.first;
+
+      final builtWireframes = containerNode.buildWireframes();
+      final shapeWireframe = builtWireframes.first as SRShapeWireframe;
+      expect(shapeWireframe.border, isNotNull);
+      expect(shapeWireframe.border!.color, color.toHexString());
+      expect(shapeWireframe.border!.width, 3);
+      expect(shapeWireframe.shapeStyle!.cornerRadius, 10.0);
+      expect(shapeWireframe.shapeStyle!.backgroundColor, color.toHexString());
+    });
   });
 
-  testWidgets('container returns box decoration in wireframe', (tester) async {
-    // Given
-    final width = randomDouble(min: 10, max: 50);
-    final height = randomDouble(min: 10, max: 50);
-    final color = randomColor();
-    final tree = SimpleTestCapture(
-      key: Key('key'),
-      recorder: recorder,
-      child: Directionality(
-        textDirection: TextDirection.ltr,
-        child: Stack(
-          children: [
-            Container(
-              decoration: BoxDecoration(
-                color: color,
-                border: Border.all(width: 3.4, color: color),
-                borderRadius: BorderRadius.circular(10.0),
+  group('material', () {
+    testWidgets('returns captured node semantics', (tester) async {
+      // Given
+      final width = randomDouble(min: 10, max: 50);
+      final height = randomDouble(min: 10, max: 50);
+      final color = randomColor();
+      final tree = SimpleTestCapture(
+        key: Key('key'),
+        recorder: recorder,
+        child: Directionality(
+          textDirection: TextDirection.ltr,
+          child: Stack(
+            children: [
+              SizedBox(
+                width: width,
+                height: height,
+                child: Material(color: color, child: Placeholder()),
               ),
-              width: width,
-              height: height,
-              child: Placeholder(),
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
-    );
-    await tester.pumpWidget(tree);
+      );
+      await tester.pumpWidget(tree);
 
-    // When
-    final capture = recorder.performCapture();
+      // When
+      final capture = recorder.performCapture();
 
-    // Then
-    expect(capture, isNotNull);
-    final treeCapture = capture!.viewTreeSnapshot;
-    final containerNode = treeCapture.nodes.first;
+      // Then
+      expect(capture, isNotNull);
+      final treeCapture = capture!.viewTreeSnapshot;
+      expect(treeCapture, isNotNull);
+      expect(treeCapture.nodes.length, 1);
+      final containerNode = treeCapture.nodes.first;
+      expect(containerNode.attributes.x, 0);
+      expect(containerNode.attributes.y, 0);
+      expect(containerNode.attributes.width, width.round());
+      expect(containerNode.attributes.height, height.round());
 
-    final builtWireframes = containerNode.buildWireframes();
-    final shapeWireframe = builtWireframes.first as SRShapeWireframe;
-    expect(shapeWireframe.border, isNotNull);
-    expect(shapeWireframe.border!.color, color.toHexString());
-    expect(shapeWireframe.border!.width, 3);
-    expect(shapeWireframe.shapeStyle!.cornerRadius, 10.0);
-    expect(shapeWireframe.shapeStyle!.backgroundColor, color.toHexString());
+      final builtWireframes = containerNode.buildWireframes();
+      expect(builtWireframes.length, 1);
+      final shapeWireframe = builtWireframes.first as SRShapeWireframe;
+      expect(shapeWireframe.x, 0);
+      expect(shapeWireframe.y, 0);
+      expect(shapeWireframe.width, width.round());
+      expect(shapeWireframe.height, height.round());
+      expect(shapeWireframe.shapeStyle!.backgroundColor, color.toHexString());
+    });
+
+    testWidgets('returns border for StadiumBorder in wireframe', (
+      tester,
+    ) async {
+      // Given
+      final width = randomDouble(min: 10, max: 50);
+      final height = randomDouble(min: 10, max: 50);
+      final color = randomColor();
+      final tree = SimpleTestCapture(
+        key: Key('key'),
+        recorder: recorder,
+        child: Directionality(
+          textDirection: TextDirection.ltr,
+          child: Stack(
+            children: [
+              SizedBox(
+                width: width,
+                height: height,
+                child: Material(
+                  shape: StadiumBorder(
+                    side: BorderSide(color: color, width: 3),
+                  ),
+                  child: Placeholder(),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+      await tester.pumpWidget(tree);
+
+      // When
+      final capture = recorder.performCapture();
+
+      // Then
+      expect(capture, isNotNull);
+      final treeCapture = capture!.viewTreeSnapshot;
+      final containerNode = treeCapture.nodes.first;
+
+      final cornerRadius = width > height ? height / 2 : width / 2;
+      final builtWireframes = containerNode.buildWireframes();
+      final shapeWireframe = builtWireframes.first as SRShapeWireframe;
+      expect(shapeWireframe.border, isNotNull);
+      expect(shapeWireframe.border!.color, color.toHexString());
+      expect(shapeWireframe.border!.width, 3);
+      expect(shapeWireframe.shapeStyle!.cornerRadius, cornerRadius);
+    });
+
+    testWidgets('returns border for CircleBorder in wireframe', (tester) async {
+      // Given
+      final size = randomDouble(min: 10, max: 50);
+      final color = randomColor();
+      final tree = SimpleTestCapture(
+        key: Key('key'),
+        recorder: recorder,
+        child: Directionality(
+          textDirection: TextDirection.ltr,
+          child: Stack(
+            children: [
+              SizedBox(
+                width: size,
+                height: size,
+                child: Material(
+                  shape: CircleBorder(side: BorderSide(color: color, width: 3)),
+                  child: Placeholder(),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+      await tester.pumpWidget(tree);
+
+      // When
+      final capture = recorder.performCapture();
+
+      // Then
+      expect(capture, isNotNull);
+      final treeCapture = capture!.viewTreeSnapshot;
+      final containerNode = treeCapture.nodes.first;
+
+      final cornerRadius = size / 2;
+      final builtWireframes = containerNode.buildWireframes();
+      final shapeWireframe = builtWireframes.first as SRShapeWireframe;
+      expect(shapeWireframe.border, isNotNull);
+      expect(shapeWireframe.border!.color, color.toHexString());
+      expect(shapeWireframe.border!.width, 3);
+      expect(shapeWireframe.shapeStyle!.cornerRadius, cornerRadius);
+    });
+
+    testWidgets('returns border for RoundedRectangle in wireframe', (
+      tester,
+    ) async {
+      // Given
+      final size = randomDouble(min: 10, max: 50);
+      final radius = randomDouble(min: 4, max: 10);
+      final color = randomColor();
+      final tree = SimpleTestCapture(
+        key: Key('key'),
+        recorder: recorder,
+        child: Directionality(
+          textDirection: TextDirection.ltr,
+          child: Stack(
+            children: [
+              SizedBox(
+                width: size,
+                height: size,
+                child: Material(
+                  shape: RoundedRectangleBorder(
+                    side: BorderSide(color: color, width: 3.0),
+                    borderRadius: BorderRadius.all(Radius.circular(radius)),
+                  ),
+                  child: Placeholder(),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+      await tester.pumpWidget(tree);
+
+      // When
+      final capture = recorder.performCapture();
+
+      // Then
+      expect(capture, isNotNull);
+      final treeCapture = capture!.viewTreeSnapshot;
+      final containerNode = treeCapture.nodes.first;
+
+      final builtWireframes = containerNode.buildWireframes();
+      final shapeWireframe = builtWireframes.first as SRShapeWireframe;
+      expect(shapeWireframe.border, isNotNull);
+      expect(shapeWireframe.border!.color, color.toHexString());
+      expect(shapeWireframe.border!.width, 3);
+      expect(shapeWireframe.shapeStyle!.cornerRadius, radius);
+    });
+
+    testWidgets('returns border for RoundedRectangle in wireframe', (
+      tester,
+    ) async {
+      // Given
+      final size = randomDouble(min: 10, max: 50);
+      final radius = randomDouble(min: 4, max: 10);
+      final color = randomColor();
+      final tree = SimpleTestCapture(
+        key: Key('key'),
+        recorder: recorder,
+        child: Directionality(
+          textDirection: TextDirection.ltr,
+          child: Stack(
+            children: [
+              SizedBox(
+                width: size,
+                height: size,
+                child: Material(
+                  shape: RoundedRectangleBorder(
+                    side: BorderSide(color: color, width: 3.0),
+                    borderRadius: BorderRadius.all(Radius.circular(radius)),
+                  ),
+                  child: Placeholder(),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+      await tester.pumpWidget(tree);
+
+      // When
+      final capture = recorder.performCapture();
+
+      // Then
+      expect(capture, isNotNull);
+      final treeCapture = capture!.viewTreeSnapshot;
+      final containerNode = treeCapture.nodes.first;
+
+      final builtWireframes = containerNode.buildWireframes();
+      final shapeWireframe = builtWireframes.first as SRShapeWireframe;
+      expect(shapeWireframe.border, isNotNull);
+      expect(shapeWireframe.border!.color, color.toHexString());
+      expect(shapeWireframe.border!.width, 3);
+      expect(shapeWireframe.shapeStyle!.cornerRadius, radius);
+    });
+
+    testWidgets('returns surface tinted color when elevated in wireframe', (
+      tester,
+    ) async {
+      // Given
+      final elevation = randomDouble(min: 0, max: 3);
+      final size = randomDouble(min: 10, max: 50);
+      final radius = randomDouble(min: 4, max: 10);
+      final color = randomColor();
+      final tree = SimpleTestCapture(
+        key: Key('key'),
+        recorder: recorder,
+        child: Directionality(
+          textDirection: TextDirection.ltr,
+          child: Stack(
+            children: [
+              SizedBox(
+                width: size,
+                height: size,
+                child: Material(
+                  elevation: elevation,
+                  color: color,
+                  surfaceTintColor: Colors.blue,
+                  child: Placeholder(),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+      await tester.pumpWidget(tree);
+
+      // When
+      final capture = recorder.performCapture();
+
+      // Then
+      final expectedTintedColor = ElevationOverlay.applySurfaceTint(
+        color,
+        Colors.blue,
+        elevation,
+      );
+      expect(capture, isNotNull);
+      final treeCapture = capture!.viewTreeSnapshot;
+      final containerNode = treeCapture.nodes.first;
+
+      final builtWireframes = containerNode.buildWireframes();
+      final shapeWireframe = builtWireframes.first as SRShapeWireframe;
+      expect(
+        shapeWireframe.shapeStyle!.backgroundColor,
+        expectedTintedColor.toHexString(),
+      );
+    });
   });
 }

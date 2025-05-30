@@ -28,7 +28,40 @@ class ContainerRecorder implements ElementRecorder {
     double? cornerRadius;
     double? borderWidth;
     Color? borderColor;
-    if (widget is Container) {
+    if (widget is Material) {
+      backgroundColor = widget.color;
+      final surfaceTint = widget.surfaceTintColor;
+      if (backgroundColor != null && surfaceTint != null) {
+        // TODO: Check for useMaterial3
+        backgroundColor = ElevationOverlay.applySurfaceTint(
+          backgroundColor,
+          surfaceTint,
+          widget.elevation,
+        );
+      }
+
+      final shape = widget.shape;
+      switch (shape) {
+        case final StadiumBorder _:
+          final shortSide = attributes.paintBounds.shortestSide;
+          cornerRadius = shortSide / 2;
+          borderWidth = shape.side.width;
+          borderColor = shape.side.color;
+          break;
+        case final CircleBorder _:
+          final shortSide = attributes.paintBounds.shortestSide;
+          cornerRadius = shortSide / 2;
+          borderWidth = shape.side.width;
+          borderColor = shape.side.color;
+          break;
+        case final RoundedRectangleBorder shape:
+          // TODO: TextDirection
+          cornerRadius = shape.borderRadius.resolve(null).topLeft.x;
+          borderWidth = shape.side.width;
+          borderColor = shape.side.color;
+          break;
+      }
+    } else if (widget is Container) {
       backgroundColor = widget.color;
       final decoration = widget.decoration;
       if (decoration is BoxDecoration) {

@@ -656,7 +656,7 @@ abstract class SRIncrementalUpdate {
   Map<String, dynamic> toJson();
 }
 
-@JsonSerializable()
+@JsonSerializable(includeIfNull: false)
 class SRShapeWireframeUpdate extends SRIncrementalUpdate {
   final SRShapeBorder? border;
   final SRContentClip? clip;
@@ -680,7 +680,7 @@ class SRShapeWireframeUpdate extends SRIncrementalUpdate {
   Map<String, dynamic> toJson() => _$SRShapeWireframeUpdateToJson(this);
 }
 
-@JsonSerializable()
+@JsonSerializable(includeIfNull: false)
 class SRTextWireframeUpdate extends SRIncrementalUpdate {
   final String? text;
   final SRTextStyle? textStyle;
@@ -711,7 +711,7 @@ class SRTextWireframeUpdate extends SRIncrementalUpdate {
   Map<String, dynamic> toJson() => _$SRTextWireframeUpdateToJson(this);
 }
 
-@JsonSerializable()
+@JsonSerializable(includeIfNull: false)
 class SRImageWireframeUpdate extends SRIncrementalUpdate {
   SRShapeBorder? border;
   SRContentClip? clip;
@@ -735,7 +735,7 @@ class SRImageWireframeUpdate extends SRIncrementalUpdate {
   Map<String, dynamic> toJson() => _$SRImageWireframeUpdateToJson(this);
 }
 
-@JsonSerializable()
+@JsonSerializable(includeIfNull: false)
 class SRPlaceholderWireframeUpdate extends SRIncrementalUpdate {
   String? label;
   SRContentClip? clip;
