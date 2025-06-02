@@ -370,7 +370,6 @@ void main() {
       // Given
       final elevation = randomDouble(min: 0, max: 3);
       final size = randomDouble(min: 10, max: 50);
-      final radius = randomDouble(min: 4, max: 10);
       final color = randomColor();
       final tree = SimpleTestCapture(
         key: Key('key'),

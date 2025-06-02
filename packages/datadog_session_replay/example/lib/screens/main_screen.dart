@@ -21,7 +21,10 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
-  final routes = [_RouteScreen('Simple Containers', '/simple_containers')];
+  final routes = [
+    _RouteScreen('Simple Containers', '/simple_containers'),
+    _RouteScreen('Text Rendering', '/text_recording'),
+  ];
 
   @override
   Widget build(BuildContext context) {

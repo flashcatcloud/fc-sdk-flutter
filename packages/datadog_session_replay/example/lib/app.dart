@@ -7,8 +7,11 @@ import 'package:datadog_session_replay/datadog_session_replay.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import 'main_screen.dart';
-import 'simple_containers_screen.dart';
+import 'screens/main_screen.dart';
+import 'screens/simple_containers_screen.dart';
+import 'screens/text_recording_screen.dart';
+
+const Color datadogPurple = Color.fromARGB(255, 99, 44, 166);
 
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
@@ -28,6 +31,10 @@ class _MyAppState extends State<MyApp> {
         path: '/simple_containers',
         builder: (context, state) => const SimpleContainersScreen(),
       ),
+      GoRoute(
+        path: '/text_recording',
+        builder: (context, state) => TextRecordingScreen(),
+      ),
     ],
   );
 
@@ -42,7 +49,7 @@ class _MyAppState extends State<MyApp> {
       key: captureKey,
       rum: DatadogSdk.instance.rum!,
       sessionReplay: DatadogSessionReplay.instance!,
-      child: MaterialApp.router(routerConfig: router),
+      child: MaterialApp.router(color: datadogPurple, routerConfig: router),
     );
   }
 }
