@@ -23,6 +23,14 @@ bool randomBool() {
   return _random.nextBool();
 }
 
+int randomInt() {
+  return _random.nextInt(1 << 16);
+}
+
+double randomDouble({double min = -1000000, double max = 100000}) {
+  return min + ((max - min) * _random.nextDouble());
+}
+
 extension RandomExtension<T> on List<T> {
   T randomElement() {
     return this[_random.nextInt(length)];

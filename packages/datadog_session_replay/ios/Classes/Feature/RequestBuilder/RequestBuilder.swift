@@ -32,7 +32,7 @@ internal struct RequestBuilder: FeatureRequestBuilder {
             .map { try SegmentJSON($0, source: source) }
             .merge()
 
-        return try createRequest(segments: segments, context: context)        
+        return try createRequest(segments: segments, context: context)
     }
 
     private func createRequest(segments: [SegmentJSON], context: DatadogContext) throws -> URLRequest {
