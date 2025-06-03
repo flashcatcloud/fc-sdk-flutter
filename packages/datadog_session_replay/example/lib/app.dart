@@ -7,7 +7,10 @@ import 'package:datadog_session_replay/datadog_session_replay.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import 'routes.dart';
+import 'screens/cupertino_widgets_screen.dart';
 import 'screens/main_screen.dart';
+import 'screens/material_widgets_screen.dart';
 import 'screens/simple_containers_screen.dart';
 import 'screens/text_recording_screen.dart';
 
@@ -28,12 +31,20 @@ class _MyAppState extends State<MyApp> {
     routes: [
       GoRoute(path: '/', builder: (context, state) => const MainScreen()),
       GoRoute(
-        path: '/simple_containers',
+        path: Routes.simpleContainers,
         builder: (context, state) => const SimpleContainersScreen(),
       ),
       GoRoute(
-        path: '/text_recording',
+        path: Routes.textRecording,
         builder: (context, state) => TextRecordingScreen(),
+      ),
+      GoRoute(
+        path: Routes.cupertinoWidgets,
+        builder: (context, state) => CupertinoWidgetsScreen(),
+      ),
+      GoRoute(
+        path: Routes.materialWidgets,
+        builder: (context, state) => MaterialWidgetsScreen(),
       ),
     ],
   );

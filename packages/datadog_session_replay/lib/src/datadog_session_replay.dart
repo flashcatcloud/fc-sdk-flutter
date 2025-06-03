@@ -5,6 +5,7 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:datadog_flutter_plugin/datadog_flutter_plugin.dart';
 import 'package:datadog_flutter_plugin/datadog_internal.dart';
 import 'package:flutter/widgets.dart';
 import 'package:meta/meta.dart';
@@ -79,6 +80,10 @@ class DatadogSessionReplay {
             'Exception during session replay capture: $e',
             st,
             e.runtimeType.toString(),
+          );
+          internalLogger.log(
+            CoreLoggerLevel.warn,
+            'Exception during session replay capture: $e',
           );
           errorCounter += 1;
           if (errorCounter > errorTollerance) {

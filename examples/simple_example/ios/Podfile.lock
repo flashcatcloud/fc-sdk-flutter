@@ -71,7 +71,7 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   connectivity_plus: 18382e7311ba19efcaee94442b23b32507b20695
-  datadog_flutter_plugin: de391eba42569ec1d8282aa1c49b4172603acc90
+  datadog_flutter_plugin: d7c707cfa57f67bc7bd71d275cf38d94eef1aa48
   datadog_webview_tracking: 7de2f94cb36dbb00203468d941e89ec7cbc47226
   DatadogCore: ac232fee1427f4082895d73479aadc39bf143789
   DatadogCrashReporting: f6f56f405f8f2ab9478be290a1e561861a18578f
@@ -87,4 +87,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: 4e8f8b2be68aeea4c0d5beb6ff1e79fface1d048
 
-COCOAPODS: 1.15.2
+COCOAPODS: 1.16.2

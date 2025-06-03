@@ -11,6 +11,7 @@ import '../rum_context.dart';
 import '../widgets.dart';
 import 'capture_node.dart';
 import 'element_recorders/container_recorder.dart';
+import 'element_recorders/custom_paint_recorder.dart';
 import 'element_recorders/text_recorder.dart';
 import 'pointer_capture.dart';
 import 'view_tree_snapshot.dart';
@@ -69,6 +70,7 @@ class SessionReplayRecorder {
     : _elementRecorders = [
         ContainerRecorder(keyGenerator),
         TextElementRecorder(keyGenerator),
+        CustomPaintRecorder(keyGenerator),
       ];
 
   @visibleForTesting

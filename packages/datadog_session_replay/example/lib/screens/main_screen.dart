@@ -5,6 +5,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../routes.dart';
+
 @immutable
 class _RouteScreen {
   final String title;
@@ -22,8 +24,10 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   final routes = [
-    _RouteScreen('Simple Containers', '/simple_containers'),
-    _RouteScreen('Text Rendering', '/text_recording'),
+    _RouteScreen('Simple Containers', Routes.simpleContainers),
+    _RouteScreen('Text Rendering', Routes.textRecording),
+    _RouteScreen('Cupertino Widgets', Routes.cupertinoWidgets),
+    _RouteScreen('Material Widgets', Routes.materialWidgets),
   ];
 
   @override

@@ -10,6 +10,34 @@ import '../capture_node.dart';
 import '../recorder.dart';
 import '../view_tree_snapshot.dart';
 
+@immutable
+class _ContainerStyle {
+  final String? backgroundColor;
+  final String? borderColor;
+  final double? borderWidth;
+  final double cornerRadius;
+
+  const _ContainerStyle({
+    required this.backgroundColor,
+    this.borderColor,
+    this.borderWidth,
+    this.cornerRadius = 0.0,
+  });
+}
+
+@immutable
+class _BorderStyle {
+  final double? cornerRadius;
+  final double? width;
+  final String? color;
+
+  const _BorderStyle({
+    required this.cornerRadius,
+    required this.width,
+    required this.color,
+  });
+}
+
 class ContainerRecorder implements ElementRecorder {
   final KeyGenerator keyGenerator;
 
@@ -22,114 +50,169 @@ class ContainerRecorder implements ElementRecorder {
   ) {
     final widget = element.widget;
     // Material is also considered a container
-    if (widget is! Container && widget is! Material) return null;
+    if (widget is! Container &&
+        widget is! Material &&
+        widget is! DecoratedBox) {
+      return null;
+    }
 
-    Color? backgroundColor;
-    double? cornerRadius;
-    double? borderWidth;
-    Color? borderColor;
-    if (widget is Material) {
-      backgroundColor = widget.color;
-      final surfaceTint = widget.surfaceTintColor;
-      if (backgroundColor != null && surfaceTint != null) {
-        // TODO: Check for useMaterial3
-        backgroundColor = ElevationOverlay.applySurfaceTint(
-          backgroundColor,
-          surfaceTint,
-          widget.elevation,
-        );
-      }
-
-      final shape = widget.shape;
-      switch (shape) {
-        case final StadiumBorder _:
-          final shortSide = attributes.paintBounds.shortestSide;
-          cornerRadius = shortSide / 2;
-          borderWidth = shape.side.width;
-          borderColor = shape.side.color;
-          break;
-        case final CircleBorder _:
-          final shortSide = attributes.paintBounds.shortestSide;
-          cornerRadius = shortSide / 2;
-          borderWidth = shape.side.width;
-          borderColor = shape.side.color;
-          break;
-        case final RoundedRectangleBorder shape:
-          // TODO: TextDirection
-          cornerRadius = shape.borderRadius.resolve(null).topLeft.x;
-          borderWidth = shape.side.width;
-          borderColor = shape.side.color;
-          break;
-      }
-    } else if (widget is Container) {
-      backgroundColor = widget.color;
-      final decoration = widget.decoration;
-      if (decoration is BoxDecoration) {
-        // TODO: TextDirection
-        cornerRadius = decoration.borderRadius?.resolve(null).topLeft.x;
-
-        // It is illegal to supply both Container.color and Decoration.color,
-        // so overwriting the background color here is okay.
-        backgroundColor = decoration.color;
-        if (decoration.border case final border?) {
-          // TODO: Look into non-uniform borders for SR
-          if (border.top.width > 0) {
-            borderWidth = border.top.width;
-            borderColor = border.top.color;
-          } else if (border.bottom.width > 0) {
-            borderWidth = border.bottom.width;
-            borderColor = border.bottom.color;
-          }
+    _ContainerStyle? style;
+    switch (widget) {
+      case Material widget:
+        style = _captureMaterialStyle(widget, attributes);
+        break;
+      case Container widget:
+        final decoration = widget.decoration;
+        if (decoration != null) {
+          style = _captureDecoration(decoration, attributes);
         }
-      }
+        style ??= _ContainerStyle(backgroundColor: widget.color?.toHexString());
+        break;
+      case DecoratedBox box:
+        final decoration = box.decoration;
+        style = _captureDecoration(decoration, attributes);
+        style ??= _ContainerStyle(backgroundColor: null);
+        break;
     }
 
     final key = keyGenerator.keyForElement(element);
-    final node = _ContainerNode(
-      attributes,
-      wireframeId: key,
-      backgroundColor: backgroundColor,
-      borderWidth: borderWidth,
-      borderColor: borderColor,
-      cornerRadius: cornerRadius ?? 0,
-    );
+    final node = _ContainerNode(attributes, wireframeId: key, style: style!);
     return AmbiguousElement(nodes: [node]);
+  }
+
+  _ContainerStyle? _captureDecoration(
+    Decoration decoration,
+    CapturedViewAttributes attributes,
+  ) {
+    switch (decoration) {
+      case BoxDecoration boxDecoration:
+        return _captureBoxDecoration(boxDecoration);
+      case ShapeDecoration shapeDecoration:
+        return _captureShapeDecoration(shapeDecoration, attributes);
+    }
+    return null;
+  }
+
+  _ContainerStyle _captureBoxDecoration(BoxDecoration decoration) {
+    double? cornerRadius = decoration.borderRadius?.resolve(null).topLeft.x;
+    Color? backgroundColor = decoration.color;
+    double? borderWidth;
+    Color? borderColor;
+    if (decoration.border case final border?) {
+      // TODO: Look into non-uniform borders for SR
+      if (border.top.width > 0) {
+        borderWidth = border.top.width;
+        borderColor = border.top.color;
+      } else if (border.bottom.width > 0) {
+        borderWidth = border.bottom.width;
+        borderColor = border.bottom.color;
+      }
+    }
+
+    return _ContainerStyle(
+      backgroundColor: backgroundColor?.toHexString(),
+      borderColor: borderColor?.toHexString(),
+      borderWidth: borderWidth,
+      cornerRadius: cornerRadius ?? 0.0,
+    );
+  }
+
+  _ContainerStyle _captureShapeDecoration(
+    ShapeDecoration decoration,
+    CapturedViewAttributes attributes,
+  ) {
+    final borderStyle = _extractShapeBorder(decoration.shape, attributes);
+    return _ContainerStyle(
+      backgroundColor: decoration.color?.toHexString(),
+      borderColor: borderStyle?.color,
+      borderWidth: borderStyle?.width,
+      cornerRadius: borderStyle?.cornerRadius ?? 0.0,
+    );
+  }
+
+  _ContainerStyle _captureMaterialStyle(
+    Material widget,
+    CapturedViewAttributes attributes,
+  ) {
+    Color? backgroundColor = widget.color;
+
+    final surfaceTint = widget.surfaceTintColor;
+    if (backgroundColor != null && surfaceTint != null) {
+      // TODO: Check for useMaterial3
+      backgroundColor = ElevationOverlay.applySurfaceTint(
+        backgroundColor,
+        surfaceTint,
+        widget.elevation,
+      );
+    }
+
+    final borderStyle = _extractShapeBorder(widget.shape, attributes);
+
+    return _ContainerStyle(
+      backgroundColor: backgroundColor?.toHexString(),
+      borderColor: borderStyle?.color,
+      borderWidth: borderStyle?.width,
+      cornerRadius: borderStyle?.cornerRadius ?? 0.0,
+    );
+  }
+
+  _BorderStyle? _extractShapeBorder(
+    ShapeBorder? shape,
+    CapturedViewAttributes attributes,
+  ) {
+    switch (shape) {
+      case final StadiumBorder _:
+        final shortSide = attributes.paintBounds.shortestSide;
+        return _BorderStyle(
+          cornerRadius: shortSide / 2,
+          width: shape.side.width,
+          color: shape.side.color.toHexString(),
+        );
+      case final CircleBorder _:
+        final shortSide = attributes.paintBounds.shortestSide;
+        return _BorderStyle(
+          cornerRadius: shortSide / 2,
+          width: shape.side.width,
+          color: shape.side.color.toHexString(),
+        );
+      case final RoundedRectangleBorder shape:
+        // TODO: TextDirection
+        return _BorderStyle(
+          cornerRadius: shape.borderRadius.resolve(null).topLeft.x,
+          width: shape.side.width,
+          color: shape.side.color.toHexString(),
+        );
+    }
+    return null;
   }
 }
 
 @immutable
 class _ContainerNode extends CaptureNode {
   final int wireframeId;
-  final Color? backgroundColor;
-  final Color? borderColor;
-  final double? borderWidth;
-  final double cornerRadius;
+  final _ContainerStyle style;
 
   const _ContainerNode(
     super.attributes, {
     required this.wireframeId,
-    required this.backgroundColor,
-    this.borderColor,
-    this.borderWidth,
-    this.cornerRadius = 0.0,
+    required this.style,
   });
 
   @override
   List<SRWireframe> buildWireframes() {
     final attrs = attributes;
-    SRShapeStyle? style;
-    SRShapeBorder? border;
-    if (backgroundColor != null || borderWidth != null) {
-      style = SRShapeStyle(
-        backgroundColor:
-            backgroundColor?.toHexString() ?? srTransparentColorString,
-        cornerRadius: cornerRadius,
+    SRShapeStyle? shapeStyle;
+    SRShapeBorder? shapeBorder;
+    if (style.backgroundColor != null || style.borderWidth != null) {
+      shapeStyle = SRShapeStyle(
+        backgroundColor: style.backgroundColor ?? srTransparentColorString,
+        cornerRadius: style.cornerRadius,
       );
 
-      if (borderWidth != null) {
-        border = SRShapeBorder(
-          color: borderColor!.toHexString(),
-          width: borderWidth!.round(),
+      if (style.borderWidth != null) {
+        shapeBorder = SRShapeBorder(
+          color: style.borderColor!,
+          width: style.borderWidth!.round(),
         );
       }
     }
@@ -140,8 +223,8 @@ class _ContainerNode extends CaptureNode {
         y: attrs.y,
         width: attrs.width,
         height: attrs.height,
-        shapeStyle: style,
-        border: border,
+        shapeStyle: shapeStyle,
+        border: shapeBorder,
       ),
     ];
   }
