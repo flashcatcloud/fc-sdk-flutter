@@ -131,6 +131,163 @@ void main() {
       expect(shapeWireframe.shapeStyle!.cornerRadius, 10.0);
       expect(shapeWireframe.shapeStyle!.backgroundColor, color.toHexString());
     });
+
+    testWidgets('returns shape decoration in wireframe', (tester) async {
+      // Given
+      final width = randomDouble(min: 10, max: 50);
+      final height = randomDouble(min: 10, max: 50);
+      final radius = randomDouble(min: 0, max: 8);
+      final color = randomColor();
+      final borderColor = randomColor();
+      final tree = SimpleTestCapture(
+        key: Key('key'),
+        recorder: recorder,
+        child: Directionality(
+          textDirection: TextDirection.ltr,
+          child: Stack(
+            children: [
+              Container(
+                decoration: ShapeDecoration(
+                  color: color,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(radius)),
+                    side: BorderSide(color: borderColor, width: 3.0),
+                  ),
+                ),
+                width: width,
+                height: height,
+                child: Placeholder(),
+              ),
+            ],
+          ),
+        ),
+      );
+      await tester.pumpWidget(tree);
+
+      // When
+      final capture = recorder.performCapture();
+
+      // Then
+      expect(capture, isNotNull);
+      final treeCapture = capture!.viewTreeSnapshot;
+      final containerNode = treeCapture.nodes.first;
+
+      final builtWireframes = containerNode.buildWireframes();
+      final shapeWireframe = builtWireframes.first as SRShapeWireframe;
+      expect(shapeWireframe.border, isNotNull);
+      expect(shapeWireframe.border!.color, borderColor.toHexString());
+      expect(shapeWireframe.border!.width, 3);
+      expect(shapeWireframe.shapeStyle!.cornerRadius, radius);
+      expect(shapeWireframe.shapeStyle!.backgroundColor, color.toHexString());
+    });
+  });
+
+  group('decorated box', () {
+    testWidgets('returns box decoration in wireframe', (tester) async {
+      // Given
+      final width = randomDouble(min: 10, max: 50);
+      final height = randomDouble(min: 10, max: 50);
+      final color = randomColor();
+      final borderColor = randomColor();
+      final tree = SimpleTestCapture(
+        key: Key('key'),
+        recorder: recorder,
+        child: Directionality(
+          textDirection: TextDirection.ltr,
+          child: Stack(
+            children: [
+              DecoratedBox(
+                decoration: BoxDecoration(
+                  color: color,
+                  borderRadius: BorderRadius.circular(3.0),
+                  border: Border.all(color: borderColor, width: 5.0),
+                ),
+                child: SizedBox(width: width, height: height),
+              ),
+            ],
+          ),
+        ),
+      );
+      await tester.pumpWidget(tree);
+
+      // When
+      final capture = recorder.performCapture();
+
+      // Then
+      expect(capture, isNotNull);
+      final treeCapture = capture!.viewTreeSnapshot;
+      expect(treeCapture, isNotNull);
+      expect(treeCapture.nodes.length, 1);
+      final containerNode = treeCapture.nodes.first;
+      expect(containerNode.attributes.x, 0);
+      expect(containerNode.attributes.y, 0);
+      expect(containerNode.attributes.width, width.round());
+      expect(containerNode.attributes.height, height.round());
+
+      final builtWireframes = containerNode.buildWireframes();
+      expect(builtWireframes.length, 1);
+      final shapeWireframe = builtWireframes.first as SRShapeWireframe;
+      expect(shapeWireframe.border, isNotNull);
+      expect(shapeWireframe.border!.color, borderColor.toHexString());
+      expect(shapeWireframe.border!.width, 5.0);
+      expect(shapeWireframe.shapeStyle!.cornerRadius, 3.0);
+      expect(shapeWireframe.shapeStyle!.backgroundColor, color.toHexString());
+      expect(shapeWireframe.shapeStyle!.backgroundColor, color.toHexString());
+    });
+
+    testWidgets('returns shape decoration in wireframe', (tester) async {
+      // Given
+      final width = randomDouble(min: 10, max: 50);
+      final height = randomDouble(min: 10, max: 50);
+      final color = randomColor();
+      final borderColor = randomColor();
+      final tree = SimpleTestCapture(
+        key: Key('key'),
+        recorder: recorder,
+        child: Directionality(
+          textDirection: TextDirection.ltr,
+          child: Stack(
+            children: [
+              DecoratedBox(
+                decoration: ShapeDecoration(
+                  color: color,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(3.0),
+                    side: BorderSide(color: borderColor, width: 5.0),
+                  ),
+                ),
+                child: SizedBox(width: width, height: height),
+              ),
+            ],
+          ),
+        ),
+      );
+      await tester.pumpWidget(tree);
+
+      // When
+      final capture = recorder.performCapture();
+
+      // Then
+      expect(capture, isNotNull);
+      final treeCapture = capture!.viewTreeSnapshot;
+      expect(treeCapture, isNotNull);
+      expect(treeCapture.nodes.length, 1);
+      final containerNode = treeCapture.nodes.first;
+      expect(containerNode.attributes.x, 0);
+      expect(containerNode.attributes.y, 0);
+      expect(containerNode.attributes.width, width.round());
+      expect(containerNode.attributes.height, height.round());
+
+      final builtWireframes = containerNode.buildWireframes();
+      expect(builtWireframes.length, 1);
+      final shapeWireframe = builtWireframes.first as SRShapeWireframe;
+      expect(shapeWireframe.border, isNotNull);
+      expect(shapeWireframe.border!.color, borderColor.toHexString());
+      expect(shapeWireframe.border!.width, 5.0);
+      expect(shapeWireframe.shapeStyle!.cornerRadius, 3.0);
+      expect(shapeWireframe.shapeStyle!.backgroundColor, color.toHexString());
+      expect(shapeWireframe.shapeStyle!.backgroundColor, color.toHexString());
+    });
   });
 
   group('material', () {
