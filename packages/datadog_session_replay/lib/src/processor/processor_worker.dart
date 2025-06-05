@@ -99,7 +99,7 @@ class ProcessorWorker {
         ),
       );
 
-      var encoded = jsonEncode(enrichedRecord.toJson());
+      var encoded = jsonEncode(enrichedRecord);
       try {
         await DatadogSessionReplayPlatform.instance.writeSegment(
           encoded,

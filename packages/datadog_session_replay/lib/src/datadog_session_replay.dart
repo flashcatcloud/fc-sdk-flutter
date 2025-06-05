@@ -3,7 +3,9 @@
 // Copyright 2025-Present Datadog, Inc.
 
 import 'dart:async';
+import 'dart:math';
 
+import 'package:datadog_flutter_plugin/datadog_flutter_plugin.dart';
 import 'package:datadog_flutter_plugin/datadog_internal.dart';
 import 'package:flutter/widgets.dart';
 import 'package:meta/meta.dart';
@@ -57,14 +59,41 @@ class DatadogSessionReplay {
     });
 
     if (success) {
+      // The number of times in quick succession thar SR capture can throw before
+      // we shut it down completely.
+      const errorTollerance = 10;
+
       await _processor.start();
 
       const timerDuration = Duration(milliseconds: 100);
+      var errorCounter = 0;
       // TODO(RUM-10155): See if we can be smarter about how often we perform tree captures
       Timer.periodic(timerDuration, (timer) {
-        final captureResult = _recorder.performCapture();
-        if (captureResult != null) {
-          _processor.process(captureResult);
+        try {
+          final captureResult = _recorder.performCapture();
+          if (captureResult != null) {
+            _processor.process(captureResult);
+          }
+          errorCounter = max(0, errorCounter - 1);
+        } catch (e, st) {
+          internalLogger.sendToDatadog(
+            'Exception during session replay capture: $e',
+            st,
+            e.runtimeType.toString(),
+          );
+          internalLogger.log(
+            CoreLoggerLevel.warn,
+            'Exception during session replay capture: $e',
+          );
+          errorCounter += 1;
+          if (errorCounter > errorTollerance) {
+            internalLogger.sendToDatadog(
+              'Flutter SR has exceeded its error tollerance of $errorTollerance. Shutting down.',
+              null,
+              null,
+            );
+            timer.cancel();
+          }
         }
       });
     }

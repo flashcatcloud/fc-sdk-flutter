@@ -3,6 +3,7 @@
 // Copyright 2025-Present Datadog, Inc.
 
 import 'package:datadog_flutter_plugin/datadog_internal.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../datadog_session_replay_platform_interface.dart';
@@ -10,6 +11,8 @@ import '../rum_context.dart';
 import '../widgets.dart';
 import 'capture_node.dart';
 import 'element_recorders/container_recorder.dart';
+import 'element_recorders/custom_paint_recorder.dart';
+import 'element_recorders/text_recorder.dart';
 import 'pointer_capture.dart';
 import 'view_tree_snapshot.dart';
 
@@ -23,7 +26,7 @@ abstract interface class ElementRecorder {
 class KeyGenerator {
   // This is close to JavaScript's MAX_SAFE_INT (53-bit)
   static const int maxKey = 0x20000000000000;
-  var nextKey = 0;
+  var _nextKey = 0;
 
   final Expando<int> _nodeIdExpando = Expando('sr-key');
   // ignore: unused_field
@@ -33,9 +36,9 @@ class KeyGenerator {
     var value = _nodeIdExpando[e];
     if (value != null) return value;
 
-    value = nextKey;
-    nextKey = nextKey + 1;
-    if (nextKey >= maxKey) nextKey = 0;
+    value = _nextKey;
+    _nextKey = _nextKey + 1;
+    if (_nextKey >= maxKey) _nextKey = 0;
 
     _nodeIdExpando[e] = value;
 
@@ -64,7 +67,11 @@ class SessionReplayRecorder {
   }) : this._(KeyGenerator(), timeProvider);
 
   SessionReplayRecorder._(KeyGenerator keyGenerator, this._timeProvider)
-    : _elementRecorders = [ContainerRecorder(keyGenerator)];
+    : _elementRecorders = [
+        ContainerRecorder(keyGenerator),
+        TextElementRecorder(keyGenerator),
+        CustomPaintRecorder(keyGenerator),
+      ];
 
   @visibleForTesting
   SessionReplayRecorder.withCustomRecorders(
@@ -95,6 +102,11 @@ class SessionReplayRecorder {
     List<PointerSnapshot> pointerSnapshots = [];
     var size = Size.zero;
     for (final e in _elements.values) {
+      // During hot reload, elements can be inserted that still need layout, and
+      // these will throw when we get their size. Avoid capturing these
+      if (kDebugMode) {
+        if (e.renderObject?.debugNeedsLayout == true) continue;
+      }
       final elementSize = e.size;
       if (elementSize != null) {
         // Need to copy this value because the size class
@@ -141,6 +153,10 @@ class SessionReplayRecorder {
 
       final renderObject = e.renderObject;
       if (renderObject == null) return;
+
+      // During hot reload, the recorder can try to capture items that still need
+      // layout, which will throw. Prevent this.
+      if (kDebugMode && renderObject.debugNeedsLayout) return;
 
       final transformMatrix = renderObject.getTransformTo(
         topElement.renderObject,

@@ -134,7 +134,7 @@ void main() {
       sessionID: rumContext.sessionId,
       viewID: rumContext.viewId!,
     );
-    final encodedRecord = jsonEncode(expectedRecord.toJson());
+    final encodedRecord = jsonEncode(expectedRecord);
     verify(() => mockPlatform.writeSegment(encodedRecord, rumContext.viewId!));
   });
 
@@ -239,10 +239,55 @@ void main() {
         sessionID: rumContext.sessionId,
         viewID: rumContext.viewId!,
       );
-      final expectedJson = jsonEncode(expectedRecord.toJson());
+      final expectedJson = jsonEncode(expectedRecord);
       verify(() => mockPlatform.setRecordCount(rumContext.viewId!, 4));
       verify(() => mockPlatform.writeSegment(expectedJson, rumContext.viewId!));
     });
+
+    test(
+      'incremental record does not contain elements that did not change',
+      () async {
+        // Given
+        final secondTimestamp = firstTimestamp.add(Duration(milliseconds: 200));
+        final expectedRecord = SREnrichedRecord(
+          records: [
+            SRIncrementalSnapshotRecord(
+              data: SRIncrementalMutationData(
+                adds: [],
+                removes: [],
+                updates: [
+                  SRShapeWireframeUpdate(
+                    id: 0,
+                    border: null,
+                    clip: null,
+                    shapeStyle: null,
+                    x: null,
+                    y: null,
+                    width: mockShape.width,
+                    height: mockShape.height,
+                  ),
+                ],
+              ),
+              timestamp: secondTimestamp.toUtc().millisecondsSinceEpoch,
+            ),
+          ],
+          applicationID: rumContext.applicationId,
+          sessionID: rumContext.sessionId,
+          viewID: rumContext.viewId!,
+        );
+
+        // When
+        final jsonRecord = jsonEncode(expectedRecord);
+        final encodedRecord = jsonDecode(jsonRecord);
+
+        // Then
+        final encodedMutation =
+            encodedRecord['records'][0]['data']['updates'][0]
+                as Map<String, Object?>;
+        expect(encodedMutation.containsKey('x'), isFalse);
+        expect(encodedMutation.containsKey('y'), isFalse);
+      },
+    );
 
     test(
       'processSnapshot with changes generates incremental record (add / remove)',
@@ -281,7 +326,7 @@ void main() {
           sessionID: rumContext.sessionId,
           viewID: rumContext.viewId!,
         );
-        final expectedJson = jsonEncode(expectedRecord.toJson());
+        final expectedJson = jsonEncode(expectedRecord);
         verify(() => mockPlatform.setRecordCount(rumContext.viewId!, 4));
         verify(
           () => mockPlatform.writeSegment(expectedJson, rumContext.viewId!),
@@ -337,7 +382,7 @@ void main() {
           sessionID: newContext.sessionId,
           viewID: newContext.viewId!,
         );
-        final encodedRecord = jsonEncode(expectedRecord.toJson());
+        final encodedRecord = jsonEncode(expectedRecord);
         verify(
           () => mockPlatform.writeSegment(encodedRecord, newContext.viewId!),
         );
@@ -444,7 +489,7 @@ void main() {
           sessionID: rumContext.sessionId,
           viewID: rumContext.viewId!,
         );
-        final encodedRecord = jsonEncode(expectedRecord.toJson());
+        final encodedRecord = jsonEncode(expectedRecord);
         verify(
           () => mockPlatform.writeSegment(encodedRecord, rumContext.viewId!),
         );

@@ -6,10 +6,6 @@ import 'package:flutter/widgets.dart';
 
 import '../sr_data_models.dart';
 
-abstract class WireframeBuilder {
-  List<SRWireframe> buildWireframes(CaptureNode node);
-}
-
 @immutable
 class CapturedViewAttributes {
   final Rect paintBounds;

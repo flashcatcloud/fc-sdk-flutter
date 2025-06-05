@@ -87,7 +87,7 @@ packages:
       path: "../../packages/datadog_flutter_plugin"
       relative: true
     source: path
-    version: "2.11.0"
+    version: "2.12.0"
   datadog_gql_link:
     dependency: "direct main"
     description:
