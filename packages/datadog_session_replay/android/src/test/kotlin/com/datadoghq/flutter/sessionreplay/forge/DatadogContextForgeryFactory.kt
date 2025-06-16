@@ -75,6 +75,7 @@ class DatadogContextForgeryFactory : ForgeryFactory<DatadogContext> {
             ),
             trackingConsent = forge.aValueFrom(TrackingConsent::class.java),
             appBuildId = forge.aNullable { getForgery<UUID>().toString() },
+            accountInfo = null,
             // building nested maps with default size slows down tests quite a lot, so will use
             // an explicit small size
             featuresContext = mapOf()
