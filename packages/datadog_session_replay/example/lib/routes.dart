@@ -8,4 +8,5 @@ abstract final class Routes {
   static const String textRecording = '/text_recording';
   static const String cupertinoWidgets = '/cupertino_widgets';
   static const String materialWidgets = '/material_widgets';
+  static const String textFieldWidgets = '/text_fields';
 }

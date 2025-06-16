@@ -4,22 +4,46 @@
 
 import 'package:datadog_flutter_plugin/datadog_internal.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 
+import '../../datadog_session_replay.dart';
 import '../datadog_session_replay_platform_interface.dart';
 import '../rum_context.dart';
 import '../widgets.dart';
 import 'capture_node.dart';
 import 'element_recorders/container_recorder.dart';
 import 'element_recorders/custom_paint_recorder.dart';
+import 'element_recorders/editable_text_recorder.dart';
 import 'element_recorders/text_recorder.dart';
 import 'pointer_capture.dart';
 import 'view_tree_snapshot.dart';
+
+/// Capture privacy for the current tree of nodes. This is set by the configuration,
+/// to start, but can change if the capture encounters a Widget that modifies it.
+@immutable
+class CapturePrivacy {
+  final TextAndInputPrivacyLevel textAndInputPrivacyLevel;
+
+  const CapturePrivacy({required this.textAndInputPrivacyLevel});
+
+  @override
+  bool operator ==(Object other) {
+    if (other is! CapturePrivacy) return false;
+
+    return other.textAndInputPrivacyLevel == textAndInputPrivacyLevel;
+  }
+
+  @override
+  int get hashCode {
+    return textAndInputPrivacyLevel.hashCode;
+  }
+}
 
 abstract interface class ElementRecorder {
   CaptureNodeSemantics? captureSemantics(
     Element element,
     CapturedViewAttributes attributes,
+    CapturePrivacy capturePrivacy,
   );
 }
 
@@ -61,15 +85,27 @@ class SessionReplayRecorder {
 
   final DatadogTimeProvider _timeProvider;
   final List<ElementRecorder> _elementRecorders;
+  CapturePrivacy _defaultCapturePrivacy;
+
+  @visibleForTesting
+  set defaultCapturePrivacy(CapturePrivacy value) =>
+      _defaultCapturePrivacy = value;
+  CapturePrivacy get defaultCapturePrivacy => _defaultCapturePrivacy;
 
   SessionReplayRecorder({
     DatadogTimeProvider timeProvider = const DefaultTimeProvider(),
-  }) : this._(KeyGenerator(), timeProvider);
+    required CapturePrivacy defaultCapturePrivacy,
+  }) : this._(KeyGenerator(), timeProvider, defaultCapturePrivacy);
 
-  SessionReplayRecorder._(KeyGenerator keyGenerator, this._timeProvider)
-    : _elementRecorders = [
+  SessionReplayRecorder._(
+    KeyGenerator keyGenerator,
+    this._timeProvider,
+    this._defaultCapturePrivacy,
+  ) : _elementRecorders = [
         ContainerRecorder(keyGenerator),
         TextElementRecorder(keyGenerator),
+        EditableTextRecorder(keyGenerator),
+        InputDecoratorRecorder(keyGenerator),
         CustomPaintRecorder(keyGenerator),
       ];
 
@@ -77,7 +113,9 @@ class SessionReplayRecorder {
   SessionReplayRecorder.withCustomRecorders(
     this._elementRecorders, {
     DatadogTimeProvider timeProvider = const DefaultTimeProvider(),
-  }) : _timeProvider = timeProvider;
+    required CapturePrivacy defaultCapturePrivacy,
+  }) : _timeProvider = timeProvider,
+       _defaultCapturePrivacy = defaultCapturePrivacy;
 
   void updateContext(RUMContext? context) {
     _currentContext = context;
@@ -113,7 +151,7 @@ class SessionReplayRecorder {
         // returned by the element is not serializable over the isolate
         size = Size(elementSize.width, elementSize.height);
       }
-      _captureElement(e, nodes, pointerSnapshots);
+      _captureElement(e, nodes, pointerSnapshots, _defaultCapturePrivacy);
     }
 
     if (nodes.isEmpty) return null;
@@ -125,7 +163,7 @@ class SessionReplayRecorder {
       nodes: nodes,
     );
 
-    // TODO: We dhouldn't have multiple pointer snapshots, but even if we
+    // We shouldn't have multiple pointer snapshots, but even if we
     // do, for now just take the first one.
     final pointerSnapshot = pointerSnapshots.firstOrNull;
 
@@ -142,8 +180,9 @@ class SessionReplayRecorder {
     Element topElement,
     List<CaptureNode> nodes,
     List<PointerSnapshot> pointerSnapshots,
+    CapturePrivacy capturePrivacy,
   ) {
-    void visit(Element e, int depth) {
+    void visit(Element e, CapturePrivacy capturePrivacy, int depth) {
       if (e.widget case final PointerRecorder snapshotWidget) {
         if (snapshotWidget.snapshotRecorder.takeSnapshot()
             case final snapshot?) {
@@ -161,17 +200,31 @@ class SessionReplayRecorder {
       final transformMatrix = renderObject.getTransformTo(
         topElement.renderObject,
       );
+      final untransformedPaintBounds = renderObject.paintBounds;
+
       final paintBounds = MatrixUtils.transformRect(
         transformMatrix,
         renderObject.paintBounds,
       );
+      // Don't capture things that take up no space.
+      if (paintBounds.width == 0 || paintBounds.height == 0) return;
+
+      final scaleX = paintBounds.width / untransformedPaintBounds.width;
+      final scaleY = paintBounds.height / untransformedPaintBounds.height;
       final viewAttributes = CapturedViewAttributes(
         paintBounds: paintBounds,
-        scaleX: 1.0,
-        scaleY: 1,
+        scaleX: scaleX,
+        scaleY: scaleY,
       );
 
-      final elementSemantics = _elementSemantics(e, viewAttributes);
+      final elementSemantics = _elementSemantics(
+        e,
+        viewAttributes,
+        capturePrivacy,
+      );
+      if (elementSemantics.subtreePrivacy case final newCapturePrivacy?) {
+        capturePrivacy = newCapturePrivacy;
+      }
 
       nodes.addAll(elementSemantics.nodes);
 
@@ -181,22 +234,27 @@ class SessionReplayRecorder {
           final renderObject = child.renderObject;
           if (renderObject == null) return;
 
-          visit(child, depth + 1);
+          visit(child, capturePrivacy, depth + 1);
         });
       }
     }
 
-    visit(topElement, 0);
+    visit(topElement, capturePrivacy, 0);
   }
 
   CaptureNodeSemantics _elementSemantics(
     Element element,
     CapturedViewAttributes viewAttributes,
+    CapturePrivacy capturePrivacy,
   ) {
     CaptureNodeSemantics semantics = const UnknownElement();
 
     for (final recorder in _elementRecorders) {
-      final nextSemantics = recorder.captureSemantics(element, viewAttributes);
+      final nextSemantics = recorder.captureSemantics(
+        element,
+        viewAttributes,
+        capturePrivacy,
+      );
       if (nextSemantics == null) continue;
 
       if (nextSemantics.importance >= semantics.importance) {

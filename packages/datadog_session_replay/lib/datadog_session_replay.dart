@@ -9,12 +9,26 @@ import 'src/datadog_session_replay_plugin.dart';
 export 'src/datadog_session_replay.dart' show DatadogSessionReplay;
 export 'src/widgets.dart' show SessionReplayCapture;
 
+/// Privacy levels for text and input masking in Session Replay
+enum TextAndInputPrivacyLevel {
+  /// Show all text except sensitive inputs (those with obscureText set)
+  maskSensitiveInputs,
+
+  /// Mask all input fields, such as TextField, Checkbox, Switch, etc.
+  maskAllInputs,
+
+  /// Mask all text and inputs, including all Text widgets.
+  maskAll,
+}
+
 class DatadogSessionReplayConfiguration {
   double replaySampleRate;
+  TextAndInputPrivacyLevel textAndInputPrivacyLevel;
   String? customEndpoint;
 
   DatadogSessionReplayConfiguration({
     required this.replaySampleRate,
+    this.textAndInputPrivacyLevel = TextAndInputPrivacyLevel.maskAll,
     this.customEndpoint,
   });
 }

@@ -4,6 +4,7 @@
 
 import 'package:datadog_common_test/datadog_common_test.dart';
 import 'package:datadog_flutter_plugin/datadog_internal.dart';
+import 'package:datadog_session_replay/datadog_session_replay.dart';
 import 'package:datadog_session_replay/src/capture/capture_node.dart';
 import 'package:datadog_session_replay/src/capture/pointer_capture.dart';
 import 'package:datadog_session_replay/src/capture/recorder.dart';
@@ -42,7 +43,13 @@ void main() {
     setUp(() {
       mockTimeProvider = MockTimeProvider();
       when(() => mockTimeProvider.now()).thenReturn(expectedDateTime);
-      recorder = SessionReplayRecorder(timeProvider: mockTimeProvider);
+      recorder = SessionReplayRecorder(
+        timeProvider: mockTimeProvider,
+        defaultCapturePrivacy: CapturePrivacy(
+          textAndInputPrivacyLevel:
+              TextAndInputPrivacyLevel.maskSensitiveInputs,
+        ),
+      );
     });
 
     test('capture with no context returns null ', () {
@@ -71,15 +78,25 @@ void main() {
     final mockRecorderA = MockElementRecorder();
 
     setUp(() {
-      recorder = SessionReplayRecorder.withCustomRecorders([
-        mockRecorderA,
-      ], timeProvider: mockTimeProvider);
+      recorder = SessionReplayRecorder.withCustomRecorders(
+        [mockRecorderA],
+        timeProvider: mockTimeProvider,
+        defaultCapturePrivacy: CapturePrivacy(
+          textAndInputPrivacyLevel:
+              TextAndInputPrivacyLevel.maskSensitiveInputs,
+        ),
+      );
 
       registerFallbackValue(
         CapturedViewAttributes(
           paintBounds: Rect.zero,
           scaleX: 1.0,
           scaleY: 1.0,
+        ),
+      );
+      registerFallbackValue(
+        CapturePrivacy(
+          textAndInputPrivacyLevel: TextAndInputPrivacyLevel.maskAll,
         ),
       );
       registerFallbackValue(MockElement());
@@ -90,7 +107,7 @@ void main() {
     ) async {
       // Given
       when(
-        () => mockRecorderA.captureSemantics(any(), captureAny()),
+        () => mockRecorderA.captureSemantics(any(), captureAny(), any()),
       ).thenAnswer(
         (invocation) => SpecificElement(
           subtreeStrategy: CaptureNodeSubtreeStrategy.ignore,
@@ -122,7 +139,7 @@ void main() {
     ) async {
       // Given
       when(
-        () => mockRecorderA.captureSemantics(any(), captureAny()),
+        () => mockRecorderA.captureSemantics(any(), captureAny(), any()),
       ).thenAnswer(
         (invocation) => SpecificElement(
           subtreeStrategy: CaptureNodeSubtreeStrategy.ignore,
@@ -153,7 +170,7 @@ void main() {
       (tester) async {
         // Given
         when(
-          () => mockRecorderA.captureSemantics(any(), captureAny()),
+          () => mockRecorderA.captureSemantics(any(), captureAny(), any()),
         ).thenAnswer(
           (invocation) => SpecificElement(
             subtreeStrategy: CaptureNodeSubtreeStrategy.ignore,
@@ -187,7 +204,7 @@ void main() {
     ) async {
       // Given
       when(
-        () => mockRecorderA.captureSemantics(any(), captureAny()),
+        () => mockRecorderA.captureSemantics(any(), captureAny(), any()),
       ).thenAnswer((invocation) {
         var subtreeStrategy = CaptureNodeSubtreeStrategy.record;
         if ((invocation.positionalArguments[0] as Element).widget
@@ -219,13 +236,69 @@ void main() {
       expect(capture!.viewTreeSnapshot.nodes.length, 3);
     });
 
+    testWidgets('cpature subtree passes new capture privacy when overwritten', (
+      tester,
+    ) async {
+      // Given
+      when(
+        () => mockRecorderA.captureSemantics(any(), captureAny(), any()),
+      ).thenAnswer((invocation) {
+        var subtreeStrategy = CaptureNodeSubtreeStrategy.record;
+        if ((invocation.positionalArguments[0] as Element).widget
+            is Placeholder) {
+          subtreeStrategy = CaptureNodeSubtreeStrategy.ignore;
+        }
+        return SpecificElement(
+          subtreeStrategy: subtreeStrategy,
+          subtreePrivacy: CapturePrivacy(
+            textAndInputPrivacyLevel: TextAndInputPrivacyLevel.maskAll,
+          ),
+          nodes: [MockCaptureNode()],
+        );
+      });
+      final context = RUMContext(
+        applicationId: randomString(),
+        sessionId: randomString(),
+      );
+      recorder.updateContext(context);
+
+      // When
+      final testedTree = SimpleTestCapture(
+        key: UniqueKey(),
+        recorder: recorder,
+        child: Center(child: Placeholder()),
+      );
+      await tester.pumpWidget(testedTree);
+      final _ = recorder.performCapture();
+
+      // Then
+      verifyInOrder([
+        () => mockRecorderA.captureSemantics(
+          any(),
+          any(),
+          CapturePrivacy(
+            textAndInputPrivacyLevel:
+                TextAndInputPrivacyLevel.maskSensitiveInputs,
+          ),
+        ),
+        () => mockRecorderA.captureSemantics(
+          any(),
+          any(),
+          CapturePrivacy(
+            textAndInputPrivacyLevel: TextAndInputPrivacyLevel.maskAll,
+          ),
+        ),
+      ]);
+    });
+
     testWidgets('capture uses recorder nodes with highest importance', (
       tester,
     ) async {
       // Given
       final lowImportanceRecorder = MockElementRecorder();
       when(
-        () => lowImportanceRecorder.captureSemantics(any(), captureAny()),
+        () =>
+            lowImportanceRecorder.captureSemantics(any(), captureAny(), any()),
       ).thenAnswer((invocation) {
         return AmbiguousElement(
           subtreeStrategy: CaptureNodeSubtreeStrategy.ignore,
@@ -233,7 +306,7 @@ void main() {
         );
       });
       when(
-        () => mockRecorderA.captureSemantics(any(), captureAny()),
+        () => mockRecorderA.captureSemantics(any(), captureAny(), any()),
       ).thenAnswer((invocation) {
         return SpecificElement(
           subtreeStrategy: CaptureNodeSubtreeStrategy.ignore,
@@ -276,16 +349,20 @@ void main() {
 
       final mockElementRecorder = MockElementRecorder();
       when(
-        () => mockElementRecorder.captureSemantics(any(), captureAny()),
+        () => mockElementRecorder.captureSemantics(any(), captureAny(), any()),
       ).thenAnswer(
         (invocation) => SpecificElement(
           subtreeStrategy: CaptureNodeSubtreeStrategy.record,
           nodes: [MockCaptureNode()],
         ),
       );
-      recorder = SessionReplayRecorder.withCustomRecorders([
-        mockElementRecorder,
-      ]);
+      recorder = SessionReplayRecorder.withCustomRecorders(
+        [mockElementRecorder],
+        defaultCapturePrivacy: CapturePrivacy(
+          textAndInputPrivacyLevel:
+              TextAndInputPrivacyLevel.maskSensitiveInputs,
+        ),
+      );
     });
 
     testWidgets('pointer recorder snapshot returned from capture', (
