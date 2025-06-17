@@ -115,7 +115,7 @@ void main() {
       final shapeWireframe = builtWireframes.first as SRTextWireframe;
       expect(shapeWireframe.text, textData);
       expect(shapeWireframe.textStyle.color, style.color!.toHexString());
-      expect(shapeWireframe.textStyle.size, style.fontSize!.round());
+      expect(shapeWireframe.textStyle.size, style.fontSize!.toInt());
     });
 
     testWidgets('text returns proper positioning', (tester) async {

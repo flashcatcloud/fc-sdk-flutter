@@ -207,7 +207,9 @@ class SessionReplayRecorder {
         renderObject.paintBounds,
       );
       // Don't capture things that take up no space.
-      if (paintBounds.width == 0 || paintBounds.height == 0) return;
+      if (paintBounds.width == 0 && paintBounds.height == 0) {
+        return;
+      }
 
       final scaleX = paintBounds.width / untransformedPaintBounds.width;
       final scaleY = paintBounds.height / untransformedPaintBounds.height;
