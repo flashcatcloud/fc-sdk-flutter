@@ -12,6 +12,7 @@ import 'screens/cupertino_widgets_screen.dart';
 import 'screens/main_screen.dart';
 import 'screens/material_widgets_screen.dart';
 import 'screens/simple_containers_screen.dart';
+import 'screens/text_fields_screen.dart';
 import 'screens/text_recording_screen.dart';
 
 const Color datadogPurple = Color.fromARGB(255, 99, 44, 166);
@@ -45,6 +46,10 @@ class _MyAppState extends State<MyApp> {
       GoRoute(
         path: Routes.materialWidgets,
         builder: (context, state) => MaterialWidgetsScreen(),
+      ),
+      GoRoute(
+        path: Routes.textFieldWidgets,
+        builder: (context, state) => TextFieldsScreen(),
       ),
     ],
   );

@@ -13,7 +13,7 @@ variables:
   IS_ON_CI: $CI
   SLACK_CHANNEL: "#mobile-sdk-ops"
 
-  KUBERNETES_MEMORY_REQUEST: "8Gi"
+  KUBERNETES_MEMORY_REQUEST: "12Gi"
   KUBERNETES_MEMORY_LIMIT: "16Gi"
 
 stages:

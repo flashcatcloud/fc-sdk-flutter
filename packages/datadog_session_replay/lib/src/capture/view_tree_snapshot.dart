@@ -6,6 +6,7 @@ import 'package:flutter/widgets.dart';
 
 import '../rum_context.dart';
 import 'capture_node.dart';
+import 'recorder.dart';
 
 @immutable
 class ViewTreeSnapshot {
@@ -31,18 +32,20 @@ abstract class CaptureNodeSemantics {
 
   final int importance;
   final CaptureNodeSubtreeStrategy subtreeStrategy;
+  final CapturePrivacy? subtreePrivacy;
   final List<CaptureNode> nodes;
 
   const CaptureNodeSemantics({
     required this.importance,
     required this.subtreeStrategy,
+    this.subtreePrivacy,
     required this.nodes,
   });
 }
 
 @immutable
 class UnknownElement extends CaptureNodeSemantics {
-  const UnknownElement()
+  const UnknownElement({super.subtreePrivacy})
     : super(
         importance: CaptureNodeSemantics.minImportance,
         subtreeStrategy: CaptureNodeSubtreeStrategy.record,
@@ -52,26 +55,33 @@ class UnknownElement extends CaptureNodeSemantics {
 
 @immutable
 class InvisibleElement extends CaptureNodeSemantics {
-  const InvisibleElement({required super.subtreeStrategy})
+  const InvisibleElement({required super.subtreeStrategy, super.subtreePrivacy})
     : super(importance: 0, nodes: const []);
 }
 
 @immutable
 class IgnoredElement extends CaptureNodeSemantics {
-  const IgnoredElement({required super.subtreeStrategy, super.nodes = const []})
-    : super(importance: CaptureNodeSemantics.maxImporance);
+  const IgnoredElement({
+    required super.subtreeStrategy,
+    super.nodes = const [],
+    final CapturePrivacy? subtreePrivacy,
+  }) : super(importance: CaptureNodeSemantics.maxImporance);
 }
 
 @immutable
 class AmbiguousElement extends CaptureNodeSemantics {
   const AmbiguousElement({
     super.subtreeStrategy = CaptureNodeSubtreeStrategy.record,
+    super.subtreePrivacy,
     required super.nodes,
   }) : super(importance: 0);
 }
 
 @immutable
 class SpecificElement extends CaptureNodeSemantics {
-  const SpecificElement({required super.subtreeStrategy, required super.nodes})
-    : super(importance: CaptureNodeSemantics.maxImporance);
+  const SpecificElement({
+    required super.subtreeStrategy,
+    super.subtreePrivacy,
+    required super.nodes,
+  }) : super(importance: CaptureNodeSemantics.maxImporance);
 }

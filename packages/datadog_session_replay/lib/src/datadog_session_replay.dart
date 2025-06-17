@@ -25,7 +25,7 @@ class DatadogSessionReplay {
   final InternalLogger internalLogger;
 
   final SessionReplayProcessor _processor = SessionReplayProcessor();
-  final SessionReplayRecorder _recorder = SessionReplayRecorder();
+  final SessionReplayRecorder _recorder;
 
   @internal
   static Future<DatadogSessionReplay> init(
@@ -37,7 +37,12 @@ class DatadogSessionReplay {
     return _instance!;
   }
 
-  DatadogSessionReplay._(this._configuration, this.internalLogger);
+  DatadogSessionReplay._(this._configuration, this.internalLogger)
+    : _recorder = SessionReplayRecorder(
+        defaultCapturePrivacy: CapturePrivacy(
+          textAndInputPrivacyLevel: _configuration.textAndInputPrivacyLevel,
+        ),
+      );
 
   void addElement(Key key, Element e) {
     _recorder.addElement(key, e);

@@ -2,6 +2,7 @@
 // This product includes software developed at Datadog (https://www.datadoghq.com/).
 // Copyright 2025-Present Datadog, Inc.
 import 'package:datadog_common_test/datadog_common_test.dart';
+import 'package:datadog_session_replay/datadog_session_replay.dart';
 import 'package:datadog_session_replay/src/capture/capture_node.dart';
 import 'package:datadog_session_replay/src/capture/element_recorders/custom_paint_recorder.dart';
 import 'package:datadog_session_replay/src/capture/recorder.dart';
@@ -28,9 +29,12 @@ void main() {
   late RUMContext context;
 
   setUp(() {
-    recorder = SessionReplayRecorder.withCustomRecorders([
-      CustomPaintRecorder(KeyGenerator()),
-    ]);
+    recorder = SessionReplayRecorder.withCustomRecorders(
+      [CustomPaintRecorder(KeyGenerator())],
+      defaultCapturePrivacy: CapturePrivacy(
+        textAndInputPrivacyLevel: TextAndInputPrivacyLevel.maskSensitiveInputs,
+      ),
+    );
 
     registerFallbackValue(
       CapturedViewAttributes(paintBounds: Rect.zero, scaleX: 1.0, scaleY: 1.0),

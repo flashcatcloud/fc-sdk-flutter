@@ -5,6 +5,7 @@
 // Note: to properly test recorders, we need to supply a full widget tree, as Element
 // is too difficult to mock effectively.
 import 'package:datadog_common_test/datadog_common_test.dart';
+import 'package:datadog_session_replay/datadog_session_replay.dart';
 import 'package:datadog_session_replay/src/capture/capture_node.dart';
 import 'package:datadog_session_replay/src/capture/element_recorders/container_recorder.dart';
 import 'package:datadog_session_replay/src/capture/element_recorders/text_recorder.dart';
@@ -24,9 +25,12 @@ void main() {
   late RUMContext context;
 
   setUp(() {
-    recorder = SessionReplayRecorder.withCustomRecorders([
-      TextElementRecorder(KeyGenerator()),
-    ]);
+    recorder = SessionReplayRecorder.withCustomRecorders(
+      [TextElementRecorder(KeyGenerator())],
+      defaultCapturePrivacy: CapturePrivacy(
+        textAndInputPrivacyLevel: TextAndInputPrivacyLevel.maskSensitiveInputs,
+      ),
+    );
 
     registerFallbackValue(
       CapturedViewAttributes(paintBounds: Rect.zero, scaleX: 1.0, scaleY: 1.0),
@@ -111,7 +115,7 @@ void main() {
       final shapeWireframe = builtWireframes.first as SRTextWireframe;
       expect(shapeWireframe.text, textData);
       expect(shapeWireframe.textStyle.color, style.color!.toHexString());
-      expect(shapeWireframe.textStyle.size, style.fontSize!.round());
+      expect(shapeWireframe.textStyle.size, style.fontSize!.toInt());
     });
 
     testWidgets('text returns proper positioning', (tester) async {
@@ -142,6 +146,49 @@ void main() {
       expect(textNode.attributes.x, x.round());
       expect(textNode.attributes.y, y.round());
     });
+  });
+
+  testWidgets('text scale is modified transform', (tester) async {
+    // Given
+    final textData = randomString();
+
+    final tree = SimpleTestCapture(
+      key: Key('key'),
+      recorder: recorder,
+      child: Directionality(
+        textDirection: TextDirection.ltr,
+        child: Column(
+          children: [
+            Text(textData),
+            Transform(
+              transform: Matrix4.identity()..scale(0.5),
+              child: Text(textData),
+            ),
+          ],
+        ),
+      ),
+    );
+    await tester.pumpWidget(tree);
+
+    // When
+    final capture = recorder.performCapture();
+
+    // Then
+    expect(capture, isNotNull);
+    final treeCapture = capture!.viewTreeSnapshot;
+    final firstTextNode = treeCapture.nodes[0];
+    final secondTextNode = treeCapture.nodes[1];
+
+    final firstWireframe =
+        firstTextNode.buildWireframes().first as SRTextWireframe;
+    final secondWireframe =
+        secondTextNode.buildWireframes().first as SRTextWireframe;
+    expect(secondWireframe.width, (firstWireframe.width ~/ 2));
+    expect(secondWireframe.height, (firstWireframe.height ~/ 2));
+    expect(
+      secondWireframe.textStyle.size,
+      (firstWireframe.textStyle.size ~/ 2),
+    );
   });
 
   group('rich text', () {
@@ -229,10 +276,13 @@ void main() {
       // Given
       // Use a different recorder that is capable of capturing containers.
       final keyGenerator = KeyGenerator();
-      recorder = SessionReplayRecorder.withCustomRecorders([
-        TextElementRecorder(keyGenerator),
-        ContainerRecorder(keyGenerator),
-      ]);
+      recorder = SessionReplayRecorder.withCustomRecorders(
+        [TextElementRecorder(keyGenerator), ContainerRecorder(keyGenerator)],
+        defaultCapturePrivacy: CapturePrivacy(
+          textAndInputPrivacyLevel:
+              TextAndInputPrivacyLevel.maskSensitiveInputs,
+        ),
+      );
       recorder.updateContext(context);
 
       final textData = randomString();

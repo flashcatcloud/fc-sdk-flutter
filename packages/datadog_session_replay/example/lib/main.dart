@@ -31,7 +31,10 @@ void main() async {
             )
             : null,
   )..enableSessionReplay(
-    DatadogSessionReplayConfiguration(replaySampleRate: 1.0),
+    DatadogSessionReplayConfiguration(
+      textAndInputPrivacyLevel: TextAndInputPrivacyLevel.maskSensitiveInputs,
+      replaySampleRate: 1.0,
+    ),
   );
 
   final ddsdk = DatadogSdk.instance;

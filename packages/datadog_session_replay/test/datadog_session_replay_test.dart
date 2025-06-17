@@ -4,7 +4,6 @@
 
 import 'package:datadog_flutter_plugin/datadog_internal.dart';
 import 'package:datadog_session_replay/datadog_session_replay.dart';
-import 'package:datadog_session_replay/src/datadog_session_replay.dart';
 import 'package:datadog_session_replay/src/datadog_session_replay_method_channel.dart';
 import 'package:datadog_session_replay/src/datadog_session_replay_platform_interface.dart';
 import 'package:flutter_test/flutter_test.dart';

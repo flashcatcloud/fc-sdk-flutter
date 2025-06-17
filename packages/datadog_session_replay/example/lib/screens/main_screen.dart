@@ -28,6 +28,7 @@ class _MainScreenState extends State<MainScreen> {
     _RouteScreen('Text Rendering', Routes.textRecording),
     _RouteScreen('Cupertino Widgets', Routes.cupertinoWidgets),
     _RouteScreen('Material Widgets', Routes.materialWidgets),
+    _RouteScreen('Text Fields', Routes.textFieldWidgets),
   ];
 
   @override
