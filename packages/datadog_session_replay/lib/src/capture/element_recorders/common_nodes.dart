@@ -40,7 +40,8 @@ class CapturedBorderStyle {
           color: shape.side.color.toHexString(),
         );
       case final RoundedRectangleBorder shape:
-        // TODO: TextDirection
+        // Text direction only matters for border radius if we support
+        // per-side borders and per-corner border radius.
         return CapturedBorderStyle(
           cornerRadius: shape.borderRadius.resolve(null).topLeft.x,
           width: shape.side.width,
@@ -54,7 +55,8 @@ class CapturedBorderStyle {
           color: shape.borderSide.color.toHexString(),
         );
       case final OutlineInputBorder shape:
-        // TODO: TextDirection
+        // Text direction only matters for border radius if we support
+        // per-side borders and per-corner border radius.
         return CapturedBorderStyle(
           cornerRadius: shape.borderRadius.resolve(null).topLeft.x,
           width: shape.borderSide.width,
