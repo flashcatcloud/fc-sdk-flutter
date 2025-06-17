@@ -21,7 +21,7 @@ const _sensitiveInputTypes = [
   TextInputType.visiblePassword,
 ];
 
-/// EditableTextRecorder captures the actual editable portion of the
+/// [EditableTextRecorder] captures the actual editable portion of the
 /// text, and handles obscuring the text that's captured.
 class EditableTextRecorder implements ElementRecorder {
   KeyGenerator keyGenerator;
@@ -92,8 +92,8 @@ class EditableTextRecorder implements ElementRecorder {
   }
 }
 
-/// InputDecoratorRecorder handles capturing the border around TextField
-/// and CupertinoTextField widgets.
+/// [InputDecoratorRecorder] handles capturing the border around [TextField]
+/// and [CupertinoTextField] widgets.
 class InputDecoratorRecorder implements ElementRecorder {
   final KeyGenerator keyGenerator;
 

@@ -11,7 +11,7 @@ export 'src/widgets.dart' show SessionReplayCapture;
 
 /// Privacy levels for text and input masking in Session Replay
 enum TextAndInputPrivacyLevel {
-  /// Show all text except sensitive inputs (those with obscureText set)
+  /// Show all text except sensitive inputs (those with [EditableText.obscureText] set)
   maskSensitiveInputs,
 
   /// Mask all input fields, such as TextField, Checkbox, Switch, etc.
