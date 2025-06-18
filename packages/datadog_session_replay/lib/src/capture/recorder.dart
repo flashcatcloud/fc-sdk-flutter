@@ -14,6 +14,7 @@ import 'capture_node.dart';
 import 'element_recorders/container_recorder.dart';
 import 'element_recorders/custom_paint_recorder.dart';
 import 'element_recorders/editable_text_recorder.dart';
+import 'element_recorders/image_recorder.dart';
 import 'element_recorders/text_recorder.dart';
 import 'pointer_capture.dart';
 import 'view_tree_snapshot.dart';
@@ -106,6 +107,7 @@ class SessionReplayRecorder {
         TextElementRecorder(keyGenerator),
         EditableTextRecorder(keyGenerator),
         InputDecoratorRecorder(keyGenerator),
+        ImageRecorder(keyGenerator),
         CustomPaintRecorder(keyGenerator),
       ];
 
