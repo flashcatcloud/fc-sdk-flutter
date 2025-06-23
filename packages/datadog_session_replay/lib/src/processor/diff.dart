@@ -22,7 +22,7 @@ class TableEntry {
 
 class Entry {
   bool isTableReference;
-  int id; // Can eb either an entry into the table or an index into na or oa.
+  int id; // Can be either an entry into the table or an index into na or oa.
 
   Entry(this.isTableReference, this.id);
 }
