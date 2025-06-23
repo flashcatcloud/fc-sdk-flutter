@@ -78,6 +78,8 @@ void main() {
     final mockRecorderA = MockElementRecorder();
 
     setUp(() {
+      mockTimeProvider = MockTimeProvider();
+      when(() => mockTimeProvider.now()).thenReturn(expectedDateTime);
       recorder = SessionReplayRecorder.withCustomRecorders(
         [mockRecorderA],
         timeProvider: mockTimeProvider,
@@ -289,6 +291,72 @@ void main() {
           ),
         ),
       ]);
+    });
+
+    testWidgets('recorder ignores trees with Visibility(false)', (
+      tester,
+    ) async {
+      // Given
+      when(
+        () => mockRecorderA.captureSemantics(any(), captureAny(), any()),
+      ).thenAnswer(
+        (invocation) => SpecificElement(
+          subtreeStrategy: CaptureNodeSubtreeStrategy.record,
+          nodes: [MockCaptureNode()],
+        ),
+      );
+      final context = RUMContext(
+        applicationId: randomString(),
+        sessionId: randomString(),
+      );
+      recorder.updateContext(context);
+
+      // When
+      final testedTree = SimpleTestCapture(
+        key: UniqueKey(),
+        recorder: recorder,
+        child: Visibility(visible: false, child: Center(child: Placeholder())),
+      );
+      await tester.pumpWidget(testedTree);
+      final capture = recorder.performCapture();
+
+      // Then
+      expect(capture, isNotNull);
+      expect(capture!.viewTreeSnapshot.context, context);
+      expect(capture.viewTreeSnapshot.nodes.length, 1);
+    });
+
+    testWidgets('recorder captures trees with Visibility(true)', (
+      tester,
+    ) async {
+      // Given
+      when(
+        () => mockRecorderA.captureSemantics(any(), captureAny(), any()),
+      ).thenAnswer(
+        (invocation) => SpecificElement(
+          subtreeStrategy: CaptureNodeSubtreeStrategy.record,
+          nodes: [MockCaptureNode()],
+        ),
+      );
+      final context = RUMContext(
+        applicationId: randomString(),
+        sessionId: randomString(),
+      );
+      recorder.updateContext(context);
+
+      // When
+      final testedTree = SimpleTestCapture(
+        key: UniqueKey(),
+        recorder: recorder,
+        child: Visibility(visible: true, child: Center(child: Placeholder())),
+      );
+      await tester.pumpWidget(testedTree);
+      final capture = recorder.performCapture();
+
+      // Then
+      expect(capture, isNotNull);
+      expect(capture!.viewTreeSnapshot.context, context);
+      expect(capture.viewTreeSnapshot.nodes.length, greaterThan(1));
     });
 
     testWidgets('capture uses recorder nodes with highest importance', (

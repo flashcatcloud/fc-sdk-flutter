@@ -70,6 +70,13 @@ scripts:
       melos exec -c 1 -- "set -e -o pipefail && flutter test --machine | tojunit \"--output\" \"$MELOS_ROOT_PATH/.build/test-results/\$MELOS_PACKAGE_NAME_unit.xml\"" 
     packageFilters:
       dirExists: 'test'
+  
+  golden_test:flutter:
+    run: 
+      mkdir -p .build/test-results &&
+      melos exec -c 1 -- "set -e -o pipefail && flutter test golden_test --machine | tojunit \"--output\" \"$MELOS_ROOT_PATH/.build/test-results/\$MELOS_PACKAGE_NAME_golden.xml\"" 
+    packageFilters:
+      dirExists: 'golden_test'
 
   unit_test:ios:
     exec:
