@@ -195,9 +195,14 @@ class SessionReplayRecorder {
       final renderObject = e.renderObject;
       if (renderObject == null) return;
 
+      // TODO(RUM-10473): debugNeedsLayout is also set during scrolling and does not throw from
+      // the recorder, so we'll need to look for a different flag to prevent the throw
+      // during hot reload.
       // During hot reload, the recorder can try to capture items that still need
       // layout, which will throw. Prevent this.
-      if (kDebugMode && renderObject.debugNeedsLayout) return;
+      // if (kDebugMode && renderObject.debugNeedsLayout) {
+      //   return;
+      // }
 
       final transformMatrix = renderObject.getTransformTo(
         topElement.renderObject,
@@ -209,9 +214,7 @@ class SessionReplayRecorder {
         renderObject.paintBounds,
       );
       // Don't capture things that take up no space.
-      if (paintBounds.width == 0 && paintBounds.height == 0) {
-        return;
-      }
+      if (paintBounds.width == 0 && paintBounds.height == 0) return;
 
       final scaleX = paintBounds.width / untransformedPaintBounds.width;
       final scaleY = paintBounds.height / untransformedPaintBounds.height;
