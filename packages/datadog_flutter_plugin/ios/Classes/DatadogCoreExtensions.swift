@@ -59,6 +59,7 @@ public extension DatadogSite {
         case "DatadogSite.eu1": return .eu1
         case "DatadogSite.us1Fed": return .us1_fed
         case "DatadogSite.ap1": return .ap1
+        case "DatadogSite.ap2": return .ap2
         default: return .us1
         }
     }

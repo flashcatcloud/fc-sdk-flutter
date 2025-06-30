@@ -91,9 +91,13 @@ enum DatadogSite {
   /// [app.ddog-gov.com](https://app.ddog-gov.com/).
   us1Fed,
 
-  /// Asia based servers. Sends data to
+  /// Asia-Pacific based servers. Sends data to
   /// [ap1.datadoghq.com](https://ap1.datadoghq.com).
   ap1,
+
+  /// Asia-Pacific based servers. Sends data to
+  /// [ap2.datadoghq.com](https://ap2.datadoghq.com).
+  ap2,
 }
 
 /// Defines whether the trace context should be injected into all requests or

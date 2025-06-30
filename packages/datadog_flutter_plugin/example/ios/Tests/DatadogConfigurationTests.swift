@@ -59,6 +59,7 @@ class DatadogConfigurationTests: XCTestCase {
         let eu1 = DatadogSite.parseFromFlutter("DatadogSite.eu1")
         let us1Fed = DatadogSite.parseFromFlutter("DatadogSite.us1Fed")
         let ap1 = DatadogSite.parseFromFlutter("DatadogSite.ap1")
+        let ap2 = DatadogSite.parseFromFlutter("DatadogSite.ap2")
 
         XCTAssertEqual(us1, .us1)
         XCTAssertEqual(us3, .us3)
@@ -66,6 +67,7 @@ class DatadogConfigurationTests: XCTestCase {
         XCTAssertEqual(eu1, .eu1)
         XCTAssertEqual(us1Fed, .us1_fed)
         XCTAssertEqual(ap1, .ap1)
+        XCTAssertEqual(ap2, .ap2)
     }
 
     func testAllVitalsFrequencies_AreParsedCorrectly() {
