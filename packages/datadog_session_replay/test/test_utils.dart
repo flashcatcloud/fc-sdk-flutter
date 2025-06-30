@@ -55,6 +55,7 @@ class TestImageProvider extends ImageProvider<TestImageProvider> {
   @override
   ImageStreamCompleter loadBuffer(
     TestImageProvider key,
+    // ignore: deprecated_member_use
     DecoderBufferCallback decode,
   ) {
     throw UnsupportedError('Use ImageProvider.loadImage instead.');

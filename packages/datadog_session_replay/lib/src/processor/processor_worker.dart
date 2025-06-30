@@ -5,6 +5,8 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:meta/meta.dart';
+
 import '../capture/pointer_capture.dart';
 import '../capture/recorder.dart';
 import '../capture/view_tree_snapshot.dart';
@@ -25,11 +27,7 @@ class ProcessorWorker {
     final viewId = viewSnapshot.context.viewId;
     if (viewId == null) return;
 
-    final wireframes =
-        viewSnapshot.nodes
-            .expand((element) => element.buildWireframes())
-            .toList();
-
+    final wireframes = generateWireframes(snapshot);
     var records = <SRRecord>[];
 
     final timestamp = viewSnapshot.date.toUtc().millisecondsSinceEpoch;
@@ -112,6 +110,13 @@ class ProcessorWorker {
 
     _lastSnapshot = viewSnapshot;
     _lastWireframes = wireframes;
+  }
+
+  @visibleForTesting
+  List<SRWireframe> generateWireframes(CaptureResult result) {
+    return result.viewTreeSnapshot.nodes
+        .expand((element) => element.buildWireframes())
+        .toList();
   }
 
   SRRecord _createIncrementalPointerRecord(PointerCapture pointer) {

@@ -191,6 +191,12 @@ class SessionReplayRecorder {
           pointerSnapshots.add(snapshot);
         }
       }
+      if (e.widget case final Visibility visibility) {
+        if (!visibility.visible) return;
+      }
+      if (e.widget case final SliverVisibility visilbity) {
+        if (!visilbity.visible) return;
+      }
 
       final renderObject = e.renderObject;
       if (renderObject == null) return;
