@@ -9,7 +9,6 @@ variables:
   DD_CLIENT_TOKEN: "fake-token"
   DD_APPLICATION_ID: "fake-application-id"
   IOS_SIMULATOR: "iPhone 15"
-  VAULT_ADDR: "https://vault.us1.ddbuild.io"
   IS_ON_CI: $CI
   SLACK_CHANNEL: "#mobile-sdk-ops"
 
@@ -69,6 +68,8 @@ ci-image:
 build-flutter:
   stage: build
   except: [ schedules ]
+  variables:
+    VAULT_ADDR: "https://vault.us1.ddbuild.io"
   tags:
     - macos:sonoma
     - specific:true
@@ -103,6 +104,8 @@ build-android:
 build-ios:
   stage: build
   except: [ schedules ]
+  variables:
+    VAULT_ADDR: "https://vault.us1.ddbuild.io"
   tags:
     - macos:sonoma
     - specific:true
@@ -131,6 +134,8 @@ android-integration-test:
   stage: integration-test
   except: [ schedules ]
   needs: [ build-android ]
+  variables:
+    VAULT_ADDR: "https://vault.us1.ddbuild.io"
   tags: 
     - macos:sonoma
     - specific:true
@@ -151,6 +156,8 @@ ios-integration-test:
   stage: integration-test
   except: [ schedules ]
   needs: [ build-ios ]
+  variables:
+    VAULT_ADDR: "https://vault.us1.ddbuild.io"
   tags:
     - macos:sonoma
     - specific:true
@@ -234,6 +241,8 @@ notify-nightly-failed:
 .nightly:
   only: [ schedules ]
   when: always
+  variables:
+    VAULT_ADDR: "https://vault.us1.ddbuild.io"
   tags:
     - macos:sonoma
     - specific:true
@@ -259,6 +268,8 @@ nightly-ios:
 nightly-beta-test:
   extends: .nightly
   stage: beta-test
+  variables:
+    VAULT_ADDR: "https://vault.us1.ddbuild.io"
   tags:
     - macos:sonoma
     - specific:true
