@@ -60,7 +60,7 @@ ci-image:
   stage: ci-image
   except: [ tags, schedules ]
   tags: [ "arch:amd64" ]
-  image: "$BUILDENV_REGISTRY/images/docker:24.0.4-jammy"
+  image: "$BUILDENV_REGISTRY/docker:24.0.4-jammy"
   script:
     - docker buildx build --tag registry.ddbuild.io/${CI_IMAGE_REPO}:${CURRENT_CI_IMAGE} --label target=build -f Dockerfile.gitlab --push .
 
@@ -203,7 +203,7 @@ notify-publish-develop-failure:
 notify-pipeline-succeeded:
   stage: post
   tags: [ "arch:amd64" ]
-  image: "$BUILDENV_REGISTRY/images/docker:24.0.4-gbi-focal"
+  image: "$BUILDENV_REGISTRY/docker:24.0.4-jammy"
   when: on_success
   except:
     - schedules
