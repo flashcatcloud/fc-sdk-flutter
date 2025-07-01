@@ -369,6 +369,7 @@ internal fun parseSite(site: String): DatadogSite {
         "DatadogSite.eu1" -> DatadogSite.EU1
         "DatadogSite.us1Fed" -> DatadogSite.US1_FED
         "DatadogSite.ap1" -> DatadogSite.AP1
+        "DatadogSite.ap2" -> DatadogSite.AP2
         else -> DatadogSite.US1
     }
 }
