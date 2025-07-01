@@ -53,7 +53,7 @@ class UpdateGradleFilesCommand extends Command {
 
         if (inMavenBlock) {
           mavenBlock.writeln(line);
-          if (line.contains('url') && line.contains('/snapshots/')) {
+          if (line.contains('url') && line.contains('/maven-snapshots/')) {
             // this is a request for a snapshots maven repo. Don't write it to the final file
             writeMavenBlock = false;
           }
