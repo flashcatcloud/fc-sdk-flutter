@@ -2,14 +2,13 @@ include:
   - 'https://gitlab-templates.ddbuild.io/slack-notifier/v1/template.yml'
 
 variables:
-  CURRENT_CI_IMAGE: "7"
+  CURRENT_CI_IMAGE: "8"
   BUILD_STABLE_REGISTRY: 486234852809.dkr.ecr.us-east-1.amazonaws.com
   CI_IMAGE_REPO: "ci/dd-sdk-flutter"
   CI_IMAGE_DOCKER: ${BUILD_STABLE_REGISTRY}/${CI_IMAGE_REPO}:$CURRENT_CI_IMAGE
   DD_CLIENT_TOKEN: "fake-token"
   DD_APPLICATION_ID: "fake-application-id"
   IOS_SIMULATOR: "iPhone 15"
-  VAULT_ADDR: "https://vault.us1.ddbuild.io"
   IS_ON_CI: $CI
   SLACK_CHANNEL: "#mobile-sdk-ops"
 
@@ -60,7 +59,7 @@ ci-image:
   stage: ci-image
   except: [ tags, schedules ]
   tags: [ "arch:amd64" ]
-  image: "$BUILDENV_REGISTRY/images/docker:24.0.4-gbi-focal"
+  image: "$BUILDENV_REGISTRY/docker:24.0.4-jammy"
   script:
     - docker buildx build --tag registry.ddbuild.io/${CI_IMAGE_REPO}:${CURRENT_CI_IMAGE} --label target=build -f Dockerfile.gitlab --push .
 
@@ -69,6 +68,8 @@ ci-image:
 build-flutter:
   stage: build
   except: [ schedules ]
+  variables:
+    VAULT_ADDR: "https://vault.us1.ddbuild.io"
   tags:
     - macos:sonoma
     - specific:true
@@ -104,6 +105,8 @@ build-android:
 build-ios:
   stage: build
   except: [ schedules ]
+  variables:
+    VAULT_ADDR: "https://vault.us1.ddbuild.io"
   tags:
     - macos:sonoma
     - specific:true
@@ -132,6 +135,8 @@ android-integration-test:
   stage: integration-test
   except: [ schedules ]
   needs: [ build-android ]
+  variables:
+    VAULT_ADDR: "https://vault.us1.ddbuild.io"
   tags: 
     - macos:sonoma
     - specific:true
@@ -152,6 +157,8 @@ ios-integration-test:
   stage: integration-test
   except: [ schedules ]
   needs: [ build-ios ]
+  variables:
+    VAULT_ADDR: "https://vault.us1.ddbuild.io"
   tags:
     - macos:sonoma
     - specific:true
@@ -204,7 +211,7 @@ notify-publish-develop-failure:
 notify-pipeline-succeeded:
   stage: post
   tags: [ "arch:amd64" ]
-  image: "$BUILDENV_REGISTRY/images/docker:24.0.4-gbi-focal"
+  image: "$BUILDENV_REGISTRY/docker:24.0.4-jammy"
   when: on_success
   except:
     - schedules
@@ -235,6 +242,8 @@ notify-nightly-failed:
 .nightly:
   only: [ schedules ]
   when: always
+  variables:
+    VAULT_ADDR: "https://vault.us1.ddbuild.io"
   tags:
     - macos:sonoma
     - specific:true
@@ -260,6 +269,8 @@ nightly-ios:
 nightly-beta-test:
   extends: .nightly
   stage: beta-test
+  variables:
+    VAULT_ADDR: "https://vault.us1.ddbuild.io"
   tags:
     - macos:sonoma
     - specific:true
