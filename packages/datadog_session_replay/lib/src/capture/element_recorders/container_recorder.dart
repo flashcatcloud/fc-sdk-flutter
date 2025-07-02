@@ -23,7 +23,7 @@ class ContainerRecorder implements ElementRecorder {
   ) {
     final widget = element.widget;
     // Material is also considered a container
-    if (widget is! Container &&
+    if (widget is! ColoredBox &&
         widget is! Material &&
         widget is! DecoratedBox) {
       return null;
@@ -34,12 +34,8 @@ class ContainerRecorder implements ElementRecorder {
       case Material widget:
         style = _captureMaterialStyle(widget, attributes);
         break;
-      case Container widget:
-        final decoration = widget.decoration;
-        if (decoration != null) {
-          style = ContainerStyle.fromDecoration(decoration, attributes);
-        }
-        style ??= ContainerStyle(backgroundColor: widget.color?.toHexString());
+      case ColoredBox widget:
+        style = ContainerStyle(backgroundColor: widget.color.toHexString());
         break;
       case DecoratedBox box:
         final decoration = box.decoration;

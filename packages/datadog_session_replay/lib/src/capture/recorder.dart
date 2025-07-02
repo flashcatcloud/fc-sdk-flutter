@@ -178,6 +178,22 @@ class SessionReplayRecorder {
     DatadogSessionReplayPlatform.instance.setHasReplay(context.viewId != null);
   }
 
+  // Certain elements will cause everything under the element to be invisible, such
+  // as Visibility or FadeTransition. Ignore these trees.
+  bool _shouldIgnoreTree(Element e) {
+    if (e.widget case final Visibility visibility) {
+      if (!visibility.visible) return true;
+    }
+    if (e.widget case final SliverVisibility visilbity) {
+      if (!visilbity.visible) return true;
+    }
+    if (e.widget case final FadeTransition transition) {
+      if (transition.opacity.value <= 0.0) return true;
+    }
+
+    return false;
+  }
+
   void _captureElement(
     Element topElement,
     List<CaptureNode> nodes,
@@ -191,12 +207,8 @@ class SessionReplayRecorder {
           pointerSnapshots.add(snapshot);
         }
       }
-      if (e.widget case final Visibility visibility) {
-        if (!visibility.visible) return;
-      }
-      if (e.widget case final SliverVisibility visilbity) {
-        if (!visilbity.visible) return;
-      }
+
+      if (_shouldIgnoreTree(e)) return;
 
       final renderObject = e.renderObject;
       if (renderObject == null) return;
