@@ -47,7 +47,7 @@ Future<int> main(List<String> arguments) async {
     exit(1);
   }
 
-  final gitDir = await getGitDir();
+  final gitDir = await getGitDir(path.current);
   if (gitDir == null) {
     Logger.root.shout('💥 Could not establish your current git directory.');
     exit(1);

@@ -4,8 +4,10 @@
 
 import 'dart:io';
 
+import 'package:git/git.dart';
 import 'package:logging/logging.dart';
 import 'package:path/path.dart' as path;
+import 'package:version/version.dart';
 
 import 'command.dart';
 import 'helpers.dart';
@@ -15,7 +17,7 @@ class GenerateChangelogCommand extends Command {
 
   @override
   Future<bool> run(CommandArguments args, Logger logger) async {
-    final lastReleaseSha = await _findLastReleaseSha(args);
+    final lastReleaseSha = await _findLastReleaseSha(logger, args);
     if (lastReleaseSha == null) {
       Logger.root.shout(
           '⚠️ Could not find last release! Hopefully this is a new package!.');
@@ -50,7 +52,7 @@ class GenerateChangelogCommand extends Command {
           oldLine = null;
         }
 
-        line = '## ${args.version}\n\n$versionChangelog';
+        line = '## ${args.version}\n\n$versionChangelog\n';
         if (oldLine != null) {
           line += '\n$oldLine';
         }
@@ -88,13 +90,38 @@ class GenerateChangelogCommand extends Command {
     return true;
   }
 
-  Future<String?> _findLastReleaseSha(CommandArguments args) async {
+  Future<String?> _findLastReleaseSha(
+      Logger logger, CommandArguments args) async {
     final packageTags = await args.gitDir
         .tags()
         .where((t) => t.tag.startsWith('${args.packageName}/'))
         .toList();
 
+    Version? _getVersion(Tag tag) {
+      Version? v;
+      try {
+        final versionString = tag.tag.split('/').last.replaceFirst('v', '');
+        v = Version.parse(versionString);
+      } catch (_) {
+        // Nothing to do
+      }
+      return v;
+    }
+
+    packageTags.sort((a, b) {
+      Version? versionA = _getVersion(a);
+      Version? versionB = _getVersion(b);
+      if (versionA == null) return -1;
+      if (versionB == null) return 1;
+
+      return versionA.compareTo(versionB);
+    });
+
     if (packageTags.isEmpty) return null;
+
+    final lastTag = packageTags.last;
+
+    logger.fine('Found tag ${lastTag.tag} with sha ${lastTag.objectSha}');
 
     return packageTags.last.objectSha;
   }
@@ -157,7 +184,7 @@ List<String> _getChangelogItems(List<String> commitMessages) {
         if (githubRefs.isNotEmpty) {
           final seeStrings = githubRefs
               .map((r) => '[#$r](${GenerateChangelogCommand.issuesLink}$r)');
-          changelogItem += 'See ${seeStrings.join(' ')}';
+          changelogItem += ' See ${seeStrings.join(' ')}';
         }
 
         items.add(changelogItem);
