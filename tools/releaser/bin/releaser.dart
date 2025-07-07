@@ -2,8 +2,6 @@
 // This product includes software developed at Datadog (https://www.datadoghq.com/).
 // Copyright 2019-Present Datadog, Inc.
 
-import 'dart:io';
-
 import 'package:args/args.dart';
 import 'package:logging/logging.dart';
 import 'package:path/path.dart' as path;
@@ -11,6 +9,7 @@ import 'package:releaser/cocoapod_util.dart';
 import 'package:releaser/command.dart';
 import 'package:releaser/generate_changelog.dart';
 import 'package:releaser/git_actions.dart';
+import 'package:releaser/github_cmd_wrapper.dart';
 import 'package:releaser/gradle_util.dart';
 import 'package:releaser/helpers.dart';
 import 'package:releaser/release_validator.dart';
@@ -25,6 +24,7 @@ void main(List<String> arguments) async {
 
   final argParser = ArgParser()
     ..addOption('version', abbr: 'v', mandatory: true)
+    ..addOption('repo-root', help: 'The root of the repo to release from')
     ..addFlag(
       'skip-git-checks',
       help: "Don't perform checks on branch names or un-staged files",
@@ -83,10 +83,10 @@ void main(List<String> arguments) async {
     return;
   }
 
-  final githubToken = Platform.environment['GITHUB_TOKEN'];
-  if (githubToken == null) {
-    Logger.root.shout(
-        '❌ Must have the environment variable GITHUB_TOKEN set to validate native SDK releases.');
+  final gh = GithubCommandWrapper(commandArgs.gitDir.path);
+  if (!await gh.checkAuth(Logger.root)) {
+    print(
+        '❌ Could not validate your authentication with the gh command line tool. Please login with `gh auth login`.');
     return;
   }
 
@@ -149,7 +149,9 @@ Future<CommandArguments?> _validateArguments(ArgResults argResults) async {
   bool skipGitChecks = argResults['skip-git-checks'];
   bool skipChangelogCheck = argResults['skip-changelog-check'];
 
-  final gitDir = await getGitDir();
+  final root = argResults['repo-root'];
+
+  final gitDir = await getGitDir(root);
   if (gitDir == null) {
     return null;
   }

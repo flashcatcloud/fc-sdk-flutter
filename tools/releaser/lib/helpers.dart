@@ -14,8 +14,8 @@ bool hasNativeDependency(String packageName) {
       packageName == 'datadog_webview_tracking';
 }
 
-Future<GitDir?> getGitDir() async {
-  final currentPath = path.current;
+Future<GitDir?> getGitDir(String? root) async {
+  final currentPath = root ?? path.current;
 
   if (!await GitDir.isGitDir(currentPath)) {
     Logger.root.shout('❌ Current directory is not a git directory.');
@@ -23,7 +23,7 @@ Future<GitDir?> getGitDir() async {
   }
 
   return await GitDir.fromExisting(
-    path.current,
+    currentPath,
     allowSubdirectory: true,
   );
 }
