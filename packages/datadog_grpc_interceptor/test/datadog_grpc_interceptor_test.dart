@@ -157,7 +157,7 @@ void main() {
       mockDatadog = DatadogSdkMock();
       mockRum = RumMock();
       when(() => mockDatadog.rum).thenReturn(mockRum);
-      when(() => mockRum.shouldSampleTrace()).thenReturn(true);
+      when(() => mockRum.shouldSampleTrace(any())).thenReturn(true);
       when(() => mockRum.contextInjectionSetting)
           .thenReturn(TraceContextInjection.all);
       when(() => mockRum.traceSampleRate).thenReturn(12);
@@ -227,7 +227,7 @@ void main() {
             () async {
           when(() => mockDatadog.headerTypesForHost(any()))
               .thenReturn({tracingType});
-          when(() => mockRum.shouldSampleTrace()).thenReturn(false);
+          when(() => mockRum.shouldSampleTrace(any())).thenReturn(false);
 
           final interceptor = DatadogGrpcInterceptor(
             mockDatadog,
@@ -302,7 +302,7 @@ void main() {
               .thenReturn({tracingType});
           when(() => mockRum.contextInjectionSetting)
               .thenReturn(TraceContextInjection.all);
-          when(() => mockRum.shouldSampleTrace()).thenReturn(false);
+          when(() => mockRum.shouldSampleTrace(any())).thenReturn(false);
 
           final interceptor = DatadogGrpcInterceptor(
             mockDatadog,
@@ -326,7 +326,7 @@ void main() {
               .thenReturn({tracingType});
           when(() => mockRum.contextInjectionSetting)
               .thenReturn(TraceContextInjection.sampled);
-          when(() => mockRum.shouldSampleTrace()).thenReturn(false);
+          when(() => mockRum.shouldSampleTrace(any())).thenReturn(false);
 
           final interceptor = DatadogGrpcInterceptor(
             mockDatadog,
@@ -382,7 +382,7 @@ void main() {
     mockDatadog = DatadogSdkMock();
     mockRum = RumMock();
     when(() => mockDatadog.rum).thenReturn(mockRum);
-    when(() => mockRum.shouldSampleTrace()).thenReturn(true);
+    when(() => mockRum.shouldSampleTrace(any())).thenReturn(false);
     when(() => mockRum.traceSampleRate).thenReturn(12);
     when(() => mockRum.contextInjectionSetting)
         .thenReturn(TraceContextInjection.all);
@@ -431,7 +431,7 @@ void main() {
     mockDatadog = DatadogSdkMock();
     mockRum = RumMock();
     when(() => mockDatadog.rum).thenReturn(mockRum);
-    when(() => mockRum.shouldSampleTrace()).thenReturn(true);
+    when(() => mockRum.shouldSampleTrace(any())).thenReturn(true);
     when(() => mockRum.traceSampleRate).thenReturn(12);
     when(() => mockRum.contextInjectionSetting)
         .thenReturn(TraceContextInjection.all);
@@ -475,7 +475,7 @@ void main() {
     mockDatadog = DatadogSdkMock();
     mockRum = RumMock();
     when(() => mockDatadog.rum).thenReturn(mockRum);
-    when(() => mockRum.shouldSampleTrace()).thenReturn(true);
+    when(() => mockRum.shouldSampleTrace(any())).thenReturn(true);
     when(() => mockRum.traceSampleRate).thenReturn(12);
     when(() => mockRum.contextInjectionSetting)
         .thenReturn(TraceContextInjection.all);

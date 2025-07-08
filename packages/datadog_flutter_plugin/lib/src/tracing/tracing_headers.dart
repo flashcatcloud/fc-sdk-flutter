@@ -193,8 +193,11 @@ class TracingContext {
 final Random _traceRandom = Random();
 
 /// Generate a tracing context
-TracingContext generateTracingContext(bool sampled) {
-  return TracingContext(TracingId.traceId(), TracingId.spanId(), null, sampled);
+TracingContext generateTracingContext(DatadogRum rum) {
+  final traceId = TracingId.traceId();
+  final spanId = TracingId.spanId();
+  bool sampled = rum.shouldSampleTrace(traceId);
+  return TracingContext(traceId, spanId, null, sampled);
 }
 
 Map<String, Object?> generateDatadogAttributes(
