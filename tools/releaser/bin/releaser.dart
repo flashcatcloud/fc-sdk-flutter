@@ -22,42 +22,43 @@ void main(List<String> arguments) async {
     print(event.message);
   });
 
-  final argParser = ArgParser()
-    ..addOption('version', abbr: 'v', mandatory: true)
-    ..addOption('repo-root', help: 'The root of the repo to release from')
-    ..addFlag(
-      'skip-git-checks',
-      help: "Don't perform checks on branch names or un-staged files",
-      defaultsTo: false,
-    )
-    ..addFlag(
-      'skip-changelog-check',
-      help:
-          "Don't check if there are any items in the changelog (for debuging the releaser only)",
-      defaultsTo: false,
-    )
-    ..addOption(
-      'ios-version',
-      help: 'Explicitly set the iOS release this release will target',
-    )
-    ..addOption(
-      'android-version',
-      help: 'Explicitly set the Android release this release will target',
-    )
-    ..addFlag(
-      'dry-run',
-      abbr: 'd',
-      help: "Don't perform any actual operations. Also bypasses git checks",
-      defaultsTo: false,
-    )
-    ..addFlag('verbose', defaultsTo: false)
-    ..addFlag(
-      'help',
-      abbr: 'h',
-      help: 'Print the help',
-      negatable: false,
-      defaultsTo: false,
-    );
+  final argParser =
+      ArgParser()
+        ..addOption('version', abbr: 'v', mandatory: true)
+        ..addOption('repo-root', help: 'The root of the repo to release from')
+        ..addFlag(
+          'skip-git-checks',
+          help: "Don't perform checks on branch names or un-staged files",
+          defaultsTo: false,
+        )
+        ..addFlag(
+          'skip-changelog-check',
+          help:
+              "Don't check if there are any items in the changelog (for debuging the releaser only)",
+          defaultsTo: false,
+        )
+        ..addOption(
+          'ios-version',
+          help: 'Explicitly set the iOS release this release will target',
+        )
+        ..addOption(
+          'android-version',
+          help: 'Explicitly set the Android release this release will target',
+        )
+        ..addFlag(
+          'dry-run',
+          abbr: 'd',
+          help: "Don't perform any actual operations. Also bypasses git checks",
+          defaultsTo: false,
+        )
+        ..addFlag('verbose', defaultsTo: false)
+        ..addFlag(
+          'help',
+          abbr: 'h',
+          help: 'Print the help',
+          negatable: false,
+          defaultsTo: false,
+        );
 
   ArgResults argResults;
   try {
@@ -86,7 +87,8 @@ void main(List<String> arguments) async {
   final gh = GithubCommandWrapper(commandArgs.gitDir.path);
   if (!await gh.checkAuth(Logger.root)) {
     print(
-        '❌ Could not validate your authentication with the gh command line tool. Please login with `gh auth login`.');
+      '❌ Could not validate your authentication with the gh command line tool. Please login with `gh auth login`.',
+    );
     return;
   }
 
@@ -113,11 +115,12 @@ void main(List<String> arguments) async {
     GenerateChangelogCommand(),
     UpdateVersionsCommand(),
     CommitChangesCommand(
-        'chore: Preparing for release of ${commandArgs.packageName} ${commandArgs.version}.',
-        noChangesOkay: isInitialRelease),
+      'chore: Preparing for release of ${commandArgs.packageName} ${commandArgs.version}.',
+      noChangesOkay: isInitialRelease,
+    ),
     CreateReleaseBranchCommand(),
     RemoveDependencyOverridesCommand(),
-    RemovePodOverridesCommand(),
+    PinPodVersion(),
     UpdateGradleFilesCommand(),
     CommitChangesCommand(
       'chore: Remove dependency overrides for release of ${commandArgs.packageName} ${commandArgs.version}.',
@@ -127,7 +130,8 @@ void main(List<String> arguments) async {
     SwitchBranchCommand(choreBranch),
     BumpVersionCommand(versionBumpType),
     CommitChangesCommand(
-        'chore: Bump version of ${commandArgs.packageName} to next potential release.'),
+      'chore: Bump version of ${commandArgs.packageName} to next potential release.',
+    ),
   ];
 
   for (final command in commands) {

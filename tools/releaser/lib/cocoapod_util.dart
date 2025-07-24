@@ -1,3 +1,6 @@
+// Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
+// This product includes software developed at Datadog (https://www.datadoghq.com/).
+// Copyright 2025-Present Datadog, Inc.
 import 'dart:io';
 
 import 'package:logging/logging.dart';
@@ -5,20 +8,14 @@ import 'package:path/path.dart' as path;
 
 import 'command.dart';
 import 'helpers.dart';
-import 'package_list.dart';
 
-final overridesStartPattern = RegExp(r'\s+# Datadog Pod Overrides');
-final overridesEndPattern = RegExp(r'\s+# End Datadog Pod Overrides');
-final specDependencyPattern =
-    RegExp(r"\s+s\.dependency\s+'(?<dependency>Datadog.+)', '.+");
+final specDependencyPattern = RegExp(
+  r"\s+s\.dependency\s+'(?<dependency>Datadog.+)', '.+",
+);
 
-class RemovePodOverridesCommand extends Command {
+class PinPodVersion extends Command {
   @override
   Future<bool> run(CommandArguments args, Logger logger) async {
-    if (!await _removePodfileOverrides(args, logger)) {
-      return false;
-    }
-
     // Other packages can keep looser version constraints
     if (args.packageName == 'datadog_flutter_plugin') {
       if (!await _pinPodspecVersion(args, logger)) {
@@ -29,43 +26,21 @@ class RemovePodOverridesCommand extends Command {
     return true;
   }
 
-  Future<bool> _removePodfileOverrides(
-      CommandArguments args, Logger logger) async {
-    logger.info('ℹ️ Removing overrides from Podfiles.');
-    for (var filePath in podfileList) {
-      final file = File(path.join(args.gitDir.path, filePath));
-      if (!file.existsSync()) {
-        logger.shout('❌ Could not find file $filePath');
-        return false;
-      }
-
-      bool removingLines = false;
-      logger.fine('-- ℹ️ Removing overrides from $filePath');
-      await transformFile(file, logger, args.dryRun, (element) {
-        if (removingLines && element.startsWith(overridesEndPattern)) {
-          removingLines = false;
-          // Remove the end pattern line
-          return null;
-        } else if (element.startsWith(overridesStartPattern)) {
-          removingLines = true;
-        }
-
-        return removingLines ? null : element;
-      });
-    }
-
-    return true;
-  }
-
   Future<bool> _pinPodspecVersion(CommandArguments args, Logger logger) async {
     final podspecLocation = 'ios/${args.packageName}.podspec';
 
-    final file = File(path.join(
-        args.gitDir.path, 'packages/${args.packageName}', podspecLocation));
+    final file = File(
+      path.join(
+        args.gitDir.path,
+        'packages/${args.packageName}',
+        podspecLocation,
+      ),
+    );
 
     if (!file.existsSync()) {
       logger.warning(
-          '⚠️ Could not find file $file. This is expected for non-core packages');
+        '⚠️ Could not find file $file. This is expected for non-core packages',
+      );
       return true;
     }
 
