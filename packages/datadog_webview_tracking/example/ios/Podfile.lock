@@ -7,9 +7,10 @@ PODS:
     - DatadogRUM (~> 2)
     - DictionaryCoder (= 1.0.8)
     - Flutter
-  - datadog_inappwebview_tracking (0.0.1):
-    - DatadogCore (~> 2.20)
+  - datadog_webview_tracking (0.0.1):
+    - DatadogWebViewTracking (~> 2)
     - Flutter
+    - webview_flutter_wkwebview
   - DatadogCore (2.29.0):
     - DatadogInternal (= 2.29.0)
   - DatadogCrashReporting (2.29.0):
@@ -20,26 +21,23 @@ PODS:
     - DatadogInternal (= 2.29.0)
   - DatadogRUM (2.29.0):
     - DatadogInternal (= 2.29.0)
+  - DatadogWebViewTracking (2.29.0):
+    - DatadogInternal (= 2.29.0)
   - DictionaryCoder (1.0.8)
   - Flutter (1.0.0)
-  - flutter_inappwebview_ios (0.0.1):
-    - Flutter
-    - flutter_inappwebview_ios/Core (= 0.0.1)
-    - OrderedSet (~> 6.0.3)
-  - flutter_inappwebview_ios/Core (0.0.1):
-    - Flutter
-    - OrderedSet (~> 6.0.3)
   - integration_test (0.0.1):
     - Flutter
-  - OrderedSet (6.0.3)
   - PLCrashReporter (1.12.0)
+  - webview_flutter_wkwebview (0.0.1):
+    - Flutter
+    - FlutterMacOS
 
 DEPENDENCIES:
   - datadog_flutter_plugin (from `.symlinks/plugins/datadog_flutter_plugin/ios`)
-  - datadog_inappwebview_tracking (from `.symlinks/plugins/datadog_inappwebview_tracking/ios`)
+  - datadog_webview_tracking (from `.symlinks/plugins/datadog_webview_tracking/ios`)
   - Flutter (from `Flutter`)
-  - flutter_inappwebview_ios (from `.symlinks/plugins/flutter_inappwebview_ios/ios`)
   - integration_test (from `.symlinks/plugins/integration_test/ios`)
+  - webview_flutter_wkwebview (from `.symlinks/plugins/webview_flutter_wkwebview/darwin`)
 
 SPEC REPOS:
   trunk:
@@ -48,36 +46,36 @@ SPEC REPOS:
     - DatadogInternal
     - DatadogLogs
     - DatadogRUM
+    - DatadogWebViewTracking
     - DictionaryCoder
-    - OrderedSet
     - PLCrashReporter
 
 EXTERNAL SOURCES:
   datadog_flutter_plugin:
     :path: ".symlinks/plugins/datadog_flutter_plugin/ios"
-  datadog_inappwebview_tracking:
-    :path: ".symlinks/plugins/datadog_inappwebview_tracking/ios"
+  datadog_webview_tracking:
+    :path: ".symlinks/plugins/datadog_webview_tracking/ios"
   Flutter:
     :path: Flutter
-  flutter_inappwebview_ios:
-    :path: ".symlinks/plugins/flutter_inappwebview_ios/ios"
   integration_test:
     :path: ".symlinks/plugins/integration_test/ios"
+  webview_flutter_wkwebview:
+    :path: ".symlinks/plugins/webview_flutter_wkwebview/darwin"
 
 SPEC CHECKSUMS:
   datadog_flutter_plugin: cbf61c8c2dd346d83683cca8f2450c1b7ab1f1dd
-  datadog_inappwebview_tracking: 5e209d7e4e9997f5a7422314e3be6406e5499eb9
+  datadog_webview_tracking: c67749cb40aa011d064038dfa66fb838f8e34e8e
   DatadogCore: 919080d4ba0bf172f42e8cf49a6ea33a79bdeb9a
   DatadogCrashReporting: 3de14c873c0492803eca0373769791fde30639f6
   DatadogInternal: f98c60cc5b44db688692e2b560ea273182cde022
   DatadogLogs: c314b15a97bfc7e0728ea253d3638b0513032d88
   DatadogRUM: 6ec371f477a1022fd5aad6ccb5407b85a04db399
+  DatadogWebViewTracking: f637f0e36cf62b713cd6673690d94072e6223570
   DictionaryCoder: 5f84fff69f54cb806071538430bdafe04a89d658
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
-  flutter_inappwebview_ios: 6f63631e2c62a7c350263b13fa5427aedefe81d4
   integration_test: 252f60fa39af5e17c3aa9899d35d908a0721b573
-  OrderedSet: e539b66b644ff081c73a262d24ad552a69be3a94
   PLCrashReporter: db59ef96fa3d25f3650040d02ec2798cffee75f2
+  webview_flutter_wkwebview: a4af96a051138e28e29f60101d094683b9f82188
 
 PODFILE CHECKSUM: 4305caec6b40dde0ae97be1573c53de1882a07e5
 
