@@ -13,7 +13,7 @@ scripts:
   build:ios:
     exec:
       concurrency: 1
-    run: cd example && flutter build ios --release --no-codesign
+    run: cd example && flutter clean && flutter build ios --release --no-codesign
     packageFilters:
       dirExists: example/ios
 
