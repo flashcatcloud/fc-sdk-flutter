@@ -32,6 +32,8 @@ stages:
     - export PATH=$PATH:$HOME/.pub-cache/bin
     - flutter upgrade
     - flutter --version
+    # SPM is the exception, make sure its disabled before starting the build
+    - flutter config --no-enable-swift-package-manager
     - dart pub global activate melos
     - dart pub global activate junitreport
     - melos bootstrap
@@ -101,6 +103,23 @@ build-android:
     paths:
       - "$CI_PROJECT_DIR/**/reports/detekt/*"
 
+build-ios-spm:
+  stage: build
+  except: [ schedules ]
+  variables:
+    VAULT_ADDR: "https://vault.us1.ddbuild.io"
+  tags:
+    - macos:sonoma
+    - specific:true
+  script:
+    - !reference [.pre, script]
+    - !reference [.pre-ios, script]
+    - flutter config --enable-swift-package-manager    
+    - melos pub:get
+    - melos pod_update --no-select
+    - melos run analyze:ios
+    - melos run build:ios
+    - melos run unit_test:ios
 
 build-ios:
   stage: build
