@@ -115,8 +115,8 @@ build-ios-spm:
     - !reference [.pre, script]
     - !reference [.pre-ios, script]
     - flutter config --enable-swift-package-manager    
+    - melos remove_cocoapods
     - melos pub:get
-    - melos pod_update --no-select
     - melos run analyze:ios
     - melos run build:ios
     - melos run unit_test:ios
