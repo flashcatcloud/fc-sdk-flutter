@@ -21,7 +21,7 @@ Instrument your application with Datadog.
   s.dependency 'DatadogRUM', '~> 2'
   s.dependency 'DatadogInternal', '~> 2'
   s.dependency 'DatadogCrashReporting', '~> 2'
-  s.dependency 'DictionaryCoder', '1.0.8'
+  s.dependency 'DictionaryCoder', '1.2.0'
   s.platform = :ios, '12.0'
 
   # Flutter.framework does not contain a i386 slice.

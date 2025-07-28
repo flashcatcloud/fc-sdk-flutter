@@ -13,6 +13,7 @@ import 'package:releaser/github_cmd_wrapper.dart';
 import 'package:releaser/gradle_util.dart';
 import 'package:releaser/helpers.dart';
 import 'package:releaser/release_validator.dart';
+import 'package:releaser/spm_util.dart';
 import 'package:releaser/version_updater.dart';
 import 'package:releaser/yaml_util.dart';
 
@@ -120,7 +121,8 @@ void main(List<String> arguments) async {
     ),
     CreateReleaseBranchCommand(),
     RemoveDependencyOverridesCommand(),
-    PinPodVersion(),
+    PinCocoapodsVersionCommand(),
+    PinSwiftPackageVersion(),
     UpdateGradleFilesCommand(),
     CommitChangesCommand(
       'chore: Remove dependency overrides for release of ${commandArgs.packageName} ${commandArgs.version}.',

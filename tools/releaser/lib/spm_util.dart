@@ -31,7 +31,7 @@ class PinSwiftPackageVersion extends Command {
     return pinSpmVersion(
       args.gitDir.path,
       args.packageName,
-      'exact: ${args.iOSRelease}',
+      'exact: "${args.iOSRelease}"',
       args.dryRun,
       logger,
     );
@@ -58,12 +58,14 @@ class PinSwiftPackageVersion extends Command {
     }
 
     logger.info('ℹ️ Setting the iOS Pod Dependency to $versionString');
-    await transformFile(file, logger, dryRun, (element) {
-      final match = packageDependencyPattern.firstMatch(element);
+    await transformFile(file, logger, dryRun, (line) {
+      final match = packageDependencyPattern.firstMatch(line);
       if (match != null && match.namedGroup('package') == datadogIosRepo) {
-        element = '        .package(url: $datadogIosRepo, $versionString)';
+        final needsComma = line.trimRight().endsWith(',');
+        line =
+            '        .package(url: "$datadogIosRepo", $versionString)${needsComma ? ',' : ''}';
       }
-      return element;
+      return line;
     });
 
     return true;
