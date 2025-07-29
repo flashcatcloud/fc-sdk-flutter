@@ -10,6 +10,7 @@ import com.datadog.android.DatadogSite
 import com.datadog.android.api.context.DatadogContext
 import com.datadog.android.api.context.DeviceInfo
 import com.datadog.android.api.context.DeviceType
+import com.datadog.android.api.context.LocaleInfo
 import com.datadog.android.api.context.NetworkInfo
 import com.datadog.android.api.context.ProcessInfo
 import com.datadog.android.api.context.TimeInfo
@@ -21,6 +22,7 @@ import java.util.Locale
 import java.util.UUID
 
 class DatadogContextForgeryFactory : ForgeryFactory<DatadogContext> {
+    @Suppress("LongMethod")
     override fun getForgery(forge: Forge): DatadogContext {
         return DatadogContext(
             site = forge.aValueFrom(DatadogSite::class.java),
@@ -61,7 +63,12 @@ class DatadogContextForgeryFactory : ForgeryFactory<DatadogContext> {
                 osVersion = forge.aString(),
                 osMajorVersion = forge.aString(),
                 architecture = forge.aString(),
-                numberOfDisplays = forge.aNullable { anInt() }
+                numberOfDisplays = forge.aNullable { anInt() },
+                localeInfo = LocaleInfo(
+                    locales = forge.aList { forge.aString() },
+                    currentLocale = forge.aString(),
+                    timeZone = forge.aString()
+                )
             ),
             userInfo = UserInfo(
                 id = forge.aNullable { anHexadecimalString() },
