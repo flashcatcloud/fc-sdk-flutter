@@ -11,23 +11,23 @@ PODS:
     - DatadogWebViewTracking (~> 2)
     - Flutter
     - webview_flutter_wkwebview
-  - DatadogCore (2.22.0):
-    - DatadogInternal (= 2.22.0)
-  - DatadogCrashReporting (2.22.0):
-    - DatadogInternal (= 2.22.0)
-    - PLCrashReporter (~> 1.11.2)
-  - DatadogInternal (2.22.0)
-  - DatadogLogs (2.22.0):
-    - DatadogInternal (= 2.22.0)
-  - DatadogRUM (2.22.0):
-    - DatadogInternal (= 2.22.0)
-  - DatadogWebViewTracking (2.22.0):
-    - DatadogInternal (= 2.22.0)
+  - DatadogCore (2.29.0):
+    - DatadogInternal (= 2.29.0)
+  - DatadogCrashReporting (2.29.0):
+    - DatadogInternal (= 2.29.0)
+    - PLCrashReporter (~> 1.12.0)
+  - DatadogInternal (2.29.0)
+  - DatadogLogs (2.29.0):
+    - DatadogInternal (= 2.29.0)
+  - DatadogRUM (2.29.0):
+    - DatadogInternal (= 2.29.0)
+  - DatadogWebViewTracking (2.29.0):
+    - DatadogInternal (= 2.29.0)
   - DictionaryCoder (1.0.8)
   - Flutter (1.0.0)
   - integration_test (0.0.1):
     - Flutter
-  - PLCrashReporter (1.11.2)
+  - PLCrashReporter (1.12.0)
   - webview_flutter_wkwebview (0.0.1):
     - Flutter
     - FlutterMacOS
@@ -35,18 +35,18 @@ PODS:
 DEPENDENCIES:
   - datadog_flutter_plugin (from `.symlinks/plugins/datadog_flutter_plugin/ios`)
   - datadog_webview_tracking (from `.symlinks/plugins/datadog_webview_tracking/ios`)
-  - DatadogCore (from `https://github.com/DataDog/dd-sdk-ios`, branch `develop`)
-  - DatadogCrashReporting (from `https://github.com/DataDog/dd-sdk-ios`, branch `develop`)
-  - DatadogInternal (from `https://github.com/DataDog/dd-sdk-ios`, branch `develop`)
-  - DatadogLogs (from `https://github.com/DataDog/dd-sdk-ios`, branch `develop`)
-  - DatadogRUM (from `https://github.com/DataDog/dd-sdk-ios`, branch `develop`)
-  - DatadogWebViewTracking (from `https://github.com/DataDog/dd-sdk-ios`, branch `develop`)
   - Flutter (from `Flutter`)
   - integration_test (from `.symlinks/plugins/integration_test/ios`)
   - webview_flutter_wkwebview (from `.symlinks/plugins/webview_flutter_wkwebview/darwin`)
 
 SPEC REPOS:
   trunk:
+    - DatadogCore
+    - DatadogCrashReporting
+    - DatadogInternal
+    - DatadogLogs
+    - DatadogRUM
+    - DatadogWebViewTracking
     - DictionaryCoder
     - PLCrashReporter
 
@@ -55,24 +55,6 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/datadog_flutter_plugin/ios"
   datadog_webview_tracking:
     :path: ".symlinks/plugins/datadog_webview_tracking/ios"
-  DatadogCore:
-    :branch: develop
-    :git: https://github.com/DataDog/dd-sdk-ios
-  DatadogCrashReporting:
-    :branch: develop
-    :git: https://github.com/DataDog/dd-sdk-ios
-  DatadogInternal:
-    :branch: develop
-    :git: https://github.com/DataDog/dd-sdk-ios
-  DatadogLogs:
-    :branch: develop
-    :git: https://github.com/DataDog/dd-sdk-ios
-  DatadogRUM:
-    :branch: develop
-    :git: https://github.com/DataDog/dd-sdk-ios
-  DatadogWebViewTracking:
-    :branch: develop
-    :git: https://github.com/DataDog/dd-sdk-ios
   Flutter:
     :path: Flutter
   integration_test:
@@ -80,41 +62,21 @@ EXTERNAL SOURCES:
   webview_flutter_wkwebview:
     :path: ".symlinks/plugins/webview_flutter_wkwebview/darwin"
 
-CHECKOUT OPTIONS:
-  DatadogCore:
-    :commit: 23d2fcf19d0aca4374599f027e575d507652130e
-    :git: https://github.com/DataDog/dd-sdk-ios
-  DatadogCrashReporting:
-    :commit: 23d2fcf19d0aca4374599f027e575d507652130e
-    :git: https://github.com/DataDog/dd-sdk-ios
-  DatadogInternal:
-    :commit: 23d2fcf19d0aca4374599f027e575d507652130e
-    :git: https://github.com/DataDog/dd-sdk-ios
-  DatadogLogs:
-    :commit: 23d2fcf19d0aca4374599f027e575d507652130e
-    :git: https://github.com/DataDog/dd-sdk-ios
-  DatadogRUM:
-    :commit: 23d2fcf19d0aca4374599f027e575d507652130e
-    :git: https://github.com/DataDog/dd-sdk-ios
-  DatadogWebViewTracking:
-    :commit: 23d2fcf19d0aca4374599f027e575d507652130e
-    :git: https://github.com/DataDog/dd-sdk-ios
-
 SPEC CHECKSUMS:
-  datadog_flutter_plugin: de391eba42569ec1d8282aa1c49b4172603acc90
-  datadog_webview_tracking: 7de2f94cb36dbb00203468d941e89ec7cbc47226
-  DatadogCore: ac232fee1427f4082895d73479aadc39bf143789
-  DatadogCrashReporting: f6f56f405f8f2ab9478be290a1e561861a18578f
-  DatadogInternal: 2c9770cd4bb66636f2c1578f4cfbc5984e032e2d
-  DatadogLogs: 397a79884d4dff82cf3d1a35b3e61e9ab4b03cf4
-  DatadogRUM: 9f23460eb44e2bd2f2fe5e4db9d205dcdd0ef865
-  DatadogWebViewTracking: 2191682c6af12d86c093ceb3a20a886708bfeb4f
+  datadog_flutter_plugin: cbf61c8c2dd346d83683cca8f2450c1b7ab1f1dd
+  datadog_webview_tracking: c67749cb40aa011d064038dfa66fb838f8e34e8e
+  DatadogCore: 919080d4ba0bf172f42e8cf49a6ea33a79bdeb9a
+  DatadogCrashReporting: 3de14c873c0492803eca0373769791fde30639f6
+  DatadogInternal: f98c60cc5b44db688692e2b560ea273182cde022
+  DatadogLogs: c314b15a97bfc7e0728ea253d3638b0513032d88
+  DatadogRUM: 6ec371f477a1022fd5aad6ccb5407b85a04db399
+  DatadogWebViewTracking: f637f0e36cf62b713cd6673690d94072e6223570
   DictionaryCoder: 5f84fff69f54cb806071538430bdafe04a89d658
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
   integration_test: 252f60fa39af5e17c3aa9899d35d908a0721b573
-  PLCrashReporter: 499c53b0104f95c302d94fd723ebb03c56d9bac8
+  PLCrashReporter: db59ef96fa3d25f3650040d02ec2798cffee75f2
   webview_flutter_wkwebview: a4af96a051138e28e29f60101d094683b9f82188
 
-PODFILE CHECKSUM: 572ca5e96f49c59ed4f5f02e3a147e09cc70e717
+PODFILE CHECKSUM: 4305caec6b40dde0ae97be1573c53de1882a07e5
 
-COCOAPODS: 1.15.2
+COCOAPODS: 1.16.2

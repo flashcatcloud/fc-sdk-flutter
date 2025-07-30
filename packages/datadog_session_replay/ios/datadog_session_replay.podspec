@@ -13,7 +13,7 @@ Support for Datadog Session Replay in Flutter.
   s.license          = { :file => '../LICENSE' }
   s.author           = { 'Datadog' => 'info@datadoghq.com' }
   s.source           = { :path => '.' }
-  s.source_files = 'Classes/**/*'
+  s.source_files = 'datadog_session_replay/Sources/**/*'
   s.dependency 'Flutter'
   s.dependency 'DatadogCore', '~> 2'
   s.platform = :ios, '12.0'

@@ -13,7 +13,7 @@ scripts:
   build:ios:
     exec:
       concurrency: 1
-    run: cd example && flutter build ios --release --no-codesign
+    run: cd example && flutter clean && flutter build ios --release --no-codesign
     packageFilters:
       dirExists: example/ios
 
@@ -204,6 +204,18 @@ scripts:
       flutter test integration_test --machine -d emulator'     
     packageFilters:
       scope: 'datadog_flutter_plugin'
+
+  remove_cocoapods:
+    exec: |
+      cd example/ios
+      pod deintegrate
+      rm Podfile || true
+      rm Podfile.lock || true
+    description: |
+      Remove Cocoapods support from examples.  This prevents some build failures when testing
+      spm support. This change is permanent and should not be committed to source control.
+    packageFilters:
+      dirExists: 'example/ios'
 
   prepare:
     run: melos pub:get && melos build_runner && melos generate_env && melos generate_env:e2e
