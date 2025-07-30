@@ -1,5 +1,30 @@
 # Changelog
 
+## 2.12.0
+
+* Support spm in all packages. See [#776](https://github.com/DataDog/dd-sdk-flutter/issues/776)
+* Restrict `json_serializable` package version.
+* Add support for ap2 datacenter.
+* Support basic capture of text fields.
+* Support Flutter overhead for Session Replay.
+* Fix random trace id generation on web. See [#744](https://github.com/DataDog/dd-sdk-flutter/issues/744)
+* Update iOS SDK to 2.30.0. For a full list of changes, see the [iOS Changelog](https://github.com/DataDog/dd-sdk-ios/blob/develop/CHANGELOG.md#2300--28-07-2025).
+  * Fix Fatal App Hang Duplicates.
+  * Propagate RUM session ID in request headers.
+  * Improve feature-to-feature communication performances.
+  * Increase RUM batch maximum age to 24hrs.
+  * Add support for AP2 Datacenter. You can configure it setting DatadogSite.ap2 on Datadog.Configuration.site.
+  * Add Clear User Info API.
+  * Collect battery and locale attributes.
+* Update Android SDK to 2.25.0. For a full list of changes, see the [Android Changelog](https://github.com/DataDog/dd-sdk-android/blob/develop/CHANGELOG.md#2250--2025-07-28).
+  * Remove the noisy warning log as for some views it is normal to not have ITV.
+  * RUM: Fix background session start reason.
+  * Catch exceptions during the Power or Battery broadcast intents processing.
+  * Add public APIs for set account information.
+  * Report resource with size 0.
+  * Create a new RumViewScope when the session is renewed.
+  * Add Clear User Info API. 
+
 ## 2.11.0
 
 * Fix an issue where nested gesture detectors would always use the topmost. See [#738](https://github.com/DataDog/dd-sdk-flutter/issues/738)
