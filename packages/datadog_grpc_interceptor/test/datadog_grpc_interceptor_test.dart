@@ -37,6 +37,7 @@ void main() {
 
   setUpAll(() {
     registerFallbackValue(Uri(host: 'localhost'));
+    registerFallbackValue(TracingId.zero());
   });
 
   void verifyHeaders(

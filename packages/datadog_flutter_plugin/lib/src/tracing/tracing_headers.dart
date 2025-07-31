@@ -89,8 +89,12 @@ class TracingId {
 
   const TracingId(this.value);
 
+  TracingId.zero() : this(BigInt.zero);
+
   static TracingId fromString(
-      String? id, TracingIdRepresentation representation) {
+    String? id,
+    TracingIdRepresentation representation,
+  ) {
     if (id == null) {
       return TracingId(BigInt.zero);
     }
@@ -187,7 +191,11 @@ class TracingContext {
   final bool sampled;
 
   const TracingContext(
-      this.traceId, this.spanId, this.parentSpanId, this.sampled);
+    this.traceId,
+    this.spanId,
+    this.parentSpanId,
+    this.sampled,
+  );
 }
 
 final Random _traceRandom = Random();
@@ -201,16 +209,18 @@ TracingContext generateTracingContext(DatadogRum rum) {
 }
 
 Map<String, Object?> generateDatadogAttributes(
-    TracingContext? context, double samplingRate) {
+  TracingContext? context,
+  double samplingRate,
+) {
   var attributes = <String, Object?>{};
 
   if (context != null) {
     attributes[DatadogRumPlatformAttributeKey.rulePsr] = samplingRate / 100.0;
     if (context.sampled) {
-      attributes[DatadogRumPlatformAttributeKey.traceID] =
-          context.traceId.asString(TracingIdRepresentation.hex32Chars);
-      attributes[DatadogRumPlatformAttributeKey.spanID] =
-          context.spanId.asString(TracingIdRepresentation.decimal);
+      attributes[DatadogRumPlatformAttributeKey.traceID] = context.traceId
+          .asString(TracingIdRepresentation.hex32Chars);
+      attributes[DatadogRumPlatformAttributeKey.spanID] = context.spanId
+          .asString(TracingIdRepresentation.decimal);
     }
   }
 
@@ -231,12 +241,14 @@ Map<String, String> getTracingHeaders(
   switch (headersType) {
     case TracingHeaderType.datadog:
       if (shouldInjectHeaders) {
-        headers[DatadogHttpTracingHeaders.traceId] =
-            context.traceId.asString(TracingIdRepresentation.lowDecimal);
+        headers[DatadogHttpTracingHeaders.traceId] = context.traceId.asString(
+          TracingIdRepresentation.lowDecimal,
+        );
         headers[DatadogHttpTracingHeaders.tags] =
             '${DatadogHttpTracingHeaders.traceIdTag}=${context.traceId.asString(TracingIdRepresentation.highHex16Chars)}';
-        headers[DatadogHttpTracingHeaders.parentId] =
-            context.spanId.asString(TracingIdRepresentation.decimal);
+        headers[DatadogHttpTracingHeaders.parentId] = context.spanId.asString(
+          TracingIdRepresentation.decimal,
+        );
         headers[DatadogHttpTracingHeaders.origin] = 'rum';
         headers[DatadogHttpTracingHeaders.samplingPriority] = sampledString;
       }
@@ -260,10 +272,10 @@ Map<String, String> getTracingHeaders(
       }
 
       if (context.sampled) {
-        headers[OTelHttpTracingHeaders.multipleTraceId] =
-            context.traceId.asString(TracingIdRepresentation.hex32Chars);
-        headers[OTelHttpTracingHeaders.multipleSpanId] =
-            context.spanId.asString(TracingIdRepresentation.hex16Chars);
+        headers[OTelHttpTracingHeaders.multipleTraceId] = context.traceId
+            .asString(TracingIdRepresentation.hex32Chars);
+        headers[OTelHttpTracingHeaders.multipleSpanId] = context.spanId
+            .asString(TracingIdRepresentation.hex16Chars);
         if (context.parentSpanId != null) {
           headers[OTelHttpTracingHeaders.multipleParentId] = context
               .parentSpanId!
@@ -273,13 +285,14 @@ Map<String, String> getTracingHeaders(
       break;
     case TracingHeaderType.tracecontext:
       if (shouldInjectHeaders) {
-        final spanString =
-            context.spanId.asString(TracingIdRepresentation.hex16Chars);
+        final spanString = context.spanId.asString(
+          TracingIdRepresentation.hex16Chars,
+        );
         final parentHeaderValue = [
           '00', // Version Code
           context.traceId.asString(TracingIdRepresentation.hex32Chars),
           spanString,
-          context.sampled ? '01' : '00'
+          context.sampled ? '01' : '00',
         ].join('-');
         final stateHeaderValue = [
           's:$sampledString',

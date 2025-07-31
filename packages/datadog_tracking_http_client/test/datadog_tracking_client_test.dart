@@ -37,6 +37,7 @@ void main() {
     registerFallbackValue(Uri());
     registerFallbackValue(FakeBaseRequest());
     registerFallbackValue(RumResourceType.image);
+    registerFallbackValue(TracingId.zero());
   });
 
   setUp(() {

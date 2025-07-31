@@ -62,6 +62,7 @@ query UserInfo($id: ID!) {
     registerFallbackValue(RumResourceType.beacon);
     registerFallbackValue(FakeRequest());
     registerFallbackValue(StackTrace.current);
+    registerFallbackValue(TracingId.zero());
   });
 
   setUp(() {

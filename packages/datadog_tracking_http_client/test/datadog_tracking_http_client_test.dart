@@ -59,7 +59,7 @@ void main() {
     registerFallbackValue(RumResourceType.beacon);
     registerFallbackValue(MockHttpClientRequest());
     registerFallbackValue(MockHttpClientResponse());
-    registerFallbackValue(TracingId(BigInt.one));
+    registerFallbackValue(TracingId.zero());
   });
 
   setUp(() {
