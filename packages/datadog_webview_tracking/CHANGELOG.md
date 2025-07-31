@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.4.0
+
+* Support spm in all packages. See [#776](https://github.com/DataDog/dd-sdk-flutter/issues/776)
+
 ## 2.2.0
 
 * Fix use of webview_flutter in iOS due to API change.
