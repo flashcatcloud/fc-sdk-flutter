@@ -9,10 +9,11 @@ import 'package_list.dart';
 
 final overridesStartPattern = RegExp(r'\s+# Datadog Pod Overrides');
 final overridesEndPattern = RegExp(r'\s+# End Datadog Pod Overrides');
-final specDependencyPattern =
-    RegExp(r"\s+s\.dependency\s+'(?<dependency>Datadog.+)', '.+");
+final specDependencyPattern = RegExp(
+  r"\s+s\.dependency\s+'(?<dependency>Datadog.+)', '.+",
+);
 
-class RemovePodOverridesCommand extends Command {
+class PinCocoapodsVersionCommand extends Command {
   @override
   Future<bool> run(CommandArguments args, Logger logger) async {
     if (!await _removePodfileOverrides(args, logger)) {
@@ -30,7 +31,9 @@ class RemovePodOverridesCommand extends Command {
   }
 
   Future<bool> _removePodfileOverrides(
-      CommandArguments args, Logger logger) async {
+    CommandArguments args,
+    Logger logger,
+  ) async {
     logger.info('ℹ️ Removing overrides from Podfiles.');
     for (var filePath in podfileList) {
       final file = File(path.join(args.gitDir.path, filePath));
@@ -60,12 +63,18 @@ class RemovePodOverridesCommand extends Command {
   Future<bool> _pinPodspecVersion(CommandArguments args, Logger logger) async {
     final podspecLocation = 'ios/${args.packageName}.podspec';
 
-    final file = File(path.join(
-        args.gitDir.path, 'packages/${args.packageName}', podspecLocation));
+    final file = File(
+      path.join(
+        args.gitDir.path,
+        'packages/${args.packageName}',
+        podspecLocation,
+      ),
+    );
 
     if (!file.existsSync()) {
       logger.warning(
-          '⚠️ Could not find file $file. This is expected for non-core packages');
+        '⚠️ Could not find file $file. This is expected for non-core packages',
+      );
       return true;
     }
 

@@ -18,13 +18,13 @@ class FlutterSdkTests: XCTestCase {
     override func setUp() {
         if Datadog.isInitialized() {
             // Somehow we ended up with an extra instance of Datadog?
-            Datadog.flushAndDeinitialize()
+            Datadog.internalFlushAndDeinitialize()
         }
     }
 
     override func tearDown() {
         if Datadog.isInitialized() {
-            Datadog.flushAndDeinitialize()
+            Datadog.internalFlushAndDeinitialize()
         }
     }
 

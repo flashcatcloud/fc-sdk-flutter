@@ -13,7 +13,7 @@ Track `flutter_inappwebview` with Datadog.
   s.license          = { :file => '../LICENSE' }
   s.author           = { 'Datadog' => 'info@datadoghq.com' }
   s.source           = { :path => '.' }
-  s.source_files = 'Classes/**/*'
+  s.source_files = 'datadog_inappwebview_tracking/Sources/**/*'
   s.dependency 'Flutter'
   s.dependency 'DatadogCore',  '~> 2.20'
   s.platform = :ios, '12.0'

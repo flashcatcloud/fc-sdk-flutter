@@ -14,6 +14,7 @@ import 'package:logging/logging.dart';
 import 'package:path/path.dart' as path;
 import 'package:releaser/cocoapod_util.dart';
 import 'package:releaser/helpers.dart';
+import 'package:releaser/spm_util.dart';
 
 Future<int> main(List<String> arguments) async {
   Logger.root.level = Level.INFO;
@@ -21,17 +22,22 @@ Future<int> main(List<String> arguments) async {
     print(event.message);
   });
 
-  final argParser = ArgParser()
-    ..addOption('version', abbr: 'v')
-    ..addOption('platform',
-        abbr: 'p', allowed: ['ios', 'android'], mandatory: true)
-    ..addOption('package', mandatory: true)
-    ..addFlag(
-      'remove',
-      abbr: 'r',
-      help: 'Remove the version pin and set back to develop / snapshots',
-      negatable: false,
-    );
+  final argParser =
+      ArgParser()
+        ..addOption('version', abbr: 'v')
+        ..addOption(
+          'platform',
+          abbr: 'p',
+          allowed: ['ios', 'android'],
+          mandatory: true,
+        )
+        ..addOption('package', mandatory: true)
+        ..addFlag(
+          'remove',
+          abbr: 'r',
+          help: 'Remove the version pin and set back to develop / snapshots',
+          negatable: false,
+        );
 
   ArgResults argResults;
   try {
@@ -73,11 +79,12 @@ void _printUsage(ArgParser argParser) {
 
 Future<int> _pinIOS(GitDir gitDir, String package, String? version) async {
   final specDependencyPattern = RegExp(
-      r"(?<ws>\s+)pod '(?<dependency>.+)', :git => '(?<git>[^']*?)', :(?<overrideType>\w+) => '(?<override>[^']*?)'");
+    r"(?<ws>\s+)pod '(?<dependency>.+)', :git => '(?<git>[^']*?)', :(?<overrideType>\w+) => '(?<override>[^']*?)'",
+  );
 
-  final versionString =
+  final podVersionString =
       version != null ? ":tag => '$version'" : ":branch => 'develop'";
-  final podFile = '$package/ios/Podfile';
+  final podFile = 'packages/$package/example/ios/Podfile';
 
   final file = File(path.join(gitDir.path, podFile));
   if (!file.existsSync()) {
@@ -94,7 +101,7 @@ Future<int> _pinIOS(GitDir gitDir, String package, String? version) async {
         final match = specDependencyPattern.firstMatch(line);
         if (match != null) {
           line =
-              "${match.namedGroup('ws')}pod '${match.namedGroup('dependency')}', :git => '${match.namedGroup('git')}', $versionString";
+              "${match.namedGroup('ws')}pod '${match.namedGroup('dependency')}', :git => '${match.namedGroup('git')}', $podVersionString";
         }
       }
     } else if (line.startsWith(overridesStartPattern)) {
@@ -103,6 +110,16 @@ Future<int> _pinIOS(GitDir gitDir, String package, String? version) async {
 
     return line;
   });
+
+  final spmVersionString =
+      version != null ? 'exact: "$version"' : 'branch: "develop"';
+  await PinSwiftPackageVersion.pinSpmVersion(
+    gitDir.path,
+    package,
+    spmVersionString,
+    false,
+    Logger.root,
+  );
 
   return 0;
 }
@@ -124,8 +141,10 @@ Future<int> _pinAndroid(GitDir gitDir, String package, String? version) async {
     final versionMatch = versionRegex.firstMatch(line);
     if (versionMatch != null) {
       final oldVersion = versionMatch.group(1);
-      line = line.replaceFirst('$versionPrefix = "$oldVersion"',
-          '$versionPrefix = "$versionString"');
+      line = line.replaceFirst(
+        '$versionPrefix = "$oldVersion"',
+        '$versionPrefix = "$versionString"',
+      );
     }
 
     return line;

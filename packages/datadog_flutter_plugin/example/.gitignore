@@ -31,6 +31,10 @@
 .pub/
 /build/
 
+# iOS related
+Package.resolved
+.spm.pods/
+
 # Web related
 
 # Symbolication related
