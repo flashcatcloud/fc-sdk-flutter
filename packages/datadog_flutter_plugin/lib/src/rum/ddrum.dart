@@ -26,7 +26,7 @@ RumHttpMethod rumMethodFromMethodString(String value) {
 }
 
 /// Describes the type of a RUM Action.
-enum RumActionType { tap, scroll, swipe, custom }
+enum RumActionType { click, tap, scroll, swipe, custom }
 
 /// Describe the source of a RUM Error.
 enum RumErrorSource {

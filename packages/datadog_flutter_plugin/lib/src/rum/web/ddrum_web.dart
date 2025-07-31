@@ -6,14 +6,21 @@
 import 'dart:js_interop';
 
 import 'package:meta/meta.dart';
+import 'package:uuid/uuid.dart';
 
-import '../../datadog_flutter_plugin.dart';
-import '../../datadog_internal.dart';
-import '../logs/ddweb_helpers.dart';
-import '../web_helpers.dart';
-import 'ddrum_platform_interface.dart';
+import '../../../datadog_flutter_plugin.dart';
+import '../../../datadog_internal.dart';
+import '../../web_helpers.dart';
+import '../ddrum_platform_interface.dart';
+import 'raw_events.dart';
+import 'resource_tracker.dart';
+import 'rum_web_plugin.dart';
 
 class DdRumWeb extends DdRumPlatform {
+  final Uuid _uuid = Uuid();
+  RumWebPlugin? _webPlugin;
+  ResourceTracker? _resourceTracker;
+
   // Because Web needs the full SDK configuration, we have a separate init method
   void initialize(DatadogConfiguration configuration,
       DatadogRumConfiguration rumConfiguration, InternalLogger logger) {
@@ -22,6 +29,11 @@ class DdRumWeb extends DdRumPlatform {
 
     final sanitizedFirstPartyHosts = FirstPartyHost.createSanitized(
         configuration.firstPartyHostsWithTracingHeaders, logger);
+
+    _webPlugin = RumWebPlugin();
+    final plugins = [createJSInteropWrapper<RumWebPlugin>(_webPlugin!)].toJS;
+
+    _resourceTracker = ResourceTracker(_webPlugin!);
 
     DD_RUM?.init(_RumInitOptions(
       applicationId: rumConfiguration.applicationId,
@@ -48,10 +60,13 @@ class DdRumWeb extends DdRumPlatform {
       traceContextInjection:
           _contextInjectionString(rumConfiguration.traceContextInjection),
       trackViewsManually: true,
+      trackUserInteractions: false,
       trackResources: trackResources,
       trackFrustrations: rumConfiguration.trackFrustrations,
       trackLongTasks: rumConfiguration.detectLongTasks,
       enableExperimentalFeatures: ['feature_flags'.toJS].toJS,
+      compressIntakeRequests: true,
+      plugins: plugins,
     ));
   }
 
@@ -86,17 +101,29 @@ class DdRumWeb extends DdRumPlatform {
     String? errorType,
     Map<String, dynamic> attributes,
   ) async {
-    var jsError = JSError();
-    jsError.stack = convertWebStackTrace(stackTrace);
-    jsError.message = error.toString();
-    jsError.name = errorType ?? 'Error';
+    final epochTime = timestamp.millisecondsSinceEpoch;
+    final eventTime = _toRelativeTime(timestamp);
 
     final fingerprint = attributes.remove(DatadogAttributes.errorFingerprint);
-    if (fingerprint != null) {
-      jsError.dd_fingerprint = fingerprint;
-    }
 
-    DD_RUM?.addError(jsError, attributesToJs(attributes, 'attributes'));
+    final id = _uuid.v4();
+    final context = attributesToJs(attributes, 'attributes');
+    _webPlugin?.addEvent(
+      eventTime,
+      RumWebRawErrorEvent(
+        date: epochTime.toJS,
+        context: context,
+        error: RumWebRawErrorData(
+          id: id.toString(),
+          message: error.toString(),
+          source: errorSourceToJs(source),
+          stack: convertWebStackTrace(stackTrace),
+          type: errorType ?? 'UnknownError',
+          fingerprint: fingerprint,
+        ),
+      ),
+      RumWebErrorEventDomainContext(),
+    );
   }
 
   @override
@@ -108,17 +135,30 @@ class DdRumWeb extends DdRumPlatform {
     String? errorType,
     Map<String, dynamic> attributes,
   ) async {
-    var jsError = JSError();
-    jsError.stack = convertWebStackTrace(stackTrace);
-    jsError.message = message;
-    jsError.name = errorType ?? 'Error';
+    final epochTime = timestamp.millisecondsSinceEpoch;
+    final eventTime = _toRelativeTime(timestamp);
 
     final fingerprint = attributes.remove(DatadogAttributes.errorFingerprint);
-    if (fingerprint != null) {
-      jsError.dd_fingerprint = fingerprint;
-    }
 
-    DD_RUM?.addError(jsError, attributesToJs(attributes, 'attributes'));
+    final id = _uuid.v4();
+    final context = attributesToJs(attributes, 'attributes');
+
+    _webPlugin?.addEvent(
+      eventTime,
+      RumWebRawErrorEvent(
+        date: epochTime.toJS,
+        context: context,
+        error: RumWebRawErrorData(
+          id: id.toString(),
+          message: message,
+          source: errorSourceToJs(source),
+          stack: convertWebStackTrace(stackTrace),
+          type: errorType ?? 'UnknownError',
+          fingerprint: fingerprint,
+        ),
+      ),
+      RumWebErrorEventDomainContext(),
+    );
   }
 
   @override
@@ -134,7 +174,26 @@ class DdRumWeb extends DdRumPlatform {
   @override
   Future<void> addAction(DateTime timestamp, RumActionType type, String name,
       Map<String, dynamic> attributes) async {
-    DD_RUM?.addAction(name, attributesToJs(attributes, 'attributes'));
+    final epochTime = timestamp.millisecondsSinceEpoch;
+    final eventTime = _toRelativeTime(timestamp);
+
+    final id = _uuid.v4();
+    final context = attributesToJs(attributes, 'attributes');
+
+    // TODO(RUM-): Replace with plugin bridge call.
+    _webPlugin?.addEvent(
+      eventTime,
+      RumWebRawActionEvent(
+        date: epochTime.toJS,
+        context: context,
+        action: RumWebRawActionData(
+          id: id.toString(),
+          type: actionTypeToJs(type),
+          target: RumWebActionTarget(name: name),
+        ),
+      ),
+      RumWebActionEventDomainContext(),
+    );
   }
 
   @override
@@ -149,7 +208,8 @@ class DdRumWeb extends DdRumPlatform {
       RumHttpMethod httpMethod,
       String url,
       Map<String, dynamic> attributes) async {
-    // NOOP
+    _resourceTracker?.startResource(
+        timestamp, key, httpMethod, url, attributes);
   }
 
   @override
@@ -167,19 +227,21 @@ class DdRumWeb extends DdRumPlatform {
   @override
   Future<void> stopResource(DateTime timestamp, String key, int? statusCode,
       RumResourceType kind, int? size, Map<String, dynamic> attributes) async {
-    // NOOP
+    _resourceTracker?.stopResource(
+        timestamp, key, statusCode, kind, size, attributes);
   }
 
   @override
   Future<void> stopResourceWithError(DateTime timestamp, String key,
       Exception error, Map<String, dynamic> attributes) async {
-    // NOOP
+    _resourceTracker?.stopResourceWithError(timestamp, key, error, attributes);
   }
 
   @override
   Future<void> stopResourceWithErrorInfo(DateTime timestamp, String key,
       String message, String type, Map<String, dynamic> attributes) async {
-    // NOOP
+    _resourceTracker?.stopResourceWithErrorInfo(
+        timestamp, key, message, type, attributes);
   }
 
   @override
@@ -213,6 +275,11 @@ class DdRumWeb extends DdRumPlatform {
   Future<void> updatePerformanceMetrics(
       List<double> buildTimes, List<double> rasterTimes) async {
     // NOOP - Not supported by the Browser SDK
+  }
+
+  JSNumber _toRelativeTime(DateTime time) {
+    return _webPlugin?.getEventRelativeTime(time) ??
+        time.microsecondsSinceEpoch.toJS;
   }
 }
 
@@ -268,6 +335,8 @@ extension type _RumInitOptions._(JSObject _) implements JSObject {
   external String? get proxy;
   external JSArray get allowedTracingUrls;
   external JSArray get enableExperimentalFeatures;
+  external bool get compressIntakeRequests;
+  external JSArray? get plugins;
 
   external factory _RumInitOptions({
     String applicationId,
@@ -293,6 +362,8 @@ extension type _RumInitOptions._(JSObject _) implements JSObject {
     num? traceSampleRate,
     String? traceContextInjection,
     JSArray enableExperimentalFeatures,
+    bool compressIntakeRequests,
+    JSArray? plugins,
   });
 }
 

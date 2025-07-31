@@ -370,7 +370,8 @@ void main() {
       rum.timeProvider = mockTimeProvider;
     });
 
-    test('markViewFirstBuildComplete adds ns timestamp as view attribute', () {
+    test('markViewFirstBuildComplete adds ns timestamp as view attribute',
+        testOn: 'vm', () {
       final startTime = DateTime.now();
       final duration = random.nextInt(1 << 32);
       final timeAnswers = [

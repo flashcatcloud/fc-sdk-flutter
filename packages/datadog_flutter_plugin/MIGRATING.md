@@ -1,3 +1,16 @@
+# Migration from 2.x to 3.0
+
+## Flutter Web Changes
+
+Clients using Flutter Web should update to using the Datadog Browser SDK v6.  Change the following import in your `index.html`:
+
+```diff
+-  <script type="text/javascript" src="https://www.datadoghq-browser-agent.com/us1/v5/datadog-logs.js"></script> 
+-  <script type="text/javascript" src="https://www.datadoghq-browser-agent.com/us1/v5/datadog-rum-slim.js"></script> 
++  <script type="text/javascript" src="https://www.datadoghq-browser-agent.com/us1/v6/datadog-logs.js"></script> 
++  <script type="text/javascript" src="https://www.datadoghq-browser-agent.com/us1/v6/datadog-rum-slim.js"></script> 
+```
+
 # Migration from 1.x to 2.0
 
 This document describes the main changes introduced in SDK `2.0` compared to `1.x`.

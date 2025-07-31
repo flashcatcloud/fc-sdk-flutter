@@ -147,6 +147,7 @@ build-web:
   script:
     - !reference [.pre, script]
     - melos run build:web
+    - melos run unit_test:web
 
 # Integration Tests
 
