@@ -81,6 +81,22 @@ void main() {
     expect(resourceTypeFromContentType(other), RumResourceType.native);
   });
 
+  test('configuration has correct defaults', () {
+    final configuration = DatadogRumConfiguration(applicationId: 'fake-app-id');
+
+    expect(configuration.sessionSamplingRate, 100.0);
+    expect(configuration.traceSampleRate, 20.0);
+    expect(configuration.traceContextInjection, TraceContextInjection.sampled);
+    expect(configuration.detectLongTasks, true);
+    expect(configuration.longTaskThreshold, 0.1);
+    expect(configuration.vitalUpdateFrequency, VitalsFrequency.average);
+    expect(configuration.reportFlutterPerformance, false);
+    expect(configuration.trackNonFatalAnrs, isNull);
+    expect(configuration.appHangThreshold, isNull);
+    expect(configuration.trackAnonymousUser, true);
+    expect(configuration.initialResourceThreshold, 0.1);
+  });
+
   test('configuration is encoded correctly', () {
     final applicationId = randomString();
     final detectLongTasks = randomBool();

@@ -217,7 +217,7 @@ Map<String, Object?> generateDatadogAttributes(
 Map<String, String> getTracingHeaders(
   TracingContext context,
   TracingHeaderType headersType, {
-  TraceContextInjection contextInjection = TraceContextInjection.all,
+  TraceContextInjection contextInjection = TraceContextInjection.sampled,
 }) {
   var headers = <String, String>{};
 

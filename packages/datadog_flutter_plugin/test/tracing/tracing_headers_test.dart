@@ -174,11 +174,11 @@ void main() {
     );
 
     expect(headers['x-datadog-trace-id'],
-          context.traceId.asString(TracingIdRepresentation.lowDecimal));
-      expect(headers['x-datadog-tags'],
-          '_dd.p.tid=${context.traceId.asString(TracingIdRepresentation.highHex16Chars)}');
-      expect(headers['x-datadog-parent-id'],
-          context.spanId.asString(TracingIdRepresentation.decimal));
+        context.traceId.asString(TracingIdRepresentation.lowDecimal));
+    expect(headers['x-datadog-tags'],
+        '_dd.p.tid=${context.traceId.asString(TracingIdRepresentation.highHex16Chars)}');
+    expect(headers['x-datadog-parent-id'],
+        context.spanId.asString(TracingIdRepresentation.decimal));
     expect(headers['x-datadog-sampling-priority'], '0');
     expect(headers['x-datadog-origin'], 'rum');
   });
@@ -192,6 +192,20 @@ void main() {
       context,
       TracingHeaderType.datadog,
       contextInjection: TraceContextInjection.sampled,
+    );
+
+    expect(headers['x-datadog-trace-id'], isNull);
+    expect(headers['x-datadog-parent-id'], isNull);
+    expect(headers['x-datadog-sampling-priority'], isNull);
+    expect(headers['x-datadog-origin'], isNull);
+  });
+
+  test('Default for tracing headers is TraceContextInjection.sampled', () {
+    final context = generateTracingContext(false);
+
+    final headers = getTracingHeaders(
+      context,
+      TracingHeaderType.datadog,
     );
 
     expect(headers['x-datadog-trace-id'], isNull);
