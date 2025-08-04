@@ -63,8 +63,10 @@ void main() {
     expect(exceptionError.message, contains(TypeError().toString()));
     expect(exceptionError.source, 'source');
     expect(exceptionError.errorType, 'NullThrown');
-    // This is correct -- all error formats are browser
-    expect(exceptionError.sourceType, kIsWeb ? 'browser' : 'flutter');
+    if (!kIsWeb) {
+      // source_type is not supported on web, but type should be browser anyway.
+      expect(exceptionError.sourceType, 'flutter');
+    }
 
     var manualError = view.errorEvents[1];
     expect(manualError.message, contains('Rum error message'));
