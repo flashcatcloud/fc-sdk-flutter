@@ -40,6 +40,17 @@ stages:
     - mkdir -p $CI_PROJECT_DIR/.build/test-results/
     - melos prepare
 
+.pre-web:
+  script:
+    - pushd tools/ci && dart pub get && dart run ci_helpers chrome_driver --extract && popd
+    - ./tools/ci/.tmp/chromedriver-linux64/chromedriver --version
+    - ./tools/ci/.tmp/chrome-linux64/chrome --version
+    - ./tools/ci/.tmp/chromedriver-linux64/chromedriver --port=4444 &
+    - export CHROME_EXECUTABLE=${CI_PROJECT_DIR}/tools/ci/.tmp/chrome-linux64/chrome
+    - export PATH="$PATH:${CI_PROJECT_DIR}/tools/ci/.tmp/chrome-linux64/"
+    - echo $CHROME_EXECUTABLE
+    - flutter doctor
+
 .pre-ios:
   script:
     - xcode-select -p
@@ -146,6 +157,7 @@ build-web:
   image: $CI_IMAGE_DOCKER
   script:
     - !reference [.pre, script]
+    - !reference [.pre-web, script]
     - melos run build:web
     - melos run unit_test:web
   artifacts:
@@ -210,14 +222,7 @@ web-integration-test:
     [ "arch:amd64" ]
   script:
     - !reference [.pre, script]
-    - pushd tools/ci && dart pub get && dart run ci_helpers chrome_driver --extract && popd
-    - ./tools/ci/.tmp/chromedriver-linux64/chromedriver --version
-    - ./tools/ci/.tmp/chrome-linux64/chrome --version
-    - ./tools/ci/.tmp/chromedriver-linux64/chromedriver --port=4444 &
-    - export CHROME_EXECUTABLE=${CI_PROJECT_DIR}/tools/ci/.tmp/chrome-linux64/chrome
-    - export PATH="$PATH:${CI_PROJECT_DIR}/tools/ci/.tmp/chrome-linux64/"
-    - echo $CHROME_EXECUTABLE
-    - flutter doctor
+    - !reference [.pre-web, script]
     - melos run integration_test:web
 
 # Notify
