@@ -65,7 +65,8 @@ class DdRumWeb extends DdRumPlatform {
       trackFrustrations: rumConfiguration.trackFrustrations,
       trackLongTasks: rumConfiguration.detectLongTasks,
       enableExperimentalFeatures: ['feature_flags'.toJS].toJS,
-      compressIntakeRequests: true,
+      // TODO(RUM-11211): Support and document web configuration options.
+      compressIntakeRequests: false,
       plugins: plugins,
     ));
   }

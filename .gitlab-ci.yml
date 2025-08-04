@@ -148,6 +148,11 @@ build-web:
     - !reference [.pre, script]
     - melos run build:web
     - melos run unit_test:web
+  artifacts:
+    when: always
+    expire_in: "30 days"
+    reports:
+      junit: $CI_PROJECT_DIR/.build/test-results/*.xml
 
 # Integration Tests
 
