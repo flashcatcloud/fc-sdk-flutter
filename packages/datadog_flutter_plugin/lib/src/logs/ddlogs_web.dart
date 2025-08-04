@@ -33,10 +33,14 @@ class DdLogsWeb extends DdLogsPlatform {
       DatadogSdk core, DatadogLoggingConfiguration config) async {}
 
   @override
-  Future<void> addGlobalAttribute(String key, Object value) async {}
+  Future<void> addGlobalAttribute(String key, Object value) async {
+    DD_LOGS?.setGlobalContextProperty(key, valueToJs(value, 'value'));
+  }
 
   @override
-  Future<void> removeGlobalAttribute(String key) async {}
+  Future<void> removeGlobalAttribute(String key) async {
+    DD_LOGS?.removeGlobalContextProperty(key);
+  }
 
   @override
   Future<void> deinitialize() async {}
@@ -75,7 +79,10 @@ class DdLogsWeb extends DdLogsPlatform {
   }
 
   @override
-  Future<void> addTag(String loggerHandle, String tag, [String? value]) async {}
+  Future<void> addTag(String loggerHandle, String tag, [String? value]) async {
+    final logger = _activeLoggers[loggerHandle];
+    logger?.addTag(tag, value);
+  }
 
   @override
   Future<void> removeAttribute(String loggerHandle, String key) async {
@@ -84,10 +91,15 @@ class DdLogsWeb extends DdLogsPlatform {
   }
 
   @override
-  Future<void> removeTag(String loggerHandle, String tag) async {}
+  Future<void> removeTag(String loggerHandle, String tag) {
+    return removeTagWithKey(loggerHandle, tag);
+  }
 
   @override
-  Future<void> removeTagWithKey(String loggerHandle, String key) async {}
+  Future<void> removeTagWithKey(String loggerHandle, String key) async {
+    final logger = _activeLoggers[loggerHandle];
+    logger?.removeTagsWithKey(key);
+  }
 
   @override
   Future<void> log(
@@ -191,6 +203,9 @@ extension type _DdLogs._(JSObject _) implements JSObject {
   @internal
   external Logger? createLogger(
       String name, _JsLoggerConfiguration? configuration);
+
+  external void setGlobalContextProperty(String key, JSAny? property);
+  external void removeGlobalContextProperty(String key);
 }
 
 @JS()
@@ -200,6 +215,9 @@ external _DdLogs? DD_LOGS;
 extension type Logger._(JSObject _) implements JSObject {
   external void log(
       String message, JSAny? messageContext, String status, JSError? error);
+
+  external void addTag(String key, String? value);
+  external void removeTagsWithKey(String key);
 
   external void setContextProperty(String key, JSAny? value);
   external void removeContextProperty(String key);
