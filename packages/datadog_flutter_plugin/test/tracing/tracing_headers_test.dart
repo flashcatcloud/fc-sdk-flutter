@@ -7,32 +7,34 @@ import 'package:datadog_flutter_plugin/src/tracing/tracing_headers.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  // if (!kIsWeb) {
-  //   test('TracingIdRepresentation generates proper values', () {
-  //     // Create a value in 128-bit hex that has leading zeros on both
-  //     // the low and high 64-bits, and ensure we get the proper values
-  //     const low = 0x01445feed89934bb;
-  //     const high = 0x01222f00d89934ba;
+  test('TracingIdRepresentation generates proper values', () {
+    // Create a value in 128-bit hex that has leading zeros on both
+    // the low and high 64-bits, and ensure we get the proper values
+    const low0 = 0xd89934bb;
+    const low32 = 0x01445fee;
+    const high0 = 0xd89934ba;
+    const high32 = 0x01222f00;
 
-  //     var combined = BigInt.from(high);
-  //     combined = (combined << 64) + BigInt.from(low);
+    var combined = BigInt.from(high32);
+    combined = (combined << 32) + BigInt.from(high0);
+    combined = (combined << 32) + BigInt.from(low32);
+    combined = (combined << 32) + BigInt.from(low0);
 
-  //     final tracingId = TracingId(combined);
+    final tracingId = TracingId(combined);
 
-  //     expect(tracingId.asString(TracingIdRepresentation.hex),
-  //         '1222f00d89934ba01445feed89934bb');
-  //     expect(tracingId.asString(TracingIdRepresentation.hex32Chars),
-  //         '01222f00d89934ba01445feed89934bb');
-  //     expect(tracingId.asString(TracingIdRepresentation.hex16Chars),
-  //         '01445feed89934bb');
-  //     expect(tracingId.asString(TracingIdRepresentation.highHex16Chars),
-  //         '01222f00d89934ba');
-  //     expect(tracingId.asString(TracingIdRepresentation.decimal),
-  //         '1506719429260448406838152867989763259');
-  //     expect(tracingId.asString(TracingIdRepresentation.lowDecimal),
-  //         '91303371895026875');
-  //   });
-  // }
+    expect(tracingId.asString(TracingIdRepresentation.hex),
+        '1222f00d89934ba01445feed89934bb');
+    expect(tracingId.asString(TracingIdRepresentation.hex32Chars),
+        '01222f00d89934ba01445feed89934bb');
+    expect(tracingId.asString(TracingIdRepresentation.hex16Chars),
+        '01445feed89934bb');
+    expect(tracingId.asString(TracingIdRepresentation.highHex16Chars),
+        '01222f00d89934ba');
+    expect(tracingId.asString(TracingIdRepresentation.decimal),
+        '1506719429260448406838152867989763259');
+    expect(tracingId.asString(TracingIdRepresentation.lowDecimal),
+        '91303371895026875');
+  });
 
   test('traceId generates proper values', () {
     final nowSeconds = (DateTime.now().millisecondsSinceEpoch ~/ 1000);
