@@ -5,6 +5,7 @@
 // ignore_for_file: unused_element
 
 import 'dart:async';
+import 'dart:js_interop';
 
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 
@@ -15,6 +16,19 @@ import 'src/logs/ddlogs_platform_interface.dart';
 import 'src/logs/ddlogs_web.dart';
 import 'src/rum/ddrum_platform_interface.dart';
 import 'src/rum/ddrum_web.dart';
+
+@anonymous
+extension type JsUser._(JSObject _) implements JSObject {
+  external String? get id;
+  external String? get email;
+  external String? get name;
+
+  external factory JsUser({
+    String? id,
+    String? email,
+    String? name,
+  });
+}
 
 /// A web implementation of the DatadogSdk plugin.
 class DatadogSdkWeb extends DatadogSdkPlatform {
@@ -35,11 +49,13 @@ class DatadogSdkWeb extends DatadogSdkPlatform {
   Future<void> setUserInfo(String? id, String? name, String? email,
       Map<String, dynamic> extraInfo) async {
     // TODO: Extra user properties
-    DD_RUM?.setUser(JsUser(
+    final jsUser = JsUser(
       id: id,
       name: name,
       email: email,
-    ));
+    );
+    DD_LOGS?.setUser(jsUser);
+    DD_RUM?.setUser(jsUser);
   }
 
   @override
