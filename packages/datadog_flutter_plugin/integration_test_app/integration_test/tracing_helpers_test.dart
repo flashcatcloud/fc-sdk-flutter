@@ -2,12 +2,35 @@
 // This product includes software developed at Datadog (https://www.datadoghq.com/).
 // Copyright 2025-Present Datadog, Inc.
 
+import 'package:datadog_flutter_plugin/datadog_flutter_plugin.dart';
 import 'package:datadog_flutter_plugin/datadog_internal.dart';
+import 'package:datadog_flutter_plugin/src/rum/ddrum_noop_platform.dart';
+import 'package:datadog_flutter_plugin/src/rum/ddrum_platform_interface.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:plugin_platform_interface/plugin_platform_interface.dart';
+
+class MockDdRum extends Mock implements DatadogRum {}
+
+class MockInternalLogger extends Mock implements InternalLogger {}
+
+class MockDatadogSdk extends Mock implements DatadogSdk {}
+
+class MockDatadogPlatform extends Mock implements DatadogSdkPlatform {}
+
+class MockRumPlatform extends Mock
+    with MockPlatformInterfaceMixin
+    implements DdRumPlatform {}
+
+class MockTimeProvider extends Mock implements DatadogTimeProvider {}
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+
+  setUpAll(() {
+    registerFallbackValue(TracingId(BigInt.one));
+  });
 
   // Because of the way we generate random numbers, add an integration test
   // to ensure that we don't break Web's ability to generate traceIds from Dart
@@ -25,10 +48,61 @@ void main() {
 
   testWidgets('generateTracingContext generates proper bit values',
       (WidgetTester tester) async {
-    final context = generateTracingContext(true);
+    final mockRum = MockDdRum();
+    when(() => mockRum.shouldSampleTrace(any())).thenReturn(true);
+
+    final context = generateTracingContext(mockRum);
 
     expect(context.traceId.value.bitLength, lessThanOrEqualTo(128));
     expect(context.spanId.value.bitLength, lessThanOrEqualTo(63));
     expect(context.sampled, true);
+  });
+
+  // Check that our math works on web
+  test('Sampling decisions are deterministic', () async {
+    // Lots of extra setup to get a real version of RUM with a mock version of the Core
+    final mockInternalLogger = MockInternalLogger();
+    DdRumPlatform.instance = DdNoOpRumPlatform();
+
+    final mockDatadogSdk = MockDatadogSdk();
+    registerFallbackValue(DatadogSdk.instance);
+    registerFallbackValue(DatadogRumConfiguration(applicationId: ''));
+    registerFallbackValue(RumErrorSource.source);
+    // ignore: invalid_use_of_internal_member
+    when(() => mockDatadogSdk.internalLogger).thenReturn(mockInternalLogger);
+
+    final mockDatadogPlatform = MockDatadogPlatform();
+    when(() => mockDatadogPlatform.updateTelemetryConfiguration(any(), any()))
+        .thenAnswer((_) => Future.value());
+    when(() => mockDatadogSdk.platform).thenReturn(mockDatadogPlatform);
+
+    final mockRumPlatform = MockRumPlatform();
+    when(() => mockRumPlatform.setInternalViewAttribute(any(), any()))
+        .thenAnswer((_) => Future.value());
+
+    final inputs = <(BigInt, double, bool)>[
+      (BigInt.parse('5577006791947779410'), 94.0509, true),
+      (BigInt.parse('15352856648520921629'), 43.7714, true),
+      (BigInt.parse('3916589616287113937'), 68.6823, true),
+      (BigInt.parse('894385949183117216'), 30.0912, true),
+      (BigInt.parse('12156940908066221323'), 46.889, true),
+      (BigInt.parse('9828766684487745566'), 15.6519, false),
+      (BigInt.parse('4751997750760398084'), 81.364, false),
+      (BigInt.parse('11199607447739267382'), 38.0657, false),
+      (BigInt.parse('6263450610539110790'), 21.8553, false),
+      (BigInt.parse('1874068156324778273'), 36.0871, false),
+    ];
+
+    for (final (identifier, sampleRate, expected) in inputs) {
+      final rumConfiguration = DatadogRumConfiguration(
+        applicationId: 'applicationId',
+        traceSampleRate: sampleRate,
+        detectLongTasks: false,
+      );
+      final rum = await DatadogRum.enable(mockDatadogSdk, rumConfiguration);
+      final tracingId = TracingId(identifier);
+      bool shouldSample = rum!.shouldSampleTrace(tracingId);
+      expect(shouldSample, expected);
+    }
   });
 }

@@ -189,7 +189,8 @@ void main() {
     final rum = await DatadogRum.enable(mockDatadogSdk, rumConfiguration);
 
     for (int i = 0; i < 10; ++i) {
-      expect(rum!.shouldSampleTrace(), isTrue);
+      final trace = TracingId.traceId();
+      expect(rum!.shouldSampleTrace(trace), isTrue);
     }
   });
 
@@ -202,7 +203,8 @@ void main() {
     final rum = await DatadogRum.enable(mockDatadogSdk, rumConfiguration);
 
     for (int i = 0; i < 10; ++i) {
-      expect(rum!.shouldSampleTrace(), isFalse);
+      final trace = TracingId.traceId();
+      expect(rum!.shouldSampleTrace(trace), isFalse);
     }
   });
 
@@ -217,7 +219,8 @@ void main() {
     var sampleCount = 0;
     var noSampleCount = 0;
     for (int i = 0; i < numSamples; ++i) {
-      if (rum!.shouldSampleTrace()) {
+      final trace = TracingId.traceId();
+      if (rum!.shouldSampleTrace(trace)) {
         sampleCount++;
       } else {
         noSampleCount++;
@@ -239,7 +242,8 @@ void main() {
     var sampleCount = 0;
     var noSampleCount = 0;
     for (int i = 0; i < numSamples; ++i) {
-      if (rum!.shouldSampleTrace()) {
+      final trace = TracingId.traceId();
+      if (rum!.shouldSampleTrace(trace)) {
         sampleCount++;
       } else {
         noSampleCount++;
@@ -248,6 +252,34 @@ void main() {
 
     expect(sampleCount, greaterThanOrEqualTo(noSampleCount));
     expect(noSampleCount, greaterThanOrEqualTo(1));
+  });
+
+  test('Sampling decisions are deterministic', () async {
+    // Generated using the dd-trace-go implementation with the following program: https://go.dev/play/p/CUrDJtze8E_e
+    final inputs = <(BigInt, double, bool)>[
+      (BigInt.parse('5577006791947779410'), 94.0509, true),
+      (BigInt.parse('15352856648520921629'), 43.7714, true),
+      (BigInt.parse('3916589616287113937'), 68.6823, true),
+      (BigInt.parse('894385949183117216'), 30.0912, true),
+      (BigInt.parse('12156940908066221323'), 46.889, true),
+      (BigInt.parse('9828766684487745566'), 15.6519, false),
+      (BigInt.parse('4751997750760398084'), 81.364, false),
+      (BigInt.parse('11199607447739267382'), 38.0657, false),
+      (BigInt.parse('6263450610539110790'), 21.8553, false),
+      (BigInt.parse('1874068156324778273'), 36.0871, false),
+    ];
+
+    for (final (identifier, sampleRate, expected) in inputs) {
+      final rumConfiguration = DatadogRumConfiguration(
+        applicationId: 'applicationId',
+        traceSampleRate: sampleRate,
+        detectLongTasks: false,
+      );
+      final rum = await DatadogRum.enable(mockDatadogSdk, rumConfiguration);
+      final tracingId = TracingId(identifier);
+      bool shouldSample = rum!.shouldSampleTrace(tracingId);
+      expect(shouldSample, expected);
+    }
   });
 
   test('getCurrentSessionId returns id from platform', () async {

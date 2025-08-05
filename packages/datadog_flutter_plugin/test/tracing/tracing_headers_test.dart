@@ -5,8 +5,20 @@
 import 'package:datadog_flutter_plugin/datadog_flutter_plugin.dart';
 import 'package:datadog_flutter_plugin/src/tracing/tracing_headers.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
+
+class MockDdRum extends Mock implements DatadogRum {}
 
 void main() {
+  late MockDdRum mockRum;
+
+  setUp(() {
+    registerFallbackValue(TracingId(BigInt.one));
+
+    mockRum = MockDdRum();
+    when(() => mockRum.shouldSampleTrace(any())).thenReturn(true);
+  });
+
   test('TracingIdRepresentation generates proper values', () {
     // Create a value in 128-bit hex that has leading zeros on both
     // the low and high 64-bits, and ensure we get the proper values
@@ -44,7 +56,7 @@ void main() {
   });
 
   test('generateTracingContext generates proper bit values', () {
-    final context = generateTracingContext(true);
+    final context = generateTracingContext(mockRum);
 
     expect(context.traceId.value.bitLength, lessThanOrEqualTo(128));
     expect(context.spanId.value.bitLength, lessThanOrEqualTo(63));
@@ -52,7 +64,7 @@ void main() {
   });
 
   test('Datadog attributes generated correctly', () {
-    final context = generateTracingContext(true);
+    final context = generateTracingContext(mockRum);
 
     final attributes = generateDatadogAttributes(context, 30.0);
 
@@ -64,7 +76,8 @@ void main() {
   });
 
   test('Unsampled context does not generate datadog attributes', () {
-    final context = generateTracingContext(false);
+    when(() => mockRum.shouldSampleTrace(any())).thenReturn(false);
+    final context = generateTracingContext(mockRum);
 
     final attributes = generateDatadogAttributes(context, 30.0);
 
@@ -79,7 +92,7 @@ void main() {
     test(
         'Datadog tracing headers are generated correctly { $contextInjection, sampled }',
         () {
-      final context = generateTracingContext(true);
+      final context = generateTracingContext(mockRum);
 
       final headers = getTracingHeaders(
         context,
@@ -100,7 +113,7 @@ void main() {
     test(
         'b3 tracing headers are generated correctly { $contextInjection, sampled }',
         () {
-      final context = generateTracingContext(true);
+      final context = generateTracingContext(mockRum);
 
       final headers = getTracingHeaders(
         context,
@@ -120,7 +133,7 @@ void main() {
     test(
         'b3multi tracing headers are generated correctly { $contextInjection, sampled }',
         () {
-      final context = generateTracingContext(true);
+      final context = generateTracingContext(mockRum);
 
       final headers = getTracingHeaders(
         context,
@@ -142,7 +155,7 @@ void main() {
     test(
         'tracecontext tracing headers are generated correctly { $contextInjection, sampled }',
         () {
-      final context = generateTracingContext(true);
+      final context = generateTracingContext(mockRum);
 
       final headers = getTracingHeaders(
         context,
@@ -165,7 +178,8 @@ void main() {
   test(
       'Datadog tracing headers are generated correctly { TraceContextInjection.all, unsampled }',
       () {
-    final context = generateTracingContext(false);
+    when(() => mockRum.shouldSampleTrace(any())).thenReturn(false);
+    final context = generateTracingContext(mockRum);
 
     final headers = getTracingHeaders(
       context,
@@ -186,7 +200,8 @@ void main() {
   test(
       'Datadog tracing headers are generated correctly { TraceContextInjection.sampled, unsampled }',
       () {
-    final context = generateTracingContext(false);
+    when(() => mockRum.shouldSampleTrace(any())).thenReturn(false);
+    final context = generateTracingContext(mockRum);
 
     final headers = getTracingHeaders(
       context,
@@ -217,7 +232,8 @@ void main() {
   test(
       'b3 tracing headers are generated correctly { TraceContextInjection.all, unsampled }',
       () {
-    final context = generateTracingContext(false);
+    when(() => mockRum.shouldSampleTrace(any())).thenReturn(false);
+    final context = generateTracingContext(mockRum);
 
     final headers = getTracingHeaders(
       context,
@@ -231,7 +247,8 @@ void main() {
   test(
       'b3 tracing headers are generated correctly { TraceContextInjection.sampled, unsampled }',
       () {
-    final context = generateTracingContext(false);
+    when(() => mockRum.shouldSampleTrace(any())).thenReturn(false);
+    final context = generateTracingContext(mockRum);
 
     final headers = getTracingHeaders(
       context,
@@ -245,7 +262,8 @@ void main() {
   test(
       'b3multi tracing headers are generated correctly { TraceContextInjection.all, unsampled }',
       () {
-    final context = generateTracingContext(false);
+    when(() => mockRum.shouldSampleTrace(any())).thenReturn(false);
+    final context = generateTracingContext(mockRum);
 
     final headers = getTracingHeaders(
       context,
@@ -262,7 +280,8 @@ void main() {
   test(
       'b3multi tracing headers are generated correctly { TraceContextInjection.sampled, unsampled }',
       () {
-    final context = generateTracingContext(false);
+    when(() => mockRum.shouldSampleTrace(any())).thenReturn(false);
+    final context = generateTracingContext(mockRum);
 
     final headers = getTracingHeaders(
       context,
@@ -279,7 +298,8 @@ void main() {
   test(
       'traceparent tracing headers are generated correctly { TraceContextInjection.all, unsampled }',
       () {
-    final context = generateTracingContext(false);
+    when(() => mockRum.shouldSampleTrace(any())).thenReturn(false);
+    final context = generateTracingContext(mockRum);
 
     final headers = getTracingHeaders(
       context,
@@ -301,7 +321,8 @@ void main() {
   test(
       'traceparent tracing headers are generated correctly { TraceContextInjection.all, unsampled }',
       () {
-    final context = generateTracingContext(false);
+    when(() => mockRum.shouldSampleTrace(any())).thenReturn(false);
+    final context = generateTracingContext(mockRum);
 
     final headers = getTracingHeaders(
       context,

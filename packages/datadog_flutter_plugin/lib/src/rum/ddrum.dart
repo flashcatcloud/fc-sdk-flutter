@@ -3,7 +3,6 @@
 // Copyright 2019-2021 Datadog, Inc.
 
 import 'dart:io';
-import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/scheduler.dart';
@@ -93,6 +92,11 @@ class _ViewInfo {
   const _ViewInfo(this.viewKey, this.viewName, this.viewStart);
 }
 
+// Used for trace sampling. We're avoiding literals in these cases to ensure
+// compatibility with Web.
+final BigInt _knuthFactor = BigInt.parse('1111111111111111111');
+final BigInt _maxTraceId = (BigInt.one << 64) - BigInt.one;
+
 class DatadogRum {
   static DdRumPlatform get _platform {
     return DdRumPlatform.instance;
@@ -103,13 +107,16 @@ class DatadogRum {
   /// See [DatadogRumConfiguration.traceSampleRate]
   final double traceSampleRate;
 
+  /// The max threashold of a TraceId to be sampled in. See
+  /// [shouldSampleTrace]
+  final BigInt _maxSampledTraceId;
+
   @internal
   final TraceContextInjection traceContextInjection;
 
   @internal
   DatadogTimeProvider timeProvider = DefaultTimeProvider();
 
-  final _sampleRandom = Random();
   final InternalLogger logger;
   RumLongTaskObserver? _longTaskObserver;
 
@@ -132,6 +139,7 @@ class DatadogRum {
   @internal
   DatadogRum.fromExisting(DatadogSdk core, DatadogAttachConfiguration config)
       : traceSampleRate = config.traceSampleRate,
+        _maxSampledTraceId = _getMaxTraceId(config.traceSampleRate),
         traceContextInjection = config.traceContextInjection,
         logger = core.internalLogger {
     _init(
@@ -144,6 +152,7 @@ class DatadogRum {
 
   DatadogRum._(DatadogSdk core, DatadogRumConfiguration configuration)
       : traceSampleRate = configuration.traceSampleRate,
+        _maxSampledTraceId = _getMaxTraceId(configuration.traceSampleRate),
         traceContextInjection = configuration.traceContextInjection,
         logger = core.internalLogger {
     _init(
@@ -477,8 +486,26 @@ class DatadogRum {
   ///
   /// This is used by Datadog tracing plugins like `datadog_tracing_http_client`
   /// to add the proper headers to network requests.
-  bool shouldSampleTrace() {
-    return (_sampleRandom.nextDouble() * 100) < traceSampleRate;
+  bool shouldSampleTrace(TracingId traceId) {
+    if (traceSampleRate >= 100) return true;
+    if (traceSampleRate <= 0) return false;
+
+    // Offer consistent sampling for the same trace id across different environments. The rule is:
+    //
+    //   (identifier * knuthFactor) < max_trace_id
+    //
+    // We use the low bits of the trace id in case it is 128 bits, to be consistent with the C++ implementation:
+    // https://github.com/DataDog/dd-trace-cpp/blob/159629edc438ae45f2bb318eb7bd51abd05e94b5/src/datadog/trace_sampler.cpp#L57
+    //
+    // The trace id also must be truncated back down to 64-bits after hashing.
+    final lowBits = traceId.value & _maxTraceId;
+
+    return ((lowBits * _knuthFactor) & _maxTraceId) < _maxSampledTraceId;
+  }
+
+  // Get the max sampled traceId for the given sample rate.
+  static BigInt _getMaxTraceId(double sampleRate) {
+    return BigInt.from((_maxTraceId).toDouble() * (sampleRate / 100));
   }
 
   @internal
