@@ -18,7 +18,7 @@ import 'rum_web_plugin.dart';
 
 class DdRumWeb extends DdRumPlatform {
   final Uuid _uuid = Uuid();
-  RumWebPlugin? _webPlugin;
+  RumWebPluginImpl? _webPlugin;
   ResourceTracker? _resourceTracker;
 
   // Because Web needs the full SDK configuration, we have a separate init method
@@ -30,8 +30,9 @@ class DdRumWeb extends DdRumPlatform {
     final sanitizedFirstPartyHosts = FirstPartyHost.createSanitized(
         configuration.firstPartyHostsWithTracingHeaders, logger);
 
-    _webPlugin = RumWebPlugin();
-    final plugins = [createJSInteropWrapper<RumWebPlugin>(_webPlugin!)].toJS;
+    _webPlugin = RumWebPluginImpl();
+    final plugins =
+        [createJSInteropWrapper<RumWebPluginImpl>(_webPlugin!)].toJS;
 
     _resourceTracker = ResourceTracker(_webPlugin!);
 

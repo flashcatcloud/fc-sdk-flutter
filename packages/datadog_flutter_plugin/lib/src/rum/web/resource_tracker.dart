@@ -19,7 +19,7 @@ import 'rum_web_plugin.dart';
 /// See RUM-
 class ResourceTracker {
   final Uuid _uuid = Uuid();
-  final RumWebPlugin _webPlugin;
+  final RumWebPluginImpl _webPlugin;
   final Map<String, _ResourceInfo> _resources = {};
 
   ResourceTracker(this._webPlugin);

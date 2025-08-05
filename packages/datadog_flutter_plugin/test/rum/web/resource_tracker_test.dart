@@ -19,7 +19,7 @@ import 'package:mocktail/mocktail.dart';
 
 import 'event_matchers.dart';
 
-class MockWebPlugin extends Mock implements RumWebPlugin {}
+class MockWebPlugin extends Mock implements RumWebPluginImpl {}
 
 final navigationStart = DateTime.now();
 
