@@ -4,6 +4,7 @@
 
 import UIKit
 import DatadogCore
+import DatadogCrashReporting
 import DatadogLogs
 import DatadogRUM
 import Flutter
@@ -43,21 +44,33 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             print("Failed to find client token and application in ddog_config.plist." +
                   " Did you run './generate_env'?")
         }
-        
+
+        // If you are adding Flutter to an existing iOS application, you should
+        // ensure Datadog is fully initialized in the on the iOS side before
+        // initializing Flutter and calling `DatadogSdk.attachToExisting` For
+        // more information about how to setup Datadog in iOS, see the official
+        // documentation:
+        // https://docs.datadoghq.com/real_user_monitoring/mobile_and_tv_monitoring/ios/setup/
         let coreConfig = Datadog.Configuration(
             clientToken: clientToken,
             env: "prod")
         Datadog.verbosityLevel = .debug
         Datadog.initialize(with: coreConfig, trackingConsent: TrackingConsent.granted)
 
+        // All components you want to use in Flutter need to be initialized in iOS first. 
+        // This includes Logs...
         Logs.enable()
 
+        // ... RUM...
         let rumConfig = RUM.Configuration(applicationID: rumApplicationId, uiKitViewsPredicate: FlutterExcludingRumViewsPredicate())
         RUM.enable(with: rumConfig)
 
-        
-        // Note: Datadog needs to be initialized before flutterEngine.run(), as this will call
-        // main() which will look for an existing Datadog instance to attach to.
+        // ... and CrashReporting.
+        CrashReporting.enable()
+
+        // Once Datadog is fully initialized, you can run flutterEngine.run(),
+        // which will call Flutter's `main` method, which will look for an
+        // existing Datadog instance to attach to.
         flutterEngine.run();
         GeneratedPluginRegistrant.register(with: self.flutterEngine);
         

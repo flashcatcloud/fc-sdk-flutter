@@ -8,6 +8,8 @@ import com.datadog.android.DatadogSite
 import com.datadog.android.core.configuration.BatchSize
 import com.datadog.android.core.configuration.Configuration
 import com.datadog.android.core.configuration.UploadFrequency
+import com.datadog.android.log.Logs
+import com.datadog.android.log.LogsConfiguration
 import com.datadog.android.privacy.TrackingConsent
 import com.datadog.android.rum.Rum
 import com.datadog.android.rum.RumConfiguration
@@ -22,6 +24,10 @@ import io.flutter.embedding.engine.FlutterEngineCache
 import io.flutter.embedding.engine.dart.DartExecutor
 import org.json.JSONObject
 
+/**
+ * This [ComponentPredicate] excludes all [FlutterActivity]s from being tracked by RUM, so that
+ * the Flutter SDK can handle them instead.
+ */
 class FlutterExcludingComponentPredicate: ComponentPredicate<Activity> {
     val innerPredicate = AcceptAllActivities()
 
@@ -58,13 +64,19 @@ class HybridApplication : Application() {
             Log.e(
                 TAG,
                 "Failed to find client token and application id in raw/dd_config.json." +
-                    " Did you run './generate_env'?",
+                        " Did you run './generate_env'?",
                 e
             )
         }
 
         Datadog.setVerbosity(Log.VERBOSE)
 
+        // If you are adding Flutter to an existing Android application, you should
+        // ensure Datadog is fully initialized in the on the Android side before
+        // initializing Flutter and calling `DatadogSdk.attachToExisting` For
+        // more information about how to setup Datadog in Android, see the official
+        // documentation:
+        // https://docs.datadoghq.com/real_user_monitoring/mobile_and_tv_monitoring/android/setup
         val datadogConfig = Configuration.Builder(
             clientToken,
             "prod",
@@ -81,6 +93,13 @@ class HybridApplication : Application() {
             TrackingConsent.GRANTED
         )
 
+        // All components you want to use in Flutter need to be initialized in iOS first.
+        // This includes Logs...
+        val logsConfiguration = LogsConfiguration.Builder()
+            .build()
+        Logs.enable(logsConfiguration)
+
+        // ... RUM...
         val rumConfiguration = RumConfiguration.Builder(applicationId)
             .trackLongTasks()
             .trackUserInteractions()
@@ -89,9 +108,15 @@ class HybridApplication : Application() {
                 componentPredicate = FlutterExcludingComponentPredicate()
             ))
         Rum.enable(rumConfiguration.build())
-        val traceConfig = TraceConfiguration.Builder()
-        Trace.enable(traceConfig.build())
 
+        // ... and NDK crash reporting (this is optional. See documentation for more details).
+        // https://docs.datadoghq.com/real_user_monitoring/mobile_and_tv_monitoring/android/error_tracking
+        // NdkCrashReporting.enable()
+
+
+        // Once Datadog is fully initialized, you can run flutterEngine.run(),
+        // which will call Flutter's `main` method, which will look for an
+        // existing Datadog instance to attach to.
         flutterEngine = FlutterEngine(this)
         flutterEngine.dartExecutor.executeDartEntrypoint(
             DartExecutor.DartEntrypoint.createDefault()
