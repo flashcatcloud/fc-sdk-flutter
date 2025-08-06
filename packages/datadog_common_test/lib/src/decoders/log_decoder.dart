@@ -14,6 +14,12 @@ class LogDecoder {
   String get message => log['message'] as String;
   String get serviceName => log['service'] as String;
   String get tags => log['ddtags'] as String;
+
+  String? get userAnonymousId => getNestedProperty('usr.anonymous_id', log);
+  String? get userId => getNestedProperty('usr.id', log);
+  String? get userName => getNestedProperty('usr.name', log);
+  String? get userEmail => getNestedProperty('usr.email', log);
+
   List<String> get tagValues => (log['ddtags'] as String).split(',');
   String get applicationVersion => log['version'] as String;
   String get loggerName => getNestedProperty('logger.name', log);

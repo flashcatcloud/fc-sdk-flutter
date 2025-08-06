@@ -5,9 +5,8 @@
 
 import 'dart:js_interop';
 
-import 'package:meta/meta.dart';
-
 import '../../datadog_flutter_plugin.dart';
+import '../../datadog_flutter_plugin_web.dart';
 import '../../datadog_internal.dart';
 import '../logs/ddweb_helpers.dart';
 import '../web_helpers.dart';
@@ -307,20 +306,6 @@ extension type _RumInternalContext._(JSObject _) implements JSObject {
   external String? application_id;
   // ignore: non_constant_identifier_names
   external String? session_id;
-}
-
-@anonymous
-@internal
-extension type JsUser._(JSObject _) implements JSObject {
-  external String? get id;
-  external String? get email;
-  external String? get name;
-
-  external factory JsUser({
-    String? id,
-    String? email,
-    String? name,
-  });
 }
 
 extension type _DdRum._(JSObject _) implements JSObject {
