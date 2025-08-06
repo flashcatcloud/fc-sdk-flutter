@@ -22,11 +22,15 @@ void main() {
   test('TracingIdRepresentation generates proper values', () {
     // Create a value in 128-bit hex that has leading zeros on both
     // the low and high 64-bits, and ensure we get the proper values
-    const low = 0x01445feed89934bb;
-    const high = 0x01222f00d89934ba;
+    const low0 = 0xd89934bb;
+    const low32 = 0x01445fee;
+    const high0 = 0xd89934ba;
+    const high32 = 0x01222f00;
 
-    var combined = BigInt.from(high);
-    combined = (combined << 64) + BigInt.from(low);
+    var combined = BigInt.from(high32);
+    combined = (combined << 32) + BigInt.from(high0);
+    combined = (combined << 32) + BigInt.from(low32);
+    combined = (combined << 32) + BigInt.from(low0);
 
     final tracingId = TracingId(combined);
 

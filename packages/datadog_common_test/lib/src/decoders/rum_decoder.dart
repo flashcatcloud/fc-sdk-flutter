@@ -124,7 +124,7 @@ class RumEventDecoder {
   final RumViewInfoDecoder? viewInfo;
   final Dd dd;
 
-  String get eventType => rumEvent['type'] as String;
+  String? get eventType => rumEvent['type'] as String?;
   String get service {
     if (!kManualIsWeb) {
       if (Platform.isIOS) return rumEvent['service'];

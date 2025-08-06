@@ -22,6 +22,13 @@ class _RumUserActionsScreenState extends State<RumUserActionsScreen> {
   int _radioValue = 0;
   bool _switchValue = false;
 
+  @override
+  void initState() {
+    super.initState();
+
+    DatadogSdk.instance.rum?.startView('RumUserActionScreen');
+  }
+
   void _buttonPressed(String name) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Tapped $name')),

@@ -14,7 +14,7 @@ import 'src/internal_logger.dart';
 import 'src/logs/ddlogs_platform_interface.dart';
 import 'src/logs/ddlogs_web.dart';
 import 'src/rum/ddrum_platform_interface.dart';
-import 'src/rum/ddrum_web.dart';
+import 'src/rum/web/ddrum_web.dart';
 
 /// A web implementation of the DatadogSdk plugin.
 class DatadogSdkWeb extends DatadogSdkPlatform {
