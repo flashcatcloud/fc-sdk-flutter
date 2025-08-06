@@ -46,9 +46,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         }
 
         // If you are adding Flutter to an existing iOS application, you should
-        // ensure Datadog is fully initialized in the on the iOS side before
-        // initializing Flutter and calling `DatadogSdk.attachToExisting` For
-        // more information about how to setup Datadog in iOS, see the official
+        // ensure Datadog is fully initialized on the iOS side before
+        // initializing Flutter and calling `DatadogSdk.attachToExisting`.
+        // For more information about how to setup Datadog in iOS, see the official
         // documentation:
         // https://docs.datadoghq.com/real_user_monitoring/mobile_and_tv_monitoring/ios/setup/
         let coreConfig = Datadog.Configuration(
@@ -57,7 +57,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         Datadog.verbosityLevel = .debug
         Datadog.initialize(with: coreConfig, trackingConsent: TrackingConsent.granted)
 
-        // All components you want to use in Flutter need to be initialized in iOS first. 
+        // All components you want to use in Flutter must be initialized on iOS first. 
         // This includes Logs...
         Logs.enable()
 
@@ -68,9 +68,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // ... and CrashReporting.
         CrashReporting.enable()
 
-        // Once Datadog is fully initialized, you can run flutterEngine.run(),
-        // which will call Flutter's `main` method, which will look for an
-        // existing Datadog instance to attach to.
+        // Once Datadog is fully initialized, you can run `flutterEngine.run()`.
+        // This calls Flutter's `main` method, which will look for an existing Datadog instance to attach to.
         flutterEngine.run();
         GeneratedPluginRegistrant.register(with: self.flutterEngine);
         
