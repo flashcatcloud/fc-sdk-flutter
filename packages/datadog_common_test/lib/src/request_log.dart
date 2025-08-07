@@ -20,12 +20,15 @@ class RequestLog {
 
   Map<String, String> get tags {
     var tagMap = <String, String>{};
-    for (var tag in queryParameters['ddtags']!.split(',')) {
-      var colon = tag.indexOf(':');
-      if (colon == -1) {
-        tagMap[tag] = '';
-      } else {
-        tagMap[tag.substring(0, colon)] = tag.substring(colon + 1);
+    final queryTags = queryParameters['ddtags'];
+    if (queryTags != null) {
+      for (var tag in queryTags.split(',')) {
+        var colon = tag.indexOf(':');
+        if (colon == -1) {
+          tagMap[tag] = '';
+        } else {
+          tagMap[tag.substring(0, colon)] = tag.substring(colon + 1);
+        }
       }
     }
     return tagMap;
