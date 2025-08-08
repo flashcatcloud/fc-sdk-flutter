@@ -319,6 +319,8 @@ SWIFT_CLASS_NAMED("FlutterSessionReplay")
 - (void)setHasReplayWithHasReplay:(BOOL)hasReplay;
 - (void)setRecordCountFor:(NSString * _Nonnull)viewId count:(NSInteger)count;
 - (void)writeSegmentWithSegment:(NSString * _Nonnull)segmentJson;
+- (void)postTelemetryDebugWithId:(NSString * _Nonnull)id message:(NSString * _Nonnull)message;
+- (void)postTelemetryErrorWithMessage:(NSString * _Nonnull)message kind:(NSString * _Nonnull)kind stackTrace:(NSString * _Nonnull)stackTrace;
 - (nonnull instancetype)init OBJC_DESIGNATED_INITIALIZER;
 @end
 

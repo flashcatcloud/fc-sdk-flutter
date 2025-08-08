@@ -5,6 +5,7 @@
 import 'dart:async';
 import 'dart:ffi' as ffi;
 
+import 'package:flutter/foundation.dart';
 import 'package:objective_c/objective_c.dart';
 
 import '../../datadog_session_replay.dart';
@@ -14,8 +15,8 @@ import 'datadog_session_replay_bridge_ios.dart';
 
 class DatadogSessionReplayPlatformIos extends DatadogSessionReplayPlatform {
   late FlutterSessionReplay _iosBridge;
-  
-    // Create the 
+
+  // Create the
   DatadogSessionReplayPlatformIos() {
     _iosBridge = FlutterSessionReplay();
   }
@@ -35,23 +36,30 @@ class DatadogSessionReplayPlatformIos extends DatadogSessionReplayPlatform {
     if (configuration.customEndpoint case final customEndpoint?) {
       url = NSURL().initWithString(NSString(customEndpoint));
       if (url == null) {
-        // Telemetry
+        final message =
+            'Failed to parse custom endpoint $customEndpoint. Session replay was not initialized.';
+        if (kDebugMode) {
+          print('Datadog SR] ERROR: $message');
+        }
+        _iosBridge.postTelemetryDebugWithId(
+          NSString('bad_custom_url'),
+          message: NSString(message),
+        );
       }
     }
 
-    final contextChangedListener = ObjCBlock_ffiVoid_FlutterRUMCoreContext.listener((
-      context,
-    ) {
-      RUMContext? dartContext;
-      if (context != null) {
-        dartContext = RUMContext(
-          applicationId: context.applicationID.toDartString(),
-          sessionId: context.sessionID.toDartString(),
-          viewId: context.viewID?.toDartString(),
-        );
-        onContextChanged(dartContext);
-      }
-    });
+    final contextChangedListener =
+        ObjCBlock_ffiVoid_FlutterRUMCoreContext.listener((context) {
+          RUMContext? dartContext;
+          if (context != null) {
+            dartContext = RUMContext(
+              applicationId: context.applicationID.toDartString(),
+              sessionId: context.sessionID.toDartString(),
+              viewId: context.viewID?.toDartString(),
+            );
+            onContextChanged(dartContext);
+          }
+        });
 
     final iOsConfiguration =
         FlutterSessionReplayConfiguration.alloc()..initWithCustomEndpoint(
@@ -76,5 +84,22 @@ class DatadogSessionReplayPlatformIos extends DatadogSessionReplayPlatform {
   @override
   FutureOr<void> writeSegment(String record, String viewId) {
     _iosBridge.writeSegmentWithSegment(NSString(record));
+  }
+
+  @override
+  FutureOr<void> telemetryDebug(String id, String message) {
+    _iosBridge.postTelemetryDebugWithId(
+      NSString(id),
+      message: NSString(message),
+    );
+  }
+
+  @override
+  FutureOr<void> telemetryError(String message, String kind, String stack) {
+    _iosBridge.postTelemetryErrorWithMessage(
+      NSString(message),
+      kind: NSString(kind),
+      stackTrace: NSString(stack),
+    );
   }
 }

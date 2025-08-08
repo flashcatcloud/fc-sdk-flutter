@@ -42,7 +42,7 @@ class InternalLogger {
   /// data is sent to Datadog is set by [DatadogRumConfiguration.telemetrySampleRate]
   void sendToDatadog(String message, StackTrace? stack, String? kind) {
     DatadogSdkPlatform.instance
-        .sendTelemetryError(message, stack.toString(), kind);
+        .sendTelemetryError(message, stack?.toString(), kind);
   }
 
   // Standard error strings

@@ -97,4 +97,13 @@ public func __datadog_session_replay_keep_symbols() {
     @objc public func writeSegment(segment segmentJson: String) {
         feature?.writeSegment(segment: segmentJson)
     }
+
+    @objc public func postTelemetryDebug(id: String, message: String) {
+        Datadog._internal.telemetry.debug(id: "datadog_flutter:\(id)", message: message)
+    }
+
+    @objc public func postTelemetryError(message: String, kind: String, stackTrace: String) {
+        Datadog._internal.telemetry.error(id: "datadog_flutter:\(String(describing: kind)):\(message)",
+                                          message: message, kind: kind, stack: stackTrace)
+    }
 }

@@ -1,6 +1,8 @@
 // Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
 // This product includes software developed at Datadog (https://www.datadoghq.com/).
 // Copyright 2025-Present Datadog, Inc.
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
@@ -56,5 +58,15 @@ class MethodChannelDatadogSessionReplay extends DatadogSessionReplayPlatform {
       'viewId': viewId,
       'count': count,
     });
+  }
+
+  @override
+  FutureOr<void> telemetryDebug(String id, String message) {
+    // Will be replaced by FFI
+  }
+
+  @override
+  FutureOr<void> telemetryError(String message, String kind, String stack) {
+    // Will be replaced by FFI
   }
 }

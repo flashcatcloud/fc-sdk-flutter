@@ -931,6 +931,53 @@ final _objc_msgSend_1nvl641 =
 late final _sel_writeSegmentWithSegment_ = objc.registerName(
   "writeSegmentWithSegment:",
 );
+late final _sel_postTelemetryDebugWithId_message_ = objc.registerName(
+  "postTelemetryDebugWithId:message:",
+);
+final _objc_msgSend_pfv6jd =
+    objc.msgSendPointer
+        .cast<
+          ffi.NativeFunction<
+            ffi.Void Function(
+              ffi.Pointer<objc.ObjCObject>,
+              ffi.Pointer<objc.ObjCSelector>,
+              ffi.Pointer<objc.ObjCObject>,
+              ffi.Pointer<objc.ObjCObject>,
+            )
+          >
+        >()
+        .asFunction<
+          void Function(
+            ffi.Pointer<objc.ObjCObject>,
+            ffi.Pointer<objc.ObjCSelector>,
+            ffi.Pointer<objc.ObjCObject>,
+            ffi.Pointer<objc.ObjCObject>,
+          )
+        >();
+late final _sel_postTelemetryErrorWithMessage_kind_stackTrace_ = objc
+    .registerName("postTelemetryErrorWithMessage:kind:stackTrace:");
+final _objc_msgSend_r8gdi7 =
+    objc.msgSendPointer
+        .cast<
+          ffi.NativeFunction<
+            ffi.Void Function(
+              ffi.Pointer<objc.ObjCObject>,
+              ffi.Pointer<objc.ObjCSelector>,
+              ffi.Pointer<objc.ObjCObject>,
+              ffi.Pointer<objc.ObjCObject>,
+              ffi.Pointer<objc.ObjCObject>,
+            )
+          >
+        >()
+        .asFunction<
+          void Function(
+            ffi.Pointer<objc.ObjCObject>,
+            ffi.Pointer<objc.ObjCSelector>,
+            ffi.Pointer<objc.ObjCObject>,
+            ffi.Pointer<objc.ObjCObject>,
+            ffi.Pointer<objc.ObjCObject>,
+          )
+        >();
 
 /// FlutterSessionReplay
 class FlutterSessionReplay extends objc.NSObject {
@@ -994,6 +1041,34 @@ class FlutterSessionReplay extends objc.NSObject {
       this.ref.pointer,
       _sel_writeSegmentWithSegment_,
       segmentJson.ref.pointer,
+    );
+  }
+
+  /// postTelemetryDebugWithId:message:
+  void postTelemetryDebugWithId(
+    objc.NSString id, {
+    required objc.NSString message,
+  }) {
+    _objc_msgSend_pfv6jd(
+      this.ref.pointer,
+      _sel_postTelemetryDebugWithId_message_,
+      id.ref.pointer,
+      message.ref.pointer,
+    );
+  }
+
+  /// postTelemetryErrorWithMessage:kind:stackTrace:
+  void postTelemetryErrorWithMessage(
+    objc.NSString message, {
+    required objc.NSString kind,
+    required objc.NSString stackTrace,
+  }) {
+    _objc_msgSend_r8gdi7(
+      this.ref.pointer,
+      _sel_postTelemetryErrorWithMessage_kind_stackTrace_,
+      message.ref.pointer,
+      kind.ref.pointer,
+      stackTrace.ref.pointer,
     );
   }
 

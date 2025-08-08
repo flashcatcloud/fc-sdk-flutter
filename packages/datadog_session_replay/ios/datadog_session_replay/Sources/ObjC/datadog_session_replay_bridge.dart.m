@@ -1,7 +1,7 @@
 #include <stdint.h>
 #import <Foundation/Foundation.h>
 #import <objc/message.h>
-#import "datadog_session_replay_bridge.h"
+#import "include/datadog_session_replay_bridge.h"
 
 #if !__has_feature(objc_arc)
 #error "This file must be compiled with ARC enabled"

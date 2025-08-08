@@ -3,6 +3,8 @@
 // Copyright 2025-Present Datadog, Inc.
 // ignore: avoid_web_libraries_in_flutter
 
+import 'dart:async';
+
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 
 import '../datadog_session_replay.dart';
@@ -43,5 +45,15 @@ class DatadogSessionReplayWeb extends DatadogSessionReplayPlatform {
   @override
   Future<void> writeSegment(String record, String viewId) {
     return Future.value();
+  }
+
+  @override
+  FutureOr<void> telemetryDebug(String id, String message) {
+    // Not currently supported
+  }
+
+  @override
+  FutureOr<void> telemetryError(String message, String kind, String stack) {
+    // Not currently supported
   }
 }

@@ -95,14 +95,18 @@ class ProcessorWorker {
         totalRecordCount,
       );
 
-      var encoded = jsonEncode(enrichedRecord);
       try {
+        var encoded = jsonEncode(enrichedRecord);
         await DatadogSessionReplayPlatform.instance.writeSegment(
           encoded,
           viewId,
         );
-      } catch (e) {
-        // TODO: Report telemetry
+      } catch (e, st) {
+        DatadogSessionReplayPlatform.instance.telemetryError(
+          'Error writing segment: $e',
+          e.runtimeType.toString(),
+          st.toString(),
+        );
       }
     }
 

@@ -49,6 +49,10 @@ abstract class DatadogSessionReplayPlatform extends PlatformInterface {
 
   FutureOr<void> writeSegment(String record, String viewId);
 
+  FutureOr<void> telemetryDebug(String id, String message);
+
+  FutureOr<void> telemetryError(String message, String kind, String stack);
+
   static void initialize() {
     // Web handles its own initialization
     if (!kIsWeb) {
