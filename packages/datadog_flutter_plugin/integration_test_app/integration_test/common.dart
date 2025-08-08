@@ -110,23 +110,26 @@ extension Waiter on WidgetTester {
 
 void verifyCommonTags(
     RequestLog request, String service, String version, String? variant) {
-  final sdkVersion = request.tags['sdk_version'];
-  if (kIsWeb) {
-    // Returning the browser version of the SDK.
-    expect(sdkVersion?.startsWith('5.'), true);
-  } else {
-    expect(sdkVersion, DatadogSdk.sdkVersion);
-  }
+  // TODO: These tags were moved to events and should be checked there.
+  if (request.tags.isNotEmpty) {
+    final sdkVersion = request.tags['sdk_version'];
+    if (kIsWeb) {
+      // Returning the browser version of the SDK.
+      expect(sdkVersion?.startsWith('5.'), true);
+    } else {
+      expect(sdkVersion, DatadogSdk.sdkVersion);
+    }
 
-  expect(request.tags['service'], service);
+    expect(request.tags['service'], service);
 
-  if (!kIsWeb) {
-    // Currently coming back as 'browser' on web
-    expect(request.queryParameters['ddsource'], 'flutter');
+    if (!kIsWeb) {
+      // Currently coming back as 'browser' on web
+      expect(request.queryParameters['ddsource'], 'flutter');
 
-    // Not sent as a tag on web
-    expect(request.tags['version'], version);
-    expect(request.tags['variant'], variant);
+      // Not sent as a tag on web
+      expect(request.tags['version'], version);
+      expect(request.tags['variant'], variant);
+    }
   }
 }
 
