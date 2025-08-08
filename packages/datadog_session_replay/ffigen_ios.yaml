@@ -2,10 +2,10 @@ name: datadog_session_replay_bridge
 language: objc
 output: 
   bindings: 'lib/src/ios/datadog_session_replay_bridge_ios.dart'
-  objc-bindings: 'ios/datadog_session_replay/Sources/datadog_session_replay_bridge.dart.m'
+  objc-bindings: 'ios/datadog_session_replay/Sources/ObjC/include/datadog_session_replay_bridge.dart.m'
 headers:
   entry-points:
-    - 'ios/datadog_session_replay/Sources/datadog_session_replay_bridge.h'
+    - 'ios/datadog_session_replay/Sources/ObjC/datadog_session_replay_bridge.h'
 exclude-all-by-default: true
 objc-interfaces:
   include:

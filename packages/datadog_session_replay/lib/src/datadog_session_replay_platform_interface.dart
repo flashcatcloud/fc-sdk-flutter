@@ -11,7 +11,6 @@ import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 import '../datadog_session_replay.dart';
 import 'datadog_session_replay_method_channel.dart';
-import 'datadog_session_replay_web.dart';
 import 'ios/datadog_session_replay_platform_ios.dart';
 import 'rum_context.dart';
 
@@ -51,9 +50,8 @@ abstract class DatadogSessionReplayPlatform extends PlatformInterface {
   FutureOr<void> writeSegment(String record, String viewId);
 
   static void initialize() {
-    if (kIsWeb) {
-      DatadogSessionReplayPlatform.instance = DatadogSessionReplayWeb();
-    } else {
+    // Web handles its own initialization
+    if (!kIsWeb) {
       if (Platform.isIOS) {
         DatadogSessionReplayPlatform.instance =
             DatadogSessionReplayPlatformIos();

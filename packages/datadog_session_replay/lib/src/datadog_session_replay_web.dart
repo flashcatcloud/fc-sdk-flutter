@@ -15,7 +15,9 @@ class DatadogSessionReplayWeb extends DatadogSessionReplayPlatform {
   /// Constructs a DatadogSessionReplayWeb
   DatadogSessionReplayWeb();
 
-  static void registerWith(Registrar registrar) {}
+  static void registerWith(Registrar registrar) {
+    DatadogSessionReplayPlatform.instance = DatadogSessionReplayWeb();
+  }
 
   @override
   Object? get isolateToken => null;
