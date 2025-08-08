@@ -8,6 +8,7 @@ import 'dart:js_interop';
 import 'package:meta/meta.dart';
 
 import '../../datadog_flutter_plugin.dart';
+import '../../datadog_flutter_plugin_web.dart';
 import '../../datadog_internal.dart';
 import '../web_helpers.dart';
 import 'ddlogs_platform_interface.dart';
@@ -17,7 +18,7 @@ class DdLogsWeb extends DdLogsPlatform {
   final Map<String, Logger> _activeLoggers = {};
 
   static void initLogs(DatadogConfiguration configuration) {
-    DD_LOGS.init(_LogInitOptions(
+    DD_LOGS?.init(_LogInitOptions(
       clientToken: configuration.clientToken,
       env: configuration.env,
       proxy: configuration.loggingConfiguration?.customEndpoint,
@@ -46,7 +47,7 @@ class DdLogsWeb extends DdLogsPlatform {
     var loggerHandlers = [
       'http'.toJS,
     ];
-    var logger = DD_LOGS.createLogger(
+    var logger = DD_LOGS?.createLogger(
       config.name ?? 'default',
       _JsLoggerConfiguration(),
     );
@@ -185,6 +186,8 @@ extension type _DdLogs._(JSObject _) implements JSObject {
 
   external Logger? getLogger(String name);
 
+  external void setUser(JsUser userInfo);
+
   @internal
   external Logger? createLogger(
       String name, _JsLoggerConfiguration? configuration);
@@ -192,7 +195,7 @@ extension type _DdLogs._(JSObject _) implements JSObject {
 
 @JS()
 // ignore: non_constant_identifier_names
-external _DdLogs DD_LOGS;
+external _DdLogs? DD_LOGS;
 
 extension type Logger._(JSObject _) implements JSObject {
   external void log(

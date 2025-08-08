@@ -5,10 +5,10 @@
 
 import 'dart:js_interop';
 
-import 'package:meta/meta.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../datadog_flutter_plugin.dart';
+import '../../../datadog_flutter_plugin_web.dart';
 import '../../../datadog_internal.dart';
 import '../../web_helpers.dart';
 import '../ddrum_platform_interface.dart';
@@ -22,59 +22,72 @@ class DdRumWeb extends DdRumPlatform {
   ResourceTracker? _resourceTracker;
 
   // Because Web needs the full SDK configuration, we have a separate init method
-  void initialize(DatadogConfiguration configuration,
-      DatadogRumConfiguration rumConfiguration, InternalLogger logger) {
+  void initialize(
+    DatadogConfiguration configuration,
+    DatadogRumConfiguration rumConfiguration,
+    InternalLogger logger,
+  ) {
     bool trackResources =
         configuration.additionalConfig[trackResourcesConfigKey] == true;
 
     final sanitizedFirstPartyHosts = FirstPartyHost.createSanitized(
-        configuration.firstPartyHostsWithTracingHeaders, logger);
+      configuration.firstPartyHostsWithTracingHeaders,
+      logger,
+    );
 
     _webPlugin = RumWebPluginImpl();
-    final plugins =
-        [createJSInteropWrapper<RumWebPluginImpl>(_webPlugin!)].toJS;
+    final plugins = [
+      createJSInteropWrapper<RumWebPluginImpl>(_webPlugin!),
+    ].toJS;
 
     _resourceTracker = ResourceTracker(_webPlugin!);
 
-    DD_RUM?.init(_RumInitOptions(
-      applicationId: rumConfiguration.applicationId,
-      clientToken: configuration.clientToken,
-      site: siteStringForSite(configuration.site),
-      sessionSampleRate: rumConfiguration.sessionSamplingRate,
-      sessionReplaySampleRate: 0,
-      service: configuration.service,
-      env: configuration.env,
-      version: configuration.versionTag,
-      proxy: rumConfiguration.customEndpoint,
-      allowedTracingUrls: [
-        for (final host in sanitizedFirstPartyHosts)
-          _TracingUrl(
-            match: ((String check) {
-              final uri = Uri.parse(check);
-              return host.regExp.hasMatch(uri.host);
-            }).toJS,
-            propagatorTypes:
-                host.headerTypes.map(_headerTypeToPropagatorType).toList().toJS,
-          )
-      ].toJS,
-      traceSampleRate: rumConfiguration.traceSampleRate,
-      traceContextInjection:
-          _contextInjectionString(rumConfiguration.traceContextInjection),
-      trackViewsManually: true,
-      trackUserInteractions: false,
-      trackResources: trackResources,
-      trackFrustrations: rumConfiguration.trackFrustrations,
-      trackLongTasks: rumConfiguration.detectLongTasks,
-      enableExperimentalFeatures: ['feature_flags'.toJS].toJS,
-      // TODO(RUM-11211): Support and document web configuration options.
-      compressIntakeRequests: false,
-      plugins: plugins,
-    ));
+    DD_RUM?.init(
+      _RumInitOptions(
+        applicationId: rumConfiguration.applicationId,
+        clientToken: configuration.clientToken,
+        site: siteStringForSite(configuration.site),
+        sessionSampleRate: rumConfiguration.sessionSamplingRate,
+        sessionReplaySampleRate: 0,
+        service: configuration.service,
+        env: configuration.env,
+        version: configuration.versionTag,
+        proxy: rumConfiguration.customEndpoint,
+        allowedTracingUrls: [
+          for (final host in sanitizedFirstPartyHosts)
+            _TracingUrl(
+              match: ((String check) {
+                final uri = Uri.parse(check);
+                return host.regExp.hasMatch(uri.host);
+              }).toJS,
+              propagatorTypes: host.headerTypes
+                  .map(_headerTypeToPropagatorType)
+                  .toList()
+                  .toJS,
+            ),
+        ].toJS,
+        traceSampleRate: rumConfiguration.traceSampleRate,
+        traceContextInjection: _contextInjectionString(
+          rumConfiguration.traceContextInjection,
+        ),
+        trackViewsManually: true,
+        trackUserInteractions: false,
+        trackResources: trackResources,
+        trackFrustrations: rumConfiguration.trackFrustrations,
+        trackLongTasks: rumConfiguration.detectLongTasks,
+        enableExperimentalFeatures: ['feature_flags'.toJS].toJS,
+        // TODO(RUM-11211): Support and document web configuration options.
+        compressIntakeRequests: false,
+        plugins: plugins,
+      ),
+    );
   }
 
   @override
   Future<void> enable(
-      DatadogSdk core, DatadogRumConfiguration configuration) async {}
+    DatadogSdk core,
+    DatadogRumConfiguration configuration,
+  ) async {}
 
   @override
   Future<void> deinitialize() async {}
@@ -174,8 +187,12 @@ class DdRumWeb extends DdRumPlatform {
   }
 
   @override
-  Future<void> addAction(DateTime timestamp, RumActionType type, String name,
-      Map<String, dynamic> attributes) async {
+  Future<void> addAction(
+    DateTime timestamp,
+    RumActionType type,
+    String name,
+    Map<String, dynamic> attributes,
+  ) async {
     final epochTime = timestamp.millisecondsSinceEpoch;
     final eventTime = _toRelativeTime(timestamp);
 
@@ -205,56 +222,103 @@ class DdRumWeb extends DdRumPlatform {
 
   @override
   Future<void> startResource(
-      DateTime timestamp,
-      String key,
-      RumHttpMethod httpMethod,
-      String url,
-      Map<String, dynamic> attributes) async {
+    DateTime timestamp,
+    String key,
+    RumHttpMethod httpMethod,
+    String url,
+    Map<String, dynamic> attributes,
+  ) async {
     _resourceTracker?.startResource(
-        timestamp, key, httpMethod, url, attributes);
+      timestamp,
+      key,
+      httpMethod,
+      url,
+      attributes,
+    );
   }
 
   @override
-  Future<void> startAction(DateTime timestamp, RumActionType type, String name,
-      Map<String, dynamic> attributes) async {
+  Future<void> startAction(
+    DateTime timestamp,
+    RumActionType type,
+    String name,
+    Map<String, dynamic> attributes,
+  ) async {
     // NOOP
   }
 
   @override
-  Future<void> startView(DateTime timestamp, String key, String name,
-      Map<String, dynamic> attributes) async {
+  Future<void> startView(
+    DateTime timestamp,
+    String key,
+    String name,
+    Map<String, dynamic> attributes,
+  ) async {
     DD_RUM?.startView(name);
   }
 
   @override
-  Future<void> stopResource(DateTime timestamp, String key, int? statusCode,
-      RumResourceType kind, int? size, Map<String, dynamic> attributes) async {
+  Future<void> stopResource(
+    DateTime timestamp,
+    String key,
+    int? statusCode,
+    RumResourceType kind,
+    int? size,
+    Map<String, dynamic> attributes,
+  ) async {
     _resourceTracker?.stopResource(
-        timestamp, key, statusCode, kind, size, attributes);
+      timestamp,
+      key,
+      statusCode,
+      kind,
+      size,
+      attributes,
+    );
   }
 
   @override
-  Future<void> stopResourceWithError(DateTime timestamp, String key,
-      Exception error, Map<String, dynamic> attributes) async {
+  Future<void> stopResourceWithError(
+    DateTime timestamp,
+    String key,
+    Exception error,
+    Map<String, dynamic> attributes,
+  ) async {
     _resourceTracker?.stopResourceWithError(timestamp, key, error, attributes);
   }
 
   @override
-  Future<void> stopResourceWithErrorInfo(DateTime timestamp, String key,
-      String message, String type, Map<String, dynamic> attributes) async {
+  Future<void> stopResourceWithErrorInfo(
+    DateTime timestamp,
+    String key,
+    String message,
+    String type,
+    Map<String, dynamic> attributes,
+  ) async {
     _resourceTracker?.stopResourceWithErrorInfo(
-        timestamp, key, message, type, attributes);
+      timestamp,
+      key,
+      message,
+      type,
+      attributes,
+    );
   }
 
   @override
-  Future<void> stopAction(DateTime timestamp, RumActionType type, String name,
-      Map<String, dynamic> attributes) async {
+  Future<void> stopAction(
+    DateTime timestamp,
+    RumActionType type,
+    String name,
+    Map<String, dynamic> attributes,
+  ) async {
     // NOOP
   }
 
   @override
   Future<void> stopView(
-      DateTime timestamp, String key, Map<String, dynamic> attributes) async {
+    DateTime timestamp,
+    String key,
+    Map<String, dynamic> attributes,
+  ) async {
     // NOOP
   }
 
@@ -275,7 +339,9 @@ class DdRumWeb extends DdRumPlatform {
 
   @override
   Future<void> updatePerformanceMetrics(
-      List<double> buildTimes, List<double> rasterTimes) async {
+    List<double> buildTimes,
+    List<double> rasterTimes,
+  ) async {
     // NOOP - Not supported by the Browser SDK
   }
 
@@ -312,10 +378,7 @@ extension type _TracingUrl._(JSObject _) implements JSObject {
   external JSRegExp match;
   external JSArray propagatorTypes;
 
-  external factory _TracingUrl({
-    JSFunction match,
-    JSArray propagatorTypes,
-  });
+  external factory _TracingUrl({JSFunction match, JSArray propagatorTypes});
 }
 
 @anonymous
@@ -380,20 +443,6 @@ extension type _RumInternalContext._(JSObject _) implements JSObject {
   external String? application_id;
   // ignore: non_constant_identifier_names
   external String? session_id;
-}
-
-@anonymous
-@internal
-extension type JsUser._(JSObject _) implements JSObject {
-  external String? get id;
-  external String? get email;
-  external String? get name;
-
-  external factory JsUser({
-    String? id,
-    String? email,
-    String? name,
-  });
 }
 
 extension type _DdRum._(JSObject _) implements JSObject {
