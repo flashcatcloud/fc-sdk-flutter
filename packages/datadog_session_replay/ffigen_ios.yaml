@@ -1,0 +1,14 @@
+name: datadog_session_replay_bridge
+language: objc
+output: 
+  bindings: 'lib/src/ios/datadog_session_replay_bridge_ios.dart'
+  objc-bindings: 'ios/datadog_session_replay/Sources/datadog_session_replay_bridge.dart.m'
+headers:
+  entry-points:
+    - 'ios/datadog_session_replay/Sources/datadog_session_replay_bridge.h'
+exclude-all-by-default: true
+objc-interfaces:
+  include:
+    - FlutterRUMCoreContext
+    - FlutterSessionReplay
+    - FlutterSessionReplayConfiguration

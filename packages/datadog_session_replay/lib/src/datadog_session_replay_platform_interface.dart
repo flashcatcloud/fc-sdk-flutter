@@ -1,7 +1,18 @@
+// Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
+// This product includes software developed at Datadog (https://www.datadoghq.com/).
+// Copyright 2025-Present Datadog, Inc.
+import 'dart:async';
+import 'dart:ffi';
+import 'dart:io';
+
+import 'package:flutter/foundation.dart';
+import 'package:objective_c/objective_c.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 import '../datadog_session_replay.dart';
 import 'datadog_session_replay_method_channel.dart';
+import 'datadog_session_replay_web.dart';
+import 'ios/datadog_session_replay_platform_ios.dart';
 import 'rum_context.dart';
 
 abstract class DatadogSessionReplayPlatform extends PlatformInterface {
@@ -26,14 +37,39 @@ abstract class DatadogSessionReplayPlatform extends PlatformInterface {
     _instance = instance;
   }
 
-  Future<bool> enable(
+  Object? get isolateToken;
+
+  FutureOr<bool> enable(
     DatadogSessionReplayConfiguration configuration,
     void Function(RUMContext) onContextChanged,
   );
 
-  Future<void> setHasReplay(bool hasReplay);
+  FutureOr<void> setHasReplay(bool hasReplay);
 
-  Future<void> setRecordCount(String viewId, int count);
+  FutureOr<void> setRecordCount(String viewId, int count);
 
-  Future<void> writeSegment(String record, String viewId);
+  FutureOr<void> writeSegment(String record, String viewId);
+
+  static void initialize() {
+    if (kIsWeb) {
+      DatadogSessionReplayPlatform.instance = DatadogSessionReplayWeb();
+    } else {
+      if (Platform.isIOS) {
+        DatadogSessionReplayPlatform.instance =
+            DatadogSessionReplayPlatformIos();
+      }
+    }
+  }
+
+  static void attachToIsolate(Object? isolateToken) {
+    // Isolates aren't a thing on web
+    if (!kIsWeb) {
+      if (Platform.isIOS) {
+        if (isolateToken is Pointer<ObjCObject>) {
+          DatadogSessionReplayPlatform.instance =
+              DatadogSessionReplayPlatformIos.fromBridgePtr(isolateToken);
+        }
+      }
+    }
+  }
 }

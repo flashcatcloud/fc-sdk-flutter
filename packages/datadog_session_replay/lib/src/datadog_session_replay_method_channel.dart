@@ -17,6 +17,9 @@ class MethodChannelDatadogSessionReplay extends DatadogSessionReplayPlatform {
   );
 
   @override
+  Object? get isolateToken => null;
+
+  @override
   Future<bool> enable(
     DatadogSessionReplayConfiguration configuration,
     void Function(RUMContext) onContextChanged,

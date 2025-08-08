@@ -13,6 +13,8 @@ dependencies:
     sdk: flutter
   flutter_web_plugins:
     sdk: flutter
+  ffi: ^2.1.4
+  objective_c: ^8.1.0
   web: ^1.0.0
   meta: ^1.16.0  
   plugin_platform_interface: ^2.0.2
@@ -26,6 +28,7 @@ dev_dependencies:
   mocktail: ^1.0.4
   json_serializable: '>=6.7.0 <6.10.0'
   build_runner: ^2.4.15
+  ffigen: ^19.1.0
   datadog_common_test:
     path: ../datadog_common_test
 
@@ -36,7 +39,7 @@ flutter:
         package: com.datadoghq.flutter.sessionreplay
         pluginClass: DatadogSessionReplayPlugin
       ios:
-        pluginClass: DatadogSessionReplayPlugin
+        ffiPlugin: true
       web:
         pluginClass: DatadogSessionReplayWeb
         fileName: src/datadog_session_replay_web.dart

@@ -5,40 +5,43 @@ PODS:
     - DatadogInternal (~> 2)
     - DatadogLogs (~> 2)
     - DatadogRUM (~> 2)
-    - DictionaryCoder (= 1.0.8)
+    - DictionaryCoder (= 1.2.0)
     - Flutter
   - datadog_session_replay (0.0.1):
     - DatadogCore (~> 2)
     - Flutter
-  - DatadogCore (2.29.0):
-    - DatadogInternal (= 2.29.0)
-  - DatadogCrashReporting (2.29.0):
-    - DatadogInternal (= 2.29.0)
+  - DatadogCore (2.30.0):
+    - DatadogInternal (= 2.30.0)
+  - DatadogCrashReporting (2.30.0):
+    - DatadogInternal (= 2.30.0)
     - PLCrashReporter (~> 1.12.0)
-  - DatadogInternal (2.29.0)
-  - DatadogLogs (2.29.0):
-    - DatadogInternal (= 2.29.0)
-  - DatadogRUM (2.29.0):
-    - DatadogInternal (= 2.29.0)
-  - DictionaryCoder (1.0.8)
+  - DatadogInternal (2.30.0)
+  - DatadogLogs (2.30.0):
+    - DatadogInternal (= 2.30.0)
+  - DatadogRUM (2.30.0):
+    - DatadogInternal (= 2.30.0)
+  - DictionaryCoder (1.2.0)
   - Flutter (1.0.0)
   - integration_test (0.0.1):
+    - Flutter
+  - objective_c (0.0.1):
     - Flutter
   - PLCrashReporter (1.12.0)
 
 DEPENDENCIES:
   - datadog_flutter_plugin (from `.symlinks/plugins/datadog_flutter_plugin/ios`)
   - datadog_session_replay (from `.symlinks/plugins/datadog_session_replay/ios`)
+  - DatadogCore (from `https://github.com/DataDog/dd-sdk-ios`, tag `2.30.0`)
+  - DatadogCrashReporting (from `https://github.com/DataDog/dd-sdk-ios`, tag `2.30.0`)
+  - DatadogInternal (from `https://github.com/DataDog/dd-sdk-ios`, tag `2.30.0`)
+  - DatadogLogs (from `https://github.com/DataDog/dd-sdk-ios`, tag `2.30.0`)
+  - DatadogRUM (from `https://github.com/DataDog/dd-sdk-ios`, tag `2.30.0`)
   - Flutter (from `Flutter`)
   - integration_test (from `.symlinks/plugins/integration_test/ios`)
+  - objective_c (from `.symlinks/plugins/objective_c/ios`)
 
 SPEC REPOS:
   trunk:
-    - DatadogCore
-    - DatadogCrashReporting
-    - DatadogInternal
-    - DatadogLogs
-    - DatadogRUM
     - DictionaryCoder
     - PLCrashReporter
 
@@ -47,24 +50,59 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/datadog_flutter_plugin/ios"
   datadog_session_replay:
     :path: ".symlinks/plugins/datadog_session_replay/ios"
+  DatadogCore:
+    :git: https://github.com/DataDog/dd-sdk-ios
+    :tag: 2.30.0
+  DatadogCrashReporting:
+    :git: https://github.com/DataDog/dd-sdk-ios
+    :tag: 2.30.0
+  DatadogInternal:
+    :git: https://github.com/DataDog/dd-sdk-ios
+    :tag: 2.30.0
+  DatadogLogs:
+    :git: https://github.com/DataDog/dd-sdk-ios
+    :tag: 2.30.0
+  DatadogRUM:
+    :git: https://github.com/DataDog/dd-sdk-ios
+    :tag: 2.30.0
   Flutter:
     :path: Flutter
   integration_test:
     :path: ".symlinks/plugins/integration_test/ios"
+  objective_c:
+    :path: ".symlinks/plugins/objective_c/ios"
+
+CHECKOUT OPTIONS:
+  DatadogCore:
+    :git: https://github.com/DataDog/dd-sdk-ios
+    :tag: 2.30.0
+  DatadogCrashReporting:
+    :git: https://github.com/DataDog/dd-sdk-ios
+    :tag: 2.30.0
+  DatadogInternal:
+    :git: https://github.com/DataDog/dd-sdk-ios
+    :tag: 2.30.0
+  DatadogLogs:
+    :git: https://github.com/DataDog/dd-sdk-ios
+    :tag: 2.30.0
+  DatadogRUM:
+    :git: https://github.com/DataDog/dd-sdk-ios
+    :tag: 2.30.0
 
 SPEC CHECKSUMS:
-  datadog_flutter_plugin: cbf61c8c2dd346d83683cca8f2450c1b7ab1f1dd
+  datadog_flutter_plugin: dae31b2f0e5755d091601d8c8108fe86528085fd
   datadog_session_replay: 65da9f52202889d5299b83c32da652b4442b8079
-  DatadogCore: 919080d4ba0bf172f42e8cf49a6ea33a79bdeb9a
-  DatadogCrashReporting: 3de14c873c0492803eca0373769791fde30639f6
-  DatadogInternal: f98c60cc5b44db688692e2b560ea273182cde022
-  DatadogLogs: c314b15a97bfc7e0728ea253d3638b0513032d88
-  DatadogRUM: 6ec371f477a1022fd5aad6ccb5407b85a04db399
-  DictionaryCoder: 5f84fff69f54cb806071538430bdafe04a89d658
+  DatadogCore: 5c01290a3b60b27bf49aa958f2e339c738364d9e
+  DatadogCrashReporting: 11286d48ab61baeb2b41b945c7c0d4ef23db317d
+  DatadogInternal: 7aeb48e254178a0c462c3953dc0a8a8d64499a93
+  DatadogLogs: 4324739de62a6059e07d70bf6ceceed78764edeb
+  DatadogRUM: f36949a38285f3b240a7be577d425f8518e087d4
+  DictionaryCoder: f7115fcd074c8301e91f2eb862da1ea7d0385e61
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
   integration_test: 252f60fa39af5e17c3aa9899d35d908a0721b573
+  objective_c: 77e887b5ba1827970907e10e832eec1683f3431d
   PLCrashReporter: db59ef96fa3d25f3650040d02ec2798cffee75f2
 
-PODFILE CHECKSUM: 4305caec6b40dde0ae97be1573c53de1882a07e5
+PODFILE CHECKSUM: a1d4d46d0d133ffd3fcf6b3243d108dcd1f48f26
 
 COCOAPODS: 1.16.2

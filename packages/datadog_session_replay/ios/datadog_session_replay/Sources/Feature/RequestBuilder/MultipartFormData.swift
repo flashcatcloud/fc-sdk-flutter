@@ -2,7 +2,6 @@
 // This product includes software developed at Datadog (https://www.datadoghq.com/).
 // Copyright 2023-Present Datadog, Inc.
 
-#if os(iOS)
 import Foundation
 
 internal protocol MultipartFormDataBuilder {
@@ -62,4 +61,3 @@ private extension Data {
         self.append(data)
     }
 }
-#endif

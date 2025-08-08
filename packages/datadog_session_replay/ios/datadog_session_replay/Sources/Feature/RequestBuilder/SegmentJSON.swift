@@ -2,7 +2,6 @@
 // This product includes software developed at Datadog (https://www.datadoghq.com/).
 // Copyright 2023-Present Datadog, Inc.
 
-#if os(iOS)
 import Foundation
 
 // NOTE: This code is pulled from dd-sdk-ios
@@ -165,5 +164,3 @@ extension Array where Element == SegmentJSON {
         }
     }
 }
-
-#endif

@@ -8,6 +8,7 @@ import 'package:datadog_flutter_plugin/datadog_flutter_plugin.dart';
 import 'package:datadog_flutter_plugin/datadog_internal.dart';
 
 import '../datadog_session_replay.dart';
+import 'datadog_session_replay_platform_interface.dart';
 
 class DatadogSessionReplayPluginConfiguration
     extends DatadogPluginConfiguration {
@@ -28,6 +29,8 @@ class _SessionReplayPlugin extends DatadogPlugin {
 
   @override
   Future<void> initialize() async {
+    DatadogSessionReplayPlatform.initialize();
+
     await wrapAsync(
       '_SessionReplayPlugin.initialize',
       instance.internalLogger,

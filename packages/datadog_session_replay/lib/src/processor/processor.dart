@@ -4,10 +4,11 @@
 
 import 'dart:isolate';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-import 'package:meta/meta.dart';
 
 import '../capture/recorder.dart';
+import '../datadog_session_replay_platform_interface.dart';
 import 'processor_worker.dart';
 
 /// Spawns a background isolate to process session replay snapshots before
@@ -20,7 +21,11 @@ class SessionReplayProcessor {
   Future<void> start() async {
     await Isolate.spawn(
       _captureProcessor,
-      _ProcessorArgs(RootIsolateToken.instance!, _mainReceivePort.sendPort),
+      _ProcessorArgs(
+        RootIsolateToken.instance!,
+        DatadogSessionReplayPlatform.instance.isolateToken,
+        _mainReceivePort.sendPort,
+      ),
     );
 
     _mainSendPort = await _mainReceivePort.first;
@@ -31,7 +36,8 @@ class SessionReplayProcessor {
   }
 
   static Future<void> _captureProcessor(_ProcessorArgs args) async {
-    BackgroundIsolateBinaryMessenger.ensureInitialized(args.rootIsolateToken);
+    DatadogSessionReplayPlatform.attachToIsolate(args.platformIsolateToken);
+
     final ReceivePort commandPort = ReceivePort();
     final responsePort = args.sendPort;
     responsePort.send(commandPort.sendPort);
@@ -53,7 +59,12 @@ class SessionReplayProcessor {
 @immutable
 class _ProcessorArgs {
   final RootIsolateToken rootIsolateToken;
+  final Object? platformIsolateToken;
   final SendPort sendPort;
 
-  const _ProcessorArgs(this.rootIsolateToken, this.sendPort);
+  const _ProcessorArgs(
+    this.rootIsolateToken,
+    this.platformIsolateToken,
+    this.sendPort,
+  );
 }
