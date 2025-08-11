@@ -6,12 +6,10 @@
 
 package com.datadoghq.flutter.sessionreplay
 
-import androidx.annotation.Keep
 import com.datadog.android.Datadog
 import com.datadog.android.api.feature.FeatureSdkCore
 import com.datadoghq.flutter.sessionreplay.feature.FlutterSessionReplayFeature
 
-@Keep
 class FlutterSessionReplayBridge {
     data class RumContext(
         val applicationId: String?,
