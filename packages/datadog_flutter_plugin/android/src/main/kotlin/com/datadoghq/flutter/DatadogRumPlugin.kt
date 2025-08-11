@@ -507,6 +507,9 @@ fun RumConfiguration.Builder.withEncoded(encoded: Map<String, Any?>): RumConfigu
     (encoded["trackAnonymousUser"] as? Boolean)?.let {
         builder = builder.trackAnonymousUser(it)
     }
+    (encoded["trackBackgroundEvents"] as? Boolean)?.let {
+        builder = builder.trackBackgroundEvents(it)
+    }
     (encoded["initialResourceThreshold"] as? Number)?.let {
         val milliseconds = it.toDouble().seconds.inWholeMilliseconds
         builder = builder.setInitialResourceIdentifier(
