@@ -33,7 +33,7 @@ class DatadogSessionReplayWeb extends DatadogSessionReplayPlatform {
   }
 
   @override
-  Future<void> setHasReplay(bool hasReplay) {
+  Future<void> setHasReplay(String viewId, bool hasReplay) {
     return Future.value();
   }
 

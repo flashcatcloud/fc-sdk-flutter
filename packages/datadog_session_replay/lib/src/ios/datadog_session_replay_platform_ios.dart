@@ -3,7 +3,6 @@
 // Copyright 2025-Present Datadog, Inc.
 
 import 'dart:async';
-import 'dart:ffi' as ffi;
 
 import 'package:flutter/foundation.dart';
 import 'package:objective_c/objective_c.dart';
@@ -21,11 +20,11 @@ class DatadogSessionReplayPlatformIos extends DatadogSessionReplayPlatform {
     _iosBridge = FlutterSessionReplay();
   }
 
-  DatadogSessionReplayPlatformIos.fromBridgePtr(ffi.Pointer<ObjCObject> ptr)
-    : _iosBridge = FlutterSessionReplay.castFromPointer(ptr);
+  DatadogSessionReplayPlatformIos.fromObjCRef(ObjCObjectBase ref)
+    : _iosBridge = FlutterSessionReplay.castFrom(ref);
 
   @override
-  Object? get isolateToken => _iosBridge.ref.pointer;
+  Object? get isolateToken => _iosBridge;
 
   @override
   FutureOr<bool> enable(
@@ -72,7 +71,7 @@ class DatadogSessionReplayPlatformIos extends DatadogSessionReplayPlatform {
   }
 
   @override
-  FutureOr<void> setHasReplay(bool hasReplay) {
+  FutureOr<void> setHasReplay(String viewId, bool hasReplay) {
     _iosBridge.setHasReplayWithHasReplay(hasReplay);
   }
 

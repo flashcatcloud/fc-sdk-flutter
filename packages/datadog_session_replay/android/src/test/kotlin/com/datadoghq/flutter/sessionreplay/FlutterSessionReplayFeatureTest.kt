@@ -30,18 +30,18 @@ internal class FlutterSessionReplayFeatureTest {
 
     @Test
     fun `M call context changed callback W onContextUpdate`(
+        @StringForgery customEndpoint: String,
         @StringForgery applicationId: String,
         @StringForgery sessionId: String,
         @StringForgery viewId: String,
         @LongForgery serverTimeOffset: Long
     ) {
         // Given
-        val onContextChanged = mockk<(Map<String, Any?>) -> Unit>(relaxed = true)
-        val configuration = FlutterSessionReplay.Configuration()
+        val onContextChanged = mockk<(FlutterSessionReplayFeature.RumContext) -> Unit>(relaxed = true)
         val feature = FlutterSessionReplayFeature(
             mockCore,
             onContextChanged,
-            configuration.customEndpointUrl
+            customEndpoint
         )
         val contextValue = mapOf(
             "application_id" to applicationId,
@@ -54,27 +54,27 @@ internal class FlutterSessionReplayFeatureTest {
         feature.onContextUpdate(Feature.RUM_FEATURE_NAME, contextValue)
 
         // Then - note the transform of property names
-        val expectedContextValue = mapOf(
-            "applicationId" to applicationId,
-            "sessionId" to sessionId,
-            "viewId" to viewId,
-            "viewServerTimeOffset" to serverTimeOffset
+        val expectedContextValue = FlutterSessionReplayFeature.RumContext(
+            applicationId,
+            sessionId,
+            viewId,
+            serverTimeOffset
         )
         verify { onContextChanged(expectedContextValue) }
     }
 
     @Test
     fun `M set context W setHasReplay`(
+        @StringForgery customEndpoint: String,
         @StringForgery viewId: String,
         @BoolForgery hasReplay: Boolean
     ) {
         // Given
-        val onContextChanged = mockk<(Map<String, Any?>) -> Unit>(relaxed = true)
-        val configuration = FlutterSessionReplay.Configuration()
+        val onContextChanged = mockk<(FlutterSessionReplayFeature.RumContext) -> Unit>(relaxed = true)
         val feature = FlutterSessionReplayFeature(
             mockCore,
             onContextChanged,
-            configuration.customEndpointUrl
+            customEndpoint,
         )
         var context = mutableMapOf<String, Any?>()
         every { mockCore.updateFeatureContext(any(), captureLambda()) } answers {
@@ -87,27 +87,27 @@ internal class FlutterSessionReplayFeatureTest {
         // Then
         verify {
             mockCore.updateFeatureContext(
-                FlutterSessionReplayFeature.SESSION_REPLAY_FEATURE_NAME,
+                Feature.SESSION_REPLAY_FEATURE_NAME,
                 any()
             )
         }
-        val viewMap = context[viewId] as? MutableMap<String, Any?>
+        val viewMap = context[viewId] as? MutableMap<*, *>
         assertThat(viewMap).isNotNull()
         assertThat(viewMap?.get("has_replay")).isEqualTo(hasReplay)
     }
 
     @Test
     fun `M set context W setRecordCount`(
+        @StringForgery customEndpoint: String,
         @StringForgery viewId: String,
         @IntForgery recordCount: Int
     ) {
         // Given
-        val onContextChanged = mockk<(Map<String, Any?>) -> Unit>(relaxed = true)
-        val configuration = FlutterSessionReplay.Configuration()
+        val onContextChanged = mockk<(FlutterSessionReplayFeature.RumContext) -> Unit>(relaxed = true)
         val feature = FlutterSessionReplayFeature(
             mockCore,
             onContextChanged,
-            configuration.customEndpointUrl
+            customEndpoint
         )
         var context = mutableMapOf<String, Any?>()
         every { mockCore.updateFeatureContext(any(), captureLambda()) } answers {
@@ -120,7 +120,7 @@ internal class FlutterSessionReplayFeatureTest {
         // Then
         verify {
             mockCore.updateFeatureContext(
-                FlutterSessionReplayFeature.SESSION_REPLAY_FEATURE_NAME,
+                Feature.SESSION_REPLAY_FEATURE_NAME,
                 any()
             )
         }

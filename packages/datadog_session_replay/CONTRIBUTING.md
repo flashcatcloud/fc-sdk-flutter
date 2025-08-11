@@ -28,4 +28,20 @@ The next step is to regenerate the FFI bindings from the bridging header using t
 dart run ffigen --config ffigen_ios.yaml
 ```
 
-### Regener
+### Regenerating Andoird FFI Interface
+
+The bridge between Dart and Android is held in `android/src/main/kotlin/com/datadoghq/flutter/sessionreplay/FlutterSessionReplayBridge.kt`.
+
+If you make a change to this interface, you will need to regenerate the Dart bridge from JNI. You can do this first building the example apk:
+
+```bash
+# From ./examples
+flutter build apk
+```
+
+Then, run jnigen:
+
+```bash
+# From the root
+dart run jnigen --config jnigen.ysml
+```

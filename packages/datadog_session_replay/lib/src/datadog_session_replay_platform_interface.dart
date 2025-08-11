@@ -2,15 +2,16 @@
 // This product includes software developed at Datadog (https://www.datadoghq.com/).
 // Copyright 2025-Present Datadog, Inc.
 import 'dart:async';
-import 'dart:ffi';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
+import 'package:jni/jni.dart';
 import 'package:objective_c/objective_c.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 import '../datadog_session_replay.dart';
-import 'datadog_session_replay_method_channel.dart';
+import 'android/datadog_session_replay_platform_android.dart';
+import 'datadog_session_replay_platform_noop.dart';
 import 'ios/datadog_session_replay_platform_ios.dart';
 import 'rum_context.dart';
 
@@ -21,7 +22,7 @@ abstract class DatadogSessionReplayPlatform extends PlatformInterface {
   static final Object _token = Object();
 
   static DatadogSessionReplayPlatform _instance =
-      MethodChannelDatadogSessionReplay();
+      DatadogSessionReplayPlatformNoop();
 
   /// The default instance of [DatadogSessionReplayPlatform] to use.
   ///
@@ -43,7 +44,7 @@ abstract class DatadogSessionReplayPlatform extends PlatformInterface {
     void Function(RUMContext) onContextChanged,
   );
 
-  FutureOr<void> setHasReplay(bool hasReplay);
+  FutureOr<void> setHasReplay(String viewId, bool hasReplay);
 
   FutureOr<void> setRecordCount(String viewId, int count);
 
@@ -59,6 +60,9 @@ abstract class DatadogSessionReplayPlatform extends PlatformInterface {
       if (Platform.isIOS) {
         DatadogSessionReplayPlatform.instance =
             DatadogSessionReplayPlatformIos();
+      } else {
+        DatadogSessionReplayPlatform.instance =
+            DatadogSessionReplayPlatformAndroid();
       }
     }
   }
@@ -67,9 +71,14 @@ abstract class DatadogSessionReplayPlatform extends PlatformInterface {
     // Isolates aren't a thing on web
     if (!kIsWeb) {
       if (Platform.isIOS) {
-        if (isolateToken is Pointer<ObjCObject>) {
+        if (isolateToken is ObjCObjectBase) {
           DatadogSessionReplayPlatform.instance =
-              DatadogSessionReplayPlatformIos.fromBridgePtr(isolateToken);
+              DatadogSessionReplayPlatformIos.fromObjCRef(isolateToken);
+        }
+      } else {
+        if (isolateToken is JObject) {
+          DatadogSessionReplayPlatform.instance =
+              DatadogSessionReplayPlatformAndroid.fromJObject(isolateToken);
         }
       }
     }
