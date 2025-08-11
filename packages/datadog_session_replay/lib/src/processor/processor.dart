@@ -8,6 +8,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 import '../capture/recorder.dart';
+import '../datadog_session_replay_init_stub.dart'
+    if (dart.library.io) '../datadog_session_replay_init_mobile.dart';
 import '../datadog_session_replay_platform_interface.dart';
 import 'processor_worker.dart';
 
@@ -36,7 +38,7 @@ class SessionReplayProcessor {
   }
 
   static Future<void> _captureProcessor(_ProcessorArgs args) async {
-    DatadogSessionReplayPlatform.attachToIsolate(args.platformIsolateToken);
+    attachSessionReplayToIsolate(args.platformIsolateToken);
 
     final ReceivePort commandPort = ReceivePort();
     final responsePort = args.sendPort;

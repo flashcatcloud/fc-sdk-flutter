@@ -2,17 +2,11 @@
 // This product includes software developed at Datadog (https://www.datadoghq.com/).
 // Copyright 2025-Present Datadog, Inc.
 import 'dart:async';
-import 'dart:io';
 
-import 'package:flutter/foundation.dart';
-import 'package:jni/jni.dart';
-import 'package:objective_c/objective_c.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 import '../datadog_session_replay.dart';
-import 'android/datadog_session_replay_platform_android.dart';
 import 'datadog_session_replay_platform_noop.dart';
-import 'ios/datadog_session_replay_platform_ios.dart';
 import 'rum_context.dart';
 
 abstract class DatadogSessionReplayPlatform extends PlatformInterface {
@@ -53,34 +47,4 @@ abstract class DatadogSessionReplayPlatform extends PlatformInterface {
   FutureOr<void> telemetryDebug(String id, String message);
 
   FutureOr<void> telemetryError(String message, String kind, String stack);
-
-  static void initialize() {
-    // Web handles its own initialization
-    if (!kIsWeb) {
-      if (Platform.isIOS) {
-        DatadogSessionReplayPlatform.instance =
-            DatadogSessionReplayPlatformIos();
-      } else {
-        DatadogSessionReplayPlatform.instance =
-            DatadogSessionReplayPlatformAndroid();
-      }
-    }
-  }
-
-  static void attachToIsolate(Object? isolateToken) {
-    // Isolates aren't a thing on web
-    if (!kIsWeb) {
-      if (Platform.isIOS) {
-        if (isolateToken is ObjCObjectBase) {
-          DatadogSessionReplayPlatform.instance =
-              DatadogSessionReplayPlatformIos.fromObjCRef(isolateToken);
-        }
-      } else {
-        if (isolateToken is JObject) {
-          DatadogSessionReplayPlatform.instance =
-              DatadogSessionReplayPlatformAndroid.fromJObject(isolateToken);
-        }
-      }
-    }
-  }
 }
