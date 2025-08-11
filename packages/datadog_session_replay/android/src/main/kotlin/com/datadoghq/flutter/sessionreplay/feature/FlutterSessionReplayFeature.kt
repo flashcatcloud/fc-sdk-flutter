@@ -32,7 +32,7 @@ class FlutterSessionReplayFeature(
             applicationId = event[APPLICATION_ID_KEY] as? String,
             sessionId = event[SESSION_ID_KEY] as? String,
             viewId = event[VIEW_ID_KEY] as? String,
-            viewServerTimeOffset = event[VIEW_SERVER_TIME_OFFSET_KEY] as? Long,
+            viewServerTimeOffset = event[VIEW_SERVER_TIME_OFFSET_KEY] as? Long
         )
     }
 
@@ -92,17 +92,18 @@ class FlutterSessionReplayFeature(
     }
 
     fun writeSegment(segment: String) {
-        sdkCore.getFeature(Feature.SESSION_REPLAY_FEATURE_NAME)?.withWriteContext { _, eventBatchWriter ->
-            synchronized(this) {
-                val serializedSegment = segment.toByteArray(Charsets.UTF_8)
-                val rawBatchEvent = RawBatchEvent(data = serializedSegment)
-                eventBatchWriter.write(
-                    event = rawBatchEvent,
-                    batchMetadata = null,
-                    eventType = EventType.DEFAULT
-                )
+        sdkCore.getFeature(Feature.SESSION_REPLAY_FEATURE_NAME)
+            ?.withWriteContext { _, eventBatchWriter ->
+                synchronized(this) {
+                    val serializedSegment = segment.toByteArray(Charsets.UTF_8)
+                    val rawBatchEvent = RawBatchEvent(data = serializedSegment)
+                    eventBatchWriter.write(
+                        event = rawBatchEvent,
+                        batchMetadata = null,
+                        eventType = EventType.DEFAULT
+                    )
+                }
             }
-        }
     }
 
     companion object {

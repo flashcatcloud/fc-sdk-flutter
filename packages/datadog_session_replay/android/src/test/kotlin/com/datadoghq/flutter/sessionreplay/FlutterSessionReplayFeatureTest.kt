@@ -37,7 +37,9 @@ internal class FlutterSessionReplayFeatureTest {
         @LongForgery serverTimeOffset: Long
     ) {
         // Given
-        val onContextChanged = mockk<(FlutterSessionReplayFeature.RumContext) -> Unit>(relaxed = true)
+        val onContextChanged = mockk<(FlutterSessionReplayFeature.RumContext) -> Unit>(
+            relaxed = true
+        )
         val feature = FlutterSessionReplayFeature(
             mockCore,
             onContextChanged,
@@ -70,11 +72,13 @@ internal class FlutterSessionReplayFeatureTest {
         @BoolForgery hasReplay: Boolean
     ) {
         // Given
-        val onContextChanged = mockk<(FlutterSessionReplayFeature.RumContext) -> Unit>(relaxed = true)
+        val onContextChanged = mockk<(FlutterSessionReplayFeature.RumContext) -> Unit>(
+            relaxed = true
+        )
         val feature = FlutterSessionReplayFeature(
             mockCore,
             onContextChanged,
-            customEndpoint,
+            customEndpoint
         )
         var context = mutableMapOf<String, Any?>()
         every { mockCore.updateFeatureContext(any(), captureLambda()) } answers {
@@ -103,7 +107,9 @@ internal class FlutterSessionReplayFeatureTest {
         @IntForgery recordCount: Int
     ) {
         // Given
-        val onContextChanged = mockk<(FlutterSessionReplayFeature.RumContext) -> Unit>(relaxed = true)
+        val onContextChanged = mockk<(FlutterSessionReplayFeature.RumContext) -> Unit>(
+            relaxed = true
+        )
         val feature = FlutterSessionReplayFeature(
             mockCore,
             onContextChanged,

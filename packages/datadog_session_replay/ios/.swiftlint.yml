@@ -1,0 +1,4 @@
+excluded:
+  - datadog_session_replay/.build
+  - datadog_session_replay/.swiftpm
+  

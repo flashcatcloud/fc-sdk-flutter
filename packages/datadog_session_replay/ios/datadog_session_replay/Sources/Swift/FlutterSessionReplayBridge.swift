@@ -7,10 +7,11 @@ import DatadogInternal
 
 // Force symbols to be retained during linking
 @_silgen_name("__datadog_session_replay_keep_symbols")
+// swiftlint:disable:next identifier_name
 public func __datadog_session_replay_keep_symbols() {
     // Reference all classes to prevent dead code elimination
     _ = FlutterRUMCoreContext.self
-    _ = FlutterSessionReplayConfiguration.self 
+    _ = FlutterSessionReplayConfiguration.self
     _ = FlutterSessionReplay.self
 }
 
@@ -39,7 +40,7 @@ public func __datadog_session_replay_keep_symbols() {
         self.customEndpoint = customEndpoint
         self.onContextChanged = onContextChanged
         super.init()
-    }    
+    }
 }
 
 @objc(FlutterSessionReplay) public class FlutterSessionReplay: NSObject {

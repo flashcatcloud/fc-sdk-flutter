@@ -30,7 +30,6 @@ class FlutterSessionReplayFeature: DatadogRemoteFeature {
         }
     }
 
-
     let requestBuilder: DatadogInternal.FeatureRequestBuilder
     let messageReceiver: DatadogInternal.FeatureMessageReceiver
 
