@@ -194,6 +194,10 @@ void main() {
     for (final log in logs) {
       expect(log.serviceName,
           equalsIgnoringCase('com.datadoghq.flutter.integration'));
+      expect(log.userId, 'bits');
+      expect(log.userName, 'Bits Dawoof');
+      expect(log.userEmail, 'bits@datadoghq.com');
+
       if (!kIsWeb) {
         if (Platform.isIOS) {
           expect(log.applicationVersion, '1.2.3-555');

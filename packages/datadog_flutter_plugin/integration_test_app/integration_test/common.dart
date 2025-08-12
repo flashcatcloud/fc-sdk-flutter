@@ -110,19 +110,27 @@ extension Waiter on WidgetTester {
 
 void verifyCommonTags(
     RequestLog request, String service, String version, String? variant) {
-  // Web is sending these on the session now, not the query parameters
-  if (!kIsWeb) {
+  // TODO: These tags were moved to events and should be checked there.
+  if (request.tags.isNotEmpty) {
     final sdkVersion = request.tags['sdk_version'];
+    if (kIsWeb) {
+      // Returning the browser version of the SDK.
+      expect(sdkVersion?.startsWith('5.'), true);
+    } else {
+      expect(sdkVersion, DatadogSdk.sdkVersion);
+    }
 
-    expect(sdkVersion, DatadogSdk.sdkVersion);
 
     expect(request.tags['service'], service);
-    // Currently coming back as 'browser' on web
-    expect(request.queryParameters['ddsource'], 'flutter');
 
-    // Not sent as a tag on web
-    expect(request.tags['version'], version);
-    expect(request.tags['variant'], variant);
+    if (!kIsWeb) {
+      // Currently coming back as 'browser' on web
+      expect(request.queryParameters['ddsource'], 'flutter');
+
+      // Not sent as a tag on web
+      expect(request.tags['version'], version);
+      expect(request.tags['variant'], variant);
+    }
   }
 }
 
