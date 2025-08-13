@@ -38,15 +38,14 @@ class FlutterSessionReplayBridge {
 
     fun enable(configuration: Configuration): FlutterSessionReplayFeature {
         val featureSdkCore = Datadog.getInstance() as FeatureSdkCore
-        feature = FlutterSessionReplayFeature(
+        val feature = FlutterSessionReplayFeature(
             featureSdkCore,
             { context -> configuration.onContextChanged.onContextChanged(RumContext(context)) },
             configuration.customEndpointUrl
-        ).apply {
-            featureSdkCore.registerFeature(it)
-        }
-
-        return feature ?: throw IllegalStateException("Feature should not be null after enabling")
+        )
+        featureSdkCore.registerFeature(feature)
+        this.feature = feature
+        return feature
     }
 
     fun setHasReplay(viewId: String, hasReplay: Boolean) {
