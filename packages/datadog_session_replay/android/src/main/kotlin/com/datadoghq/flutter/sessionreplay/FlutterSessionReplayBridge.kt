@@ -42,8 +42,7 @@ class FlutterSessionReplayBridge {
             featureSdkCore,
             { context -> configuration.onContextChanged.onContextChanged(RumContext(context)) },
             configuration.customEndpointUrl
-        )
-        feature?.let {
+        ).apply {
             featureSdkCore.registerFeature(it)
         }
 

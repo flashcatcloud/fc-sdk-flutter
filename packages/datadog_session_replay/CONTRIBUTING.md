@@ -2,7 +2,7 @@
 
 ## General information
 
-For general information about contributing to any of the Datadog Flutter packages, please see the CONTRIBUTING document at the [root of the repository](../../CONTRIBUTING.md). It contains all the basic guidance on how to get started will all of the packages including `melos` commands and code style information.
+For general information about contributing to any of the Datadog Flutter packages, please see the `CONTRIBUTING` document at the [root of the repository](../../CONTRIBUTING.md). It contains all the basic guidance on how to get started will all of the packages including `melos` commands and code style information.
 
 ## Working with FFI Code
 
@@ -14,7 +14,7 @@ The Session Replay plugin uses FFI over Method Channels in order to better utili
 
 The bridge between Dart and iOS is held in `ios/datadog_session_replay/Sources/FlutterSessionReplayBridge.swift`
 
-To make a change to the iOS FFI interface, you first have to generate a "bridging header" from the Swift code.  You can do this by building the Swift package held at [`ios/datadog_session_replay`](./ios/datadog_session_replay/).
+To make a change to the iOS FFI interface, you first have to generate a "bridging header" from the Swift code. You can do this by building the Swift package held at [`ios/datadog_session_replay`](./ios/datadog_session_replay/).
 
 ```bash
 swift build
@@ -32,7 +32,7 @@ dart run ffigen --config ffigen_ios.yaml
 
 The bridge between Dart and Android is held in `android/src/main/kotlin/com/datadoghq/flutter/sessionreplay/FlutterSessionReplayBridge.kt`.
 
-If you make a change to this interface, you will need to regenerate the Dart bridge from JNI. You can do this first building the example apk:
+If you make a change to this interface, you will need to regenerate the Dart bridge from JNI. You can do this first building the example APK:
 
 ```bash
 # From ./examples
