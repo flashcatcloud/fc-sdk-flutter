@@ -165,6 +165,16 @@ class DatadogRumConfiguration {
   /// Defaults to `true`.
   bool trackAnonymousUser = true;
 
+  /// Whether to track RUM events when no view is active, including when the app is in the background.
+  ///
+  /// When enabled, RUM will attach events (such as crashes and network requests) to an automatically
+  /// created "background" view. This includes events that occur when the application is in the background.
+  ///
+  /// Note: Enabling this option may result in additional sessions, which could impact billing.
+  ///
+  /// Defaults to `false`.
+  bool trackBackgroundEvents;
+
   /// The amount of time after a view starts where a Resource should be
   /// considered when calculating Time to Network-Settled (TNS). TNS will be
   /// calculated using all resources that start withing the specified threshold,
@@ -214,6 +224,7 @@ class DatadogRumConfiguration {
     this.trackNonFatalAnrs,
     this.appHangThreshold,
     this.trackAnonymousUser = true,
+    this.trackBackgroundEvents = false,
     this.initialResourceThreshold = 0.1,
     this.customEndpoint,
     this.telemetrySampleRate = 20.0,
@@ -239,6 +250,7 @@ class DatadogRumConfiguration {
       'trackNonFatalAnrs': trackNonFatalAnrs,
       'appHangThreshold': appHangThreshold,
       'trackAnonymousUser': trackAnonymousUser,
+      'trackBackgroundEvents': trackBackgroundEvents,
       'initialResourceThreshold': initialResourceThreshold,
       'customEndpoint': customEndpoint,
       'telemetrySampleRate': telemetrySampleRate,

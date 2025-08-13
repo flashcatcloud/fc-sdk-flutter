@@ -98,6 +98,7 @@ void main() {
       trackNonFatalAnrs: false,
       appHangThreshold: 0.332,
       trackAnonymousUser: false,
+      trackBackgroundEvents: true,
       initialResourceThreshold: 1.23,
       customEndpoint: customEndpoint,
     );
@@ -111,6 +112,7 @@ void main() {
     expect(encoded['vitalsUpdateFrequency'], vitalUpdateFrequency.toString());
     expect(encoded['trackNonFatalAnrs'], false);
     expect(encoded['trackAnonymousUser'], false);
+    expect(encoded['trackBackgroundEvents'], true);
     expect(encoded['appHangThreshold'], 0.332);
     expect(encoded['customEndpoint'], customEndpoint);
     expect(encoded['initialResourceThreshold'], 1.23);
