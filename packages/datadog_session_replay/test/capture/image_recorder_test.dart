@@ -9,6 +9,7 @@ import 'package:datadog_session_replay/datadog_session_replay.dart';
 import 'package:datadog_session_replay/src/capture/capture_node.dart';
 import 'package:datadog_session_replay/src/capture/element_recorders/image_recorder.dart';
 import 'package:datadog_session_replay/src/capture/recorder.dart';
+import 'package:datadog_session_replay/src/datadog_session_replay_platform_interface.dart';
 import 'package:datadog_session_replay/src/rum_context.dart';
 import 'package:datadog_session_replay/src/sr_data_models.dart';
 import 'package:flutter/material.dart';
@@ -18,14 +19,19 @@ import 'package:mocktail/mocktail.dart';
 import '../test_utils.dart';
 import 'simple_test_capture.dart';
 
+class MockDatadogSessionReplayPlatform extends Mock
+    implements DatadogSessionReplayPlatform {}
+
 void main() {
+  late MockDatadogSessionReplayPlatform platform;
   late SessionReplayRecorder recorder;
   late RUMContext context;
 
   setUp(() {
     final KeyGenerator keyGenerator = KeyGenerator();
+    platform = MockDatadogSessionReplayPlatform();
     recorder = SessionReplayRecorder.withCustomRecorders(
-      [ImageRecorder(keyGenerator)],
+      [ImageRecorder(keyGenerator, platform)],
       defaultCapturePrivacy: CapturePrivacy(
         textAndInputPrivacyLevel: TextAndInputPrivacyLevel.maskSensitiveInputs,
       ),
@@ -73,7 +79,7 @@ void main() {
     await tester.pumpWidget(tree);
 
     // When
-    final capture = recorder.performCapture();
+    final capture = await recorder.performCapture();
 
     // Then
     expect(capture!.viewTreeSnapshot.nodes.length, 1);
@@ -116,7 +122,7 @@ void main() {
     await tester.pumpWidget(tree);
 
     // When
-    final capture = recorder.performCapture();
+    final capture = await recorder.performCapture();
 
     // Then
     expect(capture!.viewTreeSnapshot.nodes.length, 1);
@@ -163,7 +169,7 @@ void main() {
     await tester.pumpWidget(tree);
 
     // When
-    final capture = recorder.performCapture();
+    final capture = await recorder.performCapture();
 
     // Then
     expect(capture!.viewTreeSnapshot.nodes.length, 1);
@@ -207,7 +213,7 @@ void main() {
     await tester.pumpWidget(tree);
 
     // When
-    final capture = recorder.performCapture();
+    final capture = await recorder.performCapture();
 
     // Then
     expect(capture!.viewTreeSnapshot.nodes.length, 1);

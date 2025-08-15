@@ -16,6 +16,9 @@ import com.datadog.android.api.net.RequestFactory
 import com.datadog.android.api.storage.EventType
 import com.datadog.android.api.storage.FeatureStorageConfiguration
 import com.datadog.android.api.storage.RawBatchEvent
+import com.datadoghq.flutter.sessionreplay.resource.ResourceFeature
+import com.datadoghq.flutter.sessionreplay.resource.ResourceResolver
+import com.datadoghq.flutter.sessionreplay.resource.ResourcesWriter
 
 class FlutterSessionReplayFeature(
     private val sdkCore: FeatureSdkCore,
@@ -36,6 +39,11 @@ class FlutterSessionReplayFeature(
         )
     }
 
+    internal val resourceResolver = ResourceResolver(
+        sdkCore.internalLogger,
+        ResourcesWriter(sdkCore),
+    )
+
     override val name = Feature.SESSION_REPLAY_FEATURE_NAME
     override val storageConfiguration = STORAGE_CONFIGURATION
 
@@ -55,6 +63,12 @@ class FlutterSessionReplayFeature(
             Feature.SESSION_REPLAY_FEATURE_NAME,
             this
         )
+
+        val resourcesFeature = ResourceFeature(
+            sdkCore,
+            customEndpointUrl
+        )
+        sdkCore.registerFeature(resourcesFeature)
     }
 
     override fun onStop() {

@@ -73,9 +73,9 @@ class DatadogSessionReplay {
       const timerDuration = Duration(milliseconds: 100);
       var errorCounter = 0;
       // TODO(RUM-10155): See if we can be smarter about how often we perform tree captures
-      Timer.periodic(timerDuration, (timer) {
+      Timer.periodic(timerDuration, (timer) async {
         try {
-          final captureResult = _recorder.performCapture();
+          final captureResult = await _recorder.performCapture();
           if (captureResult != null) {
             _processor.process(captureResult);
           }

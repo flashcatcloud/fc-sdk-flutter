@@ -1591,6 +1591,85 @@ class FlutterSessionReplayBridge extends jni$_.JObject {
       _$string2.pointer,
     ).check();
   }
+
+  static final _id_saveImageForProcessing = _class.instanceMethodId(
+    r'saveImageForProcessing',
+    r'(I[BII)V',
+  );
+
+  static final _saveImageForProcessing =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JThrowablePtr Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+                jni$_.VarArgs<
+                  (
+                    jni$_.Int32,
+                    jni$_.Pointer<jni$_.Void>,
+                    jni$_.Int32,
+                    jni$_.Int32,
+                  )
+                >,
+              )
+            >
+          >('globalEnv_CallVoidMethod')
+          .asFunction<
+            jni$_.JThrowablePtr Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+              int,
+              jni$_.Pointer<jni$_.Void>,
+              int,
+              int,
+            )
+          >();
+
+  /// from: `public final void saveImageForProcessing(int i, byte[] bs, int i1, int i2)`
+  void saveImageForProcessing(int i, jni$_.JByteArray bs, int i1, int i2) {
+    final _$bs = bs.reference;
+    _saveImageForProcessing(
+      reference.pointer,
+      _id_saveImageForProcessing as jni$_.JMethodIDPtr,
+      i,
+      _$bs.pointer,
+      i1,
+      i2,
+    ).check();
+  }
+
+  static final _id_resourceIdForKey = _class.instanceMethodId(
+    r'resourceIdForKey',
+    r'(I)Ljava/lang/String;',
+  );
+
+  static final _resourceIdForKey =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+                jni$_.VarArgs<(jni$_.Int32,)>,
+              )
+            >
+          >('globalEnv_CallObjectMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+              int,
+            )
+          >();
+
+  /// from: `public final java.lang.String resourceIdForKey(int i)`
+  /// The returned object must be released after use, by calling the [release] method.
+  jni$_.JString? resourceIdForKey(int i) {
+    return _resourceIdForKey(
+      reference.pointer,
+      _id_resourceIdForKey as jni$_.JMethodIDPtr,
+      i,
+    ).object<jni$_.JString?>(const jni$_.JStringNullableType());
+  }
 }
 
 final class $FlutterSessionReplayBridge$NullableType

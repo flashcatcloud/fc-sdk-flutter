@@ -28,3 +28,4 @@ flutter:
   
   assets:
     - .env
+    - assets/dd_logo_v_rgb.png

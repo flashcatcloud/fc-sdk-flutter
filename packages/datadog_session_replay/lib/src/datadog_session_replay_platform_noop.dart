@@ -3,6 +3,7 @@
 // Copyright 2025-Present Datadog, Inc.
 
 import 'dart:async';
+import 'dart:typed_data';
 
 import '../datadog_session_replay.dart';
 import 'datadog_session_replay_platform_interface.dart';
@@ -38,4 +39,17 @@ class DatadogSessionReplayPlatformNoop extends DatadogSessionReplayPlatform {
 
   @override
   FutureOr<void> writeSegment(String record, String viewId) {}
+
+  @override
+  String? resourceIdForKey(int resourceKey) {
+    return null;
+  }
+
+  @override
+  FutureOr<void> saveImageForProcessing(
+    int resourceKey,
+    int width,
+    int height,
+    ByteData byteData,
+  ) {}
 }

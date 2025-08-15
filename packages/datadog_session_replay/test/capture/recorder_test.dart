@@ -128,7 +128,7 @@ void main() {
         recorder: recorder,
       );
       await tester.pumpWidget(testedTree);
-      final capture = recorder.performCapture();
+      final capture = await recorder.performCapture();
 
       // Then
       expect(capture, isNotNull);
@@ -160,7 +160,7 @@ void main() {
         recorder: recorder,
       );
       await tester.pumpWidget(testedTree);
-      final capture = recorder.performCapture();
+      final capture = await recorder.performCapture();
 
       // Then
       expect(capture, isNotNull);
@@ -192,7 +192,7 @@ void main() {
           child: Container(),
         );
         await tester.pumpWidget(testedTree);
-        final capture = recorder.performCapture();
+        final capture = await recorder.performCapture();
 
         // Then
         expect(capture, isNotNull);
@@ -231,7 +231,7 @@ void main() {
         child: Center(child: Placeholder()),
       );
       await tester.pumpWidget(testedTree);
-      final capture = recorder.performCapture();
+      final capture = await recorder.performCapture();
 
       // Then
       expect(capture, isNotNull);
@@ -318,7 +318,7 @@ void main() {
         child: Visibility(visible: false, child: Center(child: Placeholder())),
       );
       await tester.pumpWidget(testedTree);
-      final capture = recorder.performCapture();
+      final capture = await recorder.performCapture();
 
       // Then
       expect(capture, isNotNull);
@@ -351,7 +351,7 @@ void main() {
         child: Visibility(visible: true, child: Center(child: Placeholder())),
       );
       await tester.pumpWidget(testedTree);
-      final capture = recorder.performCapture();
+      final capture = await recorder.performCapture();
 
       // Then
       expect(capture, isNotNull);
@@ -393,7 +393,7 @@ void main() {
         recorder: recorder,
       );
       await tester.pumpWidget(testedTree);
-      final capture = recorder.performCapture();
+      final capture = await recorder.performCapture();
 
       // Then
       expect(capture, isNotNull);
@@ -473,7 +473,7 @@ void main() {
         ),
       );
       await tester.pumpWidget(testedTree);
-      final capture = recorder.performCapture();
+      final capture = await recorder.performCapture();
 
       // Then
       expect(capture, isNotNull);

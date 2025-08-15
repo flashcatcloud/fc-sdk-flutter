@@ -30,6 +30,7 @@ class _MainScreenState extends State<MainScreen> {
     _RouteScreen('Material Widgets', Routes.materialWidgets),
     _RouteScreen('Text Fields', Routes.textFieldWidgets),
     _RouteScreen('Slivers', Routes.slivers),
+    _RouteScreen('Images', Routes.imageWidgets),
   ];
 
   @override

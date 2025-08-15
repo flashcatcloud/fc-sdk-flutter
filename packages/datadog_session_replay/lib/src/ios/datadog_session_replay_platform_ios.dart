@@ -101,4 +101,17 @@ class DatadogSessionReplayPlatformIos extends DatadogSessionReplayPlatform {
       stackTrace: NSString(stack),
     );
   }
+
+  @override
+  FutureOr<void> saveImageForProcessing(
+    int resourceKey,
+    int width,
+    int height,
+    ByteData byteData,
+  ) {}
+
+  @override
+  String? resourceIdForKey(int resourceKey) {
+    return null;
+  }
 }

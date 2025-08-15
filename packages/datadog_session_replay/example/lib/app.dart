@@ -9,6 +9,7 @@ import 'package:go_router/go_router.dart';
 
 import 'routes.dart';
 import 'screens/cupertino_widgets_screen.dart';
+import 'screens/images_screen.dart';
 import 'screens/main_screen.dart';
 import 'screens/material_widgets_screen.dart';
 import 'screens/simple_containers_screen.dart';
@@ -55,6 +56,10 @@ class _MyAppState extends State<MyApp> {
       GoRoute(
         path: Routes.slivers,
         builder: (context, state) => SliversScreen(),
+	  ),
+      GoRoute(
+        path: Routes.imageWidgets,
+        builder: (context, state) => ImagesScreen(),
       ),
     ],
   );

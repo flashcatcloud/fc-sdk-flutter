@@ -9,7 +9,7 @@ package com.datadoghq.flutter.sessionreplay.feature
 import com.datadog.android.api.InternalLogger
 import com.datadog.android.api.context.DatadogContext
 import com.datadoghq.flutter.sessionreplay.gson.safeGetAsJsonArray
-import com.datadoghq.flutter.sessionreplay.gson.safeGetAsJsonObject
+import com.datadoghq.flutter.sessionreplay.gson.safeAsJsonObject
 import com.datadoghq.flutter.sessionreplay.gson.safeGetAsLong
 import com.datadoghq.flutter.sessionreplay.models.EnrichedRecord
 import com.datadoghq.flutter.sessionreplay.models.MobileSegment
@@ -43,7 +43,7 @@ internal class BatchesToSegmentsMapper(private val internalLogger: InternalLogge
             .mapNotNull {
                 @Suppress("SwallowedException")
                 try {
-                    JsonParser.parseString(String(it)).safeGetAsJsonObject(internalLogger)
+                    JsonParser.parseString(String(it)).safeAsJsonObject(internalLogger)
                 } catch (e: JsonParseException) {
                     internalLogger.log(
                         InternalLogger.Level.ERROR,
@@ -93,7 +93,7 @@ internal class BatchesToSegmentsMapper(private val internalLogger: InternalLogge
         val orderedRecords = records
             .asSequence()
             .mapNotNull {
-                it.safeGetAsJsonObject(internalLogger)
+                it.safeAsJsonObject(internalLogger)
             }
             .mapNotNull {
                 val timestamp = it.timestamp()
@@ -116,11 +116,11 @@ internal class BatchesToSegmentsMapper(private val internalLogger: InternalLogge
 
         val startTimestamp = orderedRecords
             .firstOrNull()
-            ?.safeGetAsJsonObject(internalLogger)
+            ?.safeAsJsonObject(internalLogger)
             ?.timestamp()
         val stopTimestamp = orderedRecords
             .lastOrNull()
-            ?.safeGetAsJsonObject(internalLogger)
+            ?.safeAsJsonObject(internalLogger)
             ?.timestamp()
 
         if (startTimestamp == null || stopTimestamp == null) {
@@ -143,7 +143,7 @@ internal class BatchesToSegmentsMapper(private val internalLogger: InternalLogge
             source = datadogContext.source,
             records = JsonArray()
         )
-        val segmentAsJsonObject = segment.toJson().safeGetAsJsonObject(internalLogger)
+        val segmentAsJsonObject = segment.toJson().safeAsJsonObject(internalLogger)
             ?: return null
         segmentAsJsonObject.add(RECORDS_KEY, orderedRecords)
         return Pair(segment, segmentAsJsonObject)
@@ -151,19 +151,19 @@ internal class BatchesToSegmentsMapper(private val internalLogger: InternalLogge
 
     private fun hasFullSnapshotRecord(records: JsonArray) =
         records.any {
-            val typeAsLong = it.asJsonObject.getAsJsonPrimitive(RECORD_TYPE_KEY)?.safeGetAsLong(
-                internalLogger
+            val typeAsLong = it.asJsonObject.safeGetAsLong(
+                internalLogger, RECORD_TYPE_KEY
             )
             typeAsLong == FULL_SNAPSHOT_RECORD_TYPE_MOBILE ||
                 typeAsLong == FULL_SNAPSHOT_RECORD_TYPE_BROWSER
         }
 
     private fun JsonObject.records(): JsonArray? {
-        return get(EnrichedRecord.RECORDS_KEY)?.safeGetAsJsonArray(internalLogger)
+        return safeGetAsJsonArray(internalLogger, EnrichedRecord.RECORDS_KEY)
     }
 
     private fun JsonObject.timestamp(): Long? {
-        return getAsJsonPrimitive(TIMESTAMP_KEY)?.safeGetAsLong(internalLogger)
+        return safeGetAsLong(internalLogger, TIMESTAMP_KEY)
     }
 
     private fun JsonObject.rumContext(): SessionReplayRumContext? {

@@ -3,6 +3,7 @@
 // Copyright 2025-Present Datadog, Inc.
 
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:jni/jni.dart';
 
@@ -82,5 +83,21 @@ class DatadogSessionReplayPlatformAndroid extends DatadogSessionReplayPlatform {
   @override
   FutureOr<void> writeSegment(String record, String viewId) {
     _bridge.writeSegment(record.toJString());
+  }
+
+  @override
+  String? resourceIdForKey(int resourceKey) {
+    return _bridge.resourceIdForKey(resourceKey)?.toDartString();
+  }
+
+  @override
+  FutureOr<void> saveImageForProcessing(
+    int resourceKey,
+    int width,
+    int height,
+    ByteData byteData,
+  ) {
+    final jBytes = JByteArray.from(byteData.buffer.asUint8List());
+    _bridge.saveImageForProcessing(resourceKey, jBytes, width, height);
   }
 }

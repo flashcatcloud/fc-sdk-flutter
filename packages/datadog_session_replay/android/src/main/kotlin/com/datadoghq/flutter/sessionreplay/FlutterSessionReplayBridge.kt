@@ -6,6 +6,7 @@
 
 package com.datadoghq.flutter.sessionreplay
 
+import android.icu.text.ListFormatter.Width
 import com.datadog.android.Datadog
 import com.datadog.android.api.feature.FeatureSdkCore
 import com.datadoghq.flutter.sessionreplay.feature.FlutterSessionReplayFeature
@@ -35,6 +36,8 @@ class FlutterSessionReplayBridge {
     )
 
     private var feature: FlutterSessionReplayFeature? = null
+
+    private var resourceIdMap: MutableMap<Int, String> = mutableMapOf()
 
     fun enable(configuration: Configuration): FlutterSessionReplayFeature {
         val featureSdkCore = Datadog.getInstance() as FeatureSdkCore
@@ -66,5 +69,23 @@ class FlutterSessionReplayBridge {
 
     fun telemetryError(message: String, stack: String, kind: String) {
         Datadog._internalProxy()._telemetry.error(message, stack, kind)
+    }
+
+    fun saveImageForProcessing(
+        resourceId: Int,
+        imageData: ByteArray,
+        width: Int,
+        height: Int
+    ) {
+        feature?.resourceResolver?.addResource(
+            resourceKey = resourceId,
+            width = width,
+            height = height,
+            resourceBytes = imageData
+        )
+    }
+
+    fun resourceIdForKey(resourceId: Int): String? {
+        return feature?.resourceResolver?.resolveResource(resourceId)
     }
 }

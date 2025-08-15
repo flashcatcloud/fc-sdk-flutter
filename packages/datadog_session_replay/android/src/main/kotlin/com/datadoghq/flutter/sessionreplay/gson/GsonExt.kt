@@ -18,9 +18,10 @@ internal const val BROKEN_JSON_ERROR_MESSAGE_FORMAT =
     "SR GsonExt: Unable parse the batch data into a JsonObject: expected to parse [%s] as %s"
 internal const val JSON_OBJECT_TYPE = "JsonObject"
 internal const val JSON_ARRAY_TYPE = "JsonArray"
+internal const val JSON_STRING_TYPE = "JsonString"
 internal const val JSON_PRIMITIVE_TYPE = "JsonPrimitive"
 
-internal fun JsonElement.safeGetAsJsonObject(internalLogger: InternalLogger): JsonObject? {
+internal fun JsonElement.safeAsJsonObject(internalLogger: InternalLogger): JsonObject? {
     return if (isJsonObject) {
         asJsonObject
     } else {
@@ -39,9 +40,9 @@ internal fun JsonElement.safeGetAsJsonObject(internalLogger: InternalLogger): Js
     }
 }
 
-internal fun JsonPrimitive.safeGetAsLong(internalLogger: InternalLogger): Long? {
+internal fun JsonObject.safeGetAsLong(internalLogger: InternalLogger, key: String): Long? {
     return try {
-        asLong
+        get(key)?.asLong
     } catch (e: NumberFormatException) {
         internalLogger.log(
             InternalLogger.Level.ERROR,
@@ -59,20 +60,57 @@ internal fun JsonPrimitive.safeGetAsLong(internalLogger: InternalLogger): Long? 
     }
 }
 
-internal fun JsonElement.safeGetAsJsonArray(internalLogger: InternalLogger): JsonArray? {
-    return if (isJsonArray) {
-        asJsonArray
-    } else {
+internal fun JsonObject.safeGetAsJsonArray(internalLogger: InternalLogger, key: String): JsonArray? {
+    return get(key)?.let { jsonElement ->
+        return if (jsonElement.isJsonArray) {
+            jsonElement.asJsonArray
+        } else {
+            internalLogger.log(
+                InternalLogger.Level.ERROR,
+                InternalLogger.Target.TELEMETRY,
+                {
+                    BROKEN_JSON_ERROR_MESSAGE_FORMAT.format(
+                        Locale.US,
+                        this.toString(),
+                        JSON_ARRAY_TYPE
+                    )
+                }
+            )
+            null
+        }
+    }
+}
+
+internal fun JsonObject.safeGetAsString(internalLogger: InternalLogger, key: String): String? {
+    return try {
+        get(key)?.asString
+    } catch (e: ClassCastException) {
+        // this should never happen - element is a valid json already
         internalLogger.log(
-            InternalLogger.Level.ERROR,
-            InternalLogger.Target.TELEMETRY,
-            {
+            level = InternalLogger.Level.ERROR,
+            target = InternalLogger.Target.MAINTAINER,
+            messageBuilder = {
                 BROKEN_JSON_ERROR_MESSAGE_FORMAT.format(
                     Locale.US,
                     this.toString(),
-                    JSON_ARRAY_TYPE
+                    JSON_STRING_TYPE
                 )
-            }
+            },
+            throwable = e
+        )
+        null
+    } catch (e: IllegalStateException) {
+        internalLogger.log(
+            level = InternalLogger.Level.ERROR,
+            target = InternalLogger.Target.MAINTAINER,
+            messageBuilder = {
+                BROKEN_JSON_ERROR_MESSAGE_FORMAT.format(
+                    Locale.US,
+                    this.toString(),
+                    JSON_STRING_TYPE
+                )
+            },
+            throwable = e
         )
         null
     }
