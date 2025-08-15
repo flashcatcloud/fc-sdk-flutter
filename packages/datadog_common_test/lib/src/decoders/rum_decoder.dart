@@ -70,6 +70,8 @@ class RumSessionDecoder {
           break;
         case 'resource':
           final resourceEvent = RumResourceEventDecoder(e.rumEvent);
+          // Filter resource events looking for $dwdsSseHandler?
+          if (resourceEvent.url.contains('\$dwdsSseHandler?')) continue;
           visit.resourceEvents.add(resourceEvent);
           break;
         case 'error':
@@ -124,7 +126,7 @@ class RumEventDecoder {
   final RumViewInfoDecoder? viewInfo;
   final Dd dd;
 
-  String get eventType => rumEvent['type'] as String;
+  String? get eventType => rumEvent['type'] as String?;
   String get service {
     if (!kManualIsWeb) {
       if (Platform.isIOS) return rumEvent['service'];
