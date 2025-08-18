@@ -2,7 +2,6 @@
 // This product includes software developed at Datadog (https://www.datadoghq.com/).
 // Copyright 2023-Present Datadog, Inc.
 
-#if os(iOS)
 import Foundation
 
 internal typealias JSONObject = [String: Any?]
@@ -91,5 +90,3 @@ internal struct InternalError: Error, CustomStringConvertible {
         self.description = "\(description) (\(fileID):\(line))"
     }
 }
-
-#endif

@@ -1,0 +1,1 @@
+-keep class com.datadoghq.flutter.sessionreplay.FlutterSessionReplayBridge { *; }
