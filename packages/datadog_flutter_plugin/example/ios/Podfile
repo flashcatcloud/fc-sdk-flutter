@@ -1,5 +1,5 @@
 # Uncomment this line to define a global platform for your project
-# platform :ios, '12.0'
+platform :ios, '13.0'
 
 # CocoaPods analytics sends network stats synchronously affecting flutter build latency.
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
@@ -36,11 +36,11 @@ target 'Runner' do
   end
 
   # Datadog Pod Overrides
-  pod 'DatadogCore', :git => 'https://github.com/DataDog/dd-sdk-ios', :tag => '2.30.0'
-  pod 'DatadogLogs', :git => 'https://github.com/DataDog/dd-sdk-ios', :tag => '2.30.0'
-  pod 'DatadogRUM', :git => 'https://github.com/DataDog/dd-sdk-ios', :tag => '2.30.0'
-  pod 'DatadogInternal', :git => 'https://github.com/DataDog/dd-sdk-ios', :tag => '2.30.0'
-  pod 'DatadogCrashReporting', :git => 'https://github.com/DataDog/dd-sdk-ios', :tag => '2.30.0'
+  pod 'DatadogCore', :git => 'https://github.com/DataDog/dd-sdk-ios', :branch => 'develop'
+  pod 'DatadogLogs', :git => 'https://github.com/DataDog/dd-sdk-ios', :branch => 'develop'
+  pod 'DatadogRUM', :git => 'https://github.com/DataDog/dd-sdk-ios', :branch => 'develop'
+  pod 'DatadogInternal', :git => 'https://github.com/DataDog/dd-sdk-ios', :branch => 'develop'
+  pod 'DatadogCrashReporting', :git => 'https://github.com/DataDog/dd-sdk-ios', :branch => 'develop'
   # End Datadog Pod Overrides
 end
 

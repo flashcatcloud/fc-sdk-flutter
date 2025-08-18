@@ -12,7 +12,7 @@ let package = Package(
         .library(name: "datadog-session-replay", targets: ["datadog_session_replay"])
     ],
     dependencies: [
-        .package(url: "https://github.com/Datadog/dd-sdk-ios.git", exact: "2.30.0"),
+        .package(url: "https://github.com/Datadog/dd-sdk-ios.git", from: "2.20.0"),
     ],
     targets: [
         .target(
