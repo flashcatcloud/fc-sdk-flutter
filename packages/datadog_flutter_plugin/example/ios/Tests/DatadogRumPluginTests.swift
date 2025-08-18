@@ -206,6 +206,17 @@ class DatadogRumPluginTests: XCTestCase {
         XCTAssertEqual(config?.trackAnonymousUser, trackAnonymousUser)
     }
 
+    func testRumConfiguration_WithTrackBackgroundEvents_IsSetCorrectly() {
+        let trackBackgroundEvents = Bool.mockRandom()
+        let encoded: [String: Any?] = [
+            "applicationId": "fake-application-id",
+            "trackBackgroundEvents": trackBackgroundEvents
+        ]
+
+        let config = RUM.Configuration.init(fromEncoded: encoded)
+        XCTAssertEqual(config?.trackBackgroundEvents, trackBackgroundEvents)
+    }
+
     func testRepeatEnable_FromMethodChannelSameOptions_DoesNothing() {
         // Uninitialize plugin
         plugin?.inject(rum: nil)

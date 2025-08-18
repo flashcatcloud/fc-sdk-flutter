@@ -4,6 +4,8 @@ analyzer:
   exclude:
     - "**/*.mocks.dart"
     - "**/*.g.dart"
+    # specifically exclude the FFI generated file
+    - "lib/src/ios/datadog_session_replay_bridge_ios.dart"
   language:
     strict-raw-types: true
 

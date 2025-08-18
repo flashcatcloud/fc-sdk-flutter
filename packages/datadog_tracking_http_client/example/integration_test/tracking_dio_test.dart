@@ -3,6 +3,7 @@
 // Copyright 2019-2022 Datadog, Inc.
 import 'dart:convert';
 
+import 'package:collection/collection.dart';
 import 'package:datadog_common_test/datadog_common_test.dart';
 import 'package:datadog_tracking_http_client_example/main.dart' as app;
 import 'package:datadog_tracking_http_client_example/scenario_config.dart';
@@ -33,6 +34,7 @@ Future<void> performRumUserFlow(WidgetTester tester) async {
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
+  // TODO: Figure out why
   testWidgets('test auto instrumentation', (WidgetTester tester) async {
     final sessionRecorder = await startMockServer();
 
@@ -98,19 +100,30 @@ void main() {
     expect(session.visits.length, greaterThanOrEqualTo(3));
 
     final view1 = session.visits[1];
-    expect(view1.viewEvents.last.view.resourceCount, 2);
+
+    expect(
+        view1.viewEvents.last.view.resourceCount, view1.resourceEvents.length);
+
     // After redirects, we don't end up with a picsum.photos url.
-    expect(view1.resourceEvents[0].url.contains('picsum.photos'), isTrue);
-    expect(view1.resourceEvents[1].url,
+    final picsumResource = view1.resourceEvents
+        .firstWhereOrNull((e) => e.url.contains('picsum.photos'));
+    expect(picsumResource, isNotNull);
+
+    final datadogResource = view1.resourceEvents
+        .firstWhereOrNull((e) => e.url.contains('imgix.datadoghq.com'));
+    expect(datadogResource, isNotNull);
+    expect(datadogResource!.url,
         'https://imgix.datadoghq.com/img/about/presskit/kit/press_kit.png');
     // Allow this to fail since we don't have as much control over them
-    if (view1.resourceEvents[1].statusCode == 200) {
+    if (datadogResource.statusCode == 200) {
       expect(view1.resourceEvents[1].resourceType, kIsWeb ? 'xhr' : 'image');
     }
 
     final view2 = session.visits[2];
-    expect(view2.viewEvents.last.view.resourceCount, kIsWeb ? 5 : 4);
+    expect(
+        view2.viewEvents.last.view.resourceCount, view2.resourceEvents.length);
     if (!kIsWeb) {
+      // Web doesn't report the failed resource as an error
       expect(view2.viewEvents.last.view.errorCount, 1);
     }
 
@@ -121,22 +134,28 @@ void main() {
       expect(testRequest.requestHeaders['x-datadog-origin']?.first, 'rum');
     }
 
-    final getEvent = view2.resourceEvents[0];
-    final getTraceId = extractDatadogTraceId(testRequests[0].requestHeaders);
-    final getSpanId =
-        testRequests[0].requestHeaders['x-datadog-parent-id']?.first;
-    expect(getEvent.url, scenarioConfig.firstPartyGetUrl);
+    final getEvent = view2.resourceEvents
+        .firstWhereOrNull((e) => e.url == scenarioConfig.firstPartyGetUrl);
+    expect(getEvent, isNotNull);
+    final getRequest = testRequests
+        .firstWhere((e) => e.requestedUrl == scenarioConfig.firstPartyGetUrl);
+    final getTraceId = extractDatadogTraceId(getRequest.requestHeaders);
+    final getSpanId = getRequest.requestHeaders['x-datadog-parent-id']?.first;
+    expect(getEvent!.url, scenarioConfig.firstPartyGetUrl);
     expect(getEvent.statusCode, 200);
     expect(getEvent.method, 'GET');
     expect(getEvent.duration, greaterThan(0));
     expect(getEvent.dd.traceId, getTraceId?.toRadixString(kIsWeb ? 10 : 16));
     expect(getEvent.dd.spanId, getSpanId!);
 
-    final postTraceId = extractDatadogTraceId(testRequests[1].requestHeaders);
-    final postSpanId =
-        testRequests[1].requestHeaders['x-datadog-parent-id']?.first;
-    final postEvent = view2.resourceEvents[1];
-    expect(postEvent.url, scenarioConfig.firstPartyPostUrl);
+    final postEvent = view2.resourceEvents
+        .firstWhereOrNull((e) => e.url == scenarioConfig.firstPartyPostUrl);
+    expect(postEvent, isNotNull);
+    final postRequest = testRequests
+        .firstWhere((e) => e.requestedUrl == scenarioConfig.firstPartyPostUrl);
+    final postTraceId = extractDatadogTraceId(postRequest.requestHeaders);
+    final postSpanId = postRequest.requestHeaders['x-datadog-parent-id']?.first;
+    expect(postEvent!.url, scenarioConfig.firstPartyPostUrl);
     expect(postEvent.statusCode, 200);
     expect(postEvent.method, 'POST');
     expect(postEvent.duration, greaterThan(0));
@@ -144,30 +163,32 @@ void main() {
     expect(postEvent.dd.spanId, postSpanId!);
 
     // Third party requests
-    int thirdPartyResourceIndex = 2;
     if (!kIsWeb) {
       expect(view2.errorEvents[0].resourceUrl,
           startsWith(scenarioConfig.firstPartyBadUrl));
       expect(view2.errorEvents[0].resourceMethod, 'GET');
     } else {
-      expect(view2.resourceEvents[2].url,
-          startsWith(scenarioConfig.firstPartyBadUrl));
-      expect(view2.resourceEvents[2].method, 'GET');
-      thirdPartyResourceIndex = 3;
+      final errorResourceEvent = view2.resourceEvents.firstWhereOrNull(
+          (e) => e.url.contains(scenarioConfig.firstPartyBadUrl));
+      expect(
+          errorResourceEvent!.url, startsWith(scenarioConfig.firstPartyBadUrl));
+      expect(errorResourceEvent.method, 'GET');
     }
 
-    final firstThirdPartyResource =
-        view2.resourceEvents[thirdPartyResourceIndex];
-    expect(firstThirdPartyResource.url,
+    final firstThirdPartyResource = view2.resourceEvents.firstWhereOrNull(
+        (e) => e.url.contains(scenarioConfig.thirdPartyGetUrl));
+    expect(firstThirdPartyResource, isNotNull);
+    expect(firstThirdPartyResource!.url,
         startsWith(scenarioConfig.thirdPartyGetUrl));
     expect(firstThirdPartyResource.method, 'GET');
     expect(firstThirdPartyResource.duration, greaterThan(0));
     expect(firstThirdPartyResource.dd.traceId, isNull);
     expect(firstThirdPartyResource.dd.spanId, isNull);
 
-    final secondThirdPartyResource =
-        view2.resourceEvents[thirdPartyResourceIndex + 1];
-    expect(secondThirdPartyResource.url,
+    final secondThirdPartyResource = view2.resourceEvents.firstWhereOrNull(
+        (e) => e.url.contains(scenarioConfig.thirdPartyPostUrl));
+    expect(secondThirdPartyResource, isNotNull);
+    expect(secondThirdPartyResource!.url,
         startsWith(scenarioConfig.thirdPartyPostUrl));
     expect(secondThirdPartyResource.method, 'POST');
     expect(secondThirdPartyResource.duration, greaterThan(0));

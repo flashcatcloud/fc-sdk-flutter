@@ -24,6 +24,8 @@ PODS:
   - Flutter (1.0.0)
   - integration_test (0.0.1):
     - Flutter
+  - objective_c (0.0.1):
+    - Flutter
   - PLCrashReporter (1.12.0)
 
 DEPENDENCIES:
@@ -36,6 +38,7 @@ DEPENDENCIES:
   - DatadogRUM (from `https://github.com/DataDog/dd-sdk-ios`, branch `develop`)
   - Flutter (from `Flutter`)
   - integration_test (from `.symlinks/plugins/integration_test/ios`)
+  - objective_c (from `.symlinks/plugins/objective_c/ios`)
 
 SPEC REPOS:
   trunk:
@@ -66,6 +69,8 @@ EXTERNAL SOURCES:
     :path: Flutter
   integration_test:
     :path: ".symlinks/plugins/integration_test/ios"
+  objective_c:
+    :path: ".symlinks/plugins/objective_c/ios"
 
 CHECKOUT OPTIONS:
   DatadogCore:
@@ -95,6 +100,7 @@ SPEC CHECKSUMS:
   DictionaryCoder: f7115fcd074c8301e91f2eb862da1ea7d0385e61
   Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
   integration_test: 252f60fa39af5e17c3aa9899d35d908a0721b573
+  objective_c: 77e887b5ba1827970907e10e832eec1683f3431d
   PLCrashReporter: db59ef96fa3d25f3650040d02ec2798cffee75f2
 
 PODFILE CHECKSUM: 357bc2de26f249c9e5dd52e99a556d5704fbd68b

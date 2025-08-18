@@ -4,8 +4,8 @@
 
 import 'package:datadog_flutter_plugin/datadog_internal.dart';
 import 'package:datadog_session_replay/datadog_session_replay.dart';
-import 'package:datadog_session_replay/src/datadog_session_replay_method_channel.dart';
 import 'package:datadog_session_replay/src/datadog_session_replay_platform_interface.dart';
+import 'package:datadog_session_replay/src/datadog_session_replay_platform_noop.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
@@ -20,8 +20,8 @@ void main() {
   final DatadogSessionReplayPlatform initialPlatform =
       DatadogSessionReplayPlatform.instance;
 
-  test('$MethodChannelDatadogSessionReplay is the default instance', () {
-    expect(initialPlatform, isInstanceOf<MethodChannelDatadogSessionReplay>());
+  test('$DatadogSessionReplayPlatformNoop is the default instance', () {
+    expect(initialPlatform, isInstanceOf<DatadogSessionReplayPlatformNoop>());
   });
 
   group('DatadogSessionReplay', () {

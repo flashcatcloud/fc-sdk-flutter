@@ -1,0 +1,86 @@
+// Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
+// This product includes software developed at Datadog (https://www.datadoghq.com/).
+// Copyright 2025-Present Datadog, Inc.
+
+import 'dart:async';
+
+import 'package:jni/jni.dart';
+
+import '../../datadog_session_replay.dart';
+import '../datadog_session_replay_platform_interface.dart';
+import '../rum_context.dart';
+import 'datadog_session_replay_bridge_android.dart';
+
+class DatadogSessionReplayPlatformAndroid extends DatadogSessionReplayPlatform {
+  late FlutterSessionReplayBridge _bridge;
+
+  DatadogSessionReplayPlatformAndroid() {
+    _bridge = FlutterSessionReplayBridge();
+  }
+
+  DatadogSessionReplayPlatformAndroid.fromJObject(JObject ref)
+    : _bridge = ref as FlutterSessionReplayBridge;
+
+  @override
+  Object? get isolateToken => _bridge;
+
+  @override
+  FutureOr<bool> enable(
+    DatadogSessionReplayConfiguration configuration,
+    void Function(RUMContext p1) onContextChanged,
+  ) {
+    final listener = FlutterSessionReplayBridge$ContextListener.implement(
+      $FlutterSessionReplayBridge$ContextListener(
+        onContextChanged: (context) {
+          onContextChanged(
+            RUMContext(
+              applicationId: context.getApplicationId()?.toDartString() ?? '',
+              sessionId: context.getSessionId()?.toDartString() ?? '',
+              viewId: context.getViewId()?.toDartString(),
+              viewServerTimeOffset:
+                  context.getViewServerTimeOffset()?.doubleValue(),
+            ),
+          );
+        },
+        onContextChanged$async: false,
+      ),
+    );
+    final mappedConfig = FlutterSessionReplayBridge$Configuration(
+      configuration.customEndpoint?.toJString(),
+      listener,
+    );
+
+    _bridge.enable(mappedConfig);
+
+    return true;
+  }
+
+  @override
+  FutureOr<void> setHasReplay(String viewId, bool hasReplay) {
+    _bridge.setHasReplay(viewId.toJString(), hasReplay);
+  }
+
+  @override
+  FutureOr<void> setRecordCount(String viewId, int count) {
+    _bridge.setRecordCount(viewId.toJString(), count);
+  }
+
+  @override
+  FutureOr<void> telemetryDebug(String id, String message) {
+    _bridge.telemetryDebug(JString.fromString(message));
+  }
+
+  @override
+  FutureOr<void> telemetryError(String message, String kind, String stack) {
+    _bridge.telemetryError(
+      JString.fromString(message),
+      JString.fromString(stack),
+      JString.fromString(kind),
+    );
+  }
+
+  @override
+  FutureOr<void> writeSegment(String record, String viewId) {
+    _bridge.writeSegment(record.toJString());
+  }
+}
