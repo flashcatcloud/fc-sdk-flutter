@@ -70,8 +70,6 @@ class RumSessionDecoder {
           break;
         case 'resource':
           final resourceEvent = RumResourceEventDecoder(e.rumEvent);
-          // Filter resource events looking for $dwdsSseHandler?
-          if (resourceEvent.url.contains('\$dwdsSseHandler?')) continue;
           visit.resourceEvents.add(resourceEvent);
           break;
         case 'error':
