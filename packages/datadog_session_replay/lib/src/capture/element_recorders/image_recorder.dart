@@ -32,15 +32,16 @@ class ImageRecorder implements ElementRecorder {
     final widget = element.widget;
     if (widget is! RawImage) return null;
 
-    final elementId = keyGenerator.keyForElement(element);
     final uiImage = widget.image;
     if (uiImage == null) {
-      return SpecificElement(
-        subtreeStrategy: CaptureNodeSubtreeStrategy.ignore,
-        nodes: [_PlaceholderImageNode(attributes, wireframeId: elementId)],
-      );
+      // This image is likely still loading. We could put a placeholder here,
+      // but we would then have to replace it later. Instead, we'll wait for
+      // it to load before creating the capture node. We can, however,
+      // ignore all children for the time being.
+      return IgnoredElement(subtreeStrategy: CaptureNodeSubtreeStrategy.ignore);
     }
 
+    final elementId = keyGenerator.keyForElement(element);
     final hasResourceKey = keyGenerator.hasImageKey(uiImage);
     if (hasResourceKey) {
       final resourceKey = keyGenerator.keyForImage(uiImage);
@@ -82,6 +83,13 @@ class ImageRecorder implements ElementRecorder {
           image.width,
           image.height,
           byteData,
+        );
+        nodes.add(
+          _ResourceImageNode(
+            attributes,
+            wireframeId: elementId,
+            resourceKey: resourceKey,
+          ),
         );
       }
     }

@@ -11,6 +11,7 @@ import android.os.Build
 import com.datadog.android.api.InternalLogger
 import com.datadoghq.flutter.sessionreplay.models.ResourceEvent
 import java.io.ByteArrayOutputStream
+import java.nio.ByteBuffer
 import java.security.MessageDigest
 import java.security.NoSuchAlgorithmException
 
@@ -99,24 +100,13 @@ internal class ResourceResolver(
         }
 
     fun createBitmap(bytes: ByteArray, width: Int, height: Int): Bitmap {
-        // Flutter returns RGBA with premultiplied alpha, so we need to convert it to ARGB
-        // without premultiplied alpha.
-        val pixels = IntArray(width * height)
-        for (i in pixels.indices) {
-            val byteIndex = i * 4
-            val a = bytes[byteIndex + 3].toInt()
-            // By using an inverse alpha factor, we can avoid division by zero
-            val invAlphaFactor = if (a == 0) 0.0f else 255.0f / a
+        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+        val buffer = ByteBuffer.wrap(bytes)
 
-            // Un-premultiply the RGB values
-            val r = (bytes[byteIndex + 0] * invAlphaFactor).toInt() and BYTE_MASK
-            val g = (bytes[byteIndex + 1] * invAlphaFactor).toInt() and BYTE_MASK
-            val b = (bytes[byteIndex + 2] * invAlphaFactor).toInt() and BYTE_MASK
-
-            pixels[i] = ((a shl 24) or (r shl 16) or (g shl 8) or b)
-        }
-        // TODO: Check if this can fail and handle the error
-        return Bitmap.createBitmap(pixels, width, height, Bitmap.Config.ARGB_8888)
+        // Despite what the above `Bitmap.Config` says, the actual pixel format is RGBA_8888
+        // with premultiplied alpha, which is the exact format that Flutter uses.
+        bitmap.copyPixelsFromBuffer(buffer)
+        return bitmap
     }
 
     fun compressBitmap(bitmap: Bitmap): ByteArray? {
