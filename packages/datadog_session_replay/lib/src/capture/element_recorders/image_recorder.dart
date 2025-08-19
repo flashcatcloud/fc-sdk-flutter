@@ -17,6 +17,11 @@ import '../view_tree_snapshot.dart';
 // overlappping other content in the replay.
 const int labelMinWidth = 200;
 
+// Largest size of image we can process - larger than this and we
+// start to hit concerns around memory usage and processing time.
+// This is essentially an 800x800 image.
+const int maxImageSize = 640000;
+
 class ImageRecorder implements ElementRecorder {
   final KeyGenerator keyGenerator;
   final DatadogSessionReplayPlatform platform;
@@ -42,6 +47,16 @@ class ImageRecorder implements ElementRecorder {
     }
 
     final elementId = keyGenerator.keyForElement(element);
+    final totalPixelSize = uiImage.width * uiImage.height;
+    if (totalPixelSize > maxImageSize) {
+      return SpecificElement(
+        subtreeStrategy: CaptureNodeSubtreeStrategy.ignore,
+        nodes: [
+          _PlaceholderImageNode(attributes, wireframeId: elementId, caption: 'Large Image')
+        ]
+      );
+    }
+
     final hasResourceKey = keyGenerator.hasImageKey(uiImage);
     if (hasResourceKey) {
       final resourceKey = keyGenerator.keyForImage(uiImage);
@@ -95,7 +110,7 @@ class ImageRecorder implements ElementRecorder {
     }
 
     if (nodes.isEmpty) {
-      nodes.add(_PlaceholderImageNode(attributes, wireframeId: elementId));
+      nodes.add(_PlaceholderImageNode(attributes, wireframeId: elementId, caption: 'Empty Image'));
     }
 
     return SpecificElement(
@@ -108,12 +123,13 @@ class ImageRecorder implements ElementRecorder {
 @immutable
 class _PlaceholderImageNode extends CaptureNode {
   final int wireframeId;
+  final String caption;
 
-  const _PlaceholderImageNode(super.attributes, {required this.wireframeId});
+  const _PlaceholderImageNode(super.attributes, {required this.wireframeId, required this.caption});
 
   @override
   List<SRWireframe> buildWireframes() {
-    final label = attributes.width < labelMinWidth ? null : 'Content Image';
+    final label = attributes.width < labelMinWidth ? null : caption;
     return [
       SRPlaceholderWireframe(
         id: wireframeId,
