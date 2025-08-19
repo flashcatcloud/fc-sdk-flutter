@@ -8,6 +8,28 @@ import DatadogInternal
 class FlutterSessionReplayFeature: DatadogRemoteFeature {
     static var name: String = "session-replay"
 
+    public struct Configuration {
+        public var customEndpoint: URL?
+        public var onContextChanged: ((RUMCoreContext?) -> Void)?
+
+        public init(
+            customEndpoint: URL? = nil,
+            onContextChanged: ((RUMCoreContext?) -> Void)? = nil
+        ) {
+            self.customEndpoint = customEndpoint
+            self.onContextChanged = onContextChanged
+        }
+
+        public init?(fromEncoded encoded: [String: Any?]) {
+            var customEndpoint: URL?
+            if let customEndpointString = encoded["customEndpoint"] as? String {
+                customEndpoint = URL(string: customEndpointString)
+            }
+
+            self.init(customEndpoint: customEndpoint)
+        }
+    }
+
     let requestBuilder: DatadogInternal.FeatureRequestBuilder
     let messageReceiver: DatadogInternal.FeatureMessageReceiver
 
@@ -18,7 +40,7 @@ class FlutterSessionReplayFeature: DatadogRemoteFeature {
 
     init(
         core: DatadogCoreProtocol,
-        configuration: FlutterSessionReplay.Configuration
+        configuration: Configuration
     ) throws {
         self.core = core
         self.featureScope = core.scope(for: FlutterSessionReplayFeature.self)

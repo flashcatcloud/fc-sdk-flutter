@@ -6,10 +6,11 @@ import PackageDescription
 let package = Package(
     name: "datadog_session_replay",
     platforms: [
-        .iOS("12.0")
+        .iOS("12.0"),
+        .macOS("12.0")
     ],
     products: [
-        .library(name: "datadog-session-replay", targets: ["datadog_session_replay"])
+        .library(name: "datadog-session-replay", targets: ["datadog_session_replay", "datadog_session_replay_objc"])
     ],
     dependencies: [
         .package(url: "https://github.com/Datadog/dd-sdk-ios.git", from: "2.20.0"),
@@ -20,6 +21,23 @@ let package = Package(
             dependencies: [
                 .product(name: "DatadogCore", package: "dd-sdk-ios")
             ],
+            path: "Sources/Swift",
+            resources: [],
+            swiftSettings: [
+                // Enable automatic Objective-C header generation
+                .define("SWIFT_PACKAGE"),
+                .unsafeFlags([
+                    "-emit-objc-header",
+                    "-emit-objc-header-path", "Sources/ObjC/include/datadog_session_replay_bridge.h"
+                ])
+            ]
+        ),
+        .target(
+            name: "datadog_session_replay_objc",
+            dependencies: [
+                .product(name: "DatadogCore", package: "dd-sdk-ios")
+            ],
+            path: "Sources/ObjC",
             resources: []
         )
     ]

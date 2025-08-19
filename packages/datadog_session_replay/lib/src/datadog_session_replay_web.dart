@@ -3,6 +3,8 @@
 // Copyright 2025-Present Datadog, Inc.
 // ignore: avoid_web_libraries_in_flutter
 
+import 'dart:async';
+
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 
 import '../datadog_session_replay.dart';
@@ -20,6 +22,9 @@ class DatadogSessionReplayWeb extends DatadogSessionReplayPlatform {
   }
 
   @override
+  Object? get isolateToken => null;
+
+  @override
   Future<bool> enable(
     DatadogSessionReplayConfiguration configuration,
     void Function(RUMContext p1) onContextChanged,
@@ -28,7 +33,7 @@ class DatadogSessionReplayWeb extends DatadogSessionReplayPlatform {
   }
 
   @override
-  Future<void> setHasReplay(bool hasReplay) {
+  Future<void> setHasReplay(String viewId, bool hasReplay) {
     return Future.value();
   }
 
@@ -40,5 +45,15 @@ class DatadogSessionReplayWeb extends DatadogSessionReplayPlatform {
   @override
   Future<void> writeSegment(String record, String viewId) {
     return Future.value();
+  }
+
+  @override
+  FutureOr<void> telemetryDebug(String id, String message) {
+    // Not currently supported
+  }
+
+  @override
+  FutureOr<void> telemetryError(String message, String kind, String stack) {
+    // Not currently supported
   }
 }

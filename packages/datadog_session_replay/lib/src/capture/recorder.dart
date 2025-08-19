@@ -175,7 +175,9 @@ class SessionReplayRecorder {
   void onContextChanged(RUMContext context) {
     _currentContext = context;
 
-    DatadogSessionReplayPlatform.instance.setHasReplay(context.viewId != null);
+    if (context.viewId case final viewId?) {
+      DatadogSessionReplayPlatform.instance.setHasReplay(viewId, true);
+    }
   }
 
   // Certain elements will cause everything under the element to be invisible, such

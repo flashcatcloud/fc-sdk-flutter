@@ -6,6 +6,7 @@ import 'dart:convert';
 import 'package:datadog_common_test/datadog_common_test.dart';
 import 'package:datadog_tracking_http_client_example/main.dart' as app;
 import 'package:datadog_tracking_http_client_example/scenario_config.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 
@@ -153,5 +154,5 @@ void main() {
     expect(secondThirdPartyResource.duration, greaterThan(0));
     expect(secondThirdPartyResource.dd.traceId, isNull);
     expect(secondThirdPartyResource.dd.spanId, isNull);
-  });
+  }, skip: kIsWeb);
 }

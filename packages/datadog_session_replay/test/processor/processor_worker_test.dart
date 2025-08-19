@@ -35,7 +35,7 @@ void main() {
     DatadogSessionReplayPlatform.instance = mockPlatform;
 
     when(
-      () => mockPlatform.setHasReplay(any()),
+      () => mockPlatform.setHasReplay(any(), any()),
     ).thenAnswer((_) => Future.value());
     when(
       () => mockPlatform.setRecordCount(any(), any()),

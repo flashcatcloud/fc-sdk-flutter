@@ -90,21 +90,23 @@ class ProcessorWorker {
       _recordCountByViewId[viewId] = totalRecordCount;
       // We don't have to wait for this to respond before sending the segment. They'll
       // still be processed in order and this gives us more time to perform the encode.
-      unawaited(
-        DatadogSessionReplayPlatform.instance.setRecordCount(
-          viewId,
-          totalRecordCount,
-        ),
+      DatadogSessionReplayPlatform.instance.setRecordCount(
+        viewId,
+        totalRecordCount,
       );
 
-      var encoded = jsonEncode(enrichedRecord);
       try {
+        var encoded = jsonEncode(enrichedRecord);
         await DatadogSessionReplayPlatform.instance.writeSegment(
           encoded,
           viewId,
         );
-      } catch (e) {
-        // TODO: Report telemetry
+      } catch (e, st) {
+        DatadogSessionReplayPlatform.instance.telemetryError(
+          'Error writing segment: $e',
+          e.runtimeType.toString(),
+          st.toString(),
+        );
       }
     }
 

@@ -35,6 +35,7 @@ import io.mockk.unmockkStatic
 import io.mockk.verify
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.RepeatedTest
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.kotlin.mock
@@ -171,6 +172,7 @@ class DatadogRumPluginTest {
         // GIVEN
         val trackNonFatalAnrs = forge.aNullable { forge.aBool() }
         val trackAnonymousUser = forge.aBool()
+        val trackBackgroundEvents = forge.aBool()
         val attributes = forge.exhaustiveAttributes()
         val configArg = mapOf(
             "sessionSampleRate" to sessionSampleRate,
@@ -178,6 +180,7 @@ class DatadogRumPluginTest {
             "trackFrustrations" to trackFrustration,
             "trackNonFatalAnrs" to trackNonFatalAnrs,
             "trackAnonymousUser" to trackAnonymousUser,
+            "trackBackgroundEvents" to trackBackgroundEvents,
             "initialResourceThreshold" to initialResourceThreshold,
             "customEndpoint" to endpoint,
             "vitalsUpdateFrequency" to "VitalsFrequency.frequent",
@@ -201,6 +204,7 @@ class DatadogRumPluginTest {
             assertThat(featureConfiguration.getPrivate("trackNonFatalAnrs")).isEqualTo(true)
         }
         assertThat(featureConfiguration.getPrivate("trackAnonymousUser")).isEqualTo(trackAnonymousUser)
+        assertThat(featureConfiguration.getPrivate("backgroundEventTracking")).isEqualTo(trackBackgroundEvents)
         val initialResourceIdentifier = featureConfiguration.getPrivate("initialResourceIdentifier") as? TimeBasedInitialResourceIdentifier
         assertThat(initialResourceIdentifier).isNotNull()
         // The threshold is converted to configured in milliseconds, but held in nanoseconds.

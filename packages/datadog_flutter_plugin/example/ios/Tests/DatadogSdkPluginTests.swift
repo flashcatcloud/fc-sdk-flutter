@@ -33,6 +33,7 @@ class FlutterSdkTests: XCTestCase {
             "value": .string
         ]),
         Contract(methodName: "setUserInfo", requiredParameters: [
+            "id": .string,
             "extraInfo": .map
         ]),
         Contract(methodName: "addUserExtraInfo", requiredParameters: [

@@ -12,8 +12,8 @@ variables:
   IS_ON_CI: $CI
   SLACK_CHANNEL: "#mobile-sdk-ops"
 
-  KUBERNETES_MEMORY_REQUEST: "12Gi"
-  KUBERNETES_MEMORY_LIMIT: "16Gi"
+  KUBERNETES_MEMORY_REQUEST: "16Gi"
+  KUBERNETES_MEMORY_LIMIT: "32Gi"
 
 stages:
   - ci-image
@@ -59,11 +59,13 @@ stages:
 
 .pre-android:
   script:
-    # Kill all active emulators
-    - pushd tools/ci && dart pub get && dart run ci_helpers stop_emu && popd
-    - melos pub:get
     - yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "build-tools;34.0.0" "platform-tools" "platforms;android-34" || true
     - yes | flutter doctor --android-licenses || true
+    # Kill all active emulators
+    - pushd tools/ci 
+    - dart pub get && dart run ci_helpers stop_emu
+    - popd
+    - melos pub:get
     - flutter doctor
 
   
