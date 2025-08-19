@@ -150,12 +150,12 @@ public class DatadogSdkPlugin: NSObject, FlutterPlugin {
                 result(FlutterError.missingParameter(methodName: call.method))
             }
         case "setUserInfo":
-            if let extraInfo = arguments["extraInfo"] as? [String: Any?] {
-                let id = arguments["id"] as? String
+            if let extraInfo = arguments["extraInfo"] as? [String: Any?],
+               let id = arguments["id"] as? String {
                 let name = arguments["name"] as? String
                 let email = arguments["email"] as? String
                 let encodedAttributes = castFlutterAttributesToSwift(extraInfo)
-                Datadog.setUserInfo(id: id!, name: name, email: email, extraInfo: encodedAttributes)
+                Datadog.setUserInfo(id: id, name: name, email: email, extraInfo: encodedAttributes)
                 result(nil)
             } else {
                 result(FlutterError.missingParameter(methodName: call.method))
