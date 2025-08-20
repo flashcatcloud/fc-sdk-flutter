@@ -39,7 +39,7 @@ internal class ResourceResolver(
         var resourceId: String? = null,
         // The actual byte array of the resource, which is valid only until
         // the resource's hash is generated, at which point it is set to null
-        var resourceBytes: ByteArray?
+        var resourceBytes: ByteBuffer?
     ) {
 
     }
@@ -54,7 +54,7 @@ internal class ResourceResolver(
         resourceKey: Int,
         width: Int,
         height: Int,
-        resourceBytes: ByteArray
+        resourceBytes: ByteBuffer
     ): ResourceEntry {
         val entry = ResourceEntry(resourceKey, width, height, resourceBytes = resourceBytes)
         resourceKeyMap[resourceKey] = entry
@@ -99,10 +99,9 @@ internal class ResourceResolver(
             Bitmap.CompressFormat.WEBP
         }
 
-    fun createBitmap(bytes: ByteArray, width: Int, height: Int): Bitmap {
+    fun createBitmap(buffer: ByteBuffer, width: Int, height: Int): Bitmap {
         val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-        val buffer = ByteBuffer.wrap(bytes)
-
+        
         // Despite what the above `Bitmap.Config` says, the actual pixel format is RGBA_8888
         // with premultiplied alpha, which is the exact format that Flutter uses.
         bitmap.copyPixelsFromBuffer(buffer)

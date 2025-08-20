@@ -10,6 +10,7 @@ import android.icu.text.ListFormatter.Width
 import com.datadog.android.Datadog
 import com.datadog.android.api.feature.FeatureSdkCore
 import com.datadoghq.flutter.sessionreplay.feature.FlutterSessionReplayFeature
+import java.nio.ByteBuffer
 
 class FlutterSessionReplayBridge {
     data class RumContext(
@@ -73,7 +74,7 @@ class FlutterSessionReplayBridge {
 
     fun saveImageForProcessing(
         resourceId: Int,
-        imageData: ByteArray,
+        imageData: ByteBuffer,
         width: Int,
         height: Int
     ) {

@@ -36,6 +36,9 @@ class FlutterSessionReplayFeature: DatadogRemoteFeature {
     private var core: DatadogCoreProtocol?
     private var featureScope: FeatureScope?
 
+    let resourcesFeature: ResourcesFeature
+    let resourceResolver: ResourceResolver
+
     private var recordCountByViewId: [String: Int64] = [:]
 
     init(
@@ -57,6 +60,11 @@ class FlutterSessionReplayFeature: DatadogRemoteFeature {
             })
         }
         self.messageReceiver = contextReciever
+
+        resourcesFeature = ResourcesFeature(core: core, configuration: configuration)
+        try core.register(feature: resourcesFeature)
+        
+        resourceResolver = ResourceResolver(writer: ResourcesWriter(scope: core.scope(for: ResourcesFeature.self)))
     }
 
     func setHasReplay(_ hasReplay: Bool) {

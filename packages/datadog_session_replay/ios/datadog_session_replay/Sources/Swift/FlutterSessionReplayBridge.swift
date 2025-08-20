@@ -107,4 +107,12 @@ public func __datadog_session_replay_keep_symbols() {
         Datadog._internal.telemetry.error(id: "datadog_flutter:\(String(describing: kind)):\(message)",
                                           message: message, kind: kind, stack: stackTrace)
     }
+
+    @objc public func saveImageForProcessing(resourceKey: Int, width: Int, height: Int, data: Data) {
+        feature?.resourceResolver.addResource(withKey: resourceKey, width: width, height: height, data: data)
+    }
+
+    @objc public func resourceId(forKey key: Int) -> String? {
+        return feature?.resourceResolver.resolveResource(withKey: key)
+    }
 }

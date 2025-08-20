@@ -97,7 +97,8 @@ class DatadogSessionReplayPlatformAndroid extends DatadogSessionReplayPlatform {
     int height,
     ByteData byteData,
   ) {
-    final jBytes = JByteArray.from(byteData.buffer.asUint8List());
-    _bridge.saveImageForProcessing(resourceKey, jBytes, width, height);
+    // final jbuffer = JByteBuffer.fromList(byteData.buffer.asUint8List());
+    // _bridge.saveImageForProcessing(resourceKey, jbuffer, width, height);
+    // jbuffer.release();
   }
 }

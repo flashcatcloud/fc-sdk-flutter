@@ -1594,7 +1594,7 @@ class FlutterSessionReplayBridge extends jni$_.JObject {
 
   static final _id_saveImageForProcessing = _class.instanceMethodId(
     r'saveImageForProcessing',
-    r'(I[BII)V',
+    r'(ILjava/nio/ByteBuffer;II)V',
   );
 
   static final _saveImageForProcessing =
@@ -1625,14 +1625,19 @@ class FlutterSessionReplayBridge extends jni$_.JObject {
             )
           >();
 
-  /// from: `public final void saveImageForProcessing(int i, byte[] bs, int i1, int i2)`
-  void saveImageForProcessing(int i, jni$_.JByteArray bs, int i1, int i2) {
-    final _$bs = bs.reference;
+  /// from: `public final void saveImageForProcessing(int i, java.nio.ByteBuffer byteBuffer, int i1, int i2)`
+  void saveImageForProcessing(
+    int i,
+    jni$_.JByteBuffer byteBuffer,
+    int i1,
+    int i2,
+  ) {
+    final _$byteBuffer = byteBuffer.reference;
     _saveImageForProcessing(
       reference.pointer,
       _id_saveImageForProcessing as jni$_.JMethodIDPtr,
       i,
-      _$bs.pointer,
+      _$byteBuffer.pointer,
       i1,
       i2,
     ).check();
