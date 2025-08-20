@@ -112,24 +112,22 @@ class _RumUserActionsScreenState extends State<RumUserActionsScreen> {
             });
           }),
         ),
-        Row(
-          children: [
-            Radio<int>(
-              value: 0,
-              groupValue: _radioValue,
-              onChanged: _updateRadioValue,
-            ),
-            Radio<int>(
-              value: 1,
-              groupValue: _radioValue,
-              onChanged: _updateRadioValue,
-            ),
-            Radio<int>(
-              value: 2,
-              groupValue: _radioValue,
-              onChanged: _updateRadioValue,
-            )
-          ],
+        RadioGroup(
+          groupValue: _radioValue,
+          onChanged: _updateRadioValue,
+          child: const Row(
+            children: [
+              Radio<int>(
+                value: 0,
+              ),
+              Radio<int>(
+                value: 1,
+              ),
+              Radio<int>(
+                value: 2,
+              )
+            ],
+          ),
         ),
         Switch(
           value: _switchValue,

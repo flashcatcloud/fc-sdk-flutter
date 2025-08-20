@@ -161,7 +161,7 @@ void main() {
           children: [
             Text(textData),
             Transform(
-              transform: Matrix4.identity()..scale(0.5),
+              transform: Matrix4.identity()..scaleByDouble(0.5, 0.5, 0.5, 1.0),
               child: Text(textData),
             ),
           ],

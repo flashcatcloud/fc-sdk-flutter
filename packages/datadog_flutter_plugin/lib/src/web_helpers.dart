@@ -61,11 +61,15 @@ JSAny? valueToJs(Object? value, String parameterName) {
   }
 
   if (value is List) {
-    final jsList = JSArray();
+    final jsArray = JSArray<JSAny?>();
     for (int i = 0; i < value.length; ++i) {
-      jsList.add(valueToJs(value[i], '$parameterName[$i]'));
+      // Indexing operations on JSArray in js_interop weren't added until Dart 3.6
+      // and a properly supported `add` method wasn't added until Dart 3.10, so
+      // call `push` directly to create the array.
+      jsArray.callMethod(
+          'push'.toJS, valueToJs(value[i], '$parameterName[$i]'));
     }
-    return jsList;
+    return jsArray;
   }
 
   throw ArgumentError(

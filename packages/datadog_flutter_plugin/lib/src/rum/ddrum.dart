@@ -8,7 +8,6 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
-import 'package:meta/meta.dart';
 
 import '../../datadog_flutter_plugin.dart';
 import '../../datadog_internal.dart';

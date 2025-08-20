@@ -151,7 +151,7 @@ void main() {
         ),
       );
       loggingService = LoggingGreeterService();
-      server = Server([loggingService]);
+      server = Server.create(services: [loggingService]);
       await server.serve(port: port);
 
       mockDatadog = DatadogSdkMock();
@@ -376,7 +376,7 @@ void main() {
       ),
     );
     loggingService = LoggingGreeterService();
-    final server = Server([loggingService]);
+    final server = Server.create(services: [loggingService]);
     await server.serve(port: port);
 
     mockDatadog = DatadogSdkMock();
@@ -425,7 +425,7 @@ void main() {
       ),
     );
     loggingService = LoggingGreeterService();
-    final server = Server([loggingService]);
+    final server = Server.create(services: [loggingService]);
     await server.serve(port: port);
 
     mockDatadog = DatadogSdkMock();
@@ -469,7 +469,7 @@ void main() {
       ),
     );
     loggingService = LoggingGreeterService();
-    final server = Server([loggingService]);
+    final server = Server.create(services: [loggingService]);
     await server.serve(port: port);
 
     mockDatadog = DatadogSdkMock();
