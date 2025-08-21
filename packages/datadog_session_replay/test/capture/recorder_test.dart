@@ -52,22 +52,22 @@ void main() {
       );
     });
 
-    test('capture with no context returns null ', () {
+    test('capture with no context returns null ', () async {
       // When
-      final capture = recorder.performCapture();
+      final capture = await recorder.performCapture();
 
       // Then
       expect(capture, isNull);
     });
 
-    test('capture with context and no elements returns null', () {
+    test('capture with context and no elements returns null', () async {
       // Given
       recorder.updateContext(
         RUMContext(applicationId: randomString(), sessionId: randomString()),
       );
 
       // When
-      final capture = recorder.performCapture();
+      final capture = await recorder.performCapture();
 
       // Then
       expect(capture, isNull);

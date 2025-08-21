@@ -19,14 +19,13 @@ const int labelMinWidth = 200;
 
 // Largest size of image we can process - larger than this and we
 // start to hit concerns around memory usage and processing time.
-// This is essentially an 800x800 image.
+// This is essentially an 800x800 image, with a raw size of 2meg
 const int maxImageSize = 640000;
 
 class ImageRecorder implements ElementRecorder {
   final KeyGenerator keyGenerator;
-  final DatadogSessionReplayPlatform platform;
 
-  const ImageRecorder(this.keyGenerator, this.platform);
+  const ImageRecorder(this.keyGenerator);
 
   @override
   CaptureNodeSemantics? captureSemantics(
@@ -52,8 +51,12 @@ class ImageRecorder implements ElementRecorder {
       return SpecificElement(
         subtreeStrategy: CaptureNodeSubtreeStrategy.ignore,
         nodes: [
-          _PlaceholderImageNode(attributes, wireframeId: elementId, caption: 'Large Image')
-        ]
+          _PlaceholderImageNode(
+            attributes,
+            wireframeId: elementId,
+            caption: 'Large Image',
+          ),
+        ],
       );
     }
 
@@ -63,7 +66,7 @@ class ImageRecorder implements ElementRecorder {
       return SpecificElement(
         subtreeStrategy: CaptureNodeSubtreeStrategy.ignore,
         nodes: [
-          _ResourceImageNode(
+          ResourceImageNode(
             attributes,
             wireframeId: elementId,
             resourceKey: resourceKey,
@@ -93,14 +96,14 @@ class ImageRecorder implements ElementRecorder {
       );
       if (byteData != null) {
         final resourceKey = keyGenerator.keyForImage(image);
-        platform.saveImageForProcessing(
+        DatadogSessionReplayPlatform.instance.saveImageForProcessing(
           resourceKey,
           image.width,
           image.height,
           byteData,
         );
         nodes.add(
-          _ResourceImageNode(
+          ResourceImageNode(
             attributes,
             wireframeId: elementId,
             resourceKey: resourceKey,
@@ -110,7 +113,13 @@ class ImageRecorder implements ElementRecorder {
     }
 
     if (nodes.isEmpty) {
-      nodes.add(_PlaceholderImageNode(attributes, wireframeId: elementId, caption: 'Empty Image'));
+      nodes.add(
+        _PlaceholderImageNode(
+          attributes,
+          wireframeId: elementId,
+          caption: 'Empty Image',
+        ),
+      );
     }
 
     return SpecificElement(
@@ -125,7 +134,11 @@ class _PlaceholderImageNode extends CaptureNode {
   final int wireframeId;
   final String caption;
 
-  const _PlaceholderImageNode(super.attributes, {required this.wireframeId, required this.caption});
+  const _PlaceholderImageNode(
+    super.attributes, {
+    required this.wireframeId,
+    required this.caption,
+  });
 
   @override
   List<SRWireframe> buildWireframes() {
@@ -144,11 +157,12 @@ class _PlaceholderImageNode extends CaptureNode {
 }
 
 @immutable
-class _ResourceImageNode extends CaptureNode {
+@visibleForTesting
+class ResourceImageNode extends CaptureNode {
   final int wireframeId;
   final int resourceKey;
 
-  const _ResourceImageNode(
+  const ResourceImageNode(
     super.attributes, {
     required this.wireframeId,
     required this.resourceKey,

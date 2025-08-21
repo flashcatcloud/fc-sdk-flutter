@@ -125,7 +125,7 @@ class SessionReplayRecorder {
         TextElementRecorder(keyGenerator),
         EditableTextRecorder(keyGenerator),
         InputDecoratorRecorder(keyGenerator),
-        ImageRecorder(keyGenerator, DatadogSessionReplayPlatform.instance),
+        ImageRecorder(keyGenerator),
         CustomPaintRecorder(keyGenerator),
       ];
 
