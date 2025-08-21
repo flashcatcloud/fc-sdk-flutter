@@ -17,7 +17,8 @@ Future<void> downloadChromeAndDriver() async {
   final chromeVersionsResponse = await http.get(Uri.parse(chromeForTestingUrl));
   if (!chromeVersionsResponse.ok) {
     print(
-        "❌ Failed getting chrome for testing info. Response was: $chromeVersionsResponse");
+      "❌ Failed getting chrome for testing info. Response was: $chromeVersionsResponse",
+    );
     return;
   }
 
@@ -25,8 +26,9 @@ Future<void> downloadChromeAndDriver() async {
   final chrome = jsonDecode(resultStirng);
 
   final stableDownloads = chrome['channels']['Stable']['downloads'];
-  final chromeDownload = (stableDownloads['chrome'] as List)
-      .firstWhereOrNull((e) => e['platform'] == platform);
+  final chromeDownload = (stableDownloads['chrome'] as List).firstWhereOrNull(
+    (e) => e['platform'] == platform,
+  );
   if (chromeDownload == null) {
     print("❌ Could not find Chrome download matching platform $platform");
     return;
@@ -47,13 +49,15 @@ Future<void> downloadChromeAndDriver() async {
 
   print('⬇️ Downloading chromedriver to .tmp/chromedriver.zip');
   await _getUrlTo(
-      Uri.parse(chromeDriverDownload['url']), '.tmp/chromedriver.zip');
+    Uri.parse(chromeDriverDownload['url']),
+    '.tmp/chromedriver.zip',
+  );
   print('\n✅ Done.');
 }
 
 Future<void> _getUrlTo(Uri uri, String toPath) async {
   var contentLength = 0;
-  var bytesRecieved = 0;
+  var bytesReceived = 0;
 
   final client = HttpClient();
   final chromeFile = File(toPath);
@@ -65,9 +69,9 @@ Future<void> _getUrlTo(Uri uri, String toPath) async {
   try {
     await chromeResponse.listen((event) {
       chromeFileSink.add(event);
-      bytesRecieved += event.length;
+      bytesReceived += event.length;
 
-      stdout.write(' --- $bytesRecieved / $contentLength\r');
+      stdout.write(' --- $bytesReceived / $contentLength\r');
     }).asFuture();
   } finally {
     chromeFileSink.close();
