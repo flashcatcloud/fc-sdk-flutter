@@ -1,4 +1,3 @@
-// Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
 // This product includes software developed at Datadog (https://www.datadoghq.com/).
 // Copyright 2025-Present Datadog, Inc.
 
@@ -142,11 +141,18 @@ class SessionReplayRecorder {
     List<PointerSnapshot> pointerSnapshots = [];
     var size = Size.zero;
     for (final e in _elements.values) {
-      // During hot reload, elements can be inserted that still need layout, and
-      // these will throw when we get their size. Avoid capturing these
+      final renderObject = e.renderObject;
       if (kDebugMode) {
-        if (e.renderObject?.debugNeedsLayout == true) continue;
+        // During hot reload, elements can be inserted that still need layout, and
+        // these will throw when we get their size. Avoid capturing these
+        if (renderObject?.debugNeedsLayout == true) continue;
       }
+
+      // In debug mode, Flutter will assert if you attempt to access the size of an
+      // object that shouldn't have size. We can skip elements that have no size for
+      // whatever reason.
+      if (renderObject is RenderBox && !renderObject.hasSize) continue;
+
       final elementSize = e.size;
       if (elementSize != null) {
         // Need to copy this value because the size class
