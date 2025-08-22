@@ -5,8 +5,14 @@
 import Foundation
 import DatadogInternal
 
-internal class ResourcesWriter {
+internal protocol ResourcesWrting {
+    func write(withIdentifier identifier: String, data: Data, mimeType: String)
+}
+
+internal class ResourcesWriter: ResourcesWrting {
     private let scope: FeatureScope
+// TODO(RUM-): Commented out code in this file is support for the DataStore image caching
+// Which will be added with the above ticket
 //    private let encoder: JSONEncoder
 //    private let decoder: JSONDecoder
 
@@ -68,21 +74,23 @@ internal class ResourcesWriter {
     // MARK: - Writing
 
     func write(withIdentifier identifier: String, data: Data, mimeType: String) {
+        if self.knownIdentifiers.contains(identifier) {
+            return
+        }
+
         scope.eventWriteContext { [weak self] context, recordWriter in
             guard let self = self else { return }
 
-            if !self.knownIdentifiers.contains(identifier) {
-                // TODO: Telemetry for missing rumContext or applicationID
-                let rumApplicationId = context.rumContext?.applicationID ?? ""
-                let enrichedResource = EnrichedResource(
-                    identifier: identifier,
-                    data: data,
-                    mimeType: mimeType,
-                    context: .init(rumApplicationId)
-                )
-                recordWriter.write(value: enrichedResource)
-                self.knownIdentifiers.insert(identifier)
-            }
+            // TODO: Telemetry for missing rumContext or applicationID
+            let rumApplicationId = context.rumContext?.applicationID ?? ""
+            let enrichedResource = EnrichedResource(
+                identifier: identifier,
+                data: data,
+                mimeType: mimeType,
+                context: .init(rumApplicationId)
+            )
+            recordWriter.write(value: enrichedResource)
+            self.knownIdentifiers.insert(identifier)
         }
     }
 

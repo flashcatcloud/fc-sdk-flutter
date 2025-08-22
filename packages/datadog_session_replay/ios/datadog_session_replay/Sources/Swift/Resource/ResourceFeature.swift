@@ -18,7 +18,7 @@ internal class ResourcesFeature: DatadogRemoteFeature {
 
     init(
         core: DatadogCoreProtocol,
-        configuration: FlutterSessionReplayFeature.Configuration
+        configuration: DefaultFlutterSessionReplayFeature.Configuration
     ) {
         self.requestBuilder = ResourceRequestBuilder(
             customUploadURL: configuration.customEndpoint,

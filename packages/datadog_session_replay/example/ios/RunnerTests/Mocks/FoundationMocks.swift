@@ -81,7 +81,7 @@ extension Date {
     }
 }
 
-extension String {
+extension String: AnyMockable, RandomMockable {
     public static func mockAny() -> String {
         return "abc"
     }
@@ -137,5 +137,42 @@ extension String {
 
             return String((0..<length).map { _ in characters.randomElement()! })
         }
+    }
+}
+
+extension FixedWidthInteger where Self: RandomMockable {
+    public static func mockRandom() -> Self {
+        return .random(in: min...max)
+    }
+
+    public static func mockRandom(min: Self = .min, max: Self = .max, otherThan values: Set<Self> = []) -> Self {
+        var random: Self = .random(in: min...max)
+        while values.contains(random) { random = .random(in: min...max) }
+        return random
+    }
+}
+
+extension ExpressibleByIntegerLiteral where Self: AnyMockable {
+    public static func mockAny() -> Self { 0 }
+}
+
+extension UInt: AnyMockable, RandomMockable { }
+extension UInt8: AnyMockable, RandomMockable { }
+extension UInt16: AnyMockable, RandomMockable { }
+extension UInt32: AnyMockable, RandomMockable { }
+extension UInt64: AnyMockable, RandomMockable { }
+extension Int: AnyMockable, RandomMockable { }
+extension Int8: AnyMockable, RandomMockable { }
+extension Int16: AnyMockable, RandomMockable { }
+extension Int32: AnyMockable, RandomMockable { }
+extension Int64: AnyMockable, RandomMockable { }
+
+extension Array where Element: RandomMockable {
+    public static func mockRandom() -> [Element] where Element: RandomMockable {
+        return (0..<10).map { _ in .mockRandom() }
+    }
+
+    public static func mockRandom(count: Int) -> [Element] where Element: RandomMockable {
+        return (0..<count).map { _ in .mockRandom() }
     }
 }

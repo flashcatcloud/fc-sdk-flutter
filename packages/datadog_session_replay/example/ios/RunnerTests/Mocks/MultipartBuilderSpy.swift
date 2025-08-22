@@ -8,7 +8,7 @@ import Foundation
 
 class MultipartBuilderSpy: MultipartFormDataBuilder {
     var formFields: [String: String] = [:]
-    var formFiles: [(filename: String, data: Data, mimeType: String)] = []
+    var formFiles: [(name: String, filename: String, data: Data, mimeType: String)] = []
     var returnedData: Data = Data()
 
     let boundary: String = UUID().uuidString
@@ -16,7 +16,7 @@ class MultipartBuilderSpy: MultipartFormDataBuilder {
     func addFormField(name: String, value: String) { formFields[name] = value }
 
     func addFormData(name: String, filename: String, data: Data, mimeType: String) {
-        formFiles.append((filename: filename, data: data, mimeType: mimeType))
+        formFiles.append((name: name, filename: filename, data: data, mimeType: mimeType))
     }
 
     func build() -> Data { returnedData }

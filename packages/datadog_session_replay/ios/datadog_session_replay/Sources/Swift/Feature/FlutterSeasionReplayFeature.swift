@@ -5,7 +5,17 @@
 import Foundation
 import DatadogInternal
 
-class FlutterSessionReplayFeature: DatadogRemoteFeature {
+protocol FlutterSessionReplayFeature {
+    var resourceResolver: ResourceResolver {
+        get
+    }
+
+    func setHasReplay(_ hasReplay: Bool)
+    func setRecordCount(for viewId: String, count: Int64)
+    func writeSegment(segment: String)
+}
+
+class DefaultFlutterSessionReplayFeature: FlutterSessionReplayFeature, DatadogRemoteFeature {
     static var name: String = "session-replay"
 
     public struct Configuration {
@@ -30,23 +40,24 @@ class FlutterSessionReplayFeature: DatadogRemoteFeature {
         }
     }
 
-    let requestBuilder: DatadogInternal.FeatureRequestBuilder
-    let messageReceiver: DatadogInternal.FeatureMessageReceiver
-
     private var core: DatadogCoreProtocol?
     private var featureScope: FeatureScope?
 
-    let resourcesFeature: ResourcesFeature
+    let requestBuilder: DatadogInternal.FeatureRequestBuilder
+    let messageReceiver: DatadogInternal.FeatureMessageReceiver
+
+    private let resourcesFeature: ResourcesFeature
     let resourceResolver: ResourceResolver
 
     private var recordCountByViewId: [String: Int64] = [:]
 
     init(
         core: DatadogCoreProtocol,
-        configuration: Configuration
+        configuration: Configuration,
+        resourceResolver: ResourceResolver?
     ) throws {
         self.core = core
-        self.featureScope = core.scope(for: FlutterSessionReplayFeature.self)
+        self.featureScope = core.scope(for: DefaultFlutterSessionReplayFeature.self)
 
         self.requestBuilder = RequestBuilder(
             customUploadURL: configuration.customEndpoint,
@@ -64,7 +75,9 @@ class FlutterSessionReplayFeature: DatadogRemoteFeature {
         resourcesFeature = ResourcesFeature(core: core, configuration: configuration)
         try core.register(feature: resourcesFeature)
         
-        resourceResolver = ResourceResolver(writer: ResourcesWriter(scope: core.scope(for: ResourcesFeature.self)))
+        self.resourceResolver = resourceResolver ?? DefaultResourceResolver(
+            writer: ResourcesWriter(scope: core.scope(for: ResourcesFeature.self))
+        )
     }
 
     func setHasReplay(_ hasReplay: Bool) {

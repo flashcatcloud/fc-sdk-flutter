@@ -6,7 +6,12 @@ import Foundation
 import DatadogInternal
 import CryptoKit
 
-internal class ResourceResolver {
+public protocol ResourceResolver {
+    func addResource(withKey key: Int, width: Int, height: Int, data: Data)
+    func resolveResource(withKey: Int) -> String?
+}
+
+internal class DefaultResourceResolver: ResourceResolver {
     private class ResourceEntry {
         let resourceKey: Int
         let width: Int
@@ -22,11 +27,11 @@ internal class ResourceResolver {
         }
     }
 
-    private let resourcesWriter: ResourcesWriter
+    private let resourcesWriter: ResourcesWrting
     private var resourceEntries: [Int: ResourceEntry] = [:]
     private var processedIdentifiers = Set<String>()
 
-    init(writer: ResourcesWriter) {
+    init(writer: ResourcesWrting) {
         resourcesWriter = writer
     }
 
