@@ -298,6 +298,9 @@ class _RumUserActionDetectorState extends State<RumUserActionDetector> {
         // This annotation was only for this tree
         rumTreeAnnotation = null;
       } else {
+        // RenderBoxes without size will assert in debug mode.
+        if (ro is RenderBox && !ro.hasSize) return;
+
         // This element got skipped in the hit test, but if we're still
         // inside it's element tree, keep searching.
         // This is because large portions of the tree can get discarded
