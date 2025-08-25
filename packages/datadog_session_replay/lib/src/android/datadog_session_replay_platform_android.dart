@@ -51,7 +51,7 @@ class DatadogSessionReplayPlatformAndroid extends DatadogSessionReplayPlatform {
       listener,
     );
 
-    _bridge.enable(mappedConfig);
+    _bridge.enable(mappedConfig, null);
 
     return true;
   }
@@ -97,8 +97,8 @@ class DatadogSessionReplayPlatformAndroid extends DatadogSessionReplayPlatform {
     int height,
     ByteData byteData,
   ) {
-    // final jbuffer = JByteBuffer.fromList(byteData.buffer.asUint8List());
-    // _bridge.saveImageForProcessing(resourceKey, jbuffer, width, height);
-    // jbuffer.release();
+    final jbuffer = JByteBuffer.fromList(byteData.buffer.asUint8List());
+    _bridge.saveImageForProcessing(resourceKey, jbuffer, width, height);
+    jbuffer.release();
   }
 }
