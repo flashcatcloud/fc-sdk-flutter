@@ -11,7 +11,7 @@ internal protocol ResourcesWrting {
 
 internal class ResourcesWriter: ResourcesWrting {
     private let scope: FeatureScope
-// TODO(RUM-): Commented out code in this file is support for the DataStore image caching
+// TODO(RUM-11447): Commented out code in this file is support for the DataStore image caching
 // Which will be added with the above ticket
 //    private let encoder: JSONEncoder
 //    private let decoder: JSONDecoder
