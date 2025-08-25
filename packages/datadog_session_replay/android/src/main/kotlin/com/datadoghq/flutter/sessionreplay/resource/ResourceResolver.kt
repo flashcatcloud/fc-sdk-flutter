@@ -6,10 +6,7 @@
 
 package com.datadoghq.flutter.sessionreplay.resource
 
-import android.graphics.Bitmap
-import android.os.Build
 import com.datadog.android.api.InternalLogger
-import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
 import java.security.MessageDigest
 import java.security.NoSuchAlgorithmException
@@ -27,7 +24,7 @@ internal interface ResourceResolver {
         // The actual byte array of the resource, which is valid only until
         // the resource's hash is generated, at which point it is set to null
         var resourceBytes: ByteBuffer?
-    ) {}
+    )
 
     /**
      * Adds a resource to with the given Flutter Key to be resolved later.
@@ -63,7 +60,7 @@ internal class DefaultResourceResolver(
     val internalLogger: InternalLogger,
     val resourceWriter: ResourceWriter,
     val bitmapHandler: BitmapHandler = DefaultBitmapHandler(internalLogger)
-): ResourceResolver {
+) : ResourceResolver {
     private val resourceKeyMap: MutableMap<Int, ResourceResolver.ResourceEntry> = mutableMapOf()
     private val knownResources: MutableSet<String> = mutableSetOf()
 
@@ -73,7 +70,12 @@ internal class DefaultResourceResolver(
         height: Int,
         resourceBytes: ByteBuffer
     ): ResourceResolver.ResourceEntry {
-        val entry = ResourceResolver.ResourceEntry(resourceKey, width, height, resourceBytes = resourceBytes)
+        val entry = ResourceResolver.ResourceEntry(
+            resourceKey,
+            width,
+            height,
+            resourceBytes = resourceBytes
+        )
         resourceKeyMap[resourceKey] = entry
         return entry
     }

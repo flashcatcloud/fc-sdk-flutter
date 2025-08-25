@@ -11,7 +11,6 @@ import com.datadog.android.api.InternalLogger
 import com.google.gson.JsonArray
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
-import com.google.gson.JsonPrimitive
 import java.util.Locale
 
 internal const val BROKEN_JSON_ERROR_MESSAGE_FORMAT =
@@ -60,7 +59,10 @@ internal fun JsonObject.safeGetAsLong(internalLogger: InternalLogger, key: Strin
     }
 }
 
-internal fun JsonObject.safeGetAsJsonArray(internalLogger: InternalLogger, key: String): JsonArray? {
+internal fun JsonObject.safeGetAsJsonArray(
+    internalLogger: InternalLogger,
+    key: String
+): JsonArray? {
     return get(key)?.let { jsonElement ->
         return if (jsonElement.isJsonArray) {
             jsonElement.asJsonArray

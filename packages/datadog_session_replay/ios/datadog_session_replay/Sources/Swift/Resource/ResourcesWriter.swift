@@ -107,7 +107,7 @@ extension DatadogContext {
     }
 }
 
-//extension Data {
+// extension Data {
 //    enum SerializationError: Error {
 //        case invalidData
 //    }
@@ -126,18 +126,18 @@ extension DatadogContext {
 //    func asKnownIdentifiers(_ decoder: JSONDecoder) throws -> Set<String>? {
 //        return try decoder.decode(Set<String>.self, from: self)
 //    }
-//}
+// }
 //
-//extension TimeInterval {
+// extension TimeInterval {
 //    func asData() -> Data {
 //        return Swift.withUnsafeBytes(of: self) {
 //            Data($0)
 //        }
 //    }
-//}
+// }
 //
-//extension Set<String> {
+// extension Set<String> {
 //    func asData(_ encoder: JSONEncoder) -> Data? {
 //        return try? encoder.encode(self) // Never fails
 //    }
-//}
+// }

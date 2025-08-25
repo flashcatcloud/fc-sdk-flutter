@@ -15,17 +15,17 @@ import com.datadoghq.flutter.sessionreplay.models.ResourceEvent
 import com.google.gson.JsonObject
 import com.google.gson.JsonParseException
 import com.google.gson.JsonParser
+import java.io.IOException
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
-import java.io.IOException
 
 class ResourceRequestBodyFactory(
     val internalLogger: InternalLogger
 ) {
     fun create(
-        resources: List<RawBatchEvent>,
+        resources: List<RawBatchEvent>
     ): RequestBody? {
         val deserializedResources: List<ResourceEvent> = deserializeToResourceEvents(resources)
 
@@ -106,8 +106,14 @@ class ResourceRequestBodyFactory(
             }
 
             if (resourceMetadata != null) {
-                val applicationId = resourceMetadata.safeGetAsString(internalLogger, ResourceEvent.APPLICATION_ID_KEY)
-                val filename = resourceMetadata.safeGetAsString(internalLogger, ResourceEvent.FILENAME_KEY)
+                val applicationId = resourceMetadata.safeGetAsString(
+                    internalLogger,
+                    ResourceEvent.APPLICATION_ID_KEY
+                )
+                val filename = resourceMetadata.safeGetAsString(
+                    internalLogger,
+                    ResourceEvent.FILENAME_KEY
+                )
 
                 if (applicationId != null && filename != null) {
                     ResourceEvent(
@@ -124,7 +130,10 @@ class ResourceRequestBodyFactory(
         }
     }
 
-    private fun addResourcesSection(builder: MultipartBody.Builder, resources: List<ResourceEvent>) {
+    private fun addResourcesSection(
+        builder: MultipartBody.Builder,
+        resources: List<ResourceEvent>
+    ) {
         resources.forEach {
             val filename = it.identifier
             val resourceData = it.resourceData
@@ -171,7 +180,11 @@ class ResourceRequestBodyFactory(
     }
 
     @Suppress("TooGenericExceptionCaught")
-    private fun addResourceRequestBody(builder: MultipartBody.Builder, filename: String, resourceData: ByteArray) {
+    private fun addResourceRequestBody(
+        builder: MultipartBody.Builder,
+        filename: String,
+        resourceData: ByteArray
+    ) {
         val body = try {
             resourceData.toRequestBody(CONTENT_TYPE_IMAGE)
         } catch (e: ArrayIndexOutOfBoundsException) {

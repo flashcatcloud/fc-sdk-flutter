@@ -8,8 +8,8 @@ package com.datadoghq.flutter.sessionreplay.feature
 
 import com.datadog.android.api.InternalLogger
 import com.datadog.android.api.context.DatadogContext
-import com.datadoghq.flutter.sessionreplay.gson.safeGetAsJsonArray
 import com.datadoghq.flutter.sessionreplay.gson.safeAsJsonObject
+import com.datadoghq.flutter.sessionreplay.gson.safeGetAsJsonArray
 import com.datadoghq.flutter.sessionreplay.gson.safeGetAsLong
 import com.datadoghq.flutter.sessionreplay.models.EnrichedRecord
 import com.datadoghq.flutter.sessionreplay.models.MobileSegment
@@ -152,7 +152,8 @@ internal class BatchesToSegmentsMapper(private val internalLogger: InternalLogge
     private fun hasFullSnapshotRecord(records: JsonArray) =
         records.any {
             val typeAsLong = it.asJsonObject.safeGetAsLong(
-                internalLogger, RECORD_TYPE_KEY
+                internalLogger,
+                RECORD_TYPE_KEY
             )
             typeAsLong == FULL_SNAPSHOT_RECORD_TYPE_MOBILE ||
                 typeAsLong == FULL_SNAPSHOT_RECORD_TYPE_BROWSER

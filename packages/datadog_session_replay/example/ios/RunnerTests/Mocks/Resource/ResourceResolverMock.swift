@@ -22,7 +22,7 @@ class ResourceResolverMock: ResourceResolver {
             TrackedResource(key: key, width: width, height: height, data: data, resourceId: .mockRandom())
         )
     }
-    
+
     func resolveResource(withKey: Int) -> String? {
         return trackedResources.first { $0.key == withKey }?.resourceId
     }

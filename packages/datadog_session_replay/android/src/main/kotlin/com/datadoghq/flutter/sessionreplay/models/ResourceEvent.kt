@@ -9,7 +9,7 @@ package com.datadoghq.flutter.sessionreplay.models
 import com.google.gson.JsonObject
 
 /**
- * Copied from dd-sdk-android
+ * Copied from dd-sdk-android.
  */
 internal data class ResourceEvent(
     val applicationId: String,

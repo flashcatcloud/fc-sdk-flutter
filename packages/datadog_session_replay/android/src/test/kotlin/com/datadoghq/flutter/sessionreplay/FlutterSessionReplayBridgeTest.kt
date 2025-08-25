@@ -20,9 +20,9 @@ import fr.xgouchet.elmyr.junit5.ForgeExtension
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import org.junit.jupiter.api.extension.ExtendWith
 import java.nio.ByteBuffer
 import kotlin.test.Test
+import org.junit.jupiter.api.extension.ExtendWith
 
 internal fun FlutterSessionReplayBridge.enableWithMock(
     mockFeature: FlutterSessionReplayFeature
@@ -35,8 +35,7 @@ class FlutterSessionReplayBridgeTest {
     var mockCore: FeatureSdkCore = mockk(relaxed = true)
 
     @Test
-    fun `M register the feature W enable`(
-    ) {
+    fun `M register the feature W enable`() {
         // Given
         Datadog.getInstance()
         val bridge = FlutterSessionReplayBridge()

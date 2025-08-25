@@ -19,6 +19,7 @@ import fr.xgouchet.elmyr.junit5.ForgeExtension
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
+import java.util.UUID
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody
 import okio.BufferedSink
@@ -27,7 +28,6 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.api.extension.Extensions
-import java.util.UUID
 
 @Extensions(ExtendWith(ForgeExtension::class))
 class ResourceRequestFactoryTest {

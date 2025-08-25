@@ -5,9 +5,6 @@
 import Foundation
 import DatadogInternal
 
-import Foundation
-
-/// Extends the resource information with context.
 internal struct EnrichedResource: Codable, Equatable {
     internal struct Context: Codable, Equatable {
         internal struct Application: Codable, Equatable {

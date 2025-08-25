@@ -38,7 +38,10 @@ internal class FlutterSessionReplayBridge {
 
     var feature: FlutterSessionReplayFeature? = null
 
-    fun enable(configuration: Configuration, core: FeatureSdkCore? = null): DefaultFlutterSessionReplayFeature {
+    fun enable(
+        configuration: Configuration,
+        core: FeatureSdkCore? = null
+    ): DefaultFlutterSessionReplayFeature {
         val featureSdkCore = core ?: Datadog.getInstance() as FeatureSdkCore
         val feature = DefaultFlutterSessionReplayFeature(
             featureSdkCore,

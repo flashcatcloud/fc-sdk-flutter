@@ -15,7 +15,6 @@ internal class ResourcesFeature: DatadogRemoteFeature {
 
     internal static let maxObjectSize = 10.MB.asUInt32()
 
-
     init(
         core: DatadogCoreProtocol,
         configuration: DefaultFlutterSessionReplayFeature.Configuration

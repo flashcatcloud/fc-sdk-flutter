@@ -15,12 +15,12 @@ import com.datadog.android.api.InternalLogger
 import fr.xgouchet.elmyr.annotation.IntForgery
 import fr.xgouchet.elmyr.annotation.StringForgery
 import fr.xgouchet.elmyr.junit5.ForgeExtension
-import io.mockk.mockk
 import io.mockk.every
+import io.mockk.mockk
 import io.mockk.verify
+import java.nio.ByteBuffer
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
-import java.nio.ByteBuffer
 
 @ExtendWith(ForgeExtension::class)
 internal class ResourceResolverTest {
@@ -80,7 +80,7 @@ internal class ResourceResolverTest {
     @Test
     fun `M return same hash W resolveResource {same image}`(
         @IntForgery keyA: Int,
-        @IntForgery keyB: Int,
+        @IntForgery keyB: Int
     ) {
         // Given
         val resolver = DefaultResourceResolver(
@@ -107,7 +107,7 @@ internal class ResourceResolverTest {
 
     @Test
     fun `M return different hash W resolveResource {different image}`(
-        @IntForgery key: Int,
+        @IntForgery key: Int
     ) {
         // Given
         val resolver = DefaultResourceResolver(
@@ -121,8 +121,12 @@ internal class ResourceResolverTest {
         val mockBitmapB = mockk<Bitmap>()
         val fakeCompressedImageA = ByteArray(25) { 0 }
         val fakeCompressedImageB = ByteArray(25) { 124 }
-        every { mockBitmapHandler.createBitmap(any(), any(), refEq(fakeImageA)) } returns mockBitmapA
-        every { mockBitmapHandler.createBitmap(any(), any(), refEq(fakeImageB)) } returns mockBitmapB
+        every {
+            mockBitmapHandler.createBitmap(any(), any(), refEq(fakeImageA))
+        } returns mockBitmapA
+        every {
+            mockBitmapHandler.createBitmap(any(), any(), refEq(fakeImageB))
+        } returns mockBitmapB
         every { mockBitmapHandler.compressBitmap(mockBitmapA, any()) } returns fakeCompressedImageA
         every { mockBitmapHandler.compressBitmap(mockBitmapB, any()) } returns fakeCompressedImageB
         every { mockResourcesWriter.write(any(), any()) } answers {}
@@ -139,7 +143,7 @@ internal class ResourceResolverTest {
 
     @Test
     fun `M call compression only once W resolveResource {same key}`(
-        @IntForgery key: Int,
+        @IntForgery key: Int
     ) {
         // Given
         val resolver = DefaultResourceResolver(
@@ -168,7 +172,7 @@ internal class ResourceResolverTest {
 
     @Test
     fun `M write resource to writer W resolveResource`(
-        @IntForgery key: Int,
+        @IntForgery key: Int
     ) {
         // Given
         val resolver = DefaultResourceResolver(
@@ -193,7 +197,7 @@ internal class ResourceResolverTest {
 
     @Test
     fun `M write different resources to writer W resolveResource {different image}`(
-        @IntForgery key: Int,
+        @IntForgery key: Int
     ) {
         // Given
         val resolver = DefaultResourceResolver(
@@ -207,8 +211,12 @@ internal class ResourceResolverTest {
         val mockBitmapB = mockk<Bitmap>()
         val fakeCompressedImageA = ByteArray(25) { 0 }
         val fakeCompressedImageB = ByteArray(25) { 124 }
-        every { mockBitmapHandler.createBitmap(any(), any(), refEq(fakeImageA)) } returns mockBitmapA
-        every { mockBitmapHandler.createBitmap(any(), any(), refEq(fakeImageB)) } returns mockBitmapB
+        every {
+            mockBitmapHandler.createBitmap(any(), any(), refEq(fakeImageA))
+        } returns mockBitmapA
+        every {
+            mockBitmapHandler.createBitmap(any(), any(), refEq(fakeImageB))
+        } returns mockBitmapB
         every { mockBitmapHandler.compressBitmap(mockBitmapA, any()) } returns fakeCompressedImageA
         every { mockBitmapHandler.compressBitmap(mockBitmapB, any()) } returns fakeCompressedImageB
         every { mockResourcesWriter.write(any(), any()) } answers {}
@@ -227,7 +235,7 @@ internal class ResourceResolverTest {
 
     @Test
     fun `M not write resource to writer W resolveResource {known id}`(
-        @IntForgery key: Int,
+        @IntForgery key: Int
     ) {
         // Given
         val resolver = DefaultResourceResolver(

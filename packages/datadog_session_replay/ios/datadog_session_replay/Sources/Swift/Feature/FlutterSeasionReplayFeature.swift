@@ -74,7 +74,7 @@ class DefaultFlutterSessionReplayFeature: FlutterSessionReplayFeature, DatadogRe
 
         resourcesFeature = ResourcesFeature(core: core, configuration: configuration)
         try core.register(feature: resourcesFeature)
-        
+
         self.resourceResolver = resourceResolver ?? DefaultResourceResolver(
             writer: ResourcesWriter(scope: core.scope(for: ResourcesFeature.self))
         )

@@ -61,7 +61,7 @@ internal struct ResourceRequestBuilder: FeatureRequestBuilder {
                 .ddAPIKeyHeader(clientToken: context.clientToken),
                 .ddEVPOriginHeader(source: context.source),
                 .ddEVPOriginVersionHeader(sdkVersion: context.sdkVersion),
-                .ddRequestIDHeader(),
+                .ddRequestIDHeader()
             ],
             telemetry: telemetry
         )

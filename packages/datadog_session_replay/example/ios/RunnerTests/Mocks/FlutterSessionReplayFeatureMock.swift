@@ -9,18 +9,18 @@ import Foundation
 class FlutterSessionReplayFeatureMock: FlutterSessionReplayFeature {
     var resourceResolver: ResourceResolver = ResourceResolverMock()
 
-    var hasReplay: Bool? = nil
+    var hasReplay: Bool?
     var recordCount: [String: Int64] = [:]
     var writtenSegments: [String] = []
 
     func setHasReplay(_ hasReplay: Bool) {
         self.hasReplay = hasReplay
     }
-    
+
     func setRecordCount(for viewId: String, count: Int64) {
         recordCount[viewId] = count
     }
-    
+
     func writeSegment(segment: String) {
         writtenSegments.append(segment)
     }

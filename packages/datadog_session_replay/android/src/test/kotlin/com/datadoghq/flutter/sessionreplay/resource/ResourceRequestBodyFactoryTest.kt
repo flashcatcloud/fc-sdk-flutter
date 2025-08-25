@@ -25,6 +25,7 @@ import fr.xgouchet.elmyr.annotation.StringForgery
 import fr.xgouchet.elmyr.junit5.ForgeConfiguration
 import fr.xgouchet.elmyr.junit5.ForgeExtension
 import io.mockk.mockk
+import java.util.UUID
 import okhttp3.MultipartBody
 import okhttp3.MultipartBody.Part
 import okhttp3.RequestBody
@@ -32,7 +33,6 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import okio.Buffer
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
-import java.util.UUID
 
 @ExtendWith(ForgeExtension::class)
 @ForgeConfiguration(SRForgeConfigurator::class)
@@ -45,7 +45,7 @@ class ResourceRequestBodyFactoryTest {
     @Test
     fun `M create valid requestBody W create()`(forge: Forge) {
         // Given
-        val resourcePairs = forge.aList { generateValidRawBatchEvent(forge)  }
+        val resourcePairs = forge.aList { generateValidRawBatchEvent(forge) }
         val factory = ResourceRequestBodyFactory(
             internalLogger = mockInteralLogger
         )
@@ -105,9 +105,12 @@ class ResourceRequestBodyFactoryTest {
         val filename = forge.getForgery<UUID>().toString()
         fakeMetadata.addProperty(ResourceEvent.APPLICATION_ID_KEY, fakeApplicationId)
         fakeMetadata.addProperty(ResourceEvent.FILENAME_KEY, filename)
-        return Pair(fakeEvent.copy(
-            metadata = fakeMetadata.toString().toByteArray(Charsets.UTF_8)
-        ), filename)
+        return Pair(
+            fakeEvent.copy(
+                metadata = fakeMetadata.toString().toByteArray(Charsets.UTF_8)
+            ),
+            filename
+        )
     }
 
     private fun RequestBody.toByteArray(): ByteArray {

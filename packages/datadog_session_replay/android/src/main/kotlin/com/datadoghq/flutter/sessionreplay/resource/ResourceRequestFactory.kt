@@ -12,18 +12,18 @@ import com.datadog.android.api.net.Request
 import com.datadog.android.api.net.RequestExecutionContext
 import com.datadog.android.api.net.RequestFactory
 import com.datadog.android.api.storage.RawBatchEvent
-import okhttp3.RequestBody
-import okio.Buffer
 import java.io.EOFException
 import java.io.IOException
 import java.util.Locale
 import java.util.UUID
+import okhttp3.RequestBody
+import okio.Buffer
 
 internal class ResourceRequestFactory(
     internal val customEndpointUrl: String?,
     private val internalLogger: InternalLogger,
     private val requestBodyFactory: ResourceRequestBodyFactory =
-        ResourceRequestBodyFactory(internalLogger),
+        ResourceRequestBodyFactory(internalLogger)
 ) : RequestFactory {
     override fun create(
         context: DatadogContext,
@@ -82,7 +82,10 @@ internal class ResourceRequestFactory(
         return result
     }
 
-    private fun resolveHeaders(datadogContext: DatadogContext, requestId: String): Map<String, String> {
+    private fun resolveHeaders(
+        datadogContext: DatadogContext,
+        requestId: String
+    ): Map<String, String> {
         return mapOf(
             RequestFactory.HEADER_API_KEY to datadogContext.clientToken,
             RequestFactory.HEADER_EVP_ORIGIN to datadogContext.source,
@@ -103,6 +106,7 @@ internal class ResourceRequestFactory(
     companion object {
         private const val UPLOAD_URL = "%s/api/v2/%s"
         private const val UPLOAD_DESCRIPTION = "Session Replay Resource Upload Request"
-        private const val ERROR_CONVERTING_BODY_TO_BYTEARRAY = "Error converting request body to bytearray"
+        private const val ERROR_CONVERTING_BODY_TO_BYTEARRAY =
+            "Error converting request body to bytearray"
     }
 }

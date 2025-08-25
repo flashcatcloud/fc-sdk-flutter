@@ -16,12 +16,12 @@ import com.datadog.android.api.net.RequestFactory
 import com.datadog.android.api.storage.EventType
 import com.datadog.android.api.storage.FeatureStorageConfiguration
 import com.datadog.android.api.storage.RawBatchEvent
-import com.datadoghq.flutter.sessionreplay.resource.ResourceFeature
 import com.datadoghq.flutter.sessionreplay.resource.DefaultResourceResolver
-import com.datadoghq.flutter.sessionreplay.resource.ResourceResolver
 import com.datadoghq.flutter.sessionreplay.resource.DefaultResourceWriter
+import com.datadoghq.flutter.sessionreplay.resource.ResourceFeature
+import com.datadoghq.flutter.sessionreplay.resource.ResourceResolver
 
-internal interface FlutterSessionReplayFeature: StorageBackedFeature {
+internal interface FlutterSessionReplayFeature : StorageBackedFeature {
     fun setHasReplay(viewId: String, hasReplay: Boolean)
     fun setRecordCount(viewId: String, recordCount: Int)
     fun writeSegment(segment: String)
@@ -33,7 +33,10 @@ internal class DefaultFlutterSessionReplayFeature(
     private val sdkCore: FeatureSdkCore,
     private val onContextChanged: (RumContext) -> Unit,
     private val customEndpointUrl: String?
-): FlutterSessionReplayFeature, StorageBackedFeature, FeatureEventReceiver, FeatureContextUpdateReceiver {
+) : FlutterSessionReplayFeature,
+    StorageBackedFeature,
+    FeatureEventReceiver,
+    FeatureContextUpdateReceiver {
     data class RumContext(
         val applicationId: String?,
         val sessionId: String?,
@@ -50,7 +53,7 @@ internal class DefaultFlutterSessionReplayFeature(
 
     override val resourceResolver = DefaultResourceResolver(
         sdkCore.internalLogger,
-        DefaultResourceWriter(sdkCore),
+        DefaultResourceWriter(sdkCore)
     )
 
     override val name = Feature.SESSION_REPLAY_FEATURE_NAME

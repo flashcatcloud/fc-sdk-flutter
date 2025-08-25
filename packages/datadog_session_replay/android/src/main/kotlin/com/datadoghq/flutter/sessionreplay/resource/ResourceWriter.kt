@@ -19,7 +19,7 @@ internal interface ResourceWriter {
 
 internal class DefaultResourceWriter(
     private val sdkCore: FeatureSdkCore
-): ResourceWriter {
+) : ResourceWriter {
     override fun write(identifier: String, resourceData: ByteArray) {
         sdkCore.getFeature(ResourceFeature.SESSION_REPLAY_RESOURCES_FEATURE_NAME)
             ?.withWriteContext { datadogContext, eventBatchWriter ->
@@ -27,7 +27,7 @@ internal class DefaultResourceWriter(
                     val resourceEvent = ResourceEvent(
                         identifier = identifier,
                         resourceData = resourceData,
-                        applicationId = datadogContext.rumApplicationId,
+                        applicationId = datadogContext.rumApplicationId
                     )
                     eventBatchWriter.write(
                         event = RawBatchEvent(
@@ -42,5 +42,8 @@ internal class DefaultResourceWriter(
     }
 
     private val DatadogContext.rumApplicationId: String
-        get() = (featuresContext[Feature.RUM_FEATURE_NAME]?.get("application_id") as? String).orEmpty()
+        get() = (
+            featuresContext[Feature.RUM_FEATURE_NAME]
+                ?.get("application_id") as? String
+            ).orEmpty()
 }
