@@ -13,10 +13,14 @@ import com.datadog.android.api.storage.EventType
 import com.datadog.android.api.storage.RawBatchEvent
 import com.datadoghq.flutter.sessionreplay.models.ResourceEvent
 
-internal class ResourcesWriter(
+internal interface ResourceWriter {
+    fun write(identifier: String, resourceData: ByteArray)
+}
+
+internal class DefaultResourceWriter(
     private val sdkCore: FeatureSdkCore
-) {
-    internal fun write(identifier: String, resourceData: ByteArray) {
+): ResourceWriter {
+    override fun write(identifier: String, resourceData: ByteArray) {
         sdkCore.getFeature(ResourceFeature.SESSION_REPLAY_RESOURCES_FEATURE_NAME)
             ?.withWriteContext { datadogContext, eventBatchWriter ->
                 synchronized(this) {

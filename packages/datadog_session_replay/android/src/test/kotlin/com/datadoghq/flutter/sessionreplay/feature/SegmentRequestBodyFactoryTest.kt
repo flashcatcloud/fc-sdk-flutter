@@ -4,14 +4,12 @@
  * Copyright 2025-Present Datadog, Inc.
  */
 
-package com.datadoghq.flutter.sessionreplay
+package com.datadoghq.flutter.sessionreplay.feature
 
 import assertk.assertThat
 import assertk.assertions.hasSize
 import assertk.assertions.isEqualTo
 import assertk.assertions.isInstanceOf
-import com.datadoghq.flutter.sessionreplay.feature.BytesCompressor
-import com.datadoghq.flutter.sessionreplay.feature.SegmentRequestBodyFactory
 import com.datadoghq.flutter.sessionreplay.forge.SRForgeConfigurator
 import com.datadoghq.flutter.sessionreplay.models.MobileSegment
 import com.google.gson.JsonArray

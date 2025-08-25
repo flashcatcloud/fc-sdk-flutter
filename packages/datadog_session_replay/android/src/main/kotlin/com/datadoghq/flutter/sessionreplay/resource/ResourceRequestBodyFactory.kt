@@ -141,7 +141,7 @@ class ResourceRequestBodyFactory(
 
         @Suppress("TooGenericExceptionCaught")
         val body = try {
-            applicationIdOuter.toString().toRequestBody(CONTENT_TYPE_APPLICATION)
+            applicationIdOuter.toString().toRequestBody(CONTENT_TYPE_APPLICATION_JSON)
         } catch (e: ArrayIndexOutOfBoundsException) {
             // we have data, so should not be able to throw this
             internalLogger.log(
@@ -204,7 +204,7 @@ class ResourceRequestBodyFactory(
 
     companion object {
         internal val CONTENT_TYPE_IMAGE = "image/png".toMediaTypeOrNull()
-        internal val CONTENT_TYPE_APPLICATION = "application/json".toMediaTypeOrNull()
+        internal val CONTENT_TYPE_APPLICATION_JSON = "application/json".toMediaTypeOrNull()
 
         internal const val TYPE_KEY = "type"
         internal const val ID_KEY = "id"

@@ -159,6 +159,7 @@
 			children = (
 				4944007E2E58CE9600AC46CC /* ResourceResolverTest.swift */,
 				4944008C2E58F71300AC46CC /* ResourcesWriterTest.swift */,
+				4944008E2E58FECF00AC46CC /* ResourceRequestBuilderTest.swift */,
 			);
 			path = Resource;
 			sourceTree = "<group>";
@@ -166,7 +167,6 @@
 		494400852E58E6FE00AC46CC /* Resource */ = {
 			isa = PBXGroup;
 			children = (
-				4944008E2E58FECF00AC46CC /* ResourceRequestBuilderTest.swift */,
 				494400882E58E7A200AC46CC /* ResourceResolverMock.swift */,
 				4944008A2E58E7AB00AC46CC /* ResourcesWritingMock.swift */,
 			);
