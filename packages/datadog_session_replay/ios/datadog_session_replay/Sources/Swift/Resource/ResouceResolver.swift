@@ -5,6 +5,8 @@
 import Foundation
 import DatadogInternal
 import CryptoKit
+import UIKit
+import CoreGraphics
 
 public protocol ResourceResolver {
     func addResource(withKey key: Int, width: Int, height: Int, data: Data)
