@@ -13,3 +13,6 @@ android/ndk_crash_reports/network_information
 
 # generated files
 *.g.dart
+
+# FVM Version Cache
+.fvm/
