@@ -8,9 +8,12 @@ variables:
   CI_IMAGE_DOCKER: ${BUILD_STABLE_REGISTRY}/${CI_IMAGE_REPO}:$CURRENT_CI_IMAGE
   DD_CLIENT_TOKEN: "fake-token"
   DD_APPLICATION_ID: "fake-application-id"
-  IOS_SIMULATOR: "iPhone 15"
+  IOS_SIMULATOR: "iPhone 16"
+  IOS_SDK: 'iOS-18'
+  ANDROID_EMULATOR_SDK: "33"
   IS_ON_CI: $CI
   SLACK_CHANNEL: "#mobile-sdk-ops"
+  FLUTTER_MIN_VERSION: '3.19.2'
 
   KUBERNETES_MEMORY_REQUEST: "16Gi"
   KUBERNETES_MEMORY_LIMIT: "32Gi"
@@ -19,7 +22,7 @@ stages:
   - ci-image
   - build
   - integration-test
-  - beta-test
+  - version-test
   - e2e-test  
   - post
   - post-nightly
@@ -164,7 +167,7 @@ android-integration-test:
   script:
     - !reference [.pre, script]
     - !reference [.pre-android, script]
-    - cd tools/ci && dart pub get && dart run ci_helpers start_sim --platform android --sdk "33"
+    - cd tools/ci && dart pub get && dart run ci_helpers start_sim --platform android --sdk $ANDROID_EMULATOR_SDK
     - melos run integration_test:android
   artifacts:
     when: always
@@ -188,7 +191,7 @@ ios-integration-test:
     - !reference [.pre-ios, script]
     - pod repo update
     - melos pub:get
-    - cd tools/ci && dart pub get && dart run ci_helpers start_sim --platform ios --sdk "iOS-17" --device "iPhone 15"
+    - cd tools/ci && dart pub get && dart run ci_helpers start_sim --platform ios --sdk $IOS_SDK --device $IOS_SIMULATOR
     - melos pod_update --no-select
     - melos run integration_test:ios
   artifacts:
@@ -269,27 +272,38 @@ notify-nightly-failed:
     - macos:sonoma
     - specific:true
 
-nightly-ios:
+nightly-min-version-test:
   extends: .nightly
-  stage: e2e-test
+  stage: version-test
+  variables:
+    VAULT_ADDR: "https://vault.us1.ddbuild.io"
+  tags:
+    - macos:sonoma
+    - specific:true
   script:
-    - !reference [.nightly-vars, script]
     - !reference [.pre, script]
     - !reference [.pre-ios, script]
+    - brew tap leoafarias/fvm
+    - brew install fvm
+    - fvm install $FLUTTER_MIN_VERSION
+    - fvm use $FLUTTER_MIN_VERSION
+    - fvm exec dart pub global activate melos
     - pod repo update
-    - melos pub:get
-    - cd tools/ci && dart pub get && dart run ci_helpers start_sim --platform ios --sdk "iOS-17" --device "iPhone 15"
-    - melos pod_update --no-select
-    - melos run e2e_tests:ios
+    - fvm exec melos pub:get
+    - fvm exec melos pod_update --no-select
+    - fvm exec melos run analyze
+    - fvm exec melos run build
+    - fvm exec melos run unit_test:all
   artifacts:
     when: always
     expire_in: "30 days"
     reports:
       junit: $CI_PROJECT_DIR/.build/test-results/*.xml
+  
 
 nightly-beta-test:
   extends: .nightly
-  stage: beta-test
+  stage: version-test
   variables:
     VAULT_ADDR: "https://vault.us1.ddbuild.io"
   tags:
@@ -316,6 +330,24 @@ nightly-beta-test:
     reports:
       junit: $CI_PROJECT_DIR/.build/test-results/*.xml
 
+nightly-ios:
+  extends: .nightly
+  stage: e2e-test
+  script:
+    - !reference [.nightly-vars, script]
+    - !reference [.pre, script]
+    - !reference [.pre-ios, script]
+    - pod repo update
+    - melos pub:get
+    - cd tools/ci && dart pub get && dart run ci_helpers start_sim --platform ios --sdk $IOS_SDK --device $IOS_SIMULATOR
+    - melos pod_update --no-select
+    - melos run e2e_tests:ios
+  artifacts:
+    when: always
+    expire_in: "30 days"
+    reports:
+      junit: $CI_PROJECT_DIR/.build/test-results/*.xml
+
 nightly-android:
   extends: .nightly
   stage: e2e-test
@@ -323,7 +355,7 @@ nightly-android:
     - !reference [.nightly-vars, script]
     - !reference [.pre, script]
     - !reference [.pre-android, script]
-    - cd tools/ci && dart pub get && dart run ci_helpers start_sim --platform android --sdk "34"
+    - cd tools/ci && dart pub get && dart run ci_helpers start_sim --platform android --sdk $ANDROID_EMULATOR_SDK
     - melos run e2e_tests:android
   artifacts:
     when: always

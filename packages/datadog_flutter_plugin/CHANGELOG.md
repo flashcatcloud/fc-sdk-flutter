@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.13.0
+
+* Don't attempt to get size of `RenderBox`es that don't have size. See [#809](https://github.com/DataDog/dd-sdk-flutter/issues/809)
+* Add `trackBackgroundEvents` to RUM. See [#795](https://github.com/DataDog/dd-sdk-flutter/issues/795)
+* [WEB] Support user info in logs. See [#781](https://github.com/DataDog/dd-sdk-flutter/issues/781)
+* [WEB] Fix conversion of Dart `List`s to `JSArray`s.
+
 ## 2.12.0
 
 * Support spm in all packages. See [#776](https://github.com/DataDog/dd-sdk-flutter/issues/776)
