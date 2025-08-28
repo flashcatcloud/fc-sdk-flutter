@@ -9,10 +9,10 @@ package com.datadoghq.flutter.sessionreplay
 import assertk.assertThat
 import assertk.assertions.isEqualTo
 import assertk.assertions.isNotNull
-import com.datadog.android.Datadog
 import com.datadog.android.api.feature.FeatureSdkCore
 import com.datadoghq.flutter.sessionreplay.feature.FlutterSessionReplayFeature
 import com.datadoghq.flutter.sessionreplay.resource.ResourceResolver
+import fr.xgouchet.elmyr.Forge
 import fr.xgouchet.elmyr.annotation.BoolForgery
 import fr.xgouchet.elmyr.annotation.IntForgery
 import fr.xgouchet.elmyr.annotation.StringForgery
@@ -32,12 +32,10 @@ internal fun FlutterSessionReplayBridge.enableWithMock(
 
 @ExtendWith(ForgeExtension::class)
 class FlutterSessionReplayBridgeTest {
-    var mockCore: FeatureSdkCore = mockk(relaxed = true)
-
     @Test
     fun `M register the feature W enable`() {
         // Given
-        Datadog.getInstance()
+        var mockCore: FeatureSdkCore = mockk(relaxed = true)
         val bridge = FlutterSessionReplayBridge()
         val configuration = FlutterSessionReplayBridge.Configuration(
             customEndpointUrl = null,
@@ -104,6 +102,7 @@ class FlutterSessionReplayBridgeTest {
 
     @Test
     fun `M addResource W saveImageForProcessing`(
+        forge: Forge,
         @IntForgery key: Int,
         @IntForgery width: Int,
         @IntForgery height: Int
@@ -117,7 +116,7 @@ class FlutterSessionReplayBridgeTest {
         bridge.enableWithMock(mockFeature)
 
         // When
-        val data = ByteBuffer.allocate(10)
+        val data = ByteBuffer.allocate(forge.anInt(1, 100))
         bridge.saveImageForProcessing(key, data, width, height)
 
         // Then

@@ -13,7 +13,6 @@ import assertk.assertions.isNotEqualTo
 import assertk.assertions.isNull
 import com.datadog.android.api.InternalLogger
 import fr.xgouchet.elmyr.annotation.IntForgery
-import fr.xgouchet.elmyr.annotation.StringForgery
 import fr.xgouchet.elmyr.junit5.ForgeExtension
 import io.mockk.every
 import io.mockk.mockk
@@ -28,7 +27,7 @@ internal class ResourceResolverTest {
     val mockResourcesWriter = mockk<ResourceWriter>()
     val mockBitmapHandler = mockk<BitmapHandler>()
 
-    fun createFakeImage(width: Int = 25, height: Int = 25, filledWith: Byte = 0): ByteBuffer {
+    fun createFakeImage(width: Int, height: Int, filledWith: Byte = 0): ByteBuffer {
         val byteArray = ByteArray(width * height) { filledWith }
         return ByteBuffer.wrap(byteArray)
     }
@@ -54,7 +53,8 @@ internal class ResourceResolverTest {
     @Test
     fun `M return hash W resolveResource {known key}`(
         @IntForgery key: Int,
-        @StringForgery hash: String
+        @IntForgery(5, 50) imageWidth: Int,
+        @IntForgery(5, 50) imageHeight: Int
     ) {
         // Given
         val resolver = DefaultResourceResolver(
@@ -69,8 +69,8 @@ internal class ResourceResolverTest {
         every { mockResourcesWriter.write(any(), any()) } answers {}
 
         // When
-        val fakeImage = createFakeImage()
-        resolver.addResource(key, 25, 25, fakeImage)
+        val fakeImage = createFakeImage(width = imageWidth, height = imageHeight)
+        resolver.addResource(key, imageWidth, imageHeight, fakeImage)
         val result = resolver.resolveResource(key)
 
         // Then - this is the MD5 hash of an array of 25 zero bytes
@@ -80,7 +80,9 @@ internal class ResourceResolverTest {
     @Test
     fun `M return same hash W resolveResource {same image}`(
         @IntForgery keyA: Int,
-        @IntForgery keyB: Int
+        @IntForgery keyB: Int,
+        @IntForgery(5, 50) imageWidth: Int,
+        @IntForgery(5, 50) imageHeight: Int
     ) {
         // Given
         val resolver = DefaultResourceResolver(
@@ -95,9 +97,9 @@ internal class ResourceResolverTest {
         every { mockResourcesWriter.write(any(), any()) } answers {}
 
         // When
-        val fakeImage = createFakeImage()
-        resolver.addResource(keyA, 25, 25, fakeImage)
-        resolver.addResource(keyB, 25, 25, fakeImage)
+        val fakeImage = createFakeImage(imageWidth, imageHeight)
+        resolver.addResource(keyA, imageWidth, imageHeight, fakeImage)
+        resolver.addResource(keyB, imageWidth, imageHeight, fakeImage)
         val resultA = resolver.resolveResource(keyA)
         val resultB = resolver.resolveResource(keyB)
 
@@ -107,7 +109,11 @@ internal class ResourceResolverTest {
 
     @Test
     fun `M return different hash W resolveResource {different image}`(
-        @IntForgery key: Int
+        @IntForgery key: Int,
+        @IntForgery(5, 50) imageWidthA: Int,
+        @IntForgery(5, 50) imageHeightA: Int,
+        @IntForgery(5, 50) imageWidthB: Int,
+        @IntForgery(5, 50) imageHeightB: Int
     ) {
         // Given
         val resolver = DefaultResourceResolver(
@@ -115,8 +121,8 @@ internal class ResourceResolverTest {
             mockResourcesWriter,
             mockBitmapHandler
         )
-        val fakeImageA = createFakeImage()
-        val fakeImageB = createFakeImage()
+        val fakeImageA = createFakeImage(imageWidthA, imageHeightA)
+        val fakeImageB = createFakeImage(imageWidthB, imageHeightB)
         val mockBitmapA = mockk<Bitmap>()
         val mockBitmapB = mockk<Bitmap>()
         val fakeCompressedImageA = ByteArray(25) { 0 }
@@ -132,8 +138,8 @@ internal class ResourceResolverTest {
         every { mockResourcesWriter.write(any(), any()) } answers {}
 
         // When
-        resolver.addResource(key, 25, 25, fakeImageA)
-        resolver.addResource(key + 1, 25, 25, fakeImageB)
+        resolver.addResource(key, imageWidthA, imageHeightA, fakeImageA)
+        resolver.addResource(key + 1, imageWidthB, imageHeightB, fakeImageB)
         val resultA = resolver.resolveResource(key)
         val resultB = resolver.resolveResource(key + 1)
 
@@ -143,7 +149,9 @@ internal class ResourceResolverTest {
 
     @Test
     fun `M call compression only once W resolveResource {same key}`(
-        @IntForgery key: Int
+        @IntForgery key: Int,
+        @IntForgery(5, 50) imageWidth: Int,
+        @IntForgery(5, 50) imageHeight: Int
     ) {
         // Given
         val resolver = DefaultResourceResolver(
@@ -151,7 +159,7 @@ internal class ResourceResolverTest {
             mockResourcesWriter,
             mockBitmapHandler
         )
-        val fakeImage = createFakeImage()
+        val fakeImage = createFakeImage(imageWidth, imageHeight)
         val mockBitmap = mockk<Bitmap>()
         val fakeCompressedImage = ByteArray(25) { 124 }
         every { mockBitmapHandler.createBitmap(any(), any(), refEq(fakeImage)) } returns mockBitmap
@@ -159,7 +167,7 @@ internal class ResourceResolverTest {
         every { mockResourcesWriter.write(any(), any()) } answers {}
 
         // When
-        resolver.addResource(key, 25, 25, fakeImage)
+        resolver.addResource(key, imageWidth, imageHeight, fakeImage)
         val resultA = resolver.resolveResource(key)
         val resultB = resolver.resolveResource(key)
 
@@ -172,7 +180,9 @@ internal class ResourceResolverTest {
 
     @Test
     fun `M write resource to writer W resolveResource`(
-        @IntForgery key: Int
+        @IntForgery key: Int,
+        @IntForgery(5, 50) imageWidth: Int,
+        @IntForgery(5, 50) imageHeight: Int
     ) {
         // Given
         val resolver = DefaultResourceResolver(
@@ -180,7 +190,7 @@ internal class ResourceResolverTest {
             mockResourcesWriter,
             mockBitmapHandler
         )
-        val fakeImage = createFakeImage()
+        val fakeImage = createFakeImage(imageWidth, imageHeight)
         val mockBitmap = mockk<Bitmap>()
         val fakeCompressedImage = ByteArray(25) { 124 }
         every { mockBitmapHandler.createBitmap(any(), any(), refEq(fakeImage)) } returns mockBitmap
@@ -188,7 +198,7 @@ internal class ResourceResolverTest {
         every { mockResourcesWriter.write(any(), any()) } answers {}
 
         // When
-        resolver.addResource(key, 25, 25, fakeImage)
+        resolver.addResource(key, imageWidth, imageHeight, fakeImage)
         val resultA = resolver.resolveResource(key)
 
         // Then
@@ -197,7 +207,11 @@ internal class ResourceResolverTest {
 
     @Test
     fun `M write different resources to writer W resolveResource {different image}`(
-        @IntForgery key: Int
+        @IntForgery key: Int,
+        @IntForgery(5, 50) imageWidthA: Int,
+        @IntForgery(5, 50) imageHeightA: Int,
+        @IntForgery(5, 50) imageWidthB: Int,
+        @IntForgery(5, 50) imageHeightB: Int
     ) {
         // Given
         val resolver = DefaultResourceResolver(
@@ -205,8 +219,8 @@ internal class ResourceResolverTest {
             mockResourcesWriter,
             mockBitmapHandler
         )
-        val fakeImageA = createFakeImage()
-        val fakeImageB = createFakeImage()
+        val fakeImageA = createFakeImage(imageWidthA, imageHeightA)
+        val fakeImageB = createFakeImage(imageWidthB, imageHeightB)
         val mockBitmapA = mockk<Bitmap>()
         val mockBitmapB = mockk<Bitmap>()
         val fakeCompressedImageA = ByteArray(25) { 0 }
@@ -222,8 +236,8 @@ internal class ResourceResolverTest {
         every { mockResourcesWriter.write(any(), any()) } answers {}
 
         // When
-        resolver.addResource(key, 25, 25, fakeImageA)
-        resolver.addResource(key + 1, 25, 25, fakeImageB)
+        resolver.addResource(key, imageWidthA, imageHeightA, fakeImageA)
+        resolver.addResource(key + 1, imageWidthB, imageHeightB, fakeImageB)
         val resultA = resolver.resolveResource(key)
         val resultB = resolver.resolveResource(key + 1)
 
@@ -235,7 +249,9 @@ internal class ResourceResolverTest {
 
     @Test
     fun `M not write resource to writer W resolveResource {known id}`(
-        @IntForgery key: Int
+        @IntForgery key: Int,
+        @IntForgery(5, 50) imageWidth: Int,
+        @IntForgery(5, 50) imageHeight: Int
     ) {
         // Given
         val resolver = DefaultResourceResolver(
@@ -243,7 +259,7 @@ internal class ResourceResolverTest {
             mockResourcesWriter,
             mockBitmapHandler
         )
-        val fakeImage = createFakeImage()
+        val fakeImage = createFakeImage(imageWidth, imageHeight)
         val mockBitmap = mockk<Bitmap>()
         val fakeCompressedImage = ByteArray(25) { 124 }
         every { mockBitmapHandler.createBitmap(any(), any(), refEq(fakeImage)) } returns mockBitmap
@@ -251,8 +267,8 @@ internal class ResourceResolverTest {
         every { mockResourcesWriter.write(any(), any()) } answers {}
 
         // When
-        resolver.addResource(key, 25, 25, fakeImage)
-        resolver.addResource(key + 1, 25, 25, fakeImage)
+        resolver.addResource(key, imageWidth, imageHeight, fakeImage)
+        resolver.addResource(key + 1, imageWidth, imageHeight, fakeImage)
         val resultA = resolver.resolveResource(key)
         val resultB = resolver.resolveResource(key)
 

@@ -29,11 +29,11 @@ internal class DefaultResourceResolver: ResourceResolver {
         }
     }
 
-    private let resourcesWriter: ResourcesWrting
+    private let resourcesWriter: ResourcesWriting
     private var resourceEntries: [Int: ResourceEntry] = [:]
     private var processedIdentifiers = Set<String>()
 
-    init(writer: ResourcesWrting) {
+    init(writer: ResourcesWriting) {
         resourcesWriter = writer
     }
 

@@ -5,11 +5,11 @@
 import Foundation
 import DatadogInternal
 
-internal protocol ResourcesWrting {
+internal protocol ResourcesWriting {
     func write(withIdentifier identifier: String, data: Data, mimeType: String)
 }
 
-internal class ResourcesWriter: ResourcesWrting {
+internal class ResourcesWriter: ResourcesWriting {
     private let scope: FeatureScope
 // TODO(RUM-11447): Commented out code in this file is support for the DataStore image caching
 // Which will be added with the above ticket

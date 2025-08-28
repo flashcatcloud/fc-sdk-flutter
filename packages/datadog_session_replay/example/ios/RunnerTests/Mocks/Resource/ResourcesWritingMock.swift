@@ -6,7 +6,7 @@ import Foundation
 
 @testable import datadog_session_replay
 
-class ResourcesWritingMock: ResourcesWrting {
+class ResourcesWritingMock: ResourcesWriting {
     struct WriteRequest {
         let identifier: String
         let data: Data

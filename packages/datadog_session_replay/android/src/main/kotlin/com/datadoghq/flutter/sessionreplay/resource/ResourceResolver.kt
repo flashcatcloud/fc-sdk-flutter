@@ -27,7 +27,7 @@ internal interface ResourceResolver {
     )
 
     /**
-     * Adds a resource to with the given Flutter Key to be resolved later.
+     * Adds a resource with the given Flutter Key to be resolved later.
      */
     fun addResource(
         resourceKey: Int,

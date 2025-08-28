@@ -14,7 +14,7 @@ import '../recorder.dart';
 import '../view_tree_snapshot.dart';
 
 // This size was chosen so that 'Content Image' would fit without
-// overlappping other content in the replay.
+// overlapping other content in the replay.
 const int labelMinWidth = 200;
 
 // Largest size of image we can process - larger than this and we

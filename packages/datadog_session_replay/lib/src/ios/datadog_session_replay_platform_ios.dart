@@ -124,10 +124,12 @@ class DatadogSessionReplayPlatformIos extends DatadogSessionReplayPlatform {
     return _iosBridge.resourceIdForKey(resourceKey)?.toDartString();
   }
 
-  // Bypass `package:objective_c` here to allow a direct leaf call. The allows us
+  // Bypass `package:objective_c` here to allow a direct leaf call. This allows us
   // to copy the ByteData directly to NSData without an intermediary allocation,
   // and allows NSData to deal with owning the resulting memory.
+  // ignore: non_constant_identifier_names
   late final _class_NSData = getClass('NSData');
+  // ignore: non_constant_identifier_names
   late final _sel_dataWithBytes_length_ = registerName('dataWithBytes:length:');
 
   // This is not private because of this Dart issue:
@@ -151,6 +153,7 @@ class DatadogSessionReplayPlatformIos extends DatadogSessionReplayPlatform {
     ffi.UnsignedLong,
   )
 >(symbol: 'objc_msgSend', isLeaf: true)
+// ignore: non_constant_identifier_names
 external ffi.Pointer<ObjCObject> objc_msgSend_3nbx5e(
   ffi.Pointer<ObjCObject> object,
   ffi.Pointer<ObjCSelector> selector,
