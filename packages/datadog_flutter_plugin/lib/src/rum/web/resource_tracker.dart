@@ -63,12 +63,14 @@ class ResourceTracker {
 
     final ddData = _extractDdData(finalAttributes);
 
+    var id = _uuid.v4().toString();
+
     _webPlugin.addEvent(
       eventTime,
       RumWebRawResourceEvent(
         date: epochTime.toJS,
         resource: RumWebRawResourceData(
-          id: key,
+          id: id,
           type: kind.name,
           url: resource.url,
           duration: duration.toJS,
