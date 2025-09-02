@@ -982,6 +982,51 @@ final _objc_msgSend_r8gdi7 =
             ffi.Pointer<objc.ObjCObject>,
           )
         >();
+late final _sel_saveImageForProcessingWithResourceKey_width_height_data_ = objc
+    .registerName("saveImageForProcessingWithResourceKey:width:height:data:");
+final _objc_msgSend_g5idq5 =
+    objc.msgSendPointer
+        .cast<
+          ffi.NativeFunction<
+            ffi.Void Function(
+              ffi.Pointer<objc.ObjCObject>,
+              ffi.Pointer<objc.ObjCSelector>,
+              ffi.Long,
+              ffi.Long,
+              ffi.Long,
+              ffi.Pointer<objc.ObjCObject>,
+            )
+          >
+        >()
+        .asFunction<
+          void Function(
+            ffi.Pointer<objc.ObjCObject>,
+            ffi.Pointer<objc.ObjCSelector>,
+            int,
+            int,
+            int,
+            ffi.Pointer<objc.ObjCObject>,
+          )
+        >();
+late final _sel_resourceIdForKey_ = objc.registerName("resourceIdForKey:");
+final _objc_msgSend_qugqlf =
+    objc.msgSendPointer
+        .cast<
+          ffi.NativeFunction<
+            ffi.Pointer<objc.ObjCObject> Function(
+              ffi.Pointer<objc.ObjCObject>,
+              ffi.Pointer<objc.ObjCSelector>,
+              ffi.Long,
+            )
+          >
+        >()
+        .asFunction<
+          ffi.Pointer<objc.ObjCObject> Function(
+            ffi.Pointer<objc.ObjCObject>,
+            ffi.Pointer<objc.ObjCSelector>,
+            int,
+          )
+        >();
 
 /// FlutterSessionReplay
 class FlutterSessionReplay extends objc.NSObject {
@@ -1074,6 +1119,35 @@ class FlutterSessionReplay extends objc.NSObject {
       kind.ref.pointer,
       stackTrace.ref.pointer,
     );
+  }
+
+  /// saveImageForProcessingWithResourceKey:width:height:data:
+  void saveImageForProcessingWithResourceKey(
+    int resourceKey, {
+    required int width,
+    required int height,
+    required objc.NSData data,
+  }) {
+    _objc_msgSend_g5idq5(
+      this.ref.pointer,
+      _sel_saveImageForProcessingWithResourceKey_width_height_data_,
+      resourceKey,
+      width,
+      height,
+      data.ref.pointer,
+    );
+  }
+
+  /// resourceIdForKey:
+  objc.NSString? resourceIdForKey(int key) {
+    final _ret = _objc_msgSend_qugqlf(
+      this.ref.pointer,
+      _sel_resourceIdForKey_,
+      key,
+    );
+    return _ret.address == 0
+        ? null
+        : objc.NSString.castFromPointer(_ret, retain: true, release: true);
   }
 
   /// init

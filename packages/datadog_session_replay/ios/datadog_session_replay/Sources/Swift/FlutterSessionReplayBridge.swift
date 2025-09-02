@@ -44,7 +44,7 @@ public func __datadog_session_replay_keep_symbols() {
 }
 
 @objc(FlutterSessionReplay) public class FlutterSessionReplay: NSObject {
-    var feature: FlutterSessionReplayFeature?
+    internal var feature: FlutterSessionReplayFeature?
 
     @objc public func enable(with configuration: FlutterSessionReplayConfiguration) {
         do {
@@ -64,7 +64,7 @@ public func __datadog_session_replay_keep_symbols() {
             )
         }
 
-        let mappedConfiguration = FlutterSessionReplayFeature.Configuration(
+        let mappedConfiguration = DefaultFlutterSessionReplayFeature.Configuration(
             customEndpoint: configuration.customEndpoint,
             onContextChanged: { context in
                 if let context = context {
@@ -79,10 +79,12 @@ public func __datadog_session_replay_keep_symbols() {
             }
         )
 
-        let sessionReplay = try FlutterSessionReplayFeature(core: core, configuration: mappedConfiguration)
+        let sessionReplay = try DefaultFlutterSessionReplayFeature(
+            core: core,
+            configuration: mappedConfiguration,
+            resourceResolver: nil   // Use the default resource resolver
+        )
         try core.register(feature: sessionReplay)
-
-        // sessionReplay.writer.startWriting(to: core)
 
         return sessionReplay
     }
@@ -106,5 +108,13 @@ public func __datadog_session_replay_keep_symbols() {
     @objc public func postTelemetryError(message: String, kind: String, stackTrace: String) {
         Datadog._internal.telemetry.error(id: "datadog_flutter:\(String(describing: kind)):\(message)",
                                           message: message, kind: kind, stack: stackTrace)
+    }
+
+    @objc public func saveImageForProcessing(resourceKey: Int, width: Int, height: Int, data: Data) {
+        feature?.resourceResolver.addResource(withKey: resourceKey, width: width, height: height, data: data)
+    }
+
+    @objc public func resourceId(forKey key: Int) -> String? {
+        return feature?.resourceResolver.resolveResource(withKey: key)
     }
 }

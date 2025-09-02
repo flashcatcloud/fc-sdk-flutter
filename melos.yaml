@@ -101,7 +101,6 @@ scripts:
         - 'example/ios'
       # TODO: These packages should probably have platform unit tests
       ignore: 
-        - 'datadog_session_replay'
         - 'datadog_webview_tracking'
         - 'datadog_inappwebview_tracking'
 

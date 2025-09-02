@@ -85,3 +85,16 @@ class SpecificElement extends CaptureNodeSemantics {
     required super.nodes,
   }) : super(importance: CaptureNodeSemantics.maxImporance);
 }
+
+/// This node needs additional async processing in order to provide
+/// a CaptureNode.
+@immutable
+class AdditionalProcessingElement extends CaptureNodeSemantics {
+  final Future<CaptureNodeSemantics> Function() process;
+
+  const AdditionalProcessingElement({
+    required super.subtreeStrategy,
+    super.subtreePrivacy,
+    required this.process,
+  }) : super(importance: CaptureNodeSemantics.maxImporance, nodes: const []);
+}

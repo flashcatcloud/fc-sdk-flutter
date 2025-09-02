@@ -6,6 +6,9 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+// Dart 3.9 made it so meta is no longer needed for `@internal`, but we
+// still need it for versions below 3.9.
+// ignore: unnecessary_import
 import 'package:meta/meta.dart';
 
 import 'datadog_internal.dart';

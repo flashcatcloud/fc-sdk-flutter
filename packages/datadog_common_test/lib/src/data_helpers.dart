@@ -23,8 +23,8 @@ bool randomBool() {
   return _random.nextBool();
 }
 
-int randomInt() {
-  return _random.nextInt(1 << 16);
+int randomInt({int min = 0, int max = 1 << 16}) {
+  return _random.nextInt(max - min) + min;
 }
 
 double randomDouble({double min = -1000000, double max = 100000}) {

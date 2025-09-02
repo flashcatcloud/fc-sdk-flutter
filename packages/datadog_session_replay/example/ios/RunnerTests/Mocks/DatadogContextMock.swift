@@ -3,11 +3,11 @@
 // Copyright 2025-Present Datadog, Inc.
 
 import Foundation
-import DatadogInternal
 
+@testable import DatadogInternal
 @testable import datadog_session_replay
 
-extension DatadogContext {
+extension DatadogContext: AnyMockable, RandomMockable {
     public static func mockAny() -> DatadogContext { mockWith() }
 
     public static func mockWith(
@@ -29,6 +29,7 @@ extension DatadogContext {
         sdkInitDate: Date = Date(),
         nativeSourceOverride: String? = nil,
         device: DeviceInfo = .mockAny(),
+        localeInfo: LocaleInfo = .mockAny(),
         userInfo: UserInfo = .mockAny(),
         trackingConsent: TrackingConsent = .pending,
         launchTime: LaunchTime = .mockAny(),
@@ -56,6 +57,7 @@ extension DatadogContext {
             applicationBundleType: applicationBundleType,
             sdkInitDate: sdkInitDate,
             device: device,
+            localeInfo: localeInfo,
             nativeSourceOverride: nativeSourceOverride,
             userInfo: userInfo,
             trackingConsent: trackingConsent,
@@ -87,6 +89,7 @@ extension DatadogContext {
             applicationBundleType: .mockRandom(),
             sdkInitDate: .mockRandomInThePast(),
             device: .mockRandom(),
+            localeInfo: .mockRandom(),
             userInfo: .mockRandom(),
             trackingConsent: .mockRandom(),
             launchTime: .mockRandom(),
@@ -99,7 +102,7 @@ extension DatadogContext {
     }
 }
 
-extension RUMCoreContext {
+extension RUMCoreContext: RandomMockable {
     public static func mockRandom() -> Self {
         return RUMCoreContext.init(
             applicationID: .mockRandom(),
@@ -108,9 +111,23 @@ extension RUMCoreContext {
             viewServerTimeOffset: nil
         )
     }
+
+    public static func mockWith(
+        applicationID: String = .mockAny(),
+        sessionID: String = .mockAny(),
+        viewID: String? = .mockAny(),
+        viewServerTimeOffset: TimeInterval? = nil
+    ) -> Self {
+        return RUMCoreContext(
+            applicationID: applicationID,
+            sessionID: sessionID,
+            viewID: viewID,
+            viewServerTimeOffset: viewServerTimeOffset
+        )
+    }
 }
 
-extension DatadogSite {
+extension DatadogSite: AnyMockable, RandomMockable {
     public static func mockAny() -> Self {
         return .us1
     }
@@ -120,7 +137,7 @@ extension DatadogSite {
     }
 }
 
-extension BundleType {
+extension BundleType: AnyMockable, RandomMockable {
     public static func mockAny() -> Self {
         return .iOSApp
     }
@@ -130,7 +147,33 @@ extension BundleType {
     }
 }
 
-extension DeviceInfo {
+extension LocaleInfo: AnyMockable, RandomMockable {
+    public static func mockAny() -> LocaleInfo {
+        return .mockWith()
+    }
+
+    public static func mockWith(
+        locales: [String] = ["en"],
+        currentLocale: Locale = Locale(identifier: "en-US"),
+        timeZone: TimeZone = TimeZone(identifier: "Europe/Paris")!
+    ) -> LocaleInfo {
+        return .init(
+            locales: locales,
+            currentLocale: currentLocale,
+            timeZone: timeZone
+        )
+    }
+
+    public static func mockRandom() -> LocaleInfo {
+        return .init(
+            locales: .mockRandom(),
+            currentLocale: Locale(identifier: .mockRandom()),
+            timeZone: TimeZone(identifier: .mockRandom()) ?? TimeZone.current
+        )
+    }
+}
+
+extension DeviceInfo: AnyMockable, RandomMockable {
     public static func mockAny() -> DeviceInfo {
         return .mockWith()
     }
@@ -177,7 +220,7 @@ extension DeviceInfo {
     }
 }
 
-extension UserInfo {
+extension UserInfo: AnyMockable, RandomMockable {
     public static func mockAny() -> UserInfo {
         return mockEmpty()
     }
@@ -196,7 +239,7 @@ extension UserInfo {
     }
 }
 
-extension LaunchTime {
+extension LaunchTime: AnyMockable, RandomMockable {
     public static func mockAny() -> LaunchTime {
         .init(
             launchTime: .mockAny(),
@@ -226,7 +269,7 @@ extension LaunchTime {
     }
 }
 
-extension AppState {
+extension AppState: AnyMockable, RandomMockable {
     public static func mockAny() -> AppState {
         return .active
     }
@@ -240,7 +283,7 @@ extension AppState {
     }
 }
 
-extension AppStateHistory {
+extension AppStateHistory: AnyMockable {
     public static func mockAny() -> Self {
         return mockAppInForeground(since: .mockDecember15th2019At10AMUTC())
     }
@@ -258,7 +301,7 @@ extension AppStateHistory {
     }
 }
 
-extension NetworkConnectionInfo {
+extension NetworkConnectionInfo: AnyMockable, RandomMockable {
     public static func mockAny() -> NetworkConnectionInfo {
         return mockWith()
     }
@@ -293,13 +336,13 @@ extension NetworkConnectionInfo {
     }
 }
 
-extension NetworkConnectionInfo.Interface {
+extension NetworkConnectionInfo.Interface: RandomMockable {
     public static func mockRandom() -> NetworkConnectionInfo.Interface {
         return allCases.randomElement()!
     }
 }
 
-extension CarrierInfo {
+extension CarrierInfo: AnyMockable, RandomMockable {
     public static func mockAny() -> CarrierInfo {
         return mockWith()
     }
@@ -328,7 +371,7 @@ extension CarrierInfo {
     }
 }
 
-extension CarrierInfo.RadioAccessTechnology {
+extension CarrierInfo.RadioAccessTechnology: AnyMockable, RandomMockable {
     public static func mockAny() -> CarrierInfo.RadioAccessTechnology { .LTE }
 
     public static func mockRandom() -> CarrierInfo.RadioAccessTechnology {
@@ -336,7 +379,7 @@ extension CarrierInfo.RadioAccessTechnology {
     }
 }
 
-extension BatteryStatus {
+extension BatteryStatus: AnyMockable {
     public static func mockAny() -> BatteryStatus {
         return mockWith()
     }
@@ -349,7 +392,7 @@ extension BatteryStatus {
     }
 }
 
-extension TrackingConsent {
+extension TrackingConsent: RandomMockable {
     public static func mockRandom() -> TrackingConsent {
         return [.granted, .notGranted, .pending].randomElement()!
     }
@@ -374,7 +417,7 @@ extension String {
     }
 }
 
-extension NetworkConnectionInfo.Reachability {
+extension NetworkConnectionInfo.Reachability: AnyMockable {
     public static func mockAny() -> NetworkConnectionInfo.Reachability {
         return .maybe
     }

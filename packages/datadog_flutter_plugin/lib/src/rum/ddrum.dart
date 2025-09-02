@@ -7,6 +7,9 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
+// Dart 3.9 moved made it so meta is no longer needed for `@internal`, but we
+// still need it for versions below 3.9.
+// ignore: unnecessary_import
 import 'package:meta/meta.dart';
 
 import '../../datadog_flutter_plugin.dart';

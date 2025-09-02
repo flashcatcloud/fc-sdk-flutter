@@ -27,6 +27,8 @@ Color randomColor({bool withRandomAlpha = false}) {
   );
 }
 
+// Copied from Flutter's test repo:
+// https://codebrowser.dev/flutter/flutter/packages/flutter/test/painting/image_test_utils.dart.html
 class TestImageProvider extends ImageProvider<TestImageProvider> {
   TestImageProvider(this.testImage);
 

@@ -92,6 +92,8 @@ class GithubCommandWrapper {
       [
         'release',
         'create',
+        tag,
+        '--title',
         name,
         '--notes',
         changelog,

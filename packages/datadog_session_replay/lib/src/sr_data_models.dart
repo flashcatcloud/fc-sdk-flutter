@@ -558,6 +558,74 @@ class SRPlaceholderWireframe extends SRWireframe {
 }
 
 @JsonSerializable()
+class SRImageWireframe extends SRWireframe {
+  final String? base64;
+  final SRShapeBorder? border;
+  final SRContentClip? clip;
+  final bool? isEmpty;
+  final String? mimeType;
+  final String? resourceId;
+  final SRShapeStyle? shapeStyle;
+
+  SRImageWireframe({
+    super.type = 'image',
+    required super.id,
+    required super.x,
+    required super.y,
+    required super.width,
+    required super.height,
+    this.base64,
+    this.border,
+    this.clip,
+    this.isEmpty,
+    this.mimeType,
+    this.resourceId,
+    this.shapeStyle,
+  });
+
+  @override
+  bool isDifferent(SRWireframe other) {
+    if (other is! SRImageWireframe) return false;
+
+    return super.isDifferent(other) ||
+        !(base64 == other.base64 &&
+            border == other.border &&
+            clip == other.clip &&
+            isEmpty == other.isEmpty &&
+            mimeType == other.mimeType &&
+            resourceId == other.resourceId &&
+            shapeStyle == other.shapeStyle);
+  }
+
+  @override
+  SRIncrementalUpdate mutationsFrom(SRWireframe other) {
+    if (other is! SRImageWireframe || id != other.id) {
+      throw Error();
+    }
+
+    return SRImageWireframeUpdate(
+      id: id,
+      x: useIfDifferent(x, other.x),
+      y: useIfDifferent(y, other.y),
+      width: useIfDifferent(width, other.width),
+      height: useIfDifferent(height, other.height),
+      base64: useIfDifferent(base64, other.base64),
+      border: useIfDifferent(border, other.border),
+      clip: useIfDifferent(clip, other.clip),
+      isEmpty: useIfDifferent(isEmpty, other.isEmpty),
+      mimeType: useIfDifferent(mimeType, other.mimeType),
+      resourceId: useIfDifferent(resourceId, other.resourceId),
+      shapeStyle: useIfDifferent(shapeStyle, other.shapeStyle),
+    );
+  }
+
+  factory SRImageWireframe.fromJson(Map<String, dynamic> json) =>
+      _$SRImageWireframeFromJson(json);
+  @override
+  Map<String, dynamic> toJson() => _$SRImageWireframeToJson(this);
+}
+
+@JsonSerializable()
 class SRIdHolder {
   final String id;
 
@@ -713,17 +781,25 @@ class SRTextWireframeUpdate extends SRIncrementalUpdate {
 
 @JsonSerializable(includeIfNull: false)
 class SRImageWireframeUpdate extends SRIncrementalUpdate {
-  SRShapeBorder? border;
-  SRContentClip? clip;
-  SRShapeStyle? shapeStyle;
+  final String? base64;
+  final String? mimeType;
+  final String? resourceId;
+  final bool? isEmpty;
+  final SRShapeBorder? border;
+  final SRContentClip? clip;
+  final SRShapeStyle? shapeStyle;
 
   SRImageWireframeUpdate({
-    super.type = 'shape',
+    super.type = 'image',
     required super.id,
     super.x,
     super.y,
     super.width,
     super.height,
+    this.base64,
+    this.mimeType,
+    this.resourceId,
+    this.isEmpty,
     this.border,
     this.clip,
     this.shapeStyle,
@@ -737,8 +813,8 @@ class SRImageWireframeUpdate extends SRIncrementalUpdate {
 
 @JsonSerializable(includeIfNull: false)
 class SRPlaceholderWireframeUpdate extends SRIncrementalUpdate {
-  String? label;
-  SRContentClip? clip;
+  final String? label;
+  final SRContentClip? clip;
 
   SRPlaceholderWireframeUpdate({
     super.type = 'placeholder',

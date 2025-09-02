@@ -4,14 +4,13 @@
  * Copyright 2025-Present Datadog, Inc.
  */
 
-package com.datadoghq.flutter.sessionreplay
+package com.datadoghq.flutter.sessionreplay.feature
 
 import assertk.assertThat
 import assertk.assertions.isEqualTo
 import assertk.assertions.isNotNull
 import com.datadog.android.api.feature.Feature
 import com.datadog.android.api.feature.FeatureSdkCore
-import com.datadoghq.flutter.sessionreplay.feature.FlutterSessionReplayFeature
 import fr.xgouchet.elmyr.annotation.BoolForgery
 import fr.xgouchet.elmyr.annotation.IntForgery
 import fr.xgouchet.elmyr.annotation.LongForgery
@@ -25,7 +24,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 
 @ExtendWith(ForgeExtension::class)
-internal class FlutterSessionReplayFeatureTest {
+internal class DefaultFlutterSessionReplayFeatureTest {
     var mockCore: FeatureSdkCore = mockk(relaxed = true)
 
     @Test
@@ -37,10 +36,10 @@ internal class FlutterSessionReplayFeatureTest {
         @LongForgery serverTimeOffset: Long
     ) {
         // Given
-        val onContextChanged = mockk<(FlutterSessionReplayFeature.RumContext) -> Unit>(
+        val onContextChanged = mockk<(DefaultFlutterSessionReplayFeature.RumContext) -> Unit>(
             relaxed = true
         )
-        val feature = FlutterSessionReplayFeature(
+        val feature = DefaultFlutterSessionReplayFeature(
             mockCore,
             onContextChanged,
             customEndpoint
@@ -56,7 +55,7 @@ internal class FlutterSessionReplayFeatureTest {
         feature.onContextUpdate(Feature.RUM_FEATURE_NAME, contextValue)
 
         // Then - note the transform of property names
-        val expectedContextValue = FlutterSessionReplayFeature.RumContext(
+        val expectedContextValue = DefaultFlutterSessionReplayFeature.RumContext(
             applicationId,
             sessionId,
             viewId,
@@ -72,10 +71,10 @@ internal class FlutterSessionReplayFeatureTest {
         @BoolForgery hasReplay: Boolean
     ) {
         // Given
-        val onContextChanged = mockk<(FlutterSessionReplayFeature.RumContext) -> Unit>(
+        val onContextChanged = mockk<(DefaultFlutterSessionReplayFeature.RumContext) -> Unit>(
             relaxed = true
         )
-        val feature = FlutterSessionReplayFeature(
+        val feature = DefaultFlutterSessionReplayFeature(
             mockCore,
             onContextChanged,
             customEndpoint
@@ -107,10 +106,10 @@ internal class FlutterSessionReplayFeatureTest {
         @IntForgery recordCount: Int
     ) {
         // Given
-        val onContextChanged = mockk<(FlutterSessionReplayFeature.RumContext) -> Unit>(
+        val onContextChanged = mockk<(DefaultFlutterSessionReplayFeature.RumContext) -> Unit>(
             relaxed = true
         )
-        val feature = FlutterSessionReplayFeature(
+        val feature = DefaultFlutterSessionReplayFeature(
             mockCore,
             onContextChanged,
             customEndpoint

@@ -12,8 +12,12 @@ import DatadogInternal
 func setsReplayBaggage_WhenSetHasReplay() throws {
     // Given
     let core = PassthroughCoreMock()
-    let config = FlutterSessionReplay.Configuration()
-    let feature = try FlutterSessionReplayFeature(core: core, configuration: config)
+    let config = DefaultFlutterSessionReplayFeature.Configuration()
+    let feature = try DefaultFlutterSessionReplayFeature(
+        core: core,
+        configuration: config,
+        resourceResolver: ResourceResolverMock()
+    )
 
     // When
     let expectedValue: Bool = .mockRandom()
@@ -28,9 +32,12 @@ func setsReplayBaggage_WhenSetHasReplay() throws {
 func setsBaggage_WhenSetRecordCount() throws {
     // Given
     let core = PassthroughCoreMock()
-    let config = FlutterSessionReplay.Configuration()
-    let feature = try FlutterSessionReplayFeature(core: core, configuration: config)
-
+    let config = DefaultFlutterSessionReplayFeature.Configuration()
+    let feature = try DefaultFlutterSessionReplayFeature(
+        core: core,
+        configuration: config,
+        resourceResolver: ResourceResolverMock()
+    )
     // When
     let viewId: String = .mockRandom()
     let expectedCount: Int64 = .mockRandom()
@@ -46,9 +53,12 @@ func setsBaggage_WhenSetRecordCount() throws {
 func setsBaggage_WhenSetRecordCount_MultipleViews() throws {
     // Given
     let core = PassthroughCoreMock()
-    let config = FlutterSessionReplay.Configuration()
-    let feature = try FlutterSessionReplayFeature(core: core, configuration: config)
-
+    let config = DefaultFlutterSessionReplayFeature.Configuration()
+    let feature = try DefaultFlutterSessionReplayFeature(
+        core: core,
+        configuration: config,
+        resourceResolver: ResourceResolverMock()
+    )
     // When
     let viewIdA: String = .mockRandom()
     let viewIdB: String = .mockRandom()

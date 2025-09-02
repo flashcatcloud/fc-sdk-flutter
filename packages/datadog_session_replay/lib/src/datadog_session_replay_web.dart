@@ -4,6 +4,7 @@
 // ignore: avoid_web_libraries_in_flutter
 
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 
@@ -56,4 +57,17 @@ class DatadogSessionReplayWeb extends DatadogSessionReplayPlatform {
   FutureOr<void> telemetryError(String message, String kind, String stack) {
     // Not currently supported
   }
+
+  @override
+  String? resourceIdForKey(int resourceKey) {
+    return null;
+  }
+
+  @override
+  FutureOr<void> saveImageForProcessing(
+    int resourceKey,
+    int width,
+    int height,
+    ByteData byteData,
+  ) {}
 }

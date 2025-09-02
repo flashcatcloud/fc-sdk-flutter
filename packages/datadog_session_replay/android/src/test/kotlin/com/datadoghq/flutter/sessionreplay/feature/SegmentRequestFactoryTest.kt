@@ -4,7 +4,7 @@
  * Copyright 2025-Present Datadog, Inc.
  */
 
-package com.datadoghq.flutter.sessionreplay
+package com.datadoghq.flutter.sessionreplay.feature
 
 import assertk.assertFailure
 import assertk.assertThat
@@ -14,10 +14,6 @@ import assertk.assertions.isNotNull
 import assertk.assertions.startsWith
 import com.datadog.android.api.context.DatadogContext
 import com.datadog.android.api.net.RequestFactory
-import com.datadoghq.flutter.sessionreplay.feature.BatchesToSegmentsMapper
-import com.datadoghq.flutter.sessionreplay.feature.InvalidPayloadFormatException
-import com.datadoghq.flutter.sessionreplay.feature.SegmentRequestBodyFactory
-import com.datadoghq.flutter.sessionreplay.feature.SegmentRequestFactory
 import com.datadoghq.flutter.sessionreplay.forge.SRForgeConfigurator
 import com.datadoghq.flutter.sessionreplay.models.MobileSegment
 import com.google.gson.JsonObject
