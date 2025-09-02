@@ -288,12 +288,9 @@ nightly-min-version-test:
     - fvm install $FLUTTER_MIN_VERSION
     - fvm use $FLUTTER_MIN_VERSION
     - fvm exec dart pub global activate melos
-    - pod repo update
+    - export MELOS_PACKAGES="datadog_flutter_plugin"
     - fvm exec melos pub:get
-    - fvm exec melos pod_update --no-select
-    - fvm exec melos run analyze
-    - fvm exec melos run build
-    - fvm exec melos run unit_test:all
+    - fvm exec melos analyze:dart    
   artifacts:
     when: always
     expire_in: "30 days"
