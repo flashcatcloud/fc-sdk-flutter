@@ -312,6 +312,7 @@ SWIFT_CLASS_NAMED("FlutterRUMCoreContext")
 @end
 
 @class FlutterSessionReplayConfiguration;
+@class NSData;
 
 SWIFT_CLASS_NAMED("FlutterSessionReplay")
 @interface FlutterSessionReplay : NSObject
@@ -321,6 +322,8 @@ SWIFT_CLASS_NAMED("FlutterSessionReplay")
 - (void)writeSegmentWithSegment:(NSString * _Nonnull)segmentJson;
 - (void)postTelemetryDebugWithId:(NSString * _Nonnull)id message:(NSString * _Nonnull)message;
 - (void)postTelemetryErrorWithMessage:(NSString * _Nonnull)message kind:(NSString * _Nonnull)kind stackTrace:(NSString * _Nonnull)stackTrace;
+- (void)saveImageForProcessingWithResourceKey:(NSInteger)resourceKey width:(NSInteger)width height:(NSInteger)height data:(NSData * _Nonnull)data;
+- (NSString * _Nullable)resourceIdForKey:(NSInteger)key SWIFT_WARN_UNUSED_RESULT;
 - (nonnull instancetype)init OBJC_DESIGNATED_INITIALIZER;
 @end
 

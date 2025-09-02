@@ -18,5 +18,6 @@ internal class SRForgeConfigurator : ForgeConfigurator {
         forge.addFactory(EnrichedRecordForgeryFactory())
         forge.addFactory(GsonJsonObjectForgeryFactory())
         forge.addFactory(MobileSegmentForgeryFactory())
+        forge.addFactory(RawBatchEventForgeryFactory())
     }
 }

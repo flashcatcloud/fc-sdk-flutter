@@ -6,8 +6,8 @@ import PackageDescription
 let package = Package(
     name: "datadog_session_replay",
     platforms: [
-        .iOS("12.0"),
-        .macOS("12.0")
+        .iOS("13.0"),
+        .macOS("13.0")
     ],
     products: [
         .library(name: "datadog-session-replay", targets: ["datadog_session_replay", "datadog_session_replay_objc"])

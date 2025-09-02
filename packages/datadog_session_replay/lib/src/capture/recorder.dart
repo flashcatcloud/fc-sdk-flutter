@@ -1,6 +1,8 @@
 // This product includes software developed at Datadog (https://www.datadoghq.com/).
 // Copyright 2025-Present Datadog, Inc.
 
+import 'dart:ui' as ui;
+
 import 'package:datadog_flutter_plugin/datadog_internal.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -50,22 +52,39 @@ abstract interface class ElementRecorder {
 class KeyGenerator {
   // This is close to JavaScript's MAX_SAFE_INT (53-bit)
   static const int maxKey = 0x20000000000000;
-  var _nextKey = 0;
+  // Starting key for resources
+  static const int startingResourceKey = 0x100000;
+
+  var _nextElementKey = 0;
+  var _nextResourceKey = startingResourceKey;
 
   final Expando<int> _nodeIdExpando = Expando('sr-key');
-  // ignore: unused_field
-  final Expando<List<int>> _nodeIdsExpando = Expando('multi-sr-key');
+  final Expando<int> _resourceIdExpando = Expando('sr-resource-key');
 
   int keyForElement(Element e) {
     var value = _nodeIdExpando[e];
     if (value != null) return value;
 
-    value = _nextKey;
-    _nextKey = _nextKey + 1;
-    if (_nextKey >= maxKey) _nextKey = 0;
+    value = _nextElementKey;
+    _nextElementKey = _nextElementKey + 1;
+    if (_nextElementKey >= maxKey) _nextElementKey = 0;
 
     _nodeIdExpando[e] = value;
 
+    return value;
+  }
+
+  bool hasImageKey(ui.Image e) => _resourceIdExpando[e] != null;
+
+  int keyForImage(ui.Image e) {
+    var value = _resourceIdExpando[e];
+    if (value != null) return value;
+
+    value = _nextResourceKey;
+    _nextResourceKey = _nextResourceKey + 1;
+    if (_nextResourceKey >= maxKey) _nextResourceKey = startingResourceKey;
+
+    _resourceIdExpando[e] = value;
     return value;
   }
 }
@@ -79,12 +98,12 @@ class CaptureResult {
 }
 
 class SessionReplayRecorder {
-  final Map<Key, Element> _elements = {};
-
-  RUMContext? _currentContext;
-
   final DatadogTimeProvider _timeProvider;
   final List<ElementRecorder> _elementRecorders;
+
+  final Map<Key, Element> _elements = {};
+  RUMContext? _currentContext;
+  bool _captureInProgress = false;
   CapturePrivacy _defaultCapturePrivacy;
 
   @visibleForTesting
@@ -130,14 +149,19 @@ class SessionReplayRecorder {
     _elements.remove(key);
   }
 
-  CaptureResult? performCapture() {
+  Future<CaptureResult?> performCapture() async {
     final context = _currentContext;
     if (context == null) {
       return null;
     }
 
+    // We're currently in the middle of a capture (async processing is still
+    // occurring), don't start another frame until this one is done.
+    if (_captureInProgress) return null;
+
+    _captureInProgress = true;
     DateTime now = _timeProvider.now();
-    List<CaptureNode> nodes = [];
+    List<CaptureNodeSemantics> capturedSemantics = [];
     List<PointerSnapshot> pointerSnapshots = [];
     var size = Size.zero;
     for (final e in _elements.values) {
@@ -159,8 +183,24 @@ class SessionReplayRecorder {
         // returned by the element is not serializable over the isolate
         size = Size(elementSize.width, elementSize.height);
       }
-      _captureElement(e, nodes, pointerSnapshots, _defaultCapturePrivacy);
+      _captureElement(
+        e,
+        capturedSemantics,
+        pointerSnapshots,
+        _defaultCapturePrivacy,
+      );
     }
+
+    // Process anything that needs additional processing
+    final nodes = <CaptureNode>[];
+    for (var s in capturedSemantics) {
+      if (s is AdditionalProcessingElement) {
+        s = await s.process();
+      }
+      nodes.addAll(s.nodes);
+    }
+
+    _captureInProgress = false;
 
     if (nodes.isEmpty) return null;
 
@@ -204,7 +244,7 @@ class SessionReplayRecorder {
 
   void _captureElement(
     Element topElement,
-    List<CaptureNode> nodes,
+    List<CaptureNodeSemantics> capturedSemantics,
     List<PointerSnapshot> pointerSnapshots,
     CapturePrivacy capturePrivacy,
   ) {
@@ -259,7 +299,7 @@ class SessionReplayRecorder {
         capturePrivacy = newCapturePrivacy;
       }
 
-      nodes.addAll(elementSemantics.nodes);
+      capturedSemantics.add(elementSemantics);
 
       if (elementSemantics.subtreeStrategy ==
           CaptureNodeSubtreeStrategy.record) {
