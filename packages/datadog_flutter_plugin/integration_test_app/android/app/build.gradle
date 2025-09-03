@@ -29,7 +29,7 @@ if (flutterVersionName == null) {
 
 android {
     namespace "com.datadoghq.flutter.integrationtestapp"
-    compileSdkVersion flutter.compileSdkVersion
+    compileSdkVersion 35
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -46,7 +46,7 @@ android {
 
     defaultConfig {
         applicationId "com.datadoghq.flutter.integrationtestapp"
-        minSdkVersion 21
+        minSdkVersion 23
         targetSdkVersion flutter.targetSdkVersion
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName

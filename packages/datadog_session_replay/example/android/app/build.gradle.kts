@@ -7,7 +7,7 @@ plugins {
 
 android {
     namespace = "com.datadoghq.flutter.sessionreplay"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = 35
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11

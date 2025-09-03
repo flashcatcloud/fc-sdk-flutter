@@ -1,5 +1,11 @@
 # Migration from 2.x to 3.0
 
+## Android Changes
+
+Clients using Flutter before 3.27 will need to manually update their Android `compileSdkVersion` to be 35+ and their `minSdkVersion` to 23+.
+
+Flutter updated the `flutter.compileSdkVersion` variable to 35 in 3.27, so this change is unnecessary for clients using Flutter versions greater than that.  
+
 ## Flutter Web Changes
 
 Clients using Flutter Web should update to using the Datadog Browser SDK v6.  Change the following import in your `index.html`:

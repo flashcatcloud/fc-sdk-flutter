@@ -538,6 +538,7 @@ class DatadogSdkPluginTest {
         verify(mockResult).success(null)
     }
 
+    @Test
     fun `M set tracking consent W called through MethodChannel`(
         forge: Forge
     ) {
