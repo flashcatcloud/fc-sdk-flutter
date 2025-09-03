@@ -7,7 +7,7 @@ import 'package:datadog_flutter_plugin/src/rum/ddrum.dart';
 import 'package:datadog_flutter_plugin/src/rum/inv_metric_provider.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-const defaultFirstBuildTime = Duration(milliseconds: 38);
+const defaultFirstBuildTime = const Duration(milliseconds: 38);
 
 void main() {
   final baseStartTime = DateTime.now();
@@ -41,7 +41,7 @@ void main() {
       final provider = InvMetricProvider();
       startView(provider, 'view1', baseStartTime);
       final secondViewStart =
-          baseStartTime.add(Duration(minutes: 1, seconds: 10));
+          baseStartTime.add(const Duration(minutes: 1, seconds: 10));
       startView(provider, 'view2', secondViewStart);
 
       // When
@@ -55,8 +55,8 @@ void main() {
       // Given
       final provider = InvMetricProvider();
       startView(provider, 'view1', baseStartTime);
-      final actionTime = baseStartTime.add(Duration(seconds: 4));
-      final nextViewTime = actionTime.add(Duration(milliseconds: 10));
+      final actionTime = baseStartTime.add(const Duration(seconds: 4));
+      final nextViewTime = actionTime.add(const Duration(milliseconds: 10));
       provider.trackAction('view1', actionTime, RumActionType.tap);
       startView(provider, 'view2', nextViewTime);
 
@@ -90,9 +90,9 @@ void main() {
       // Given
       final provider = InvMetricProvider();
       startView(provider, 'view1', baseStartTime);
-      final actionTime = baseStartTime.add(Duration(seconds: 4));
-      final stopTime = actionTime.add(Duration(milliseconds: 10));
-      final nextViewTime = stopTime.add(Duration(milliseconds: 10));
+      final actionTime = baseStartTime.add(const Duration(seconds: 4));
+      final stopTime = actionTime.add(const Duration(milliseconds: 10));
+      final nextViewTime = stopTime.add(const Duration(milliseconds: 10));
       provider.trackAction('view1', actionTime, RumActionType.tap);
       provider.trackViewStop('view1', stopTime);
       startView(provider, 'view2', nextViewTime);
@@ -111,7 +111,7 @@ void main() {
       // Given
       final provider = InvMetricProvider();
       startView(provider, 'view1', baseStartTime);
-      final actionTime = baseStartTime.add(Duration(seconds: 5));
+      final actionTime = baseStartTime.add(const Duration(seconds: 5));
       final nextViewTime = actionTime
           .add(Duration(seconds: (defaultMaxTimeToNextView + 1).toInt()));
       provider.trackAction('view1', actionTime, RumActionType.tap);
@@ -128,7 +128,7 @@ void main() {
       // Given
       final provider = InvMetricProvider();
       startView(provider, 'view1', baseStartTime);
-      final actionTime = baseStartTime.add(Duration(seconds: 5));
+      final actionTime = baseStartTime.add(const Duration(seconds: 5));
       final nextViewTime = actionTime
           .add(Duration(seconds: (defaultMaxTimeToNextView + 1).toInt()));
       provider.trackAction('view1', actionTime, RumActionType.tap);
@@ -151,7 +151,7 @@ void main() {
           .add(Duration(seconds: (defaultMaxTimeToNextView + 1).toInt()));
       provider.trackAction('view1', actionTime, RumActionType.tap);
       startView(provider, 'view2', secondViewTime);
-      final thirdViewTime = secondViewTime.add(Duration(seconds: 1));
+      final thirdViewTime = secondViewTime.add(const Duration(seconds: 1));
       startView(provider, 'view3', thirdViewTime);
 
       // When
