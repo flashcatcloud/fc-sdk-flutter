@@ -31,13 +31,36 @@ scripts:
     packageFilters:
       dirExists: example/web
 
+  lint_fix:
+    run: melos lint_fix:ios && melos lint_fix:android
+
+  lint_fix:ios:
+    exec:
+      concurrency: 1
+    run: swiftlint --fix
+    description: |
+      Run swiftlint --fix
+    packageFilters:
+      dirExists: ios
+
+  lint_fix:android:
+    exec:
+      concurrency: 1
+    run:
+      cd example/android 
+      ./gradlew ktlintFormat
+    description: |
+      Run ktlintFormat
+    packageFilters:
+      dirExists: example/android
+
   analyze:
     run: melos analyze:dart && melos analyze:android && melos analyze:ios
 
   analyze:dart:
     exec: dart analyze .
-  description: |
-    Run `dart analyze` in all packages
+    description: |
+      Run `dart analyze` in all packages
 
   analyze:android:
     exec:
