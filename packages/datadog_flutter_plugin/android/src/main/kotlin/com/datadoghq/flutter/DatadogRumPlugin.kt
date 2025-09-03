@@ -20,6 +20,7 @@ import com.datadog.android.rum.RumErrorSource
 import com.datadog.android.rum.RumMonitor
 import com.datadog.android.rum.RumPerformanceMetric
 import com.datadog.android.rum.RumResourceKind
+import com.datadog.android.rum.RumResourceMethod
 import com.datadog.android.rum._RumInternalProxy
 import com.datadog.android.rum.configuration.VitalsUpdateFrequency
 import com.datadog.android.rum.metric.networksettled.TimeBasedInitialResourceIdentifier
@@ -533,15 +534,15 @@ fun RumConfiguration.Builder.withEncoded(encoded: Map<String, Any?>): RumConfigu
     return builder
 }
 
-fun parseRumHttpMethod(value: String): String {
+fun parseRumHttpMethod(value: String): RumResourceMethod {
     return when (value) {
-        "RumHttpMethod.get" -> "GET"
-        "RumHttpMethod.post" -> "POST"
-        "RumHttpMethod.head" -> "HEAD"
-        "RumHttpMethod.put" -> "PUT"
-        "RumHttpMethod.delete" -> "DELETE"
-        "RumHttpMethod.patch" -> "PATCH"
-        else -> "GET"
+        "RumHttpMethod.get" -> RumResourceMethod.GET
+        "RumHttpMethod.post" -> RumResourceMethod.POST
+        "RumHttpMethod.head" -> RumResourceMethod.HEAD
+        "RumHttpMethod.put" -> RumResourceMethod.PUT
+        "RumHttpMethod.delete" -> RumResourceMethod.DELETE
+        "RumHttpMethod.patch" -> RumResourceMethod.PATCH
+        else -> RumResourceMethod.GET
     }
 }
 
