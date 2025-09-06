@@ -19,7 +19,7 @@ class ContainerRecorder implements ElementRecorder {
   CaptureNodeSemantics? captureSemantics(
     Element element,
     CapturedViewAttributes attributes,
-    CapturePrivacy capturePrivacy,
+    TreeCapturePrivacy capturePrivacy,
   ) {
     final widget = element.widget;
     // Material is also considered a container

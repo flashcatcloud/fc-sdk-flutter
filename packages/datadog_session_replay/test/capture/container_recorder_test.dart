@@ -26,9 +26,11 @@ void main() {
   setUp(() {
     recorder = SessionReplayRecorder.withCustomRecorders(
       [ContainerRecorder(KeyGenerator())],
-      defaultCapturePrivacy: CapturePrivacy(
+      defaultCapturePrivacy: TreeCapturePrivacy(
         textAndInputPrivacyLevel: TextAndInputPrivacyLevel.maskSensitiveInputs,
+        imagePrivacyLevel: ImagePrivacyLevel.maskNonAssetsOnly,
       ),
+      touchPrivacyLevel: TouchPrivacyLevel.show,
     );
 
     registerFallbackValue(

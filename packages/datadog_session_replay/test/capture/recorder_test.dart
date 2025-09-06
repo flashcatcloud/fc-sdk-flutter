@@ -45,10 +45,12 @@ void main() {
       when(() => mockTimeProvider.now()).thenReturn(expectedDateTime);
       recorder = SessionReplayRecorder(
         timeProvider: mockTimeProvider,
-        defaultCapturePrivacy: CapturePrivacy(
+        defaultCapturePrivacy: TreeCapturePrivacy(
           textAndInputPrivacyLevel:
               TextAndInputPrivacyLevel.maskSensitiveInputs,
+          imagePrivacyLevel: ImagePrivacyLevel.maskNonAssetsOnly,
         ),
+        touchPrivacyLevel: TouchPrivacyLevel.show,
       );
     });
 
@@ -83,10 +85,12 @@ void main() {
       recorder = SessionReplayRecorder.withCustomRecorders(
         [mockRecorderA],
         timeProvider: mockTimeProvider,
-        defaultCapturePrivacy: CapturePrivacy(
+        defaultCapturePrivacy: TreeCapturePrivacy(
           textAndInputPrivacyLevel:
               TextAndInputPrivacyLevel.maskSensitiveInputs,
+          imagePrivacyLevel: ImagePrivacyLevel.maskNonAssetsOnly,
         ),
+        touchPrivacyLevel: TouchPrivacyLevel.show,
       );
 
       registerFallbackValue(
@@ -97,8 +101,10 @@ void main() {
         ),
       );
       registerFallbackValue(
-        CapturePrivacy(
-          textAndInputPrivacyLevel: TextAndInputPrivacyLevel.maskAll,
+        TreeCapturePrivacy(
+          textAndInputPrivacyLevel:
+              TextAndInputPrivacyLevel.maskSensitiveInputs,
+          imagePrivacyLevel: ImagePrivacyLevel.maskNonAssetsOnly,
         ),
       );
       registerFallbackValue(MockElement());
@@ -238,7 +244,7 @@ void main() {
       expect(capture!.viewTreeSnapshot.nodes.length, 3);
     });
 
-    testWidgets('cpature subtree passes new capture privacy when overwritten', (
+    testWidgets('capture subtree passes new capture privacy when overwritten', (
       tester,
     ) async {
       // Given
@@ -252,8 +258,9 @@ void main() {
         }
         return SpecificElement(
           subtreeStrategy: subtreeStrategy,
-          subtreePrivacy: CapturePrivacy(
+          subtreePrivacy: TreeCapturePrivacy(
             textAndInputPrivacyLevel: TextAndInputPrivacyLevel.maskAll,
+            imagePrivacyLevel: ImagePrivacyLevel.maskAll,
           ),
           nodes: [MockCaptureNode()],
         );
@@ -278,16 +285,18 @@ void main() {
         () => mockRecorderA.captureSemantics(
           any(),
           any(),
-          CapturePrivacy(
+          TreeCapturePrivacy(
             textAndInputPrivacyLevel:
                 TextAndInputPrivacyLevel.maskSensitiveInputs,
+            imagePrivacyLevel: ImagePrivacyLevel.maskNonAssetsOnly,
           ),
         ),
         () => mockRecorderA.captureSemantics(
           any(),
           any(),
-          CapturePrivacy(
+          TreeCapturePrivacy(
             textAndInputPrivacyLevel: TextAndInputPrivacyLevel.maskAll,
+            imagePrivacyLevel: ImagePrivacyLevel.maskAll,
           ),
         ),
       ]);
@@ -426,10 +435,12 @@ void main() {
       );
       recorder = SessionReplayRecorder.withCustomRecorders(
         [mockElementRecorder],
-        defaultCapturePrivacy: CapturePrivacy(
+        defaultCapturePrivacy: TreeCapturePrivacy(
           textAndInputPrivacyLevel:
               TextAndInputPrivacyLevel.maskSensitiveInputs,
+          imagePrivacyLevel: ImagePrivacyLevel.maskNone,
         ),
+        touchPrivacyLevel: TouchPrivacyLevel.show,
       );
     });
 

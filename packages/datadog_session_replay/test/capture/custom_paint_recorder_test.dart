@@ -31,9 +31,11 @@ void main() {
   setUp(() {
     recorder = SessionReplayRecorder.withCustomRecorders(
       [CustomPaintRecorder(KeyGenerator())],
-      defaultCapturePrivacy: CapturePrivacy(
+      defaultCapturePrivacy: TreeCapturePrivacy(
         textAndInputPrivacyLevel: TextAndInputPrivacyLevel.maskSensitiveInputs,
+        imagePrivacyLevel: ImagePrivacyLevel.maskNonAssetsOnly,
       ),
+      touchPrivacyLevel: TouchPrivacyLevel.show,
     );
 
     registerFallbackValue(

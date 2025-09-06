@@ -6,28 +6,31 @@ import 'package:datadog_common_test/datadog_common_test.dart';
 import 'package:datadog_session_replay/datadog_session_replay.dart';
 import 'package:datadog_session_replay/src/capture/capture_node.dart';
 import 'package:datadog_session_replay/src/capture/recorder.dart';
-import 'package:datadog_session_replay/src/processor/processor_worker.dart';
+import 'package:datadog_session_replay/src/datadog_session_replay_platform_interface.dart';
 import 'package:datadog_session_replay/src/rum_context.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
-import '../test/capture/simple_test_capture.dart';
-import 'snapshot_renderer.dart';
-
-typedef TestActions = Future<void> Function();
+import 'golden_test_helpers.dart';
+import 'mock_platform.dart';
 
 void main() {
   late SessionReplayRecorder recorder;
   late RUMContext context;
+  late MockDatadogSessionReplayPlatform platform;
 
   setUp(() {
     recorder = SessionReplayRecorder(
-      defaultCapturePrivacy: CapturePrivacy(
+      defaultCapturePrivacy: TreeCapturePrivacy(
         textAndInputPrivacyLevel: TextAndInputPrivacyLevel.maskSensitiveInputs,
+        imagePrivacyLevel: ImagePrivacyLevel.maskNone,
       ),
+      touchPrivacyLevel: TouchPrivacyLevel.show,
     );
+    platform = MockDatadogSessionReplayPlatform();
+    DatadogSessionReplayPlatform.instance = platform;
 
     registerFallbackValue(
       CapturedViewAttributes(paintBounds: Rect.zero, scaleX: 1.0, scaleY: 1.0),
@@ -40,33 +43,9 @@ void main() {
     recorder.updateContext(context);
   });
 
-  Future<void> snapshotTest(
-    WidgetTester tester,
-    Widget fixture, {
-    TestActions? testActions,
-  }) async {
-    final processor = ProcessorWorker();
-    await tester.pumpWidget(
-      SimpleTestCapture(key: Key('key'), recorder: recorder, child: fixture),
-    );
-    await tester.pumpAndSettle();
-    await testActions?.call();
-
-    final capture = await recorder.performCapture();
-    // This is a test so safe to ignore invalid use lint
-    // ignore: invalid_use_of_visible_for_testing_member
-    final wireframes = processor.generateWireframes(capture!);
-
-    await tester.pumpWidget(
-      CustomPaint(painter: WireframeCustomPainter(wireframes)),
-    );
-    await tester.pumpAndSettle();
-    final goldenName = tester.testDescription.toLowerSnakeCase();
-    await expectLater(
-      find.byType(CustomPaint),
-      matchesGoldenFile('goldens/$goldenName.png'),
-    );
-  }
+  tearDown(() {
+    platform.clearImages();
+  });
 
   testWidgets('simple containers', (tester) async {
     final fixture = MaterialApp(
@@ -103,7 +82,7 @@ void main() {
         ),
       ),
     );
-    await snapshotTest(tester, fixture);
+    await snapshotTest(tester, recorder, fixture);
   });
 
   testWidgets('unfocused text fields', (tester) async {
@@ -140,7 +119,7 @@ void main() {
         ),
       ),
     );
-    await snapshotTest(tester, fixture);
+    await snapshotTest(tester, recorder, fixture);
   });
 
   testWidgets('focused material text field', (tester) async {
@@ -164,6 +143,7 @@ void main() {
     );
     await snapshotTest(
       tester,
+      recorder,
       fixture,
       testActions: () async {
         await tester.tap(find.byType(TextField));
@@ -193,6 +173,7 @@ void main() {
     );
     await snapshotTest(
       tester,
+      recorder,
       fixture,
       testActions: () async {
         final textField = find.byType(TextField);
@@ -223,6 +204,7 @@ void main() {
     );
     await snapshotTest(
       tester,
+      recorder,
       fixture,
       testActions: () async {
         await tester.tap(find.byType(CupertinoTextField));
@@ -250,6 +232,7 @@ void main() {
     );
     await snapshotTest(
       tester,
+      recorder,
       fixture,
       testActions: () async {
         final textField = find.byType(CupertinoTextField);
@@ -260,10 +243,35 @@ void main() {
       },
     );
   });
-}
 
-extension SnakeCase on String {
-  String toLowerSnakeCase() {
-    return toLowerCase().replaceAll(' ', '_');
-  }
+  testWidgets('image asset', (tester) async {
+    await tester.runAsync(() async {
+      await precacheImage(
+        AssetImage('assets/dd_logo_v_rgb.png'),
+        tester.binding.rootElement!,
+      );
+    });
+
+    final fixture = MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(title: const Text('Images')),
+        body: Center(
+          child: Padding(
+            padding: EdgeInsets.all(12),
+            child: Column(
+              spacing: 12,
+              children: [
+                SizedBox(
+                  width: 100,
+                  height: 100,
+                  child: Image.asset('assets/dd_logo_v_rgb.png'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+    await snapshotTest(tester, recorder, fixture);
+  });
 }

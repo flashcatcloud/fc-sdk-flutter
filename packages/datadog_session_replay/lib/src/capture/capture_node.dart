@@ -32,3 +32,38 @@ abstract class CaptureNode {
 
   List<SRWireframe> buildWireframes();
 }
+
+/// Common Attribute Nodes
+
+@immutable
+class PlaceholderNode extends CaptureNode {
+  final int wireframeId;
+
+  /// The text to display if the width of the element is above [minWidth].
+  final String caption;
+
+  /// The minimum width the node needs to be to display the provided [caption].
+  final int minWidth;
+
+  const PlaceholderNode(
+    super.attributes, {
+    required this.wireframeId,
+    required this.caption,
+    required this.minWidth,
+  }) : super();
+
+  @override
+  List<SRWireframe> buildWireframes() {
+    final label = attributes.width < minWidth ? null : caption;
+    return [
+      SRPlaceholderWireframe(
+        id: wireframeId,
+        x: attributes.x,
+        y: attributes.y,
+        width: attributes.width,
+        height: attributes.height,
+        label: label,
+      ),
+    ];
+  }
+}

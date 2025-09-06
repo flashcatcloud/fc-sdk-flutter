@@ -4,8 +4,11 @@
 
 import 'dart:ui' as ui;
 
+import 'package:datadog_session_replay/src/datadog_session_replay_platform_interface.dart';
 import 'package:datadog_session_replay/src/sr_data_models.dart';
 import 'package:flutter/material.dart';
+
+import 'mock_platform.dart';
 
 /// Takes a Session Replay record and renders it to a canvas.
 extension WireframeRendering on SRWireframe {
@@ -28,6 +31,9 @@ extension WireframeRendering on SRWireframe {
         break;
       case SRPlaceholderWireframe placeholder:
         placeholder.render(canvas);
+        break;
+      case SRImageWireframe image:
+        image.render(canvas);
         break;
       default:
         throw UnsupportedError('Error rendering wireframe: $runtimeType');
@@ -129,7 +135,49 @@ extension TextWireframeRendering on SRTextWireframe {
 }
 
 extension PlaceholderWireframeRendering on SRPlaceholderWireframe {
-  void render(Canvas canvas) {}
+  void render(Canvas canvas) {
+    canvas.save();
+    final paint =
+        Paint()
+          ..style = PaintingStyle.fill
+          ..color = Colors.grey;
+    canvas.drawRect(toRect(), paint);
+
+    if (label case final label?) {
+      final paragraphBuilder =
+          ui.ParagraphBuilder(ui.ParagraphStyle(textAlign: TextAlign.center))
+            ..pushStyle(ui.TextStyle(color: Colors.black))
+            ..addText(label);
+      final paragraph =
+          paragraphBuilder.build()
+            ..layout(ui.ParagraphConstraints(width: width.toDouble()));
+      // Approximate center height
+      final renderY = y + (height / 2.0);
+      canvas.drawParagraph(paragraph, Offset(x.toDouble(), renderY));
+    }
+
+    canvas.restore();
+  }
+}
+
+extension ImageWireframeRendering on SRImageWireframe {
+  void render(Canvas canvas) {
+    final mockPlatform =
+        DatadogSessionReplayPlatform.instance
+            as MockDatadogSessionReplayPlatform;
+    final imageData = mockPlatform.imageCache[resourceId!];
+    if (imageData != null && imageData.image != null) {
+      canvas.save();
+      Rect srcRect = Rect.fromLTWH(
+        0,
+        0,
+        imageData.width.toDouble(),
+        imageData.height.toDouble(),
+      );
+      canvas.drawImageRect(imageData.image!, srcRect, toRect(), Paint());
+      canvas.restore();
+    }
+  }
 }
 
 extension TextAlignHelper on SRAlignment {

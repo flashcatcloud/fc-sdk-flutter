@@ -39,9 +39,11 @@ class DatadogSessionReplay {
 
   DatadogSessionReplay._(this._configuration, this.internalLogger)
     : _recorder = SessionReplayRecorder(
-        defaultCapturePrivacy: CapturePrivacy(
+        defaultCapturePrivacy: TreeCapturePrivacy(
           textAndInputPrivacyLevel: _configuration.textAndInputPrivacyLevel,
+          imagePrivacyLevel: _configuration.imagePrivacyLevel,
         ),
+        touchPrivacyLevel: _configuration.touchPrivacyLevel,
       );
 
   void addElement(Key key, Element e) {
