@@ -85,7 +85,6 @@ build-flutter:
     - melos run analyze:dart
     - melos run unit_test:flutter
     - melos run golden_test:flutter
-    - melos run build:web
   artifacts:
     when: always
     expire_in: "30 days"
@@ -152,6 +151,7 @@ build-web:
   script:
     - !reference [.pre, script]
     - melos run build:web
+    - melos run unit_test:web
 
 # Integration Tests
 

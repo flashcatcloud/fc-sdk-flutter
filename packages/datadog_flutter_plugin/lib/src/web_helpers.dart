@@ -51,11 +51,11 @@ JSAny? valueToJs(Object? value, String parameterName) {
     return value.toJS;
   }
 
-  if (value is Map) {
+  if (value is Map<String, Object>) {
     final jsMap = JSObject();
     for (final item in value.entries) {
       jsMap.setProperty(
-          item.key, valueToJs(item.value, '$parameterName.${item.key}'));
+          item.key.toJS, valueToJs(item.value, '$parameterName.${item.key}'));
     }
     return jsMap;
   }
