@@ -30,6 +30,7 @@ import io.flutter.plugin.common.MethodChannel
 import io.mockk.mockkStatic
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.RepeatedTest
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.kotlin.any
@@ -601,6 +602,8 @@ class DatadogSdkPluginTest {
         // THEN
         val core = Datadog.getInstance()
         val coreFeature: Any = core.getPrivate("coreFeature")!!
+        // Ensure safe execution of setting tracking consent before trying to read it
+        Thread.sleep(10)
         val userInfo: UserInfo? = coreFeature
             .getFieldValue<Any, Any>("userInfoProvider")
             .getFieldValue("internalUserInfo")
