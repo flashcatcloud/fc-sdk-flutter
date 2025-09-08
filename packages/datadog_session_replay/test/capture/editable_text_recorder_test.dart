@@ -84,7 +84,7 @@ void main() {
     await tester.pumpWidget(tree);
 
     // When
-    final capture = recorder.performCapture();
+    final capture = await recorder.performCapture();
 
     // Then
     expect(capture!.viewTreeSnapshot.nodes.length, 2);
@@ -124,7 +124,7 @@ void main() {
     await tester.pumpWidget(tree);
 
     // When
-    final capture = recorder.performCapture();
+    final capture = await recorder.performCapture();
 
     // Then
     // Here, we get a top level material, the TextField border, and the Editable text
@@ -156,7 +156,7 @@ void main() {
     await tester.pumpWidget(tree);
 
     // When
-    final capture = recorder.performCapture();
+    final capture = await recorder.performCapture();
 
     // Then
     expect(capture!.viewTreeSnapshot.nodes.length, 3);
@@ -190,7 +190,7 @@ void main() {
     await tester.pumpWidget(tree);
 
     // When
-    final capture = recorder.performCapture();
+    final capture = await recorder.performCapture();
 
     // Then
     final capturedTextNode = capture!.viewTreeSnapshot.nodes.last;
@@ -221,7 +221,7 @@ void main() {
     await tester.pumpWidget(tree);
 
     // When
-    final capture = recorder.performCapture();
+    final capture = await recorder.performCapture();
 
     // Then
     final capturedTextNode = capture!.viewTreeSnapshot.nodes.last;
@@ -252,7 +252,7 @@ void main() {
     await tester.pumpWidget(tree);
 
     // When
-    final capture = recorder.performCapture();
+    final capture = await recorder.performCapture();
 
     // Then
     final capturedTextNode = capture!.viewTreeSnapshot.nodes.last;
@@ -291,7 +291,7 @@ void main() {
       await tester.pumpWidget(tree);
 
       // When
-      final capture = recorder.performCapture();
+      final capture = await recorder.performCapture();
 
       // Then
       final capturedTextNode = capture!.viewTreeSnapshot.nodes.last;

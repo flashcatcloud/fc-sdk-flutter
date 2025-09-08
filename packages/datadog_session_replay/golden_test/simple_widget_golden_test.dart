@@ -52,7 +52,7 @@ void main() {
     await tester.pumpAndSettle();
     await testActions?.call();
 
-    final capture = recorder.performCapture();
+    final capture = await recorder.performCapture();
     // This is a test so safe to ignore invalid use lint
     // ignore: invalid_use_of_visible_for_testing_member
     final wireframes = processor.generateWireframes(capture!);

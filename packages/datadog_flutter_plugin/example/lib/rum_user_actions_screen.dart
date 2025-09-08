@@ -2,6 +2,9 @@
 // This product includes software developed at Datadog (https://www.datadoghq.com/).
 // Copyright 2022-Present Datadog, Inc.
 
+// Ignore the fact that we're not using RadioGroup as that is Flutter 3.35 exclusive
+// ignore_for_file: deprecated_member_use
+
 import 'package:datadog_flutter_plugin/datadog_flutter_plugin.dart';
 import 'package:flutter/material.dart';
 
@@ -122,19 +125,19 @@ class _RumUserActionsScreenState extends State<RumUserActionsScreen> {
         Row(
           children: [
             Radio<int>(
+              groupValue: _radioValue,
+              onChanged: _updateRadioValue,
               value: 0,
-              groupValue: _radioValue,
-              onChanged: _updateRadioValue,
             ),
             Radio<int>(
+              groupValue: _radioValue,
+              onChanged: _updateRadioValue,
               value: 1,
-              groupValue: _radioValue,
-              onChanged: _updateRadioValue,
             ),
             Radio<int>(
-              value: 2,
               groupValue: _radioValue,
               onChanged: _updateRadioValue,
+              value: 2,
             )
           ],
         ),

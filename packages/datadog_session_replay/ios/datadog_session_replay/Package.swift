@@ -6,14 +6,14 @@ import PackageDescription
 let package = Package(
     name: "datadog_session_replay",
     platforms: [
-        .iOS("12.0"),
-        .macOS("12.0")
+        .iOS("13.0"),
+        .macOS("13.0")
     ],
     products: [
         .library(name: "datadog-session-replay", targets: ["datadog_session_replay", "datadog_session_replay_objc"])
     ],
     dependencies: [
-        .package(url: "https://github.com/Datadog/dd-sdk-ios.git", from: "2.20.0"),
+        .package(url: "https://github.com/Datadog/dd-sdk-ios.git", branch: "develop"),
     ],
     targets: [
         .target(

@@ -13,6 +13,10 @@ headers:
   entry-points:
     - 'ios/datadog_session_replay/Sources/ObjC/include/datadog_session_replay_bridge.h'
 exclude-all-by-default: true
+functions:
+  leaf:
+    include:
+      - '.*'
 objc-interfaces:
   include:
     - FlutterRUMCoreContext

@@ -16,12 +16,27 @@ import com.datadog.android.api.net.RequestFactory
 import com.datadog.android.api.storage.EventType
 import com.datadog.android.api.storage.FeatureStorageConfiguration
 import com.datadog.android.api.storage.RawBatchEvent
+import com.datadoghq.flutter.sessionreplay.resource.DefaultResourceResolver
+import com.datadoghq.flutter.sessionreplay.resource.DefaultResourceWriter
+import com.datadoghq.flutter.sessionreplay.resource.ResourceFeature
+import com.datadoghq.flutter.sessionreplay.resource.ResourceResolver
 
-class FlutterSessionReplayFeature(
+internal interface FlutterSessionReplayFeature : StorageBackedFeature {
+    fun setHasReplay(viewId: String, hasReplay: Boolean)
+    fun setRecordCount(viewId: String, recordCount: Int)
+    fun writeSegment(segment: String)
+
+    val resourceResolver: ResourceResolver
+}
+
+internal class DefaultFlutterSessionReplayFeature(
     private val sdkCore: FeatureSdkCore,
     private val onContextChanged: (RumContext) -> Unit,
     private val customEndpointUrl: String?
-) : StorageBackedFeature, FeatureEventReceiver, FeatureContextUpdateReceiver {
+) : FlutterSessionReplayFeature,
+    StorageBackedFeature,
+    FeatureEventReceiver,
+    FeatureContextUpdateReceiver {
     data class RumContext(
         val applicationId: String?,
         val sessionId: String?,
@@ -36,6 +51,11 @@ class FlutterSessionReplayFeature(
         )
     }
 
+    override val resourceResolver = DefaultResourceResolver(
+        sdkCore.internalLogger,
+        DefaultResourceWriter(sdkCore)
+    )
+
     override val name = Feature.SESSION_REPLAY_FEATURE_NAME
     override val storageConfiguration = STORAGE_CONFIGURATION
 
@@ -48,13 +68,18 @@ class FlutterSessionReplayFeature(
 
     override fun onInitialize(appContext: Context) {
         sdkCore.setContextUpdateReceiver(
-            Feature.SESSION_REPLAY_FEATURE_NAME,
             this
         )
         sdkCore.setEventReceiver(
             Feature.SESSION_REPLAY_FEATURE_NAME,
             this
         )
+
+        val resourcesFeature = ResourceFeature(
+            sdkCore,
+            customEndpointUrl
+        )
+        sdkCore.registerFeature(resourcesFeature)
     }
 
     override fun onStop() {
@@ -70,7 +95,7 @@ class FlutterSessionReplayFeature(
         }
     }
 
-    fun setHasReplay(viewId: String, hasReplay: Boolean) {
+    override fun setHasReplay(viewId: String, hasReplay: Boolean) {
         sdkCore.updateFeatureContext(Feature.SESSION_REPLAY_FEATURE_NAME) {
             @Suppress("UNCHECKED_CAST")
             val viewMetadata: MutableMap<String, Any?> =
@@ -80,7 +105,7 @@ class FlutterSessionReplayFeature(
         }
     }
 
-    fun setRecordCount(viewId: String, recordCount: Int) {
+    override fun setRecordCount(viewId: String, recordCount: Int) {
         sdkCore.updateFeatureContext(Feature.SESSION_REPLAY_FEATURE_NAME) {
             @Suppress("UNCHECKED_CAST")
             val viewMetadata: MutableMap<String, Any?> =
@@ -91,17 +116,19 @@ class FlutterSessionReplayFeature(
         }
     }
 
-    fun writeSegment(segment: String) {
+    override fun writeSegment(segment: String) {
         sdkCore.getFeature(Feature.SESSION_REPLAY_FEATURE_NAME)
-            ?.withWriteContext { _, eventBatchWriter ->
+            ?.withWriteContext { _, writeScope ->
                 synchronized(this) {
                     val serializedSegment = segment.toByteArray(Charsets.UTF_8)
                     val rawBatchEvent = RawBatchEvent(data = serializedSegment)
-                    eventBatchWriter.write(
-                        event = rawBatchEvent,
-                        batchMetadata = null,
-                        eventType = EventType.DEFAULT
-                    )
+                    writeScope {
+                        it.write(
+                            event = rawBatchEvent,
+                            batchMetadata = null,
+                            eventType = EventType.DEFAULT
+                        )
+                    }
                 }
             }
     }

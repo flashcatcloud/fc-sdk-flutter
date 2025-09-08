@@ -4,11 +4,10 @@
  * Copyright 2025-Present Datadog, Inc.
  */
 
-package com.datadoghq.flutter.sessionreplay
+package com.datadoghq.flutter.sessionreplay.feature
 
 import assertk.assertThat
 import assertk.assertions.isEqualTo
-import com.datadoghq.flutter.sessionreplay.feature.BytesCompressor
 import com.datadoghq.flutter.sessionreplay.forge.SRForgeConfigurator
 import com.datadoghq.flutter.sessionreplay.models.EnrichedRecord
 import fr.xgouchet.elmyr.annotation.Forgery

@@ -68,7 +68,7 @@ void main() {
       await tester.pumpWidget(tree);
 
       // When
-      final capture = recorder.performCapture();
+      final capture = await recorder.performCapture();
 
       // Then
       expect(capture, isNotNull);
@@ -120,7 +120,7 @@ void main() {
       await tester.pumpWidget(tree);
 
       // When
-      final capture = recorder.performCapture();
+      final capture = await recorder.performCapture();
 
       // Then
       expect(capture, isNotNull);
@@ -169,7 +169,7 @@ void main() {
       await tester.pumpWidget(tree);
 
       // When
-      final capture = recorder.performCapture();
+      final capture = await recorder.performCapture();
 
       // Then
       expect(capture, isNotNull);
@@ -215,7 +215,7 @@ void main() {
       await tester.pumpWidget(tree);
 
       // When
-      final capture = recorder.performCapture();
+      final capture = await recorder.performCapture();
 
       // Then
       expect(capture, isNotNull);
@@ -269,7 +269,7 @@ void main() {
       await tester.pumpWidget(tree);
 
       // When
-      final capture = recorder.performCapture();
+      final capture = await recorder.performCapture();
 
       // Then
       expect(capture, isNotNull);
@@ -319,7 +319,7 @@ void main() {
       await tester.pumpWidget(tree);
 
       // When
-      final capture = recorder.performCapture();
+      final capture = await recorder.performCapture();
 
       // Then
       expect(capture, isNotNull);
@@ -373,7 +373,7 @@ void main() {
       await tester.pumpWidget(tree);
 
       // When
-      final capture = recorder.performCapture();
+      final capture = await recorder.performCapture();
 
       // Then
       expect(capture, isNotNull);
@@ -415,7 +415,7 @@ void main() {
       await tester.pumpWidget(tree);
 
       // When
-      final capture = recorder.performCapture();
+      final capture = await recorder.performCapture();
 
       // Then
       expect(capture, isNotNull);
@@ -463,7 +463,7 @@ void main() {
       await tester.pumpWidget(tree);
 
       // When
-      final capture = recorder.performCapture();
+      final capture = await recorder.performCapture();
 
       // Then
       expect(capture, isNotNull);
@@ -510,7 +510,7 @@ void main() {
       await tester.pumpWidget(tree);
 
       // When
-      final capture = recorder.performCapture();
+      final capture = await recorder.performCapture();
 
       // Then
       expect(capture, isNotNull);
@@ -556,7 +556,7 @@ void main() {
       await tester.pumpWidget(tree);
 
       // When
-      final capture = recorder.performCapture();
+      final capture = await recorder.performCapture();
 
       // Then
       final expectedTintedColor = ElevationOverlay.applySurfaceTint(

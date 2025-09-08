@@ -30,6 +30,7 @@ import io.flutter.plugin.common.MethodChannel
 import io.mockk.mockkStatic
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.RepeatedTest
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.kotlin.any
@@ -79,6 +80,7 @@ class DatadogSdkPluginTest {
             "value" to ContractParameter.Type(SupportedContractType.STRING)
         )),
         Contract("setUserInfo", mapOf(
+            "id" to ContractParameter.Type(SupportedContractType.STRING),
             "extraInfo" to ContractParameter.Type(SupportedContractType.MAP)
         )),
         Contract("addUserExtraInfo", mapOf(
@@ -560,6 +562,8 @@ class DatadogSdkPluginTest {
         // THEN
         val core = Datadog.getInstance()
         val coreFeature: Any = core.getPrivate("coreFeature")!!
+        // Ensure safe execution of setting tracking consent before trying to read it
+        Thread.sleep(10)
         val trackingConsent: TrackingConsent? = coreFeature
             .getFieldValue<Any, Any>("trackingConsentProvider")
             .getFieldValue("consent")
@@ -598,6 +602,8 @@ class DatadogSdkPluginTest {
         // THEN
         val core = Datadog.getInstance()
         val coreFeature: Any = core.getPrivate("coreFeature")!!
+        // Ensure safe execution of setting tracking consent before trying to read it
+        Thread.sleep(10)
         val userInfo: UserInfo? = coreFeature
             .getFieldValue<Any, Any>("userInfoProvider")
             .getFieldValue("internalUserInfo")
@@ -619,7 +625,7 @@ class DatadogSdkPluginTest {
         )
         plugin.initialize(config, TrackingConsent.GRANTED)
 
-        val id = forge.aNullable { forge.aString() }
+        val id = forge.aString()
         val name = forge.aNullable { forge.aString() }
         val email = forge.aNullable { forge.aString() }
         val extraInfo = forge.exhaustiveAttributes()
@@ -661,10 +667,12 @@ class DatadogSdkPluginTest {
         )
         plugin.initialize(config, TrackingConsent.GRANTED)
 
+        val id = forge.aString()
         val extraInfo = forge.exhaustiveAttributes()
         val methodCall = MethodCall(
             "addUserExtraInfo",
             mapOf(
+                "id" to id,
                 "extraInfo" to extraInfo
             )
         )
@@ -676,6 +684,8 @@ class DatadogSdkPluginTest {
         // THEN
         val core = Datadog.getInstance()
         val coreFeature: Any = core.getPrivate("coreFeature")!!
+        // Ensure safe write before attempting to read
+        Thread.sleep(10)
         val userInfo: UserInfo? = coreFeature
             .getFieldValue<Any, Any>("userInfoProvider")
             .getFieldValue("internalUserInfo")

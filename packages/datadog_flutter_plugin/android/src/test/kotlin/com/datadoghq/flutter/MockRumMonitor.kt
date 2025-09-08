@@ -63,6 +63,10 @@ class MockRumMonitor : RumMonitor {
         mockMonitor.addTiming(name)
     }
 
+    override fun addViewAttributes(attributes: Map<String, Any?>) {
+        mockMonitor.addViewAttributes(attributes)
+    }
+
     @ExperimentalRumApi
     override fun addViewLoadingTime(overwrite: Boolean) {
         mockMonitor.addViewLoadingTime(overwrite)
@@ -80,6 +84,10 @@ class MockRumMonitor : RumMonitor {
         mockMonitor.removeAttribute(key)
     }
 
+    override fun removeViewAttributes(attributes: Collection<String>) {
+        mockMonitor.removeViewAttributes(attributes)
+    }
+
     override fun startAction(type: RumActionType, name: String, attributes: Map<String, Any?>) {
         mockMonitor.startAction(type, name, attributes)
     }
@@ -87,16 +95,6 @@ class MockRumMonitor : RumMonitor {
     override fun startResource(
         key: String,
         method: RumResourceMethod,
-        url: String,
-        attributes: Map<String, Any?>
-    ) {
-        mockMonitor.startResource(key, method, url, attributes)
-    }
-
-    @Deprecated("Deprecated")
-    override fun startResource(
-        key: String,
-        method: String,
         url: String,
         attributes: Map<String, Any?>
     ) {

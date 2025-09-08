@@ -3,6 +3,7 @@
 // Copyright 2025-Present Datadog, Inc.
 import 'dart:async';
 
+import 'package:flutter/services.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 import '../datadog_session_replay.dart';
@@ -47,4 +48,13 @@ abstract class DatadogSessionReplayPlatform extends PlatformInterface {
   FutureOr<void> telemetryDebug(String id, String message);
 
   FutureOr<void> telemetryError(String message, String kind, String stack);
+
+  FutureOr<void> saveImageForProcessing(
+    int resourceKey,
+    int width,
+    int height,
+    ByteData byteData,
+  );
+
+  String? resourceIdForKey(int resourceKey);
 }

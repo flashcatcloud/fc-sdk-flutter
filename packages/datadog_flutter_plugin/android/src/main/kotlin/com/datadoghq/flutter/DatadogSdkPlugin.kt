@@ -123,6 +123,9 @@ class DatadogSdkPlugin : FlutterPlugin, MethodCallHandler {
                 val value = call.argument<String>(ARG_VALUE)
                 if (value != null) {
                     val trackingConsent = parseTrackingConsent(value)
+                    if (trackingConsent != TrackingConsent.NOT_GRANTED) {
+                        println("Stop")
+                    }
                     Datadog.setTrackingConsent(trackingConsent)
                     result.success(null)
                 } else {
@@ -134,7 +137,7 @@ class DatadogSdkPlugin : FlutterPlugin, MethodCallHandler {
                 val name = call.argument<String>("name")
                 val email = call.argument<String>("email")
                 val extraInfo = call.argument<Map<String, Any?>>("extraInfo")
-                if (extraInfo != null) {
+                if (id != null && extraInfo != null) {
                     Datadog.setUserInfo(id, name, email, extraInfo)
                     result.success(null)
                 } else {
