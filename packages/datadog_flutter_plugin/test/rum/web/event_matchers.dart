@@ -34,58 +34,113 @@ class _ResourceEventMatcher extends Matcher {
     StringBuffer mismatch = StringBuffer();
 
     _compareProperties(
-        'date', expectedResource.date, actualResource.date, mismatch);
+      'date',
+      expectedResource.date,
+      actualResource.date,
+      mismatch,
+    );
     _compareProperties(
-        'type', expectedResource.type, actualResource.type, mismatch);
-    _compareProperties('resource.id', expectedResource.resource.id,
-        actualResource.resource.id, mismatch);
-    _compareProperties('resource.type', expectedResource.resource.type,
-        actualResource.resource.type, mismatch);
-    _compareProperties('resource.duration', expectedResource.resource.duration,
-        actualResource.resource.duration, mismatch);
-    _compareProperties('resource.url', expectedResource.resource.url,
-        actualResource.resource.url, mismatch);
-    _compareProperties('resource.method', expectedResource.resource.method,
-        actualResource.resource.method, mismatch);
+      'type',
+      expectedResource.type,
+      actualResource.type,
+      mismatch,
+    );
     _compareProperties(
-        'resource.statusCode',
-        expectedResource.resource.statusCode,
-        actualResource.resource.statusCode,
-        mismatch);
-    _compareProperties('resource.size', expectedResource.resource.size,
-        actualResource.resource.size, mismatch);
+      'resource.type',
+      expectedResource.resource.type,
+      actualResource.resource.type,
+      mismatch,
+    );
     _compareProperties(
-        'resource.encodedBodySize',
-        expectedResource.resource.encodedBodySize,
-        actualResource.resource.encodedBodySize,
-        mismatch);
+      'resource.duration',
+      expectedResource.resource.duration,
+      actualResource.resource.duration,
+      mismatch,
+    );
     _compareProperties(
-        'resource.decodedBodySize',
-        expectedResource.resource.decodedBodySize,
-        actualResource.resource.decodedBodySize,
-        mismatch);
+      'resource.url',
+      expectedResource.resource.url,
+      actualResource.resource.url,
+      mismatch,
+    );
     _compareProperties(
-        'resource.transferSize',
-        expectedResource.resource.transferSize,
-        actualResource.resource.transferSize,
-        mismatch);
+      'resource.method',
+      expectedResource.resource.method,
+      actualResource.resource.method,
+      mismatch,
+    );
     _compareProperties(
-        'resource.renderBlockingStatus',
-        expectedResource.resource.renderBlockingStatus,
-        actualResource.resource.renderBlockingStatus,
-        mismatch);
-    _compareProperties('resource.protocol', expectedResource.resource.protocol,
-        actualResource.resource.protocol, mismatch);
+      'resource.statusCode',
+      expectedResource.resource.statusCode,
+      actualResource.resource.statusCode,
+      mismatch,
+    );
+    _compareProperties(
+      'resource.size',
+      expectedResource.resource.size,
+      actualResource.resource.size,
+      mismatch,
+    );
+    _compareProperties(
+      'resource.encodedBodySize',
+      expectedResource.resource.encodedBodySize,
+      actualResource.resource.encodedBodySize,
+      mismatch,
+    );
+    _compareProperties(
+      'resource.decodedBodySize',
+      expectedResource.resource.decodedBodySize,
+      actualResource.resource.decodedBodySize,
+      mismatch,
+    );
+    _compareProperties(
+      'resource.transferSize',
+      expectedResource.resource.transferSize,
+      actualResource.resource.transferSize,
+      mismatch,
+    );
+    _compareProperties(
+      'resource.renderBlockingStatus',
+      expectedResource.resource.renderBlockingStatus,
+      actualResource.resource.renderBlockingStatus,
+      mismatch,
+    );
+    _compareProperties(
+      'resource.protocol',
+      expectedResource.resource.protocol,
+      actualResource.resource.protocol,
+      mismatch,
+    );
     _compareContext(
-        'context', expectedResource.context, actualResource.context, mismatch);
-    _compareProperties('dd.discarded', expectedResource.dd.discarded,
-        actualResource.dd.discarded, mismatch);
-    _compareProperties('dd.traceId', expectedResource.dd.traceId,
-        actualResource.dd.traceId, mismatch);
-    _compareProperties('dd.spanId', expectedResource.dd.spanId,
-        actualResource.dd.spanId, mismatch);
-    _compareProperties('dd.rulePsr', expectedResource.dd.rulePsr,
-        actualResource.dd.rulePsr, mismatch);
+      'context',
+      expectedResource.context,
+      actualResource.context,
+      mismatch,
+    );
+    _compareProperties(
+      'dd.discarded',
+      expectedResource.dd.discarded,
+      actualResource.dd.discarded,
+      mismatch,
+    );
+    _compareProperties(
+      'dd.traceId',
+      expectedResource.dd.traceId,
+      actualResource.dd.traceId,
+      mismatch,
+    );
+    _compareProperties(
+      'dd.spanId',
+      expectedResource.dd.spanId,
+      actualResource.dd.spanId,
+      mismatch,
+    );
+    _compareProperties(
+      'dd.rulePsr',
+      expectedResource.dd.rulePsr,
+      actualResource.dd.rulePsr,
+      mismatch,
+    );
 
     if (mismatch.isNotEmpty) {
       matchState['mismatch'] = mismatch.toString();
@@ -95,8 +150,12 @@ class _ResourceEventMatcher extends Matcher {
   }
 
   @override
-  Description describeMismatch(Object? item, Description mismatchDescription,
-      Map<dynamic, dynamic> matchState, bool verbose) {
+  Description describeMismatch(
+    Object? item,
+    Description mismatchDescription,
+    Map<dynamic, dynamic> matchState,
+    bool verbose,
+  ) {
     Object? mismatch = matchState['mismatch'];
     if (mismatch is String) {
       mismatchDescription.add(mismatch);
@@ -132,15 +191,23 @@ class _ContextMatcher extends Matcher {
   }
 }
 
-void _compareProperties(String propertyName, Object? expected, Object? actual,
-    StringBuffer mismatch) {
+void _compareProperties(
+  String propertyName,
+  Object? expected,
+  Object? actual,
+  StringBuffer mismatch,
+) {
   if (expected != actual) {
     mismatch.writeln('$propertyName is $actual instead of $expected');
   }
 }
 
-void _compareContext(String propertyName, Object? expected, Object? actual,
-    StringBuffer mismatch) {
+void _compareContext(
+  String propertyName,
+  Object? expected,
+  Object? actual,
+  StringBuffer mismatch,
+) {
   // ignore: invalid_runtime_check_with_js_interop_types
   if (expected is! JSObject) {
     mismatch.write('expected $propertyName is not a JSObject');
@@ -157,7 +224,8 @@ void _compareContext(String propertyName, Object? expected, Object? actual,
 
   if (expectedKeys.length != actualKeys.length) {
     mismatch.writeln(
-        'expected $propertyName length is ${actualKeys.length} instead of ${expectedKeys.length}');
+      'expected $propertyName length is ${actualKeys.length} instead of ${expectedKeys.length}',
+    );
   }
 
   for (int i = 0; i < expectedKeys.length; ++i) {
@@ -170,7 +238,8 @@ void _compareContext(String propertyName, Object? expected, Object? actual,
     }
     if (expectedValue != actualValue) {
       mismatch.writeln(
-          '$propertyName.$key is $actualValue instead of $expectedValue.');
+        '$propertyName.$key is $actualValue instead of $expectedValue.',
+      );
     }
   }
 }
