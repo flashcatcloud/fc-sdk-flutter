@@ -25,7 +25,10 @@ class MockElement extends Mock implements Element {
   }
 }
 
-class MockElementRecorder extends Mock implements ElementRecorder {}
+class MockElementRecorder extends Mock implements ElementRecorder {
+  @override
+  List<Type> get handlesTypes => [SimpleTestCapture, Placeholder, Center];
+}
 
 class MockCaptureNode extends Mock implements CaptureNode {}
 
@@ -195,7 +198,6 @@ void main() {
         final testedTree = SimpleTestCapture(
           key: UniqueKey(),
           recorder: recorder,
-          child: Container(),
         );
         await tester.pumpWidget(testedTree);
         final capture = await recorder.performCapture();

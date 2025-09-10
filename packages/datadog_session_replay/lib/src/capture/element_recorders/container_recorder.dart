@@ -16,6 +16,9 @@ class ContainerRecorder implements ElementRecorder {
   const ContainerRecorder(this.keyGenerator);
 
   @override
+  List<Type> get handlesTypes => [ColoredBox, Material, DecoratedBox];
+
+  @override
   CaptureNodeSemantics? captureSemantics(
     Element element,
     CapturedViewAttributes attributes,

@@ -29,6 +29,9 @@ class ImageRecorder implements ElementRecorder {
   const ImageRecorder(this.keyGenerator);
 
   @override
+  List<Type> get handlesTypes => [RawImage, Image];
+
+  @override
   CaptureNodeSemantics? captureSemantics(
     Element element,
     CapturedViewAttributes attributes,
