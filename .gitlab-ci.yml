@@ -146,8 +146,9 @@ build-ios:
 build-web:
   stage: build
   except: [ schedules ]
-  tags: [ "arch:amd64" ]
-  image: $CI_IMAGE_DOCKER
+  tags:
+    - macos:sonoma
+    - specific:true
   script:
     - !reference [.pre, script]
     - melos run build:web
