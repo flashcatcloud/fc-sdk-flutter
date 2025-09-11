@@ -111,7 +111,7 @@ class SessionReplayRecorder {
   RUMContext? _currentContext;
   bool _captureInProgress = false;
   TreeCapturePrivacy _defaultTreeCapturePrivacy;
-  // Ignore for now. Will be tackled shortly
+  // TODO(RUM-11681): Support touch privacy
   // ignore: unused_field
   TouchPrivacyLevel _touchPrivacyLevel;
 

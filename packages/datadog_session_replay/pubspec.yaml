@@ -34,7 +34,7 @@ dev_dependencies:
   datadog_common_test:
     path: ../datadog_common_test
 
-flutter:  
+flutter:
   plugin:
     platforms:
       android:
