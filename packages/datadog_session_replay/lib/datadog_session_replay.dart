@@ -35,7 +35,7 @@ enum ImagePrivacyLevel {
 
 /// Available privacy levels for touch masking in Session Replay.
 ///
-/// Unlike other privacy levels, the TouchPrivacyLevel is global and cannot
+/// Unlike other privacy levels, the [TouchPrivacyLevel] is global and cannot
 /// currently be overriden in subtrees using the [SessionReplayPrivacy] widget.
 enum TouchPrivacyLevel {
   /// Show all user touches.
@@ -45,7 +45,7 @@ enum TouchPrivacyLevel {
   hide,
 }
 
-/// Configuration options for Flutter Session replay, including
+/// Configuration options for Session Replay, including
 /// default privacy levels.
 class DatadogSessionReplayConfiguration {
   /// The sampling rate for Session Replay. This is applied in addition to the

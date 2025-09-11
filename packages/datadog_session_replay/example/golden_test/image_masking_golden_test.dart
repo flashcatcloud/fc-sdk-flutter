@@ -29,7 +29,7 @@ void main() {
   late MockDatadogSessionReplayPlatform platform;
 
   setUp(() {
-    // Needed to fetch newtork images
+    // Needed to fetch network images
     final httpOverride = HttpOverrides.current;
     HttpOverrides.global = null;
     addTearDown(() => HttpOverrides.global = httpOverride);
