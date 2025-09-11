@@ -35,6 +35,7 @@ stages:
     - export PATH=$PATH:$HOME/.pub-cache/bin
     - flutter upgrade
     - flutter --version
+    - flutter doctor
     # SPM is the exception, make sure its disabled before starting the build
     - flutter config --no-enable-swift-package-manager
     - dart pub global activate melos
