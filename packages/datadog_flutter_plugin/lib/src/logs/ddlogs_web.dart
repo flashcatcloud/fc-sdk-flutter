@@ -25,6 +25,9 @@ class DdLogsWeb extends DdLogsPlatform {
       site: siteStringForSite(configuration.site),
       service: configuration.service,
       version: configuration.versionTag,
+      variant: configuration.flavor,
+      source: 'flutter',
+      sdkVersion: DatadogSdk.sdkVersion,
     ));
   }
 
@@ -166,6 +169,9 @@ extension type _LogInitOptions._(JSObject _) implements JSObject {
   external String? get proxy;
   external String? get service;
   external String? get version;
+  external String? get source;
+  external String? get sdkVersion;
+  external String? get variant;
 
   external factory _LogInitOptions({
     String clientToken,
@@ -174,6 +180,9 @@ extension type _LogInitOptions._(JSObject _) implements JSObject {
     String? service,
     String? proxy,
     String? version,
+    String? source,
+    String? sdkVersion,
+    String? variant,
   });
 }
 

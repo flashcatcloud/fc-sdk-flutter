@@ -79,6 +79,9 @@ class DdRumWeb extends DdRumPlatform {
         // TODO(RUM-11211): Support and document web configuration options.
         compressIntakeRequests: false,
         plugins: plugins,
+        variant: configuration.flavor,
+        source: 'flutter',
+        sdkVersion: DatadogSdk.sdkVersion,
       ),
     );
   }
@@ -402,6 +405,9 @@ extension type _RumInitOptions._(JSObject _) implements JSObject {
   external JSArray get enableExperimentalFeatures;
   external bool get compressIntakeRequests;
   external JSArray? get plugins;
+  external String? get source;
+  external String? get sdkVersion;
+  external String? get variant;
 
   external factory _RumInitOptions({
     String applicationId,
@@ -429,6 +435,9 @@ extension type _RumInitOptions._(JSObject _) implements JSObject {
     JSArray enableExperimentalFeatures,
     bool compressIntakeRequests,
     JSArray? plugins,
+    String? source,
+    String? sdkVersion,
+    String? variant,
   });
 }
 
