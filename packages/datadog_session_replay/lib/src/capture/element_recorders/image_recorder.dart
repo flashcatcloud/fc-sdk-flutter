@@ -66,7 +66,7 @@ class ImageRecorder implements ElementRecorder {
 
     final elementId = keyGenerator.keyForElement(element);
     // AssetImages loosen their masking to [ImagePrivacyLevel.maskNone] when
-    // they. need to, so if [ImagePrivacyLevel.maskNonAssetsOnly] is still set, then
+    // they need to, so if [ImagePrivacyLevel.maskNonAssetsOnly] is still set, then
     // we shouldn't capture this image.
     bool shouldCaptureImage =
         capturePrivacy.imagePrivacyLevel == ImagePrivacyLevel.maskNone;

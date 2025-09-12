@@ -52,7 +52,7 @@ class DatadogSessionReplayConfiguration {
   /// RUM session sample rate.
   ///
   /// It must be a number between 0.0 and 100.0, where 0 means no replays will
-  /// be recorded and 100 means all RUM sessions will contain replay.
+  /// be recorded and 100 means all sampled RUM sessions will contain replay.
   ///
   /// Note: This sample rate is applied in addition to the RUM sample rate. For
   /// example, if RUM uses a sample rate of 80% and Session Replay uses a sample
@@ -61,12 +61,12 @@ class DatadogSessionReplayConfiguration {
   double replaySampleRate;
 
   /// Defines the way text and input (e.g. TextFields and CheckBoxes) should be
-  /// masked.
+  /// captured.
   ///
   /// Defaults to [TextAndInputPrivacyLevel.maskAll]
   TextAndInputPrivacyLevel textAndInputPrivacyLevel;
 
-  /// Defines image privacy level.
+  /// Defines the way images should be captured.
   ///
   /// Defaults to [ImagePrivacyLevel.maskAll]
   ImagePrivacyLevel imagePrivacyLevel;
