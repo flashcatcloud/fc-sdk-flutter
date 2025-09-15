@@ -54,8 +54,9 @@ JSAny? valueToJs(Object? value, String parameterName) {
   if (value is Map) {
     final jsMap = JSObject();
     for (final item in value.entries) {
+      String key = item.key is String ? item.key : item.key.toString();
       jsMap.setProperty(
-          item.key, valueToJs(item.value, '$parameterName.${item.key}'));
+          key.toJS, valueToJs(item.value, '$parameterName.${item.key}'));
     }
     return jsMap;
   }
