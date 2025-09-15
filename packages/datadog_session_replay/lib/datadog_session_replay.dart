@@ -9,7 +9,7 @@ import 'src/datadog_session_replay_plugin.dart';
 export 'src/datadog_session_replay.dart' show DatadogSessionReplay;
 export 'src/widgets.dart' show SessionReplayCapture, SessionReplayPrivacy;
 
-/// Privacy levels for text and input masking in Session Replay
+/// Available privacy levels for text and input masking in Session Replay.
 enum TextAndInputPrivacyLevel {
   /// Show all text except sensitive inputs (those with [EditableText.obscureText] set)
   maskSensitiveInputs,
