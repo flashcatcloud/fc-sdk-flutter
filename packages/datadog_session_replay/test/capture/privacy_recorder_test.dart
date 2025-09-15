@@ -5,16 +5,19 @@
 import 'dart:ui' as ui;
 
 import 'package:datadog_common_test/datadog_common_test.dart';
+import 'package:datadog_flutter_plugin/datadog_internal.dart';
 import 'package:datadog_session_replay/datadog_session_replay.dart';
 import 'package:datadog_session_replay/src/capture/capture_node.dart';
 import 'package:datadog_session_replay/src/capture/element_recorders/image_recorder.dart';
 import 'package:datadog_session_replay/src/capture/element_recorders/privacy_recorder.dart';
 import 'package:datadog_session_replay/src/capture/element_recorders/text_recorder.dart';
+import 'package:datadog_session_replay/src/capture/pointer_capture.dart';
 import 'package:datadog_session_replay/src/capture/recorder.dart';
 import 'package:datadog_session_replay/src/capture/text_masking.dart';
 import 'package:datadog_session_replay/src/capture/view_tree_snapshot.dart';
 import 'package:datadog_session_replay/src/rum_context.dart';
 import 'package:datadog_session_replay/src/sr_data_models.dart';
+import 'package:datadog_session_replay/src/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -325,6 +328,61 @@ void main() {
       expect(builtWireframes.length, 1);
       final wireframe = builtWireframes.first as SRPlaceholderWireframe;
       expect(wireframe.label, 'Image');
+    });
+
+    testWidgets('overriding touch privacy prevents touch recording', (
+      tester,
+    ) async {
+      // Given
+      final x = randomDouble(min: 10, max: 50);
+      final y = randomDouble(min: 10, max: 50);
+      final pointerRecorder = PointerSnapshotRecorder(DefaultTimeProvider());
+
+      bool wasTapped = false;
+      final tree = MaterialApp(
+        home: SimpleTestCapture(
+          key: Key('key'),
+          recorder: recorder,
+          child: PointerSnapshotRecorderProvider(
+            recorder: pointerRecorder,
+            child: PointerRecorder(
+              pointerRecorder: pointerRecorder,
+              child: Stack(
+                children: [
+                  Positioned(
+                    top: y,
+                    left: x,
+                    width: 50.0,
+                    height: 50.0,
+                    child: SessionReplayPrivacy(
+                      touchPrivacyLevel: TouchPrivacyLevel.hide,
+                      child: MaterialButton(
+                        onPressed: () {
+                          wasTapped = true;
+                        },
+                        child: Text('Test Button'),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpWidget(tree);
+      await tester.tap(find.byType(MaterialButton));
+      await tester.pumpAndSettle();
+
+      // When
+      CaptureResult? capture;
+      await tester.runAsync(() async {
+        capture = await recorder.performCapture();
+      });
+
+      // Then
+      expect(wasTapped, isTrue);
+      expect(capture!.pointerSnapshot, isNull);
     });
   });
 }

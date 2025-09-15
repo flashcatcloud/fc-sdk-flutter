@@ -33,6 +33,7 @@ void main() async {
   )..enableSessionReplay(
     DatadogSessionReplayConfiguration(
       textAndInputPrivacyLevel: TextAndInputPrivacyLevel.maskSensitiveInputs,
+      touchPrivacyLevel: TouchPrivacyLevel.show,
       replaySampleRate: 1.0,
     ),
   );

@@ -34,6 +34,8 @@ class DatadogSessionReplay {
   final SessionReplayProcessor _processor = SessionReplayProcessor();
   final SessionReplayRecorder _recorder;
 
+  final TouchPrivacyLevel defaultTouchPrivacyLevel;
+
   int _errorCounter = 0;
   bool _newFrameBuilt = true;
 
@@ -49,7 +51,8 @@ class DatadogSessionReplay {
   }
 
   DatadogSessionReplay._(this._configuration, this.internalLogger)
-    : _recorder = SessionReplayRecorder(
+    : defaultTouchPrivacyLevel = _configuration.touchPrivacyLevel,
+      _recorder = SessionReplayRecorder(
         defaultCapturePrivacy: TreeCapturePrivacy(
           textAndInputPrivacyLevel: _configuration.textAndInputPrivacyLevel,
           imagePrivacyLevel: _configuration.imagePrivacyLevel,

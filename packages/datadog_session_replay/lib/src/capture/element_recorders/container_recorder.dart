@@ -47,6 +47,8 @@ class ContainerRecorder implements ElementRecorder {
         break;
     }
 
+    attributes = _adjustAttributesForShape(widget, attributes);
+
     final key = keyGenerator.keyForElement(element);
     final node = ContainerNode(attributes, wireframeId: key, style: style!);
     return AmbiguousElement(nodes: [node]);
@@ -79,5 +81,37 @@ class ContainerRecorder implements ElementRecorder {
       borderWidth: borderStyle?.width,
       cornerRadius: borderStyle?.cornerRadius ?? 0.0,
     );
+  }
+
+  CapturedViewAttributes _adjustAttributesForShape(
+    Widget widget,
+    CapturedViewAttributes attributes,
+  ) {
+    CircleBorder? circleBorder;
+    switch (widget) {
+      case Material widget:
+        if (widget.shape case final CircleBorder circle) {
+          circleBorder = circle;
+        }
+        break;
+      case DecoratedBox box:
+        final decoration = box.decoration;
+        if (decoration is ShapeDecoration && decoration.shape is CircleBorder) {
+          circleBorder = decoration.shape as CircleBorder;
+        }
+        break;
+    }
+    if (circleBorder != null) {
+      // Need to adjust position, width, and height so that this actually appears as
+      // a circle in Session Replay
+      final center = attributes.paintBounds.center;
+      final shortSide = attributes.paintBounds.shortestSide;
+      attributes = CapturedViewAttributes(
+        paintBounds: Rect.fromCircle(center: center, radius: shortSide / 2),
+        scaleX: attributes.scaleX,
+        scaleY: attributes.scaleY,
+      );
+    }
+    return attributes;
   }
 }
