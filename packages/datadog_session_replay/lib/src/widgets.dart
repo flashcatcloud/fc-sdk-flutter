@@ -6,8 +6,8 @@ import 'package:datadog_flutter_plugin/datadog_flutter_plugin.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/widgets.dart';
 
+import '../datadog_session_replay.dart';
 import 'capture/pointer_capture.dart';
-import 'datadog_session_replay.dart';
 import 'sr_data_models.dart';
 
 class SessionReplayCapture extends StatefulWidget {
@@ -51,6 +51,49 @@ class _SessionReplayCaptureState extends State<SessionReplayCapture> {
       snapshotRecorder: PointerSnapshotRecorder(widget.rum.timeProvider),
       child: RumUserActionDetector(rum: widget.rum, child: widget.child),
     );
+  }
+}
+
+/// This widget provides a mechanism for overriding the default privacy settings
+/// that were setup when Session Replay was initialized.  It also allows you to
+/// hide an entire tree of widgets from Session Replay using the [hide] value.
+///
+/// The privacy overrides specified continue for the entire tree below this
+/// widget. Privacy overrides include setting a tree's
+/// [TextAndInputPrivacyLevel], [ImagePrivacyLevel], and whether a tree should
+/// be hidden from Session Replay
+///
+/// Privacy overrides can be modified multiple times in a widget tree, however,
+/// when a widget is hidden, it is replaced by a placeholder labeled as "Hidden"
+/// in the replay, and its subviews are not processed or recorded. Therefore, it
+/// is not possible to "unhide" a widget that is deeper in the tree of a hidden
+/// widget.
+@immutable
+class SessionReplayPrivacy extends StatelessWidget {
+  final Widget child;
+
+  /// Whether or not to hide this widget tree from Session Replay.
+  final bool? hide;
+
+  /// The new [TextAndInputPrivacyLevel] for this tree. Setting this to null
+  /// leaves the privacy level unchanged.
+  final TextAndInputPrivacyLevel? textAndInputPrivacyLevel;
+
+  /// The new [ImagePrivacyLevel] for this tree. Setting this to null
+  /// leaves the privacy level unchanged.
+  final ImagePrivacyLevel? imagePrivacyLevel;
+
+  const SessionReplayPrivacy({
+    super.key,
+    required this.child,
+    this.hide,
+    this.textAndInputPrivacyLevel,
+    this.imagePrivacyLevel,
+  }) : super();
+
+  @override
+  Widget build(BuildContext context) {
+    return child;
   }
 }
 

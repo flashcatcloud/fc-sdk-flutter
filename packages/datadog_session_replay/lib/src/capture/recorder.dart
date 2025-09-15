@@ -16,6 +16,7 @@ import 'element_recorders/container_recorder.dart';
 import 'element_recorders/custom_paint_recorder.dart';
 import 'element_recorders/editable_text_recorder.dart';
 import 'element_recorders/image_recorder.dart';
+import 'element_recorders/privacy_recorder.dart';
 import 'element_recorders/text_recorder.dart';
 import 'pointer_capture.dart';
 import 'view_tree_snapshot.dart';
@@ -23,16 +24,21 @@ import 'view_tree_snapshot.dart';
 /// Capture privacy for the current tree of nodes. This is set by the configuration,
 /// to start, but can change if the capture encounters a Widget that modifies it.
 @immutable
-class CapturePrivacy {
+class TreeCapturePrivacy {
   final TextAndInputPrivacyLevel textAndInputPrivacyLevel;
+  final ImagePrivacyLevel imagePrivacyLevel;
 
-  const CapturePrivacy({required this.textAndInputPrivacyLevel});
+  const TreeCapturePrivacy({
+    required this.textAndInputPrivacyLevel,
+    required this.imagePrivacyLevel,
+  });
 
   @override
   bool operator ==(Object other) {
-    if (other is! CapturePrivacy) return false;
+    if (other is! TreeCapturePrivacy) return false;
 
-    return other.textAndInputPrivacyLevel == textAndInputPrivacyLevel;
+    return other.textAndInputPrivacyLevel == textAndInputPrivacyLevel &&
+        other.imagePrivacyLevel == imagePrivacyLevel;
   }
 
   @override
@@ -45,7 +51,7 @@ abstract interface class ElementRecorder {
   CaptureNodeSemantics? captureSemantics(
     Element element,
     CapturedViewAttributes attributes,
-    CapturePrivacy capturePrivacy,
+    TreeCapturePrivacy capturePrivacy,
   );
 }
 
@@ -104,22 +110,33 @@ class SessionReplayRecorder {
   final Map<Key, Element> _elements = {};
   RUMContext? _currentContext;
   bool _captureInProgress = false;
-  CapturePrivacy _defaultCapturePrivacy;
+  TreeCapturePrivacy _defaultTreeCapturePrivacy;
+  // TODO(RUM-11681): Support touch privacy
+  // ignore: unused_field
+  TouchPrivacyLevel _touchPrivacyLevel;
 
   @visibleForTesting
-  set defaultCapturePrivacy(CapturePrivacy value) =>
-      _defaultCapturePrivacy = value;
-  CapturePrivacy get defaultCapturePrivacy => _defaultCapturePrivacy;
+  set defaultTreeCapturePrivacy(TreeCapturePrivacy value) =>
+      _defaultTreeCapturePrivacy = value;
+  TreeCapturePrivacy get defaultTreeCapturePrivacy =>
+      _defaultTreeCapturePrivacy;
 
   SessionReplayRecorder({
     DatadogTimeProvider timeProvider = const DefaultTimeProvider(),
-    required CapturePrivacy defaultCapturePrivacy,
-  }) : this._(KeyGenerator(), timeProvider, defaultCapturePrivacy);
+    required TreeCapturePrivacy defaultCapturePrivacy,
+    required TouchPrivacyLevel touchPrivacyLevel,
+  }) : this._(
+         KeyGenerator(),
+         timeProvider,
+         defaultCapturePrivacy,
+         touchPrivacyLevel,
+       );
 
   SessionReplayRecorder._(
     KeyGenerator keyGenerator,
     this._timeProvider,
-    this._defaultCapturePrivacy,
+    this._defaultTreeCapturePrivacy,
+    this._touchPrivacyLevel,
   ) : _elementRecorders = [
         ContainerRecorder(keyGenerator),
         TextElementRecorder(keyGenerator),
@@ -127,15 +144,18 @@ class SessionReplayRecorder {
         InputDecoratorRecorder(keyGenerator),
         ImageRecorder(keyGenerator),
         CustomPaintRecorder(keyGenerator),
+        PrivacyRecorder(keyGenerator),
       ];
 
   @visibleForTesting
   SessionReplayRecorder.withCustomRecorders(
     this._elementRecorders, {
     DatadogTimeProvider timeProvider = const DefaultTimeProvider(),
-    required CapturePrivacy defaultCapturePrivacy,
+    required TreeCapturePrivacy defaultCapturePrivacy,
+    required TouchPrivacyLevel touchPrivacyLevel,
   }) : _timeProvider = timeProvider,
-       _defaultCapturePrivacy = defaultCapturePrivacy;
+       _defaultTreeCapturePrivacy = defaultCapturePrivacy,
+       _touchPrivacyLevel = touchPrivacyLevel;
 
   void updateContext(RUMContext? context) {
     _currentContext = context;
@@ -187,7 +207,7 @@ class SessionReplayRecorder {
         e,
         capturedSemantics,
         pointerSnapshots,
-        _defaultCapturePrivacy,
+        _defaultTreeCapturePrivacy,
       );
     }
 
@@ -246,9 +266,9 @@ class SessionReplayRecorder {
     Element topElement,
     List<CaptureNodeSemantics> capturedSemantics,
     List<PointerSnapshot> pointerSnapshots,
-    CapturePrivacy capturePrivacy,
+    TreeCapturePrivacy capturePrivacy,
   ) {
-    void visit(Element e, CapturePrivacy capturePrivacy, int depth) {
+    void visit(Element e, TreeCapturePrivacy capturePrivacy, int depth) {
       if (e.widget case final PointerRecorder snapshotWidget) {
         if (snapshotWidget.snapshotRecorder.takeSnapshot()
             case final snapshot?) {
@@ -318,7 +338,7 @@ class SessionReplayRecorder {
   CaptureNodeSemantics _elementSemantics(
     Element element,
     CapturedViewAttributes viewAttributes,
-    CapturePrivacy capturePrivacy,
+    TreeCapturePrivacy capturePrivacy,
   ) {
     CaptureNodeSemantics semantics = const UnknownElement();
 

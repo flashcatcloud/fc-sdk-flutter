@@ -21,7 +21,7 @@ class CustomPaintRecorder implements ElementRecorder {
   CaptureNodeSemantics? captureSemantics(
     Element element,
     CapturedViewAttributes attributes,
-    CapturePrivacy capturePrivacy,
+    TreeCapturePrivacy capturePrivacy,
   ) {
     final widget = element.widget;
     if (widget is! CustomPaint) return null;

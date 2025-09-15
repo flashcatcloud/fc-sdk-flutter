@@ -490,10 +490,10 @@ extension NSError: AnyMockable, RandomMockable {
 public class BundleMock: Bundle {
     // swiftlint:disable identifier_name
     fileprivate var _bundlePath: String = .mockAny()
-    fileprivate var _bundleIdentifier: String? = nil
-    fileprivate var _CFBundleVersion: String? = nil
-    fileprivate var _CFBundleShortVersionString: String? = nil
-    fileprivate var _CFBundleExecutable: String? = nil
+    fileprivate var _bundleIdentifier: String?
+    fileprivate var _CFBundleVersion: String?
+    fileprivate var _CFBundleShortVersionString: String?
+    fileprivate var _CFBundleExecutable: String?
     // swiftlint:enable identifier_name
 
     public override var bundlePath: String { _bundlePath }
@@ -610,7 +610,7 @@ public class ProcessInfoMock: ProcessInfo {
 
     public override var isLowPowerModeEnabled: Bool { _isLowPowerModeEnabled }
 
-    public override var environment: [String : String] { _environment }
+    public override var environment: [String: String] { _environment }
 
     public override var arguments: [String] { _arguments }
 

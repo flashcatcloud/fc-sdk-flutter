@@ -63,7 +63,7 @@ packages:
       path: "../../../packages/datadog_flutter_plugin"
       relative: true
     source: path
-    version: "2.13.0"
+    version: "2.14.0"
   datadog_tracking_http_client:
     dependency: "direct main"
     description:
@@ -325,4 +325,4 @@ packages:
     version: "1.1.1"
 sdks:
   dart: ">=3.8.0-0 <4.0.0"
-  flutter: ">=3.18.0-18.0.pre.54"
+  flutter: ">=3.19.0"

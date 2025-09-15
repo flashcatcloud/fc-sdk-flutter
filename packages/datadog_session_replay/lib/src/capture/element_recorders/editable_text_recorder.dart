@@ -8,6 +8,7 @@ import '../../../datadog_session_replay.dart';
 import '../../extensions.dart';
 import '../capture_node.dart';
 import '../recorder.dart';
+import '../text_masking.dart';
 import '../view_tree_snapshot.dart';
 import 'common_nodes.dart';
 import 'recording_extensions.dart';
@@ -24,7 +25,7 @@ const _sensitiveInputTypes = [
 /// [EditableTextRecorder] captures the actual editable portion of the
 /// text, and handles obscuring the text that's captured.
 class EditableTextRecorder implements ElementRecorder {
-  KeyGenerator keyGenerator;
+  final KeyGenerator keyGenerator;
 
   EditableTextRecorder(this.keyGenerator);
 
@@ -32,7 +33,7 @@ class EditableTextRecorder implements ElementRecorder {
   CaptureNodeSemantics? captureSemantics(
     Element element,
     CapturedViewAttributes attributes,
-    CapturePrivacy capturePrivacy,
+    TreeCapturePrivacy capturePrivacy,
   ) {
     final widget = element.widget;
     if (widget is! EditableText) {
@@ -57,7 +58,7 @@ class EditableTextRecorder implements ElementRecorder {
     }
 
     if (_shouldObscureText(capturePrivacy, widget)) {
-      textValue = 'x' * textValue.length;
+      textValue = maskTextFixedLength(textValue);
     }
 
     final node = TextElementCaptureNode(
@@ -77,10 +78,14 @@ class EditableTextRecorder implements ElementRecorder {
     );
   }
 
-  bool _shouldObscureText(CapturePrivacy capturePrivacy, EditableText widget) {
+  bool _shouldObscureText(
+    TreeCapturePrivacy capturePrivacy,
+    EditableText widget,
+  ) {
     switch (capturePrivacy.textAndInputPrivacyLevel) {
       case TextAndInputPrivacyLevel.maskSensitiveInputs:
-        if (_sensitiveInputTypes.contains(widget.keyboardType)) {
+        if (widget.obscureText ||
+            _sensitiveInputTypes.contains(widget.keyboardType)) {
           return true;
         }
       case TextAndInputPrivacyLevel.maskAllInputs:
@@ -103,7 +108,7 @@ class InputDecoratorRecorder implements ElementRecorder {
   CaptureNodeSemantics? captureSemantics(
     Element element,
     CapturedViewAttributes attributes,
-    CapturePrivacy capturePrivacy,
+    TreeCapturePrivacy capturePrivacy,
   ) {
     final widget = element.widget;
     if (widget is! InputDecorator) {

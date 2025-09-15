@@ -101,7 +101,7 @@ class DatadogLogsPluginTests: XCTestCase {
             "value": .map
         ]),
         Contract(methodName: "removeGlobalAttribute", requiredParameters: [
-            "key": .string            
+            "key": .string
         ]),
         Contract(methodName: "log", requiredParameters: [
             "loggerHandle": .string,
@@ -110,7 +110,7 @@ class DatadogLogsPluginTests: XCTestCase {
         ]),
         Contract(methodName: "addAttribute", requiredParameters: [
             "loggerHandle": .string,
-            "key": .string, 
+            "key": .string,
             "value": .map
         ]),
         Contract(methodName: "addTag", requiredParameters: [

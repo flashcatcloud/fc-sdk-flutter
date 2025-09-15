@@ -17,6 +17,13 @@ scripts:
     packageFilters:
       dirExists: example/ios
 
+  full_clean:
+    exec:
+      concurrency: 1
+    run:
+      flutter clean && 
+      rm pubspec.lock 
+
   build:android:
     exec:
       concurrency: 1
@@ -31,13 +38,36 @@ scripts:
     packageFilters:
       dirExists: example/web
 
+  lint_fix:
+    run: melos lint_fix:ios && melos lint_fix:android
+
+  lint_fix:ios:
+    exec:
+      concurrency: 1
+    run: swiftlint --fix
+    description: |
+      Run swiftlint --fix
+    packageFilters:
+      dirExists: ios
+
+  lint_fix:android:
+    exec:
+      concurrency: 1
+    run:
+      cd example/android 
+      ./gradlew ktlintFormat
+    description: |
+      Run ktlintFormat
+    packageFilters:
+      dirExists: example/android
+
   analyze:
     run: melos analyze:dart && melos analyze:android && melos analyze:ios
 
   analyze:dart:
     exec: dart analyze .
-  description: |
-    Run `dart analyze` in all packages
+    description: |
+      Run `dart analyze` in all packages
 
   analyze:android:
     exec:
@@ -72,11 +102,15 @@ scripts:
       dirExists: 'test'
   
   golden_test:flutter:
-    run: 
-      mkdir -p .build/test-results &&
-      melos exec -c 1 -- "set -e -o pipefail && flutter test golden_test --machine | tojunit \"--output\" \"$MELOS_ROOT_PATH/.build/test-results/\$MELOS_PACKAGE_NAME_golden.xml\"" 
+    exec:
+      concurrency: 1
+    run:
+      cd example &&
+      mkdir -p "$MELOS_ROOT_PATH/.build/test-results" &&
+      set -e -o pipefail &&
+      flutter test golden_test --machine | tojunit --output "$MELOS_ROOT_PATH/.build/test-results/\$MELOS_PACKAGE_NAME_golden.xml"
     packageFilters:
-      dirExists: 'golden_test'
+      dirExists: 'example/golden_test'
 
   unit_test:web:
     run:

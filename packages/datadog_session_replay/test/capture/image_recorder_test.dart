@@ -51,9 +51,11 @@ void main() {
     DatadogSessionReplayPlatform.instance = platform;
     recorder = SessionReplayRecorder.withCustomRecorders(
       [ImageRecorder(keyGenerator)],
-      defaultCapturePrivacy: CapturePrivacy(
+      defaultCapturePrivacy: TreeCapturePrivacy(
         textAndInputPrivacyLevel: TextAndInputPrivacyLevel.maskSensitiveInputs,
+        imagePrivacyLevel: ImagePrivacyLevel.maskNone,
       ),
+      touchPrivacyLevel: TouchPrivacyLevel.show,
     );
 
     registerFallbackValue(
@@ -373,5 +375,111 @@ void main() {
     final wireframe = builtWireframes.first as SRPlaceholderWireframe;
 
     expect(wireframe.label, isNull);
+  });
+
+  /// Masking tests can avoid using the full recorder because we don't
+  /// need to test widget positioning
+  group('Masking tests', () {
+    testWidgets('maskAll does not process images', (tester) async {
+      // Given
+      recorder.defaultTreeCapturePrivacy = TreeCapturePrivacy(
+        textAndInputPrivacyLevel: TextAndInputPrivacyLevel.maskAll,
+        imagePrivacyLevel: ImagePrivacyLevel.maskAll,
+      );
+      final x = randomDouble(min: 10, max: 50);
+      final y = randomDouble(min: 10, max: 50);
+
+      final imageProvider = TestImageProvider(testImage);
+      final tree = MaterialApp(
+        home: SimpleTestCapture(
+          key: Key('key'),
+          recorder: recorder,
+          child: Stack(
+            children: [
+              Positioned(
+                top: y,
+                left: x,
+                width: 250.0,
+                height: 40.0,
+                child: Image(image: imageProvider),
+              ),
+            ],
+          ),
+        ),
+      );
+      await tester.pumpWidget(tree);
+      imageProvider.complete();
+      await tester.pump();
+
+      // When
+      CaptureResult? capture;
+      await tester.runAsync(() async {
+        capture = await recorder.performCapture();
+      });
+
+      // Then
+      expect(capture!.viewTreeSnapshot.nodes.length, 1);
+
+      final capturedImageNode = capture!.viewTreeSnapshot.nodes.last;
+      final builtWireframes = capturedImageNode.buildWireframes();
+      expect(builtWireframes.length, 1);
+      final wireframe = builtWireframes.first as SRPlaceholderWireframe;
+
+      expect(wireframe.label, 'Image');
+      verifyZeroInteractions(platform);
+    });
+
+    // Missing Test - ImagePrivacyLevel.maskNonAssetsOnly checks for Assets.
+    // This requires being able to load an asset, so it is checked as part of the
+    // golden tests, not here.
+
+    testWidgets('maskNonAssetsOnly does not process non-asset', (tester) async {
+      // Given
+      recorder.defaultTreeCapturePrivacy = TreeCapturePrivacy(
+        textAndInputPrivacyLevel: TextAndInputPrivacyLevel.maskAll,
+        imagePrivacyLevel: ImagePrivacyLevel.maskNonAssetsOnly,
+      );
+      final x = randomDouble(min: 10, max: 50);
+      final y = randomDouble(min: 10, max: 50);
+
+      final imageProvider = TestImageProvider(testImage);
+      final tree = MaterialApp(
+        home: SimpleTestCapture(
+          key: Key('key'),
+          recorder: recorder,
+          child: Stack(
+            children: [
+              Positioned(
+                top: y,
+                left: x,
+                width: 250.0,
+                height: 40.0,
+                child: Image(image: imageProvider),
+              ),
+            ],
+          ),
+        ),
+      );
+      await tester.pumpWidget(tree);
+      imageProvider.complete();
+      await tester.pump();
+
+      // When
+      CaptureResult? capture;
+      await tester.runAsync(() async {
+        capture = await recorder.performCapture();
+      });
+
+      // Then
+      expect(capture!.viewTreeSnapshot.nodes.length, 1);
+
+      final capturedImageNode = capture!.viewTreeSnapshot.nodes.last;
+      final builtWireframes = capturedImageNode.buildWireframes();
+      expect(builtWireframes.length, 1);
+      final wireframe = builtWireframes.first as SRPlaceholderWireframe;
+
+      expect(wireframe.label, 'Image');
+      verifyZeroInteractions(platform);
+    });
   });
 }

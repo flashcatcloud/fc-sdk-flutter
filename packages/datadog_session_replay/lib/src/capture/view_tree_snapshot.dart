@@ -32,7 +32,7 @@ abstract class CaptureNodeSemantics {
 
   final int importance;
   final CaptureNodeSubtreeStrategy subtreeStrategy;
-  final CapturePrivacy? subtreePrivacy;
+  final TreeCapturePrivacy? subtreePrivacy;
   final List<CaptureNode> nodes;
 
   const CaptureNodeSemantics({
@@ -63,8 +63,8 @@ class InvisibleElement extends CaptureNodeSemantics {
 class IgnoredElement extends CaptureNodeSemantics {
   const IgnoredElement({
     required super.subtreeStrategy,
+    super.subtreePrivacy,
     super.nodes = const [],
-    final CapturePrivacy? subtreePrivacy,
   }) : super(importance: CaptureNodeSemantics.maxImporance);
 }
 
