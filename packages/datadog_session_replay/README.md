@@ -1,9 +1,83 @@
 # Datadog Session Replay
 
+```
+⚠️ This package is currently in preview! Portions of the public API for this package may break without a major version update.
+```
+
 A package for integrating [Datadog Session Replay](https://www.datadoghq.com/product/real-user-monitoring/session-replay/) into Flutter applications.
 
 ## Getting started
 
+Datadog Session Replay for Flutter requires using the [Datadog Flutter Plugin](https://pub.dev/packages/datadog_flutter_plugin) in conjunction with Datadog RUM. For more information on how to setup RUM with Datadog, check the [official documentation](https://docs.datadoghq.com/real_user_monitoring/mobile_and_tv_monitoring/flutter/setup/?tab=rum).
+
+To use Datadog Session Replay for Flutter, first add the package to your `pubspec.yaml`:
+
+```yaml
+packages:
+  # other packages
+  datadog_flutter_plugin: ^x.x.x
+  datadog_session_replay: ^x.x.x
+```
+
+Next, add Session Replay to your `DatadogConfiguration`:
+
+```dart
+import 'package:datadog_session_replay/datadog_session_replay.dart';
+
+// ....
+final configuration = DatadogConfiguration(
+    // Normal Datadog configuration
+    clientToken: 'client-token',
+    // RUM is required to use Datadog Session Replay
+    rumConfiguration: RumConfiguration(
+        applicationId: '<application-id'>
+    ),
+)..enableSessionReplay(
+    DatadogSessionReplayConfiguration(
+        // Setup default text, image, and touch privacy
+        textAndInputPrivacyLevel: TextAndInputPrivacyLevel.maskSensitiveInputs,
+        touchPrivacyLevel: TouchPrivacyLevel.show,
+        // Setup session replay sample rate.
+        replaySampleRate: 1.0,
+    ),
+);
+```
+
+Last, add a SessionReplayCapture widget to the root of your Widget tree, above your MaterialApp or similar application widget:
+
+```dart
+class MyApp extends StatefulWidget {
+  const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  // Note a key is required for SessionReplayCapture
+  final captureKey = GlobalKey();
+
+  // Other App Configuration
+
+  @override
+  Widget build(BuildContext context) {
+    return SessionReplayCapture(
+      key: captureKey,
+      rum: DatadogSdk.instance.rum!,
+      sessionReplay: DatadogSessionReplay.instance!,
+      child: MaterialApp.router(color: color, routerConfig: router),
+    );
+  }
+}
+```
+
+### Note
+
+`SessionReplayCapture` includes a `RumUserActionDetector`. If you are already using a `RumUserActionDetector`, you should remove it in favor of the one used by `SessionReplayCapture`.
+
+# Documentation
+
+For more information including how to setup fine grained masking and privacy controls, see Datadog's [official documentation](https://docs.datadoghq.com/real_user_monitoring/session_replay/mobile) for Session Replay.
 
 # Contributing
 
