@@ -35,7 +35,7 @@ class DatadogSessionReplay {
   final SessionReplayRecorder _recorder;
 
   int _errorCounter = 0;
-  bool _needCapture = true;
+  bool _newFrameBuilt = true;
 
   @internal
   static Future<DatadogSessionReplay> init(
@@ -81,15 +81,22 @@ class DatadogSessionReplay {
 
       _startPeriodicCapture();
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        _needCapture = true;
+        // Let capture know that a new element tree is available for capture.
+        _newFrameBuilt = true;
       });
     }
   }
 
   void _startPeriodicCapture() async {
+    /// This timer periodically checks if a tree capture is necessary, which it
+    /// only is if _newFrameBuilt has been set by a call to `postFrameCallback`
+    ///
+    /// Using the timer (instead of as part of addPostFrameCallback) allows
+    /// Flutter to schedule this outside of the build phase, which means our
+    /// tree capture shouldn't affect tree build time.
     Timer.periodic(minCaptureTiming, (timer) async {
-      bool shouldScheduleNextCapture = true;
-      if (_needCapture) {
+      bool shouldWatchForNextFrame = true;
+      if (_newFrameBuilt) {
         try {
           final captureResult = await _recorder.performCapture();
           if (captureResult != null) {
@@ -113,16 +120,19 @@ class DatadogSessionReplay {
               null,
               null,
             );
+            // Too many errors, cancel this periodic timer and don't schedule
+            // another post frame callback
             timer.cancel();
-            shouldScheduleNextCapture = false;
+            shouldWatchForNextFrame = false;
           }
         }
-        _needCapture = false;
+        _newFrameBuilt = false;
       }
 
-      if (shouldScheduleNextCapture) {
+      // If we've received too many errors, don't request any more post frame callbacks
+      if (shouldWatchForNextFrame) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          _needCapture = true;
+          _newFrameBuilt = true;
         });
       }
     });

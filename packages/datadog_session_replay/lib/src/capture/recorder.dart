@@ -108,7 +108,6 @@ class CaptureResult {
 
 class SessionReplayRecorder {
   final DatadogTimeProvider _timeProvider;
-  // final List<ElementRecorder> _elementRecorders;
   final Map<Type, ElementRecorder> _elementRecordersByType = {};
 
   final Map<Key, Element> _elements = {};
@@ -142,7 +141,7 @@ class SessionReplayRecorder {
     this._defaultTreeCapturePrivacy,
     this._touchPrivacyLevel,
   ) {
-    _sortElementRecorders([
+    _populateElementRecorderMap([
       ContainerRecorder(keyGenerator),
       TextElementRecorder(keyGenerator),
       EditableTextRecorder(keyGenerator),
@@ -162,7 +161,7 @@ class SessionReplayRecorder {
   }) : _timeProvider = timeProvider,
        _defaultTreeCapturePrivacy = defaultCapturePrivacy,
        _touchPrivacyLevel = touchPrivacyLevel {
-    _sortElementRecorders(elementRecorders);
+    _populateElementRecorderMap(elementRecorders);
   }
 
   void updateContext(RUMContext? context) {
@@ -269,7 +268,7 @@ class SessionReplayRecorder {
     }
   }
 
-  void _sortElementRecorders(List<ElementRecorder> recorders) {
+  void _populateElementRecorderMap(List<ElementRecorder> recorders) {
     for (final recorder in recorders) {
       for (final type in recorder.handlesTypes) {
         _elementRecordersByType[type] = recorder;
