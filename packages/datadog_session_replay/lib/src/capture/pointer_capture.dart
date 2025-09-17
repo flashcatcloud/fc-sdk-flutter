@@ -34,7 +34,7 @@ class PointerCapture {
 
 /// Provides a PointerSnapshotRecorder to other classes that need it.
 /// This is used primarily by [SessionReplayPrivacy] to cancel pointer
-/// tracking that occurs in its subtree if [TouchPrivacyLevel ]
+/// tracking that occurs in its subtree if [TouchPrivacyLevel] is set
 class PointerSnapshotRecorderProvider extends InheritedWidget {
   final PointerSnapshotRecorder recorder;
 
@@ -90,7 +90,7 @@ class PointerSnapshotRecorder {
   // flags it as hidden until the next snapshot. This is partially to support
   // 'hover' events that don't have up / down that are trackable, and because
   // "up" triggers occur in reverse tree order, which means we can't 'uncapture'
-  // the tracking that happens at the root of the tree
+  // the tracking that happens at the root of the tree.
   //
   // This may result in some touches being ignored if they alternate between a
   // hidden area and a non-hidden area in between tree captures, but we'd rather
