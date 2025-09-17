@@ -19,6 +19,9 @@ class TextElementRecorder implements ElementRecorder {
   const TextElementRecorder(this.keyGenerator);
 
   @override
+  List<Type> get handlesTypes => [RichText];
+
+  @override
   CaptureNodeSemantics? captureSemantics(
     Element element,
     CapturedViewAttributes attributes,

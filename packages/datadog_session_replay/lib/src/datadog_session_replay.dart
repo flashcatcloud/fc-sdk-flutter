@@ -17,6 +17,13 @@ import 'processor/processor.dart';
 import 'rum_context.dart';
 
 class DatadogSessionReplay {
+  // The minimum amount of time that needs to pass before we perform another
+  // tree capture.
+  static const minCaptureTiming = Duration(milliseconds: 100);
+  // The number of times in quick succession thar SR capture can throw before
+  // we shut it down completely.
+  static const errorTollerance = 10;
+
   static DatadogSessionReplay? _instance;
   static DatadogSessionReplay? get instance => _instance;
 
@@ -27,11 +34,15 @@ class DatadogSessionReplay {
   final SessionReplayProcessor _processor = SessionReplayProcessor();
   final SessionReplayRecorder _recorder;
 
+  int _errorCounter = 0;
+  bool _newFrameBuilt = true;
+
   @internal
   static Future<DatadogSessionReplay> init(
     DatadogSessionReplayConfiguration configuration,
-    InternalLogger logger,
-  ) async {
+    InternalLogger logger, {
+    DatadogTimeProvider timeProvider = const DefaultTimeProvider(),
+  }) async {
     _instance = DatadogSessionReplay._(configuration, logger);
     await _instance!._start();
     return _instance!;
@@ -66,22 +77,32 @@ class DatadogSessionReplay {
     });
 
     if (success) {
-      // The number of times in quick succession thar SR capture can throw before
-      // we shut it down completely.
-      const errorTollerance = 10;
-
       await _processor.start();
 
-      const timerDuration = Duration(milliseconds: 100);
-      var errorCounter = 0;
-      // TODO(RUM-10155): See if we can be smarter about how often we perform tree captures
-      Timer.periodic(timerDuration, (timer) async {
+      _startPeriodicCapture();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        // Let capture know that a new element tree is available for capture.
+        _newFrameBuilt = true;
+      });
+    }
+  }
+
+  void _startPeriodicCapture() async {
+    /// This timer periodically checks if a tree capture is necessary, which it
+    /// only is if _newFrameBuilt has been set by a call to `postFrameCallback`
+    ///
+    /// Using the timer (instead of as part of addPostFrameCallback) allows
+    /// Flutter to schedule this outside of the build phase, which means our
+    /// tree capture shouldn't affect tree build time.
+    Timer.periodic(minCaptureTiming, (timer) async {
+      bool shouldWatchForNextFrame = true;
+      if (_newFrameBuilt) {
         try {
           final captureResult = await _recorder.performCapture();
           if (captureResult != null) {
             _processor.process(captureResult);
           }
-          errorCounter = max(0, errorCounter - 1);
+          _errorCounter = max(0, _errorCounter - 1);
         } catch (e, st) {
           internalLogger.sendToDatadog(
             'Exception during session replay capture: $e',
@@ -92,17 +113,28 @@ class DatadogSessionReplay {
             CoreLoggerLevel.warn,
             'Exception during session replay capture: $e',
           );
-          errorCounter += 1;
-          if (errorCounter > errorTollerance) {
+          _errorCounter += 1;
+          if (_errorCounter > errorTollerance) {
             internalLogger.sendToDatadog(
               'Flutter SR has exceeded its error tollerance of $errorTollerance. Shutting down.',
               null,
               null,
             );
+            // Too many errors, cancel this periodic timer and don't schedule
+            // another post frame callback
             timer.cancel();
+            shouldWatchForNextFrame = false;
           }
         }
-      });
-    }
+        _newFrameBuilt = false;
+      }
+
+      // If we've received too many errors, don't request any more post frame callbacks
+      if (shouldWatchForNextFrame) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _newFrameBuilt = true;
+        });
+      }
+    });
   }
 }

@@ -30,6 +30,9 @@ class EditableTextRecorder implements ElementRecorder {
   EditableTextRecorder(this.keyGenerator);
 
   @override
+  List<Type> get handlesTypes => [EditableText];
+
+  @override
   CaptureNodeSemantics? captureSemantics(
     Element element,
     CapturedViewAttributes attributes,
@@ -103,6 +106,9 @@ class InputDecoratorRecorder implements ElementRecorder {
   final KeyGenerator keyGenerator;
 
   InputDecoratorRecorder(this.keyGenerator);
+
+  @override
+  List<Type> get handlesTypes => [InputDecorator];
 
   @override
   CaptureNodeSemantics? captureSemantics(
