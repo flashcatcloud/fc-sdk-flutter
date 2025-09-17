@@ -9,10 +9,10 @@ class TouchPrivacyScreen extends StatefulWidget {
   const TouchPrivacyScreen({super.key});
 
   @override
-  State<TouchPrivacyScreen> createState() => _ImagesScreenState();
+  State<TouchPrivacyScreen> createState() => _TouchPrivacyScreenState();
 }
 
-class _ImagesScreenState extends State<TouchPrivacyScreen> {
+class _TouchPrivacyScreenState extends State<TouchPrivacyScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
