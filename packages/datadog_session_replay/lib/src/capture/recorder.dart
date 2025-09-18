@@ -303,7 +303,7 @@ class SessionReplayRecorder {
   ) {
     void visit(Element e, TreeCapturePrivacy capturePrivacy, int depth) {
       if (e.widget case final PointerRecorder snapshotWidget) {
-        if (snapshotWidget.snapshotRecorder.takeSnapshot()
+        if (snapshotWidget.pointerRecorder.takeSnapshot()
             case final snapshot?) {
           pointerSnapshots.add(snapshot);
         }

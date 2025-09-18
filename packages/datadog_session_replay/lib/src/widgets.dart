@@ -3,7 +3,7 @@
 // Copyright 2025-Present Datadog, Inc.
 
 import 'package:datadog_flutter_plugin/datadog_flutter_plugin.dart';
-import 'package:flutter/gestures.dart';
+import 'package:flutter/gestures.dart' hide PointerEvent;
 import 'package:flutter/widgets.dart';
 
 import '../datadog_session_replay.dart';
@@ -15,19 +15,12 @@ class SessionReplayCapture extends StatefulWidget {
   final DatadogSessionReplay sessionReplay;
   final Widget child;
 
-  SessionReplayCapture({
-    super.key,
+  const SessionReplayCapture({
+    required Key key,
     required this.child,
     required this.rum,
     required this.sessionReplay,
-  }) {
-    if (key == null) {
-      sessionReplay.internalLogger.log(
-        CoreLoggerLevel.warn,
-        'SessionReplayCapture has a null Key value. A Key is required for Session Replay to work.',
-      );
-    }
-  }
+  }) : super(key: key);
 
   @override
   StatefulElement createElement() {
@@ -44,13 +37,34 @@ class SessionReplayCapture extends StatefulWidget {
 }
 
 class _SessionReplayCaptureState extends State<SessionReplayCapture> {
+  late PointerSnapshotRecorder pointerRecorder;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // ignore: invalid_use_of_internal_member
+    pointerRecorder = PointerSnapshotRecorder(widget.rum.timeProvider);
+  }
+
   @override
   Widget build(BuildContext context) {
-    return PointerRecorder(
-      // ignore: invalid_use_of_internal_member
-      snapshotRecorder: PointerSnapshotRecorder(widget.rum.timeProvider),
-      child: RumUserActionDetector(rum: widget.rum, child: widget.child),
+    Widget builtChild = RumUserActionDetector(
+      rum: widget.rum,
+      child: widget.child,
     );
+
+    if (widget.sessionReplay.defaultTouchPrivacyLevel ==
+        TouchPrivacyLevel.show) {
+      builtChild = PointerSnapshotRecorderProvider(
+        recorder: pointerRecorder,
+        child: PointerRecorder(
+          pointerRecorder: pointerRecorder,
+          child: builtChild,
+        ),
+      );
+    }
+    return builtChild;
   }
 }
 
@@ -60,14 +74,21 @@ class _SessionReplayCaptureState extends State<SessionReplayCapture> {
 ///
 /// The privacy overrides specified continue for the entire tree below this
 /// widget. Privacy overrides include setting a tree's
-/// [TextAndInputPrivacyLevel], [ImagePrivacyLevel], and whether a tree should
-/// be hidden from Session Replay
+/// [TextAndInputPrivacyLevel], [ImagePrivacyLevel], and [TouchPrivacyLevel],
+/// and whether a tree should be hidden from Session Replay
 ///
-/// Privacy overrides can be modified multiple times in a widget tree, however,
-/// when a widget is hidden, it is replaced by a placeholder labeled as "Hidden"
+/// Privacy overrides can be modified multiple times in a widget tree. However,
+/// setting [hide] to `true` or seeting [touchPrivacyLevel] to
+/// [TouchPrivacyLevel.hide] will affect the entire subtree.
+///
+/// When a tree is hidden, it is replaced by a placeholder labeled as "Hidden"
 /// in the replay, and its subviews are not processed or recorded. Therefore, it
 /// is not possible to "unhide" a widget that is deeper in the tree of a hidden
 /// widget.
+///
+/// When [touchPrivacyLevel] is set to [TouchPrivacyLevel.hide], touch recording
+/// is cancelled for the entire subtree, and so it is not possible to "un-cancel"
+/// recording.
 @immutable
 class SessionReplayPrivacy extends StatelessWidget {
   final Widget child;
@@ -83,28 +104,50 @@ class SessionReplayPrivacy extends StatelessWidget {
   /// leaves the privacy level unchanged.
   final ImagePrivacyLevel? imagePrivacyLevel;
 
+  /// The new touch privacy level for this tree. Setting this to null
+  /// leaves the privacy level unchanged.
+  final TouchPrivacyLevel? touchPrivacyLevel;
+
   const SessionReplayPrivacy({
     super.key,
     required this.child,
     this.hide,
     this.textAndInputPrivacyLevel,
     this.imagePrivacyLevel,
+    this.touchPrivacyLevel,
   }) : super();
 
   @override
   Widget build(BuildContext context) {
-    return child;
+    var builtWidget = child;
+    if (touchPrivacyLevel == TouchPrivacyLevel.hide) {
+      builtWidget = RumUserActionAnnotation(
+        description: 'Hidden',
+        child: builtWidget,
+      );
+      final pointerRecorderProvider = PointerSnapshotRecorderProvider.of(
+        context,
+      );
+      if (pointerRecorderProvider != null) {
+        builtWidget = PointerUnrecorder(
+          pointerRecorder: pointerRecorderProvider.recorder,
+          child: builtWidget,
+        );
+      }
+    }
+
+    return builtWidget;
   }
 }
 
 @immutable
 class PointerRecorder extends StatelessWidget {
-  final PointerSnapshotRecorder snapshotRecorder;
+  final PointerSnapshotRecorder pointerRecorder;
   final Widget child;
 
   const PointerRecorder({
     super.key,
-    required this.snapshotRecorder,
+    required this.pointerRecorder,
     required this.child,
   });
 
@@ -124,12 +167,56 @@ class PointerRecorder extends StatelessWidget {
       _capturePointerEvent(SRPointerEventType.up, event);
 
   void _capturePointerEvent(SRPointerEventType type, PointerEvent event) {
-    snapshotRecorder.capturePointer(
+    pointerRecorder.capturePointer(
       event.pointer,
       type,
       event.position.dx,
       event.position.dy,
     );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Listener(
+      behavior: HitTestBehavior.translucent,
+      onPointerDown: _onPointerDown,
+      onPointerMove: _onPointerMove,
+      onPointerCancel: _onPointerCancel,
+      onPointerHover: _onPointerHover,
+      onPointerUp: _onPointerUp,
+      child: child,
+    );
+  }
+}
+
+@immutable
+class PointerUnrecorder extends StatelessWidget {
+  final PointerSnapshotRecorder pointerRecorder;
+  final Widget child;
+
+  const PointerUnrecorder({
+    super.key,
+    required this.pointerRecorder,
+    required this.child,
+  });
+
+  void _onPointerDown(PointerDownEvent event) =>
+      _uncapturePointerEvent(SRPointerEventType.down, event);
+
+  void _onPointerMove(PointerMoveEvent event) =>
+      _uncapturePointerEvent(SRPointerEventType.move, event);
+
+  void _onPointerCancel(PointerCancelEvent event) =>
+      _uncapturePointerEvent(SRPointerEventType.up, event);
+
+  void _onPointerHover(PointerHoverEvent event) =>
+      _uncapturePointerEvent(SRPointerEventType.move, event);
+
+  void _onPointerUp(PointerUpEvent event) =>
+      _uncapturePointerEvent(SRPointerEventType.up, event);
+
+  void _uncapturePointerEvent(SRPointerEventType type, PointerEvent event) {
+    pointerRecorder.uncapturePointer(event.pointer);
   }
 
   @override

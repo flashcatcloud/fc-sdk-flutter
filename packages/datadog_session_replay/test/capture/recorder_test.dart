@@ -481,7 +481,7 @@ void main() {
         key: UniqueKey(),
         recorder: recorder,
         child: PointerRecorder(
-          snapshotRecorder: mockPointerRecorder,
+          pointerRecorder: mockPointerRecorder,
           child: Placeholder(),
         ),
       );
