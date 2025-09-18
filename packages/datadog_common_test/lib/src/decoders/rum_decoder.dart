@@ -147,6 +147,23 @@ class RumEventDecoder {
   Map<String, dynamic>? get featureFlags =>
       rumEvent['feature_flags'] ?? <String, dynamic>{};
 
+  Map<String, String> get ddtags {
+    final tagMap = <String, String>{};
+    final rawTags = rumEvent['ddtags'] as String?;
+    if (rawTags == null) return tagMap;
+
+    for (var tag in rawTags.split(',')) {
+      var colon = tag.indexOf(':');
+      if (colon == -1) {
+        tagMap[tag] = '';
+      } else {
+        tagMap[tag.substring(0, colon)] = tag.substring(colon + 1);
+      }
+    }
+
+    return tagMap;
+  }
+
   RumEventDecoder(this.rumEvent)
       : viewInfo = RumViewInfoDecoder(rumEvent['view']),
         dd = Dd(rumEvent['_dd']);
