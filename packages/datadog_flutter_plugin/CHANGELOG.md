@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.14.0
+
+* [WEB] Fix `valueToJs` for WASM builds. See [#820](https://github.com/DataDog/dd-sdk-flutter/issues/820).
+* Update iOS SDK to 2.30.1.
+  * Add ddtags to RUM events.
+* Update Android SDK to 2.25.1.
+  * Add ddtags to RUM events.
+
 ## 2.13.2
 
 * Fix compileSdk to be 35 on main package. See [#834](https://github.com/DataDog/dd-sdk-flutter/issues/834)
