@@ -108,11 +108,16 @@ extension Waiter on WidgetTester {
   }
 }
 
-void verifyCommonTags(
-    RequestLog request, String service, String version, String? variant) {
-  // TODO: These tags were moved to events and should be checked there.
-  if (request.tags.isNotEmpty) {
-    final sdkVersion = request.tags['sdk_version'];
+void verifyCommonEventTags(
+    RumEventDecoder log, String service, String version, String? variant) {
+  // Tags moved to events in v6. We should be able to remove this check
+  // for dd-sdk-flutter-v3
+  if (!kIsWeb) {
+    final tags = log.ddtags;
+    // Likely telemetry
+    if (tags.isEmpty) return;
+
+    final sdkVersion = tags['sdk_version'];
     if (kIsWeb) {
       // Returning the browser version of the SDK.
       expect(sdkVersion?.startsWith('5.'), true);
@@ -120,16 +125,20 @@ void verifyCommonTags(
       expect(sdkVersion, DatadogSdk.sdkVersion);
     }
 
-    expect(request.tags['service'], service);
+    expect(tags['service'], service);
 
     if (!kIsWeb) {
-      // Currently coming back as 'browser' on web
-      expect(request.queryParameters['ddsource'], 'flutter');
-
       // Not sent as a tag on web
-      expect(request.tags['version'], version);
-      expect(request.tags['variant'], variant);
+      expect(tags['version'], version);
+      expect(tags['variant'], variant);
     }
+  }
+}
+
+void verifyCommonRequestTags(RequestLog log) {
+  if (!kIsWeb) {
+    // Currently coming back as 'browser' on web
+    expect(log.queryParameters['ddsource'], 'flutter');
   }
 }
 
