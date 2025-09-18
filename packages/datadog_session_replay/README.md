@@ -8,7 +8,7 @@ A package for integrating [Datadog Session Replay](https://www.datadoghq.com/pro
 
 ## Getting started
 
-Datadog Session Replay for Flutter requires using the [Datadog Flutter Plugin](https://pub.dev/packages/datadog_flutter_plugin) in conjunction with Datadog RUM. For more information on how to setup RUM with Datadog, check the [official documentation](https://docs.datadoghq.com/real_user_monitoring/mobile_and_tv_monitoring/flutter/setup/?tab=rum).
+Session Replay for Flutter requires using the [Datadog Flutter Plugin](https://pub.dev/packages/datadog_flutter_plugin) in conjunction with Datadog RUM. For more information on how to set up RUM, check the [official documentation](https://docs.datadoghq.com/real_user_monitoring/mobile_and_tv_monitoring/flutter/setup/?tab=rum).
 
 To use Datadog Session Replay for Flutter, first add the package to your `pubspec.yaml`:
 
@@ -77,7 +77,7 @@ class _MyAppState extends State<MyApp> {
 
 # Documentation
 
-For more information including how to setup fine grained masking and privacy controls, see Datadog's [official documentation](https://docs.datadoghq.com/real_user_monitoring/session_replay/mobile) for Session Replay.
+For more information including how to set up fine grained masking and privacy controls, see Datadog's [official documentation](https://docs.datadoghq.com/real_user_monitoring/session_replay/mobile) for Session Replay.
 
 # Contributing
 

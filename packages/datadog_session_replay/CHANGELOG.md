@@ -6,7 +6,7 @@
     * Capture containers, text, images, icons, and touches.
     * Support for masking sensitive data, including masking all user input or sensitive input fields.
     * Support for "fine grained" text, image, and touch masking with `SessionReplayPrivacy` widget.
-* The follow features are not supported in this preview:
+* The following features are not supported in this preview:
     * Hybrid Session Replay
         * Native iOS and Android applications with Flutter views are not currently supported.
         * Flutter applications with native view are not currently supported.
