@@ -48,13 +48,13 @@ Widget _buildSimpleApp(DatadogRum rum, Widget innerWidget) {
     rum: rum,
     customGestureDetector: (widget) {
       if (widget is _DescriptiveWidget) {
-        return RumGestureDetectorInfo(
+        return const RumGestureDetectorInfo(
           'DescriptiveWidget',
           searchForText: false,
           searchForBetter: false,
         );
       } else if (widget is _VagueWidget) {
-        return RumGestureDetectorInfo(
+        return const RumGestureDetectorInfo(
           'VagueWidget',
           searchForBetter: true,
           searchForText: true,
@@ -390,13 +390,11 @@ void main() {
 
     await tester.pumpWidget(_buildSimpleApp(
       mockRum,
-      RadioGroup(
+      Radio(
         groupValue: 0,
         onChanged: (value) {},
-        child: Radio(
-          value: 1,
-        ),
-      ),
+        value: 1,
+      ),      
     ));
 
     final text = find.byType(Radio<int>);
@@ -414,12 +412,10 @@ void main() {
       mockRum,
       RumUserActionAnnotation(
         description: annotation,
-        child: RadioGroup(
+        child: Radio(
           groupValue: 0,
           onChanged: (value) {},
-          child: Radio(
-            value: 1,
-          ),
+          value: 1,          
         ),
       ),
     ));
@@ -688,7 +684,7 @@ void main() {
 
       await tester.pumpWidget(_buildSimpleApp(
         mockRum,
-        _DescriptiveWidget(),
+        const _DescriptiveWidget(),
       ));
 
       final button = find.byType(_DescriptiveWidget);
@@ -769,7 +765,7 @@ void main() {
         mockRum,
         RumUserActionAnnotation(
           description: annotation,
-          child: _DescriptiveWidget(),
+          child: const _DescriptiveWidget(),
         ),
       ));
 
@@ -795,7 +791,7 @@ void main() {
               description: annotation,
               attributes: attributes,
               child: Semantics(
-                child: SizedBox.shrink(),
+                child: const SizedBox.shrink(),
               ),
             ),
           ),

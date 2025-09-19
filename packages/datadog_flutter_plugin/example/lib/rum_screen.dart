@@ -63,7 +63,7 @@ class _RumScreenState extends State<RumScreen> {
     }
   }
 
-  _stopView() {
+  void _stopView() {
     var rum = DatadogSdk.instance.rum;
     if (rum != null) {
       final viewName = _viewNameController.value.text;

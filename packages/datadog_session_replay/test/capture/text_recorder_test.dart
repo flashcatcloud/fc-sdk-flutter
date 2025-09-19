@@ -10,6 +10,7 @@ import 'package:datadog_session_replay/src/capture/capture_node.dart';
 import 'package:datadog_session_replay/src/capture/element_recorders/container_recorder.dart';
 import 'package:datadog_session_replay/src/capture/element_recorders/text_recorder.dart';
 import 'package:datadog_session_replay/src/capture/recorder.dart';
+import 'package:datadog_session_replay/src/capture/text_masking.dart';
 import 'package:datadog_session_replay/src/extensions.dart';
 import 'package:datadog_session_replay/src/rum_context.dart';
 import 'package:datadog_session_replay/src/sr_data_models.dart';
@@ -27,9 +28,11 @@ void main() {
   setUp(() {
     recorder = SessionReplayRecorder.withCustomRecorders(
       [TextElementRecorder(KeyGenerator())],
-      defaultCapturePrivacy: CapturePrivacy(
+      defaultCapturePrivacy: TreeCapturePrivacy(
         textAndInputPrivacyLevel: TextAndInputPrivacyLevel.maskSensitiveInputs,
+        imagePrivacyLevel: ImagePrivacyLevel.maskNonAssetsOnly,
       ),
+      touchPrivacyLevel: TouchPrivacyLevel.show,
     );
 
     registerFallbackValue(
@@ -63,7 +66,6 @@ void main() {
       // Then
       expect(capture, isNotNull);
       final treeCapture = capture!.viewTreeSnapshot;
-      expect(treeCapture, isNotNull);
       expect(treeCapture.nodes.length, 1);
       final textNode = treeCapture.nodes.first;
       expect(textNode.attributes.x, 0);
@@ -145,6 +147,40 @@ void main() {
       final textNode = treeCapture.nodes.first;
       expect(textNode.attributes.x, x.round());
       expect(textNode.attributes.y, y.round());
+    });
+
+    testWidgets('text is masked with maskAll', (tester) async {
+      // Given
+      recorder.defaultTreeCapturePrivacy = TreeCapturePrivacy(
+        textAndInputPrivacyLevel: TextAndInputPrivacyLevel.maskAll,
+        imagePrivacyLevel: ImagePrivacyLevel.maskAll,
+      );
+      final textData = randomString();
+      final x = randomDouble(min: 0, max: 200);
+      final y = randomDouble(min: 0, max: 200);
+
+      final tree = SimpleTestCapture(
+        key: Key('key'),
+        recorder: recorder,
+        child: Directionality(
+          textDirection: TextDirection.ltr,
+          child: Stack(
+            children: [Positioned(left: x, top: y, child: Text(textData))],
+          ),
+        ),
+      );
+      await tester.pumpWidget(tree);
+
+      // When
+      final capture = await recorder.performCapture();
+
+      // Then
+      expect(capture, isNotNull);
+      final treeCapture = capture!.viewTreeSnapshot;
+      final textNode = treeCapture.nodes.first;
+      final wireframes = textNode.buildWireframes();
+      final textWireframe = wireframes.first as SRTextWireframe;
+      expect(textWireframe.text, maskTextPreservingSpaces(textData));
     });
   });
 
@@ -278,10 +314,12 @@ void main() {
       final keyGenerator = KeyGenerator();
       recorder = SessionReplayRecorder.withCustomRecorders(
         [TextElementRecorder(keyGenerator), ContainerRecorder(keyGenerator)],
-        defaultCapturePrivacy: CapturePrivacy(
+        defaultCapturePrivacy: TreeCapturePrivacy(
           textAndInputPrivacyLevel:
               TextAndInputPrivacyLevel.maskSensitiveInputs,
+          imagePrivacyLevel: ImagePrivacyLevel.maskNonAssetsOnly,
         ),
+        touchPrivacyLevel: TouchPrivacyLevel.show,
       );
       recorder.updateContext(context);
 
@@ -334,6 +372,67 @@ void main() {
         containerWireframe.shapeStyle!.backgroundColor,
         containerColor.toHexString(),
       );
+    });
+
+    testWidgets('text span tree is masked with maskAll', (tester) async {
+      // Given
+      // Use a different recorder that is capable of capturing containers.
+      final keyGenerator = KeyGenerator();
+      recorder = SessionReplayRecorder.withCustomRecorders(
+        [TextElementRecorder(keyGenerator), ContainerRecorder(keyGenerator)],
+        defaultCapturePrivacy: TreeCapturePrivacy(
+          textAndInputPrivacyLevel: TextAndInputPrivacyLevel.maskAll,
+          imagePrivacyLevel: ImagePrivacyLevel.maskAll,
+        ),
+        touchPrivacyLevel: TouchPrivacyLevel.show,
+      );
+      recorder.updateContext(context);
+
+      final textData = randomString();
+      final innerStrings = [randomString(), randomString()];
+      final containerColor = randomColor();
+      final tree = SimpleTestCapture(
+        key: Key('key'),
+        recorder: recorder,
+        child: Directionality(
+          textDirection: TextDirection.ltr,
+          child: Stack(
+            children: [
+              Text.rich(
+                TextSpan(
+                  text: textData,
+                  children: [
+                    TextSpan(text: innerStrings[0]),
+                    WidgetSpan(
+                      child: Container(
+                        width: 10,
+                        height: 10,
+                        color: containerColor,
+                      ),
+                    ),
+                    TextSpan(text: innerStrings[1]),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+      await tester.pumpWidget(tree);
+
+      // When
+      final capture = await recorder.performCapture();
+
+      // Then
+      expect(capture, isNotNull);
+      final treeCapture = capture!.viewTreeSnapshot;
+      expect(treeCapture.nodes.length, 2);
+      final textNode = treeCapture.nodes.first;
+
+      final testString = textData + innerStrings.join();
+      final textWireframeA =
+          textNode.buildWireframes().first as SRTextWireframe;
+      expect(textWireframeA.text, maskTextPreservingSpaces(testString));
     });
   });
 }

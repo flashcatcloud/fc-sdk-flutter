@@ -8,6 +8,7 @@ import 'package:datadog_session_replay/src/capture/element_recorders/container_r
 import 'package:datadog_session_replay/src/capture/element_recorders/editable_text_recorder.dart';
 import 'package:datadog_session_replay/src/capture/element_recorders/text_recorder.dart';
 import 'package:datadog_session_replay/src/capture/recorder.dart';
+import 'package:datadog_session_replay/src/capture/text_masking.dart';
 import 'package:datadog_session_replay/src/extensions.dart';
 import 'package:datadog_session_replay/src/rum_context.dart';
 import 'package:datadog_session_replay/src/sr_data_models.dart';
@@ -31,9 +32,11 @@ void main() {
         EditableTextRecorder(keyGenerator),
         InputDecoratorRecorder(keyGenerator),
       ],
-      defaultCapturePrivacy: CapturePrivacy(
+      defaultCapturePrivacy: TreeCapturePrivacy(
         textAndInputPrivacyLevel: TextAndInputPrivacyLevel.maskSensitiveInputs,
+        imagePrivacyLevel: ImagePrivacyLevel.maskNonAssetsOnly,
       ),
+      touchPrivacyLevel: TouchPrivacyLevel.show,
     );
 
     registerFallbackValue(
@@ -204,8 +207,9 @@ void main() {
     tester,
   ) async {
     // Given
-    recorder.defaultCapturePrivacy = CapturePrivacy(
+    recorder.defaultTreeCapturePrivacy = TreeCapturePrivacy(
       textAndInputPrivacyLevel: TextAndInputPrivacyLevel.maskAllInputs,
+      imagePrivacyLevel: ImagePrivacyLevel.maskNonAssetsOnly,
     );
     final text = randomString();
     final controller = TextEditingController(text: text);
@@ -228,15 +232,16 @@ void main() {
     final wireframes = capturedTextNode.buildWireframes();
     expect(wireframes.length, 1);
     final textWireframe = wireframes.first as SRTextWireframe;
-    expect(textWireframe.text, ('x' * text.length));
+    expect(textWireframe.text, maskTextFixedLength(text));
   });
 
   testWidgets('captured text is obscured when privacy set to maskAll', (
     tester,
   ) async {
     // Given
-    recorder.defaultCapturePrivacy = CapturePrivacy(
+    recorder.defaultTreeCapturePrivacy = TreeCapturePrivacy(
       textAndInputPrivacyLevel: TextAndInputPrivacyLevel.maskAll,
+      imagePrivacyLevel: ImagePrivacyLevel.maskNonAssetsOnly,
     );
     final text = randomString();
     final controller = TextEditingController(text: text);
@@ -259,7 +264,7 @@ void main() {
     final wireframes = capturedTextNode.buildWireframes();
     expect(wireframes.length, 1);
     final textWireframe = wireframes.first as SRTextWireframe;
-    expect(textWireframe.text, ('x' * text.length));
+    expect(textWireframe.text, maskTextFixedLength(text));
   });
 
   final maskedTextInputTypes = [
@@ -298,7 +303,7 @@ void main() {
       final wireframes = capturedTextNode.buildWireframes();
       expect(wireframes.length, 1);
       final textWireframe = wireframes.first as SRTextWireframe;
-      expect(textWireframe.text, ('x' * text.length));
+      expect(textWireframe.text, maskTextFixedLength(text));
     });
   }
 }

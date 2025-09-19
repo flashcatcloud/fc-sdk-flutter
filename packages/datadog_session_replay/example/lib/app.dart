@@ -16,6 +16,7 @@ import 'screens/simple_containers_screen.dart';
 import 'screens/slivers_screen.dart';
 import 'screens/text_fields_screen.dart';
 import 'screens/text_recording_screen.dart';
+import 'screens/touch_privacy_screen.dart';
 
 const Color datadogPurple = Color.fromARGB(255, 99, 44, 166);
 
@@ -56,10 +57,14 @@ class _MyAppState extends State<MyApp> {
       GoRoute(
         path: Routes.slivers,
         builder: (context, state) => SliversScreen(),
-	  ),
+      ),
       GoRoute(
         path: Routes.imageWidgets,
         builder: (context, state) => ImagesScreen(),
+      ),
+      GoRoute(
+        path: Routes.touchPrivacy,
+        builder: (context, state) => TouchPrivacyScreen(),
       ),
     ],
   );
