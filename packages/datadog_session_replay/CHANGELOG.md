@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.0-preview.2
+
+* Fix ignored generated files.
+
 ## 1.0.0-preview.1
 
 * Initial release of Datadog Session Replay with the following features:
