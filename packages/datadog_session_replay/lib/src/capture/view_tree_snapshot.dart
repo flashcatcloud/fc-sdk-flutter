@@ -27,16 +27,11 @@ enum CaptureNodeSubtreeStrategy { record, ignore }
 
 @immutable
 abstract class CaptureNodeSemantics {
-  static const maxImporance = 1000000;
-  static const minImportance = -1000000;
-
-  final int importance;
   final CaptureNodeSubtreeStrategy subtreeStrategy;
-  final CapturePrivacy? subtreePrivacy;
+  final TreeCapturePrivacy? subtreePrivacy;
   final List<CaptureNode> nodes;
 
   const CaptureNodeSemantics({
-    required this.importance,
     required this.subtreeStrategy,
     this.subtreePrivacy,
     required this.nodes,
@@ -47,7 +42,6 @@ abstract class CaptureNodeSemantics {
 class UnknownElement extends CaptureNodeSemantics {
   const UnknownElement({super.subtreePrivacy})
     : super(
-        importance: CaptureNodeSemantics.minImportance,
         subtreeStrategy: CaptureNodeSubtreeStrategy.record,
         nodes: const [],
       );
@@ -56,16 +50,16 @@ class UnknownElement extends CaptureNodeSemantics {
 @immutable
 class InvisibleElement extends CaptureNodeSemantics {
   const InvisibleElement({required super.subtreeStrategy, super.subtreePrivacy})
-    : super(importance: 0, nodes: const []);
+    : super(nodes: const []);
 }
 
 @immutable
 class IgnoredElement extends CaptureNodeSemantics {
   const IgnoredElement({
     required super.subtreeStrategy,
+    super.subtreePrivacy,
     super.nodes = const [],
-    final CapturePrivacy? subtreePrivacy,
-  }) : super(importance: CaptureNodeSemantics.maxImporance);
+  }) : super();
 }
 
 @immutable
@@ -74,7 +68,7 @@ class AmbiguousElement extends CaptureNodeSemantics {
     super.subtreeStrategy = CaptureNodeSubtreeStrategy.record,
     super.subtreePrivacy,
     required super.nodes,
-  }) : super(importance: 0);
+  }) : super();
 }
 
 @immutable
@@ -83,7 +77,7 @@ class SpecificElement extends CaptureNodeSemantics {
     required super.subtreeStrategy,
     super.subtreePrivacy,
     required super.nodes,
-  }) : super(importance: CaptureNodeSemantics.maxImporance);
+  }) : super();
 }
 
 /// This node needs additional async processing in order to provide
@@ -96,5 +90,5 @@ class AdditionalProcessingElement extends CaptureNodeSemantics {
     required super.subtreeStrategy,
     super.subtreePrivacy,
     required this.process,
-  }) : super(importance: CaptureNodeSemantics.maxImporance, nodes: const []);
+  }) : super(nodes: const []);
 }

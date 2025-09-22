@@ -7,6 +7,7 @@ import 'dart:ui';
 
 import 'package:flutter/widgets.dart';
 
+import '../../../datadog_session_replay.dart';
 import '../../datadog_session_replay_platform_interface.dart';
 import '../../sr_data_models.dart';
 import '../capture_node.dart';
@@ -15,7 +16,7 @@ import '../view_tree_snapshot.dart';
 
 // This size was chosen so that 'Content Image' would fit without
 // overlapping other content in the replay.
-const int labelMinWidth = 200;
+const int _labelMinWidth = 125;
 
 // Largest size of image we can process - larger than this and we
 // start to hit concerns around memory usage and processing time.
@@ -28,12 +29,33 @@ class ImageRecorder implements ElementRecorder {
   const ImageRecorder(this.keyGenerator);
 
   @override
+  List<Type> get handlesTypes => [RawImage, Image];
+
+  @override
   CaptureNodeSemantics? captureSemantics(
     Element element,
     CapturedViewAttributes attributes,
-    CapturePrivacy capturePrivacy,
+    TreeCapturePrivacy capturePrivacy,
   ) {
     final widget = element.widget;
+    if (widget is Image &&
+        capturePrivacy.imagePrivacyLevel ==
+            ImagePrivacyLevel.maskNonAssetsOnly) {
+      // Try to pull out an AssetImage from the image internals...
+      final assetImage = _extractAssetImage(widget);
+
+      if (assetImage != null) {
+        // Loosen capturing for the tree under this asset
+        return IgnoredElement(
+          subtreeStrategy: CaptureNodeSubtreeStrategy.record,
+          subtreePrivacy: TreeCapturePrivacy(
+            textAndInputPrivacyLevel: capturePrivacy.textAndInputPrivacyLevel,
+            imagePrivacyLevel: ImagePrivacyLevel.maskNone,
+          ),
+        );
+      }
+    }
+
     if (widget is! RawImage) return null;
 
     final uiImage = widget.image;
@@ -46,15 +68,35 @@ class ImageRecorder implements ElementRecorder {
     }
 
     final elementId = keyGenerator.keyForElement(element);
+    // AssetImages loosen their masking to [ImagePrivacyLevel.maskNone] when
+    // they need to, so if [ImagePrivacyLevel.maskNonAssetsOnly] is still set, then
+    // we shouldn't capture this image.
+    bool shouldCaptureImage =
+        capturePrivacy.imagePrivacyLevel == ImagePrivacyLevel.maskNone;
+    if (!shouldCaptureImage) {
+      return SpecificElement(
+        subtreeStrategy: CaptureNodeSubtreeStrategy.ignore,
+        nodes: [
+          PlaceholderNode(
+            attributes,
+            wireframeId: elementId,
+            caption: 'Image',
+            minWidth: _labelMinWidth,
+          ),
+        ],
+      );
+    }
+
     final totalPixelSize = uiImage.width * uiImage.height;
     if (totalPixelSize > maxImageSize) {
       return SpecificElement(
         subtreeStrategy: CaptureNodeSubtreeStrategy.ignore,
         nodes: [
-          _PlaceholderImageNode(
+          PlaceholderNode(
             attributes,
             wireframeId: elementId,
             caption: 'Large Image',
+            minWidth: _labelMinWidth,
           ),
         ],
       );
@@ -96,7 +138,7 @@ class ImageRecorder implements ElementRecorder {
       );
       if (byteData != null) {
         final resourceKey = keyGenerator.keyForImage(image);
-        DatadogSessionReplayPlatform.instance.saveImageForProcessing(
+        await DatadogSessionReplayPlatform.instance.saveImageForProcessing(
           resourceKey,
           image.width,
           image.height,
@@ -114,10 +156,11 @@ class ImageRecorder implements ElementRecorder {
 
     if (nodes.isEmpty) {
       nodes.add(
-        _PlaceholderImageNode(
+        PlaceholderNode(
           attributes,
           wireframeId: elementId,
           caption: 'Empty Image',
+          minWidth: _labelMinWidth,
         ),
       );
     }
@@ -127,32 +170,18 @@ class ImageRecorder implements ElementRecorder {
       nodes: nodes,
     );
   }
-}
 
-@immutable
-class _PlaceholderImageNode extends CaptureNode {
-  final int wireframeId;
-  final String caption;
-
-  const _PlaceholderImageNode(
-    super.attributes, {
-    required this.wireframeId,
-    required this.caption,
-  });
-
-  @override
-  List<SRWireframe> buildWireframes() {
-    final label = attributes.width < labelMinWidth ? null : caption;
-    return [
-      SRPlaceholderWireframe(
-        id: wireframeId,
-        x: attributes.x,
-        y: attributes.y,
-        width: attributes.width,
-        height: attributes.height,
-        label: label,
-      ),
-    ];
+  AssetImage? _extractAssetImage(Image widget) {
+    AssetImage? assetImage;
+    if (widget.image is AssetImage) {
+      assetImage = widget.image as AssetImage;
+    } else if (widget.image is ResizeImage) {
+      final resizeImage = widget.image as ResizeImage;
+      if (resizeImage.imageProvider is AssetImage) {
+        assetImage = resizeImage.imageProvider as AssetImage;
+      }
+    }
+    return assetImage;
   }
 }
 

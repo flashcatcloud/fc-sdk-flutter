@@ -31,6 +31,8 @@ void main() {
 
   setUp(() {
     mockPlugin = MockWebPlugin();
+    // This serves as a fallback for `JSValue` in wasm tests. `
+    registerFallbackValue(1.toJS);
 
     when(() => mockPlugin.getEventRelativeTime(any())).thenAnswer((call) {
       final timestamp = call.positionalArguments[0] as DateTime;
@@ -302,7 +304,7 @@ void main() {
     tracker.startResource(startTime, keyName, RumHttpMethod.get, url, {
       DatadogRumPlatformAttributeKey.traceID: traceId,
       DatadogRumPlatformAttributeKey.spanID: spanId,
-      DatadogRumPlatformAttributeKey.rulePsr: rulePsr.toJS,
+      DatadogRumPlatformAttributeKey.rulePsr: rulePsr,
     });
     tracker.stopResource(
       endTime,

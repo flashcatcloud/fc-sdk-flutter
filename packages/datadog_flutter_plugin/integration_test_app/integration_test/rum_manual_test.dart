@@ -81,7 +81,11 @@ void main() {
     const expectedContextValue = 1;
 
     for (var log in requestLog) {
-      verifyCommonTags(
+      verifyCommonRequestTags(log);
+    }
+
+    for (var log in rumLog) {
+      verifyCommonEventTags(
         log,
         'com.datadoghq.flutter.integration',
         '1.2.3-555',

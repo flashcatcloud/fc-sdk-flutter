@@ -45,7 +45,7 @@ extension type RumWebRawErrorResource._(JSObject _) implements JSObject {
   });
 }
 
-extension type RumWebRawErrorData._(JSObject _) implements JSObject {
+extension type RumWebRawErrorData.__(JSObject __) implements JSObject {
   external String id;
   external String? type;
   external String? stack;
@@ -61,7 +61,7 @@ extension type RumWebRawErrorData._(JSObject _) implements JSObject {
   external String sourceType;
   external RumWebRawErrorResource? resource;
 
-  external factory RumWebRawErrorData({
+  factory RumWebRawErrorData({
     required String id,
     String? type,
     String? stack,
@@ -72,9 +72,36 @@ extension type RumWebRawErrorData._(JSObject _) implements JSObject {
     required String message,
     String? handling,
     String source_type = 'browser',
-    RumWebRawErrorResource resource,
+    RumWebRawErrorResource? resource,
+  }) => RumWebRawErrorData._(
+    id: id,
+    message: message,
+    type: type,
+    stack: stack,
+    handling_stack: handling_stack,
+    component_stack: component_stack,
+    fingerprint: fingerprint,
+    source: source,
+    handling: handling,
+    source_type: source_type,
+    resource: resource,
+  );
+
+  external factory RumWebRawErrorData._({
+    required String id,
+    String? type,
+    String? stack,
+    String? handling_stack,
+    String? component_stack,
+    String? fingerprint,
+    String? source,
+    required String message,
+    String? handling,
+    String source_type,
+    RumWebRawErrorResource? resource,
   });
 }
+
 extension type RumWebRawErrorEvent.__(RumWebRawEvent __)
     implements RumWebRawEvent {
   external JSNumber date;
@@ -85,13 +112,12 @@ extension type RumWebRawErrorEvent.__(RumWebRawEvent __)
     required JSNumber date,
     required JSObject context,
     required RumWebRawErrorData error,
-  }) =>
-      RumWebRawErrorEvent._(
-        type: 'error',
-        date: date,
-        context: context,
-        error: error,
-      );
+  }) => RumWebRawErrorEvent._(
+    type: 'error',
+    date: date,
+    context: context,
+    error: error,
+  );
 
   external factory RumWebRawErrorEvent._({
     JSObject context,
@@ -163,13 +189,12 @@ extension type RumWebRawActionEvent.__(RumWebRawEvent __)
     required JSObject context,
     required RumWebRawActionData action,
     RumWebRawEventViewData? view,
-  }) =>
-      RumWebRawActionEvent._(
-        date: date,
-        context: context,
-        type: 'action',
-        action: action,
-      );
+  }) => RumWebRawActionEvent._(
+    date: date,
+    context: context,
+    type: 'action',
+    action: action,
+  );
 
   external factory RumWebRawActionEvent._({
     required JSNumber date,

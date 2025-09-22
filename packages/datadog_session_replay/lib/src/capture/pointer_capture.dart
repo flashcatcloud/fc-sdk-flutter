@@ -3,7 +3,7 @@
 // Copyright 2025-Present Datadog, Inc.
 
 import 'package:datadog_flutter_plugin/datadog_internal.dart';
-import 'package:meta/meta.dart';
+import 'package:flutter/widgets.dart';
 
 import '../sr_data_models.dart';
 
@@ -32,10 +32,34 @@ class PointerCapture {
   });
 }
 
+/// Provides a PointerSnapshotRecorder to other classes that need it.
+/// This is used primarily by [SessionReplayPrivacy] to cancel pointer
+/// tracking that occurs in its subtree if [TouchPrivacyLevel] is set
+class PointerSnapshotRecorderProvider extends InheritedWidget {
+  final PointerSnapshotRecorder recorder;
+
+  const PointerSnapshotRecorderProvider({
+    super.key,
+    required super.child,
+    required this.recorder,
+  }) : super();
+
+  @override
+  bool updateShouldNotify(
+    covariant PointerSnapshotRecorderProvider oldWidget,
+  ) => recorder != oldWidget.recorder;
+
+  static PointerSnapshotRecorderProvider? of(BuildContext context) {
+    return context
+        .dependOnInheritedWidgetOfExactType<PointerSnapshotRecorderProvider>();
+  }
+}
+
 class PointerSnapshotRecorder {
   final DatadogTimeProvider timeProvider;
 
   List<PointerCapture> _pointerBuffer = [];
+  final Set<int> _hiddenPointers = {};
 
   PointerSnapshotRecorder(this.timeProvider);
 
@@ -47,6 +71,10 @@ class PointerSnapshotRecorder {
   ) {
     final now = timeProvider.now();
 
+    if (_hiddenPointers.contains(pointerId)) {
+      return;
+    }
+
     _pointerBuffer.add(
       PointerCapture(
         date: now,
@@ -57,6 +85,20 @@ class PointerSnapshotRecorder {
       ),
     );
   }
+  
+  // Uncapturing a pointer removes any previous events from the pointer, and
+  // flags it as hidden until the next snapshot. This is partially to support
+  // 'hover' events that don't have up / down that are trackable, and because
+  // "up" triggers occur in reverse tree order, which means we can't 'uncapture'
+  // the tracking that happens at the root of the tree.
+  //
+  // This may result in some touches being ignored if they alternate between a
+  // hidden area and a non-hidden area in between tree captures, but we'd rather
+  // miss a few pointer events than capture private ones.
+  void uncapturePointer(int pointerId) {
+    _hiddenPointers.add(pointerId);
+    _pointerBuffer.removeWhere((c) => c.pointerId == pointerId);
+  }
 
   PointerSnapshot? takeSnapshot() {
     if (_pointerBuffer.isEmpty) {
@@ -65,6 +107,7 @@ class PointerSnapshotRecorder {
 
     final copy = _pointerBuffer;
     _pointerBuffer = [];
+    _hiddenPointers.clear();
     return PointerSnapshot(copy.first.date, copy);
   }
 }

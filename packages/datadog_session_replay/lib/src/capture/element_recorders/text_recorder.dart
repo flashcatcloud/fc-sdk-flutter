@@ -4,9 +4,11 @@
 
 import 'package:flutter/material.dart';
 
+import '../../../datadog_session_replay.dart';
 import '../../extensions.dart';
 import '../capture_node.dart';
 import '../recorder.dart';
+import '../text_masking.dart';
 import '../view_tree_snapshot.dart';
 import 'common_nodes.dart';
 import 'recording_extensions.dart';
@@ -17,10 +19,13 @@ class TextElementRecorder implements ElementRecorder {
   const TextElementRecorder(this.keyGenerator);
 
   @override
+  List<Type> get handlesTypes => [RichText];
+
+  @override
   CaptureNodeSemantics? captureSemantics(
     Element element,
     CapturedViewAttributes attributes,
-    CapturePrivacy capturePrivacy,
+    TreeCapturePrivacy capturePrivacy,
   ) {
     final widget = element.widget;
     if (widget is! RichText) {
@@ -37,7 +42,11 @@ class TextElementRecorder implements ElementRecorder {
       // For now, contact all child spans into a single string.
       // TODO(RUM-10230: Research how to support inline spans with different styles
       final stringBuilder = StringBuffer();
-      bool hasWidgetChildern = _getText(textSpan, stringBuilder);
+      bool hasWidgetChildern = _getText(
+        textSpan,
+        stringBuilder,
+        capturePrivacy.textAndInputPrivacyLevel,
+      );
 
       final node = TextElementCaptureNode(
         attributes,
@@ -60,15 +69,24 @@ class TextElementRecorder implements ElementRecorder {
     return null;
   }
 
-  bool _getText(TextSpan span, StringBuffer buffer) {
+  bool _getText(
+    TextSpan span,
+    StringBuffer buffer,
+    TextAndInputPrivacyLevel privacy,
+  ) {
     bool hasWidgetChildren = false;
     if (span.text case final text?) {
-      buffer.write(text);
+      if (privacy == TextAndInputPrivacyLevel.maskAll) {
+        final masked = maskTextPreservingSpaces(text);
+        buffer.write(masked);
+      } else {
+        buffer.write(text);
+      }
     }
 
     span.children?.forEach((inlineSpan) {
       if (inlineSpan is TextSpan) {
-        hasWidgetChildren |= _getText(inlineSpan, buffer);
+        hasWidgetChildren |= _getText(inlineSpan, buffer, privacy);
       } else if (inlineSpan is WidgetSpan) {
         hasWidgetChildren = true;
       }

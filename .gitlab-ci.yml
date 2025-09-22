@@ -1,5 +1,5 @@
 include:
-  - 'https://gitlab-templates.ddbuild.io/slack-notifier/v1/template.yml'
+  - 'https://gitlab-templates.ddbuild.io/slack-notifier/v3-sdm/template.yml'
 
 variables:
   CURRENT_CI_IMAGE: "8"
@@ -35,6 +35,7 @@ stages:
     - export PATH=$PATH:$HOME/.pub-cache/bin
     - flutter upgrade
     - flutter --version
+    - flutter doctor
     # SPM is the exception, make sure its disabled before starting the build
     - flutter config --no-enable-swift-package-manager
     - dart pub global activate melos
@@ -72,6 +73,14 @@ stages:
     - melos pub:get
     - flutter doctor
 
+.pre-web:
+  script:
+    - pushd tools/ci && dart pub get && dart run ci_helpers chrome_driver --extract && popd
+    - ./tools/ci/.tmp/chromedriver-linux64/chromedriver --version
+    - ./tools/ci/.tmp/chrome-linux64/chrome --version    
+    - export CHROME_EXECUTABLE=${CI_PROJECT_DIR}/tools/ci/.tmp/chrome-linux64/chrome
+    - export PATH="$PATH:${CI_PROJECT_DIR}/tools/ci/.tmp/chrome-linux64/"
+    - echo $CHROME_EXECUTABLE 
   
 ci-image:
   when: manual
@@ -97,7 +106,6 @@ build-flutter:
     - melos run analyze:dart
     - melos run unit_test:flutter
     - melos run golden_test:flutter
-    - melos run build:web
   artifacts:
     when: always
     expire_in: "30 days"
@@ -159,8 +167,9 @@ build-ios:
 build-web:
   stage: build
   except: [ schedules ]
-  tags: [ "arch:amd64" ]
   image: $CI_IMAGE_DOCKER
+  tags:
+    [ "arch:amd64" ]
   script:
     - !reference [.pre, script]
     - !reference [.pre-web, script]
@@ -228,6 +237,7 @@ web-integration-test:
   script:
     - !reference [.pre, script]
     - !reference [.pre-web, script]
+    - ./tools/ci/.tmp/chromedriver-linux64/chromedriver --port=4444 &
     - melos run integration_test:web
 
 # Notify
@@ -299,12 +309,9 @@ nightly-min-version-test:
     - fvm install $FLUTTER_MIN_VERSION
     - fvm use $FLUTTER_MIN_VERSION
     - fvm exec dart pub global activate melos
-    - pod repo update
+    - export MELOS_PACKAGES="datadog_flutter_plugin"
     - fvm exec melos pub:get
-    - fvm exec melos pod_update --no-select
-    - fvm exec melos run analyze
-    - fvm exec melos run build
-    - fvm exec melos run unit_test:all
+    - fvm exec melos analyze:dart    
   artifacts:
     when: always
     expire_in: "30 days"

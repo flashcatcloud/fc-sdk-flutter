@@ -11,4 +11,5 @@ abstract final class Routes {
   static const String textFieldWidgets = '/text_fields';
   static const String slivers = '/slivers';
   static const String imageWidgets = '/images';
+  static const String touchPrivacy = '/touch_privacy';
 }

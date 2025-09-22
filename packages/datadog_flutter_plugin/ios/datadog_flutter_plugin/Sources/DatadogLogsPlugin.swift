@@ -314,7 +314,7 @@ public class DatadogLogsPlugin: NSObject, FlutterPlugin {
                     let splitTags = tags.split(separator: ",").map { String($0) }
                     event.tags = splitTags
                 }
-                if let error = result["error"] as? [String: Any], 
+                if let error = result["error"] as? [String: Any],
                    let fingerprint = error["fingerprint"] as? String {
                     event.error?.fingerprint = fingerprint
                 }

@@ -143,7 +143,7 @@ class ResourceTracker {
     final spanId =
         attributes.remove(DatadogRumPlatformAttributeKey.spanID) as String?;
     final rulePsr =
-        attributes.remove(DatadogRumPlatformAttributeKey.rulePsr) as double?;
+        attributes.remove(DatadogRumPlatformAttributeKey.rulePsr) as num?;
 
     return RumWebRawResourceDdData(
       trace_id: traceId,
