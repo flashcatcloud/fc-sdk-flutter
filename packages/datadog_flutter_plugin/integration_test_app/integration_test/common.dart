@@ -117,19 +117,12 @@ void verifyCommonEventTags(
   final sdkVersion = tags['sdk_version'];
   expect(sdkVersion, DatadogSdk.sdkVersion);
   expect(tags['service'], service);
-
-  if (!kIsWeb) {
-    // Not sent as a tag on web
-    expect(tags['version'], version);
-    expect(tags['variant'], variant);
-  }
+  expect(tags['version'], version);
+  expect(tags['variant'], variant);
 }
 
 void verifyCommonRequestTags(RequestLog log) {
-  if (!kIsWeb) {
-    // Currently coming back as 'browser' on web
-    expect(log.queryParameters['ddsource'], 'flutter');
-  }
+  expect(log.queryParameters['ddsource'], 'flutter');
 }
 
 void verifyUser(RumEventDecoder decoder) {
