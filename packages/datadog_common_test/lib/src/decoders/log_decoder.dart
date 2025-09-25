@@ -36,4 +36,8 @@ class LogDecoder {
       return log['error.fingerprint'] as String?;
     }
   }
+
+  Object? getUserProperty(String name) {
+    return getNestedProperty('usr.$name', log);
+  }
 }

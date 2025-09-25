@@ -22,7 +22,13 @@ class _LoggingScenarioState extends State<LoggingScenario> {
     super.initState();
 
     DatadogSdk.instance.setUserInfo(
-        id: 'bits', name: 'Bits Dawoof', email: 'bits@datadoghq.com');
+        id: 'bits',
+        name: 'Bits Dawoof',
+        email: 'bits@datadoghq.com',
+        extraInfo: {
+          'type': 'dog',
+          'department': 'data',
+        });
 
     // Create a logger that will not send to Datadog
     var silentLogger = DatadogSdk.instance.logs!.createLogger(
