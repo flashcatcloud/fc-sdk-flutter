@@ -249,7 +249,7 @@ class DatadogGqlLink extends Link {
             }),
         'path': e.path
       };
-    });
+    }).toList();
     return {
       '_dd': {
         'graphql': {
