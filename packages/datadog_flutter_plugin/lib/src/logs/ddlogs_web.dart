@@ -18,19 +18,23 @@ class DdLogsWeb extends DdLogsPlatform {
   final Map<String, Logger> _activeLoggers = {};
 
   static void initLogs(DatadogConfiguration configuration) {
-    DD_LOGS?.init(_LogInitOptions(
-      clientToken: configuration.clientToken,
-      env: configuration.env,
-      proxy: configuration.loggingConfiguration?.customEndpoint,
-      site: siteStringForSite(configuration.site),
-      service: configuration.service,
-      version: configuration.versionTag,
-    ));
+    DD_LOGS?.init(
+      _LogInitOptions(
+        clientToken: configuration.clientToken,
+        env: configuration.env,
+        proxy: configuration.loggingConfiguration?.customEndpoint,
+        site: siteStringForSite(configuration.site),
+        service: configuration.service,
+        version: configuration.versionTag,
+      ),
+    );
   }
 
   @override
   Future<void> enable(
-      DatadogSdk core, DatadogLoggingConfiguration config) async {}
+    DatadogSdk core,
+    DatadogLoggingConfiguration config,
+  ) async {}
 
   @override
   Future<void> addGlobalAttribute(String key, Object value) async {}
@@ -43,10 +47,10 @@ class DdLogsWeb extends DdLogsPlatform {
 
   @override
   Future<void> createLogger(
-      String loggerHandle, DatadogLoggerConfiguration config) async {
-    var loggerHandlers = [
-      'http'.toJS,
-    ];
+    String loggerHandle,
+    DatadogLoggerConfiguration config,
+  ) async {
+    var loggerHandlers = ['http'.toJS];
     var logger = DD_LOGS?.createLogger(
       config.name ?? 'default',
       _JsLoggerConfiguration(),
@@ -69,7 +73,10 @@ class DdLogsWeb extends DdLogsPlatform {
 
   @override
   Future<void> addAttribute(
-      String loggerHandle, String key, Object value) async {
+    String loggerHandle,
+    String key,
+    Object value,
+  ) async {
     final logger = _activeLoggers[loggerHandle];
     logger?.setContextProperty(key, valueToJs(value, 'value'));
   }
@@ -187,10 +194,13 @@ extension type _DdLogs._(JSObject _) implements JSObject {
   external Logger? getLogger(String name);
 
   external void setUser(JsUser userInfo);
+  external void setUserProperty(String key, JSAny? value);
 
   @internal
   external Logger? createLogger(
-      String name, _JsLoggerConfiguration? configuration);
+    String name,
+    _JsLoggerConfiguration? configuration,
+  );
 }
 
 @JS()
@@ -199,7 +209,11 @@ external _DdLogs? DD_LOGS;
 
 extension type Logger._(JSObject _) implements JSObject {
   external void log(
-      String message, JSAny? messageContext, String status, JSError? error);
+    String message,
+    JSAny? messageContext,
+    String status,
+    JSError? error,
+  );
 
   external void setContextProperty(String key, JSAny? value);
   external void removeContextProperty(String key);

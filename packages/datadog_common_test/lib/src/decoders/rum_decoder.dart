@@ -7,17 +7,18 @@ import 'dart:io';
 import '../../datadog_common_test.dart';
 
 class RumUser {
+  Map<String, Object?> raw;
   String? email;
   String? id;
   String? name;
 
-  RumUser(this.email, this.id, this.name);
+  RumUser(this.raw, this.email, this.id, this.name);
 
   static RumUser fromJson(Map<String, dynamic> json) {
     final email = json['email'] is String ? json['email'] as String : null;
     final id = json['id'] is String ? json['id'] as String : null;
     final name = json['name'] is String ? json['name'] as String : null;
-    return RumUser(email, id, name);
+    return RumUser(json, email, id, name);
   }
 }
 

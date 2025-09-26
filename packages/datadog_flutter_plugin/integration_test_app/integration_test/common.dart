@@ -148,4 +148,6 @@ void verifyUser(RumEventDecoder decoder) {
   expect(user?.email, 'fake@datadoghq.com');
   expect(user?.id, 'fake-id');
   expect(user?.name, 'Johnny Silverhand');
+  expect(user?.raw['type'], 'customer');
+  expect(user?.raw['profession'], 'rocker');
 }
