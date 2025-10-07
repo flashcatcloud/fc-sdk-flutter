@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.0-preview.3
+
+* Add classes to Proguard rules to prevent stripping. See [#851](https://github.com/DataDog/dd-sdk-flutter/issues/851).
+
 ## 1.0.0-preview.2
 
 * Fix ignored generated files.
