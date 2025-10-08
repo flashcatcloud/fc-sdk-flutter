@@ -50,8 +50,8 @@ void main() {
       firstPartyGetUrl: '${sessionRecorder.sessionEndpoint}/integration_get',
       firstPartyPostUrl: '${sessionRecorder.sessionEndpoint}/integration_post',
       firstPartyBadUrl: 'https://foo.bar',
-      thirdPartyGetUrl: 'https://httpbingo.org//get',
-      thirdPartyPostUrl: 'https://httpbingo.org//post',
+      thirdPartyGetUrl: 'https://httpbingo.org/get',
+      thirdPartyPostUrl: 'https://httpbingo.org/post',
       // TODO(RUM-7120): The only way to enable resource tracking for Dio at the moment
       // is to call `enableHttpTracking`, which enables it globally. This isn't
       // in line with what's expected from package:http or Dio, which expect
