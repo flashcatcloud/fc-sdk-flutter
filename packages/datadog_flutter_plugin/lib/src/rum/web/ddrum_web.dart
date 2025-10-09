@@ -466,6 +466,7 @@ extension type _DdRum._(JSObject _) implements JSObject {
   external void addFeatureFlagEvaluation(String name, JSAny? value);
   external void stopSession();
   external void setUser(JsUser newUser);
+  external void setUserProperty(String key, JSAny? value);
 }
 
 @JS()

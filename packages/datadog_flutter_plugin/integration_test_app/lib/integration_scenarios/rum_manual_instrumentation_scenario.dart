@@ -98,7 +98,10 @@ class _RumManualInstrumentationScenarioState
     DatadogSdk.instance.rum?.addViewLoadingTime();
 
     DatadogSdk.instance.setUserInfo(
-        id: 'fake-id', name: 'Johnny Silverhand', email: 'fake@datadoghq.com');
+        id: 'fake-id',
+        name: 'Johnny Silverhand',
+        email: 'fake@datadoghq.com',
+        extraInfo: {'type': 'customer', 'profession': 'rocker'});
   }
 
   void _simulateResourceDownload() async {
