@@ -22,7 +22,7 @@ class DatadogSessionReplayPlatformIos extends DatadogSessionReplayPlatform {
   }
 
   DatadogSessionReplayPlatformIos.fromObjCRef(ObjCObjectBase ref)
-    : _iosBridge = FlutterSessionReplay.castFrom(ref);
+      : _iosBridge = FlutterSessionReplay.castFrom(ref);
 
   @override
   Object? get isolateToken => _iosBridge;
@@ -34,7 +34,7 @@ class DatadogSessionReplayPlatformIos extends DatadogSessionReplayPlatform {
   ) {
     NSURL? url;
     if (configuration.customEndpoint case final customEndpoint?) {
-      url = NSURL().initWithString(NSString(customEndpoint));
+      url = NSURL.alloc().initWithString(NSString(customEndpoint));
       if (url == null) {
         final message =
             'Failed to parse custom endpoint $customEndpoint. Session replay was not initialized.';
@@ -50,22 +50,22 @@ class DatadogSessionReplayPlatformIos extends DatadogSessionReplayPlatform {
 
     final contextChangedListener =
         ObjCBlock_ffiVoid_FlutterRUMCoreContext.listener((context) {
-          RUMContext? dartContext;
-          if (context != null) {
-            dartContext = RUMContext(
-              applicationId: context.applicationID.toDartString(),
-              sessionId: context.sessionID.toDartString(),
-              viewId: context.viewID?.toDartString(),
-            );
-            onContextChanged(dartContext);
-          }
-        });
-
-    final iOsConfiguration =
-        FlutterSessionReplayConfiguration.alloc()..initWithCustomEndpoint(
-          url,
-          onContextChanged: contextChangedListener,
+      RUMContext? dartContext;
+      if (context != null) {
+        dartContext = RUMContext(
+          applicationId: context.applicationID.toDartString(),
+          sessionId: context.sessionID.toDartString(),
+          viewId: context.viewID?.toDartString(),
         );
+        onContextChanged(dartContext);
+      }
+    });
+
+    final iOsConfiguration = FlutterSessionReplayConfiguration.alloc()
+      ..initWithCustomEndpoint(
+        url,
+        onContextChanged: contextChangedListener,
+      );
     _iosBridge.enableWith(iOsConfiguration);
 
     return true;
@@ -146,13 +146,12 @@ class DatadogSessionReplayPlatformIos extends DatadogSessionReplayPlatform {
 }
 
 @ffi.Native<
-  ffi.Pointer<ObjCObject> Function(
-    ffi.Pointer<ObjCObject>,
-    ffi.Pointer<ObjCSelector>,
-    ffi.Pointer<ffi.Void>,
-    ffi.UnsignedLong,
-  )
->(symbol: 'objc_msgSend', isLeaf: true)
+    ffi.Pointer<ObjCObject> Function(
+      ffi.Pointer<ObjCObject>,
+      ffi.Pointer<ObjCSelector>,
+      ffi.Pointer<ffi.Void>,
+      ffi.UnsignedLong,
+    )>(symbol: 'objc_msgSend', isLeaf: true)
 // ignore: non_constant_identifier_names
 external ffi.Pointer<ObjCObject> objc_msgSend_3nbx5e(
   ffi.Pointer<ObjCObject> object,
