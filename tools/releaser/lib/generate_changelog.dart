@@ -12,6 +12,19 @@ import 'package:version/version.dart';
 import 'command.dart';
 import 'helpers.dart';
 
+// Maps common scope abbreviations that are added to conventional commits to more human
+// readable versions.
+final scopeAbbreviationMap = <String, String>{
+  'ios': 'iOS',
+  'android': 'Android',
+  'web': 'Web',
+  'sr': 'Session Replay',
+  'desk': 'Desktop',
+  'win': 'Windows',
+  'mac': 'macOS',
+  'linux': 'Linux',
+};
+
 class GenerateChangelogCommand extends Command {
   static const issuesLink = 'https://github.com/DataDog/dd-sdk-flutter/issues/';
 
@@ -151,7 +164,7 @@ class GenerateChangelogCommand extends Command {
 
 List<String> _getChangelogItems(List<String> commitMessages) {
   RegExp conventionalCommitPattern =
-      RegExp(r'(?<type>.*)(\((?<scope>.*)\))?(?<breaking>!)?: (?<rest>.*)');
+      RegExp(r'(?<type>\w*)(\((?<scope>.*)\))?(?<breaking>!)?: (?<rest>.*)');
   RegExp githubIssueMention = RegExp(r'\#(?<issue_number>\d+)');
 
   final items = <String>[];
@@ -163,8 +176,15 @@ List<String> _getChangelogItems(List<String> commitMessages) {
       final type = match.namedGroup('type');
       if (type == 'fix' || type == 'feat') {
         String changelogItem = '';
-        if (match.namedGroup('scope') case final scope?) {
-          changelogItem += '[$scope] ';
+        if (match.namedGroup('scope') case final scopes?) {
+          final scopeList = scopes.split(',').map((e) {
+            final scope = e.trim();
+            if (scopeAbbreviationMap[scope] case final scope?) {
+              return scope;
+            }
+            return scope;
+          });
+          changelogItem = '[${scopeList.join(', ')}] ';
         }
 
         changelogItem += match.namedGroup('rest')!;
