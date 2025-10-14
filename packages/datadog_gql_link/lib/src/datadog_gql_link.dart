@@ -240,13 +240,15 @@ class DatadogGqlLink extends Link {
     final serializedErrors = response.errors!.map((e) {
       return {
         'message': e.message,
-        'locations': e.locations?.map((l) => {
-              'line': l.line,
-              'column': l.column,
-            }),
+        'locations': e.locations
+            ?.map((l) => {
+                  'line': l.line,
+                  'column': l.column,
+                })
+            .toList(),
         'path': e.path
       };
-    });
+    }).toList();
     return {
       '_dd': {
         'graphql': {

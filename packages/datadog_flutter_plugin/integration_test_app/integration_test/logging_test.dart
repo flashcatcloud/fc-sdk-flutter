@@ -175,6 +175,8 @@ void main() {
       expect(log.userId, 'bits');
       expect(log.userName, 'Bits Dawoof');
       expect(log.userEmail, 'bits@datadoghq.com');
+      expect(log.getUserProperty('type'), 'dog');
+      expect(log.getUserProperty('department'), 'data');
 
       if (!kIsWeb) {
         if (Platform.isIOS) {

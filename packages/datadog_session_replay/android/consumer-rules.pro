@@ -1,1 +1,2 @@
--keep class com.datadoghq.flutter.sessionreplay.FlutterSessionReplayBridge { *; }
+-keep class com.datadoghq.flutter.sessionreplay.** { *; }
+-keep class com.datadog.android.api.feature.FeatureSdkCore** { *; }

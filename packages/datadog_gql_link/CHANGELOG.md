@@ -1,6 +1,9 @@
 # Changelog
 
-## Unreleased
+## 1.2.0
+
+* Fix `GqlErrors` causing an `ArgumentError` on `stopResource`. See [#850](https://github.com/DataDog/dd-sdk-flutter/issues/850)
+* Add configurable trace header injection.
 
 * Add support for `TraceContextInjection` configuration.
 

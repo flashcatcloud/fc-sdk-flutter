@@ -16,6 +16,7 @@ import 'src/logs/ddlogs_platform_interface.dart';
 import 'src/logs/ddlogs_web.dart';
 import 'src/rum/ddrum_platform_interface.dart';
 import 'src/rum/web/ddrum_web.dart';
+import 'src/web_helpers.dart';
 
 @anonymous
 extension type JsUser._(JSObject _) implements JSObject {
@@ -23,11 +24,7 @@ extension type JsUser._(JSObject _) implements JSObject {
   external String? get email;
   external String? get name;
 
-  external factory JsUser({
-    String? id,
-    String? email,
-    String? name,
-  });
+  external factory JsUser({String? id, String? email, String? name});
 }
 
 /// A web implementation of the DatadogSdk plugin.
@@ -46,20 +43,27 @@ class DatadogSdkWeb extends DatadogSdkPlatform {
   Future<void> setTrackingConsent(TrackingConsent trackingConsent) async {}
 
   @override
-  Future<void> setUserInfo(String? id, String? name, String? email,
-      Map<String, dynamic> extraInfo) async {
-    // TODO: Extra user properties
-    final jsUser = JsUser(
-      id: id,
-      name: name,
-      email: email,
-    );
+  Future<void> setUserInfo(
+    String? id,
+    String? name,
+    String? email,
+    Map<String, dynamic> extraInfo,
+  ) async {
+    final jsUser = JsUser(id: id, name: name, email: email);
     DD_LOGS?.setUser(jsUser);
     DD_RUM?.setUser(jsUser);
+    await addUserExtraInfo(extraInfo);
   }
 
   @override
-  Future<void> addUserExtraInfo(Map<String, Object?> extraInfo) async {}
+  Future<void> addUserExtraInfo(Map<String, Object?> extraInfo) async {
+    for (final entry in extraInfo.entries) {
+      DD_LOGS?.setUserProperty(entry.key, valueToJs(entry.value, 'extraInfo'));
+    }
+    for (final entry in extraInfo.entries) {
+      DD_RUM?.setUserProperty(entry.key, valueToJs(entry.value, 'extraInfo'));
+    }
+  }
 
   @override
   Future<PlatformInitializationResult> initialize(
@@ -76,8 +80,9 @@ class DatadogSdkWeb extends DatadogSdkPlatform {
       }
     } catch (e) {
       internalLogger.warn('DatadogSdk failed to initialize logging: $e');
-      internalLogger
-          .warn('Did you remember to add "datadog-logs" to your scripts?');
+      internalLogger.warn(
+        'Did you remember to add "datadog-logs" to your scripts?',
+      );
     }
 
     bool rumInitialized = false;
@@ -93,12 +98,15 @@ class DatadogSdkWeb extends DatadogSdkPlatform {
       }
     } catch (e) {
       internalLogger.warn('DatadogSdk failed to initialize RUM: $e');
-      internalLogger
-          .warn('Did you remember to add "datadog-rum-slim" to your scripts?');
+      internalLogger.warn(
+        'Did you remember to add "datadog-rum-slim" to your scripts?',
+      );
     }
 
     return PlatformInitializationResult(
-        logs: logsInitialized, rum: rumInitialized);
+      logs: logsInitialized,
+      rum: rumInitialized,
+    );
   }
 
   @override
@@ -116,7 +124,10 @@ class DatadogSdkWeb extends DatadogSdkPlatform {
 
   @override
   Future<void> sendTelemetryError(
-      String message, String? stack, String? kind) async {
+    String message,
+    String? stack,
+    String? kind,
+  ) async {
     // Not currently supported
   }
 

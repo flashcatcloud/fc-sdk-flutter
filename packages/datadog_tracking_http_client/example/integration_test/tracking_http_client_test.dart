@@ -48,8 +48,8 @@ void main() {
       firstPartyGetUrl: '${sessionRecorder.sessionEndpoint}/integration_get',
       firstPartyPostUrl: '${sessionRecorder.sessionEndpoint}/integration_post',
       firstPartyBadUrl: 'https://foo.bar/',
-      thirdPartyGetUrl: 'https://httpbin.org/get/',
-      thirdPartyPostUrl: 'https://httpbin.org/post/',
+      thirdPartyGetUrl: 'https://httpbingo.org/get/',
+      thirdPartyPostUrl: 'https://httpbingo.org/post/',
       enableIoHttpTracking: true,
     );
     RumAutoInstrumentationScenarioConfig.instance = scenarioConfig;

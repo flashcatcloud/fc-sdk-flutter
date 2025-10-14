@@ -332,6 +332,7 @@ nightly-beta-test:
     - !reference [.pre-ios, script]
     - brew tap leoafarias/fvm
     - brew install fvm
+    - fvm destroy
     - fvm install beta
     - fvm use beta
     - fvm flutter upgrade
