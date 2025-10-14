@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.0-preview.4
+
+* Fix an issue with custom endpoints on iOS.
+* Drop session replay Dart requirement to 3.6.
+
 ## 1.0.0-preview.3
 
 * Add classes to Proguard rules to prevent stripping. See [#851](https://github.com/DataDog/dd-sdk-flutter/issues/851).
