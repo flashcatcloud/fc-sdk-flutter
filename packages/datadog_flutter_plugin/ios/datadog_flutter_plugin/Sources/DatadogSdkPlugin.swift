@@ -150,8 +150,8 @@ public class DatadogSdkPlugin: NSObject, FlutterPlugin {
                 result(FlutterError.missingParameter(methodName: call.method))
             }
         case "setUserInfo":
-            if let extraInfo = arguments["extraInfo"] as? [String: Any?],
-               let id = arguments["id"] as? String {
+            if let id = arguments["id"] as? String,
+               let extraInfo = arguments["extraInfo"] as? [String: Any?] {
                 let name = arguments["name"] as? String
                 let email = arguments["email"] as? String
                 let encodedAttributes = castFlutterAttributesToSwift(extraInfo)
@@ -160,10 +160,34 @@ public class DatadogSdkPlugin: NSObject, FlutterPlugin {
             } else {
                 result(FlutterError.missingParameter(methodName: call.method))
             }
+        case "clearUserInfo":
+            Datadog.clearUserInfo()
+            result(nil)
         case "addUserExtraInfo":
             if let extraInfo = arguments["extraInfo"] as? [String: Any?] {
                 let encodedAttributes = castFlutterAttributesToSwift(extraInfo)
                 Datadog.addUserExtraInfo(encodedAttributes)
+                result(nil)
+            } else {
+                result(FlutterError.missingParameter(methodName: call.method))
+            }
+        case "setAccountInfo":
+            if let id = arguments["id"] as? String,
+               let extraInfo = arguments["extraInfo"] as? [String: Any?] {
+                let name = arguments["name"] as? String
+                let encodedAttributes = castFlutterAttributesToSwift(extraInfo)
+                Datadog.setAccountInfo(id: id, name: name, extraInfo: encodedAttributes)
+                result(nil)
+            } else {
+                result(FlutterError.missingParameter(methodName: call.method))
+            }
+        case "clearAccountInfo":
+            Datadog.clearAccountInfo()
+            result(nil)
+        case "addAccountExtraInfo":
+            if let extraInfo = arguments["extraInfo"] as? [String: Any?] {
+                let encodedAttributes = castFlutterAttributesToSwift(extraInfo)
+                Datadog.addAccountExtraInfo(encodedAttributes)
                 result(nil)
             } else {
                 result(FlutterError.missingParameter(methodName: call.method))

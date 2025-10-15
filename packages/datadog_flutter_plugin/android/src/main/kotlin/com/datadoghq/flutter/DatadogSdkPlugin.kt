@@ -153,6 +153,34 @@ class DatadogSdkPlugin : FlutterPlugin, MethodCallHandler {
                     result.missingParameter(call.method)
                 }
             }
+            "clearUserInfo" -> {
+                Datadog.clearUserInfo()
+                result.success(null)
+            }
+            "setAccountInfo" -> {
+                val id = call.argument<String>("id")
+                val name = call.argument<String>("name")
+                val extraInfo = call.argument<Map<String, Any?>>("extraInfo")
+                if (id != null && extraInfo != null) {
+                    Datadog.setAccountInfo(id, name, extraInfo)
+                    result.success(null)
+                } else {
+                    result.missingParameter(call.method)
+                }
+            }
+            "addAccountExtraInfo" -> {
+                val extraInfo = call.argument<Map<String, Any?>>("extraInfo")
+                if (extraInfo != null) {
+                    Datadog.addAccountExtraInfo(extraInfo)
+                    result.success(null)
+                } else {
+                    result.missingParameter(call.method)
+                }
+            }
+            "clearAccountInfo" -> {
+                Datadog.clearAccountInfo()
+                result.success(null)
+            }
             "telemetryDebug" -> {
                 val message = call.argument<String>("message")
                 if (message != null) {

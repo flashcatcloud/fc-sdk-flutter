@@ -215,10 +215,10 @@ class DatadogSdk {
     }
   }
 
-  /// Sets current user information. User information will be added traces and
-  /// RUM events automatically.
+  /// Sets current user information. User information will be added to logs,
+  /// traces and RUM events automatically.
   void setUserInfo({
-    String? id,
+    required String id,
     String? name,
     String? email,
     Map<String, Object?> extraInfo = const {},
@@ -228,16 +228,80 @@ class DatadogSdk {
     });
   }
 
+  /// Clear the current user information.
+  ///
+  /// User information will be `null`. Following Logs, Traces, RUM Events will
+  /// not include the user information anymore
+  ///
+  /// Any active RUM Session, active RUM View at the time of call will have
+  /// their `user` attribute emptied
+  ///
+  /// If you want to retain the current `user` on the active RUM session, you
+  /// need to stop the session first by using [DatadogRum.stopSession]
+  ///
+  /// If you want to retain the current `user` on the active RUM views, you need
+  /// to stop the view first by using [DatadogRum.stopView]
+  void clearUserInfo() {
+    wrap('clearUserInfo', internalLogger, null, () {
+      return _platform.clearUserInfo();
+    });
+  }
+
   /// Add custom attributes to the current user information
   ///
   /// This extra info will be added to already existing extra info that is added
-  /// to logs traces and RUM events automatically.
+  /// to logs, traces, and RUM events automatically.
   ///
   /// Setting an existing attribute to `null` will remove that attribute from
   /// the user's extra info
   void addUserExtraInfo(Map<String, Object?> extraInfo) {
     wrap('addUserExtraInfo', internalLogger, extraInfo, () {
       return _platform.addUserExtraInfo(extraInfo);
+    });
+  }
+
+  /// Sets current account information.
+  ///
+  /// Those will be added to logs, traces and RUM events automatically.
+  void setAccountInfo({
+    required String id,
+    String? name,
+    Map<String, Object?> extraInfo = const {},
+  }) {
+    wrap('setAccountInfo', internalLogger, extraInfo, () {
+      return _platform.setAccountInfo(id, name, extraInfo);
+    });
+  }
+
+  /// Clear the current account information.
+  ///
+  /// Account information will be `null`. Following Logs, Traces, RUM Events will
+  /// not include the account information anymore
+  ///
+  /// Any active RUM Session, active RUM View at the time of call will have
+  /// their `account` attribute emptied
+  ///
+  /// If you want to retain the current `account` on the active RUM session, you
+  /// need to stop the session first by using [DatadogRum.stopSession]
+  ///
+  /// If you want to retain the current `account` on the active RUM views, you need
+  /// to stop the view first by using [DatadogRum.stopView]
+  void clearAccountInfo() {
+    wrap('clearAccountInfo', internalLogger, null, () {
+      return _platform.clearAccountInfo();
+    });
+  }
+
+  /// Add custom attributes to the current user information
+  ///
+  /// This extra info will be added to already existing extra info that is added
+  /// to logs, traces, and RUM events automatically.
+  ///
+  /// Setting an existing attribute to `null` will remove that attribute from
+  /// the user's extra info
+  void addAccountExtraInfo(Map<String, Object?> extraInfo) {
+    wrap('addAccountExtraInfo', internalLogger, extraInfo, () {
+      return _platform.addAccountExtraInfo(extraInfo);
     });
   }
 

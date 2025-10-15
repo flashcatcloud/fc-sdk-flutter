@@ -1,7 +1,6 @@
 // Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
 // This product includes software developed at Datadog (https://www.datadoghq.com/).
 // Copyright 2019-2021 Datadog, Inc.
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:datadog_common_test/datadog_common_test.dart';
@@ -27,39 +26,10 @@ void main() {
 
     var logs = <LogDecoder>[];
 
-    await recordedSession.pollSessionRequests(
+    await recordedSession.pollForLogs(
       const Duration(seconds: 45),
-      (requests) {
-        requests
-            .map((e) {
-              try {
-                if (e.jsonData is List) {
-                  return e.jsonData;
-                } else if (e.jsonData is Map) {
-                  // Web can return a single very long log as a single json object.
-                  // Transform into a list of json data.
-                  return [e.jsonData];
-                }
-                throw const FormatException();
-              } on FormatException {
-                // Web sends as newline separated
-                return e.data
-                    .split('\n')
-                    .map<dynamic>((e) => json.decode(e))
-                    .toList();
-              } on TypeError {
-                return null;
-              }
-              // return null;
-            })
-            .whereType<List<dynamic>>()
-            .expand<dynamic>((e) => e)
-            .whereType<Map<String, Object?>>()
-            // Only include logs, ignore telemetry
-            .where((e) {
-              return e['message'] != null && e['type'] != 'telemetry';
-            })
-            .forEach((e) => logs.add(LogDecoder(e)));
+      (requestLogs) {
+        logs = requestLogs;
         return logs.length >= 8;
       },
     );

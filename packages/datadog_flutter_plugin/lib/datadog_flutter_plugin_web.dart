@@ -20,11 +20,19 @@ import 'src/web_helpers.dart';
 
 @anonymous
 extension type JsUser._(JSObject _) implements JSObject {
-  external String? get id;
+  external String get id;
   external String? get email;
   external String? get name;
 
-  external factory JsUser({String? id, String? email, String? name});
+  external factory JsUser({String id, String? email, String? name});
+}
+
+@anonymous
+extension type JsAccount._(JSObject _) implements JSObject {
+  external String get id;
+  external String? get name;
+
+  external factory JsAccount({String id, String? name});
 }
 
 /// A web implementation of the DatadogSdk plugin.
@@ -44,7 +52,7 @@ class DatadogSdkWeb extends DatadogSdkPlatform {
 
   @override
   Future<void> setUserInfo(
-    String? id,
+    String id,
     String? name,
     String? email,
     Map<String, dynamic> extraInfo,
@@ -56,12 +64,45 @@ class DatadogSdkWeb extends DatadogSdkPlatform {
   }
 
   @override
+  Future<void> clearUserInfo() async {
+    DD_LOGS?.clearUser();
+    DD_RUM?.clearUser();
+  }
+
+  @override
   Future<void> addUserExtraInfo(Map<String, Object?> extraInfo) async {
     for (final entry in extraInfo.entries) {
       DD_LOGS?.setUserProperty(entry.key, valueToJs(entry.value, 'extraInfo'));
     }
     for (final entry in extraInfo.entries) {
       DD_RUM?.setUserProperty(entry.key, valueToJs(entry.value, 'extraInfo'));
+    }
+  }
+
+  @override
+  Future<void> setAccountInfo(
+      String id, String? name, Map<String, Object?> extraInfo) async {
+    final jsAccount = JsAccount(id: id, name: name);
+    DD_LOGS?.setAccount(jsAccount);
+    DD_RUM?.setAccount(jsAccount);
+    await addAccountExtraInfo(extraInfo);
+  }
+
+  @override
+  Future<void> clearAccountInfo() async {
+    DD_LOGS?.clearAccount();
+    DD_RUM?.clearAccount();
+  }
+
+  @override
+  Future<void> addAccountExtraInfo(Map<String, Object?> extraInfo) async {
+    for (final entry in extraInfo.entries) {
+      DD_LOGS?.setAccountProperty(
+          entry.key, valueToJs(entry.value, 'extraInfo'));
+    }
+    for (final entry in extraInfo.entries) {
+      DD_RUM?.setAccountProperty(
+          entry.key, valueToJs(entry.value, 'extraInfo'));
     }
   }
 
