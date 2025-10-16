@@ -272,7 +272,6 @@ void main() {
     TextInputType.phone,
     TextInputType.emailAddress,
     TextInputType.streetAddress,
-    TextInputType.twitter,
     TextInputType.visiblePassword,
   ];
   for (final inputType in maskedTextInputTypes) {
