@@ -34,7 +34,7 @@ class _TouchPrivacyScreenState extends State<TouchPrivacyScreen> {
     return SessionReplayPrivacy(
       touchPrivacyLevel: TouchPrivacyLevel.hide,
       child: Padding(
-        padding: EdgeInsetsGeometry.all(10),
+        padding: EdgeInsets.all(10),
         child: Column(
           spacing: 20.0,
           children: [

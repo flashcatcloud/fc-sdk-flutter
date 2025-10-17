@@ -86,48 +86,53 @@ class _MaterialWidgetsScreenState extends State<MaterialWidgetsScreen> {
             children: [
               _WidgetDisplay(
                 name: 'Button',
-                builder:
-                    (_) =>
-                        ElevatedButton(child: Text('Button'), onPressed: () {}),
+                builder: (_) =>
+                    ElevatedButton(child: Text('Button'), onPressed: () {}),
               ),
               _WidgetDisplay(
                 name: 'Switch',
-                builder:
-                    (_) =>
-                        Switch(value: _switchOn, onChanged: _onSwitchChanged),
+                builder: (_) =>
+                    Switch(value: _switchOn, onChanged: _onSwitchChanged),
               ),
               _WidgetDisplay(
                 name: 'Checkbox',
-                builder:
-                    (_) => Checkbox(
-                      value: _checkboxOn,
-                      onChanged: _onCheckboxChanged,
-                    ),
+                builder: (_) => Checkbox(
+                  value: _checkboxOn,
+                  onChanged: _onCheckboxChanged,
+                ),
               ),
               _WidgetDisplay(
                 name: 'Radio',
-                builder:
-                    (_) => RadioGroup(
-                      groupValue: _radioValue,
-                      onChanged: _onRadioChanged,
-                      child: Column(
-                        children: [
-                          Row(children: [Radio<String>(value: 'a'), Text('A')]),
-                          Row(children: [Radio<String>(value: 'b'), Text('B')]),
-                        ],
+                builder: (_) => Column(
+                  children: [
+                    Row(children: [
+                      Radio<String>(
+                        value: 'a',
+                        groupValue: _radioValue,
+                        onChanged: _onRadioChanged,
                       ),
-                    ),
+                      Text('A')
+                    ]),
+                    Row(children: [
+                      Radio<String>(
+                        value: 'b',
+                        groupValue: _radioValue,
+                        onChanged: _onRadioChanged,
+                      ),
+                      Text('B')
+                    ]),
+                  ],
+                ),
               ),
               _WidgetDisplay(
                 name: 'Slider',
-                builder:
-                    (_) => Slider(
-                      min: 0,
-                      max: 100,
-                      divisions: 100,
-                      value: _sliderValue,
-                      onChanged: _onSliderChanged,
-                    ),
+                builder: (_) => Slider(
+                  min: 0,
+                  max: 100,
+                  divisions: 100,
+                  value: _sliderValue,
+                  onChanged: _onSliderChanged,
+                ),
               ),
               _WidgetDisplay(
                 name: 'Segmened Button',
