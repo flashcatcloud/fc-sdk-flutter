@@ -42,6 +42,7 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
 @ExtendWith(ForgeExtension::class)
+@Suppress("LargeClass")
 class DatadogSdkPluginTest {
     lateinit var plugin: DatadogSdkPlugin
 
@@ -657,6 +658,8 @@ class DatadogSdkPluginTest {
         // THEN
         val core = Datadog.getInstance()
         val coreFeature: Any = core.getPrivate("coreFeature")!!
+        // Ensure safe write before attempting to read
+        Thread.sleep(10)
         val userInfo: UserInfo? = coreFeature
             .getFieldValue<Any, Any>("userInfoProvider")
             .getFieldValue("internalUserInfo")
@@ -823,6 +826,8 @@ class DatadogSdkPluginTest {
         // THEN
         val core = Datadog.getInstance()
         val coreFeature: Any = core.getPrivate("coreFeature")!!
+        // Ensure safe write before attempting to read
+        Thread.sleep(10)
         val accountInfo: AccountInfo? = coreFeature
             .getFieldValue<Any, Any>("accountInfoProvider")
             .getFieldValue("internalAccountInfo")
