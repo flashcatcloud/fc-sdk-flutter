@@ -27,7 +27,7 @@ class _LoggingUserAccountScenarioState
 
     log?.info('Log without default user and account information.');
 
-    // Set a user - same as other users in integratino scenarios
+    // Set a user - same as other users in integration scenarios
     DatadogSdk.instance.setUserInfo(
         id: 'bits',
         name: 'Bits Dawoof',

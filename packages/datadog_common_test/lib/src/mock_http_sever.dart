@@ -26,7 +26,7 @@ class RecordingHttpServer {
   final Map<String, List<RequestLog>> _recordedRequests = {};
 
   // Used for debugging sessions
-  bool serializeSessions = true;
+  bool serializeSessions = false;
   bool printRequests = false;
 
   RecordingHttpServer();

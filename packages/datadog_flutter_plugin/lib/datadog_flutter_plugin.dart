@@ -244,16 +244,16 @@ class DatadogSdk {
   /// Clear the current user information.
   ///
   /// User information will be `null`. Following Logs, Traces, RUM Events will
-  /// not include the user information anymore
+  /// not include the user information anymore.
   ///
   /// Any active RUM Session, active RUM View at the time of call will have
-  /// their `user` attribute emptied
+  /// their `user` attribute emptied.
   ///
   /// If you want to retain the current `user` on the active RUM session, you
-  /// need to stop the session first by using [DatadogRum.stopSession]
+  /// need to stop the session first by using [DatadogRum.stopSession].
   ///
   /// If you want to retain the current `user` on the active RUM views, you need
-  /// to stop the view first by using [DatadogRum.stopView]
+  /// to stop the view first by using [DatadogRum.stopView].
   void clearUserInfo() {
     wrap('clearUserInfo', internalLogger, null, () {
       return _platform.clearUserInfo();
@@ -289,29 +289,29 @@ class DatadogSdk {
   /// Clear the current account information.
   ///
   /// Account information will be `null`. Following Logs, Traces, RUM Events will
-  /// not include the account information anymore
+  /// not include the account information anymore.
   ///
   /// Any active RUM Session, active RUM View at the time of call will have
-  /// their `account` attribute emptied
+  /// their `account` attribute emptied.
   ///
   /// If you want to retain the current `account` on the active RUM session, you
-  /// need to stop the session first by using [DatadogRum.stopSession]
+  /// need to stop the session first by using [DatadogRum.stopSession].
   ///
   /// If you want to retain the current `account` on the active RUM views, you need
-  /// to stop the view first by using [DatadogRum.stopView]
+  /// to stop the view first by using [DatadogRum.stopView].
   void clearAccountInfo() {
     wrap('clearAccountInfo', internalLogger, null, () {
       return _platform.clearAccountInfo();
     });
   }
 
-  /// Add custom attributes to the current account information
+  /// Add custom attributes to the current account information.
   ///
   /// This extra info will be added to already existing extra info that is added
   /// to logs, traces, and RUM events automatically.
   ///
   /// Setting an existing attribute to `null` will remove that attribute from
-  /// the account's extra info
+  /// the account's extra info.
   void addAccountExtraInfo(Map<String, Object?> extraInfo) {
     wrap('addAccountExtraInfo', internalLogger, extraInfo, () {
       return _platform.addAccountExtraInfo(extraInfo);
