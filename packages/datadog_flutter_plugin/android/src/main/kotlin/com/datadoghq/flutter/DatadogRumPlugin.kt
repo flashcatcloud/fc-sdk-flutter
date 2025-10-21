@@ -35,7 +35,7 @@ import java.util.concurrent.TimeUnit
 import kotlin.time.Duration.Companion.seconds
 
 class DatadogRumPlugin : MethodChannel.MethodCallHandler {
-    companion object RumParameterNames {
+    companion object {
         const val PARAM_AT = "at"
         const val PARAM_DURATION = "duration"
         const val PARAM_KEY = "key"
@@ -66,6 +66,11 @@ class DatadogRumPlugin : MethodChannel.MethodCallHandler {
         internal fun resetConfig() {
             previousConfiguration = null
         }
+
+        @JvmStatic
+        fun setRumEventMapper(mapper: DatadogRumEventMapper.EventMapper) {
+            eventMapper.eventMapper = mapper
+        }
     }
 
     private lateinit var channel: MethodChannel
@@ -81,7 +86,6 @@ class DatadogRumPlugin : MethodChannel.MethodCallHandler {
     fun attachToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         channel = MethodChannel(flutterPluginBinding.binaryMessenger, "datadog_sdk_flutter.rum")
         channel.setMethodCallHandler(this)
-        eventMapper.addChannel(channel)
 
         binding = flutterPluginBinding
 
@@ -91,7 +95,6 @@ class DatadogRumPlugin : MethodChannel.MethodCallHandler {
     }
 
     fun detachFromEngine() {
-        eventMapper.removeChannel(channel)
         channel.setMethodCallHandler(null)
     }
 

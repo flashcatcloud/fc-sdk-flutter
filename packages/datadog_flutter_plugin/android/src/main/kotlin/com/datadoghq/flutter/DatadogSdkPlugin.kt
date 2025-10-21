@@ -207,15 +207,6 @@ class DatadogSdkPlugin : FlutterPlugin, MethodCallHandler {
                 updateTelemetryConfiguration(call)
                 result.success(null)
             }
-            "getInternalVar" -> {
-                val name = call.argument<String>("name")
-                if (name != null) {
-                    val value = getInternalVar(name)
-                    result.success(value)
-                } else {
-                    result.success(null)
-                }
-            }
             "clearAllData" -> {
                 Datadog.clearAllData()
                 result.success(null)
@@ -345,26 +336,6 @@ class DatadogSdkPlugin : FlutterPlugin, MethodCallHandler {
         method?.let {
             it.isAccessible = true
             it.invoke(target)
-        }
-    }
-
-    private fun getInternalVar(name: String): Any? {
-        return when (name) {
-            "mapperPerformance" ->
-                mapOf(
-                    "total" to mapOf(
-                        "minMs" to DatadogRumPlugin.eventMapper.mapperPerf.minInMs,
-                        "maxMs" to DatadogRumPlugin.eventMapper.mapperPerf.maxInMs,
-                        "avgMs" to DatadogRumPlugin.eventMapper.mapperPerf.avgInMs
-                    ),
-                    "mainThread" to mapOf(
-                        "minMs" to DatadogRumPlugin.eventMapper.mapperPerfMainThread.minInMs,
-                        "maxMs" to DatadogRumPlugin.eventMapper.mapperPerfMainThread.maxInMs,
-                        "avgMs" to DatadogRumPlugin.eventMapper.mapperPerfMainThread.avgInMs
-                    ),
-                    "mapperTimeouts" to DatadogRumPlugin.eventMapper.mapperTimeouts
-                )
-            else -> null
         }
     }
 
