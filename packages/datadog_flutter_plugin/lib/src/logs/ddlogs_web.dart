@@ -214,6 +214,11 @@ extension type _DdLogs._(JSObject _) implements JSObject {
 
   external void setUser(JsUser userInfo);
   external void setUserProperty(String key, JSAny? value);
+  external void clearUser();
+
+  external void setAccount(JsAccount userInfo);
+  external void setAccountProperty(String key, JSAny? value);
+  external void clearAccount();
 
   @internal
   external Logger? createLogger(

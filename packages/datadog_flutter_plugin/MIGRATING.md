@@ -17,6 +17,10 @@ Clients using Flutter Web should update to using the Datadog Browser SDK v6.  Ch
 +  <script type="text/javascript" src="https://www.datadoghq-browser-agent.com/us1/v6/datadog-rum-slim.js"></script> 
 ```
 
+# RUM Changes
+
+An ID is no longer optional in `setUserInfo`. If you need to clear user info, use `clearUserInfo` instead.
+
 # Migration from 1.x to 2.0
 
 This document describes the main changes introduced in SDK `2.0` compared to `1.x`.
