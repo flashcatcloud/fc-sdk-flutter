@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.0-preview.5
+
+* [Session Replay] Downgrade packages that required Dart versions above 3.6.
+
 ## 1.0.0-preview.4
 
 * Fix an issue with custom endpoints on iOS.
