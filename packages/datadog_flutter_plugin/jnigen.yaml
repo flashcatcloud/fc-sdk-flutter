@@ -16,3 +16,5 @@ source_path:
 classes:
   - 'com.datadoghq.flutter.DatadogRumEventMapper'
   - 'com.datadoghq.flutter.DatadogRumPlugin'
+  - 'com.datadoghq.flutter.DatadogLogsPlugin'
+  - 'com.datadoghq.flutter.DatadogLogEventMapper'

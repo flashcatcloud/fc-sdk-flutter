@@ -1440,3 +1440,995 @@ final class $DatadogRumPlugin$Type extends jni$_.JObjType<DatadogRumPlugin> {
         other is $DatadogRumPlugin$Type;
   }
 }
+
+/// from: `com.datadoghq.flutter.DatadogLogsPlugin$Companion`
+class DatadogLogsPlugin$Companion extends jni$_.JObject {
+  @jni$_.internal
+  @core$_.override
+  final jni$_.JObjType<DatadogLogsPlugin$Companion> $type;
+
+  @jni$_.internal
+  DatadogLogsPlugin$Companion.fromReference(jni$_.JReference reference)
+    : $type = type,
+      super.fromReference(reference);
+
+  static final _class = jni$_.JClass.forName(
+    r'com/datadoghq/flutter/DatadogLogsPlugin$Companion',
+  );
+
+  /// The type which includes information such as the signature of this class.
+  static const nullableType = $DatadogLogsPlugin$Companion$NullableType();
+  static const type = $DatadogLogsPlugin$Companion$Type();
+  static final _id_setLogsEventMapper = _class.instanceMethodId(
+    r'setLogsEventMapper',
+    r'(Lcom/datadoghq/flutter/DatadogLogEventMapper$EventMapper;)V',
+  );
+
+  static final _setLogsEventMapper =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JThrowablePtr Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+                jni$_.VarArgs<(jni$_.Pointer<jni$_.Void>,)>,
+              )
+            >
+          >('globalEnv_CallVoidMethod')
+          .asFunction<
+            jni$_.JThrowablePtr Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+              jni$_.Pointer<jni$_.Void>,
+            )
+          >();
+
+  /// from: `public final void setLogsEventMapper(com.datadoghq.flutter.DatadogLogEventMapper$EventMapper eventMapper)`
+  void setLogsEventMapper(DatadogLogEventMapper$EventMapper eventMapper) {
+    final _$eventMapper = eventMapper.reference;
+    _setLogsEventMapper(
+      reference.pointer,
+      _id_setLogsEventMapper as jni$_.JMethodIDPtr,
+      _$eventMapper.pointer,
+    ).check();
+  }
+
+  static final _id_new$ = _class.constructorId(
+    r'(Lkotlin/jvm/internal/DefaultConstructorMarker;)V',
+  );
+
+  static final _new$ =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+                jni$_.VarArgs<(jni$_.Pointer<jni$_.Void>,)>,
+              )
+            >
+          >('globalEnv_NewObject')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+              jni$_.Pointer<jni$_.Void>,
+            )
+          >();
+
+  /// from: `synthetic public void <init>(kotlin.jvm.internal.DefaultConstructorMarker defaultConstructorMarker)`
+  /// The returned object must be released after use, by calling the [release] method.
+  factory DatadogLogsPlugin$Companion(jni$_.JObject? defaultConstructorMarker) {
+    final _$defaultConstructorMarker =
+        defaultConstructorMarker?.reference ?? jni$_.jNullReference;
+    return DatadogLogsPlugin$Companion.fromReference(
+      _new$(
+        _class.reference.pointer,
+        _id_new$ as jni$_.JMethodIDPtr,
+        _$defaultConstructorMarker.pointer,
+      ).reference,
+    );
+  }
+}
+
+final class $DatadogLogsPlugin$Companion$NullableType
+    extends jni$_.JObjType<DatadogLogsPlugin$Companion?> {
+  @jni$_.internal
+  const $DatadogLogsPlugin$Companion$NullableType();
+
+  @jni$_.internal
+  @core$_.override
+  String get signature =>
+      r'Lcom/datadoghq/flutter/DatadogLogsPlugin$Companion;';
+
+  @jni$_.internal
+  @core$_.override
+  DatadogLogsPlugin$Companion? fromReference(jni$_.JReference reference) =>
+      reference.isNull
+      ? null
+      : DatadogLogsPlugin$Companion.fromReference(reference);
+  @jni$_.internal
+  @core$_.override
+  jni$_.JObjType get superType => const jni$_.JObjectType();
+
+  @jni$_.internal
+  @core$_.override
+  jni$_.JObjType<DatadogLogsPlugin$Companion?> get nullableType => this;
+
+  @jni$_.internal
+  @core$_.override
+  final superCount = 1;
+
+  @core$_.override
+  int get hashCode => ($DatadogLogsPlugin$Companion$NullableType).hashCode;
+
+  @core$_.override
+  bool operator ==(Object other) {
+    return other.runtimeType == ($DatadogLogsPlugin$Companion$NullableType) &&
+        other is $DatadogLogsPlugin$Companion$NullableType;
+  }
+}
+
+final class $DatadogLogsPlugin$Companion$Type
+    extends jni$_.JObjType<DatadogLogsPlugin$Companion> {
+  @jni$_.internal
+  const $DatadogLogsPlugin$Companion$Type();
+
+  @jni$_.internal
+  @core$_.override
+  String get signature =>
+      r'Lcom/datadoghq/flutter/DatadogLogsPlugin$Companion;';
+
+  @jni$_.internal
+  @core$_.override
+  DatadogLogsPlugin$Companion fromReference(jni$_.JReference reference) =>
+      DatadogLogsPlugin$Companion.fromReference(reference);
+  @jni$_.internal
+  @core$_.override
+  jni$_.JObjType get superType => const jni$_.JObjectType();
+
+  @jni$_.internal
+  @core$_.override
+  jni$_.JObjType<DatadogLogsPlugin$Companion?> get nullableType =>
+      const $DatadogLogsPlugin$Companion$NullableType();
+
+  @jni$_.internal
+  @core$_.override
+  final superCount = 1;
+
+  @core$_.override
+  int get hashCode => ($DatadogLogsPlugin$Companion$Type).hashCode;
+
+  @core$_.override
+  bool operator ==(Object other) {
+    return other.runtimeType == ($DatadogLogsPlugin$Companion$Type) &&
+        other is $DatadogLogsPlugin$Companion$Type;
+  }
+}
+
+/// from: `com.datadoghq.flutter.DatadogLogsPlugin`
+class DatadogLogsPlugin extends jni$_.JObject {
+  @jni$_.internal
+  @core$_.override
+  final jni$_.JObjType<DatadogLogsPlugin> $type;
+
+  @jni$_.internal
+  DatadogLogsPlugin.fromReference(jni$_.JReference reference)
+    : $type = type,
+      super.fromReference(reference);
+
+  static final _class = jni$_.JClass.forName(
+    r'com/datadoghq/flutter/DatadogLogsPlugin',
+  );
+
+  /// The type which includes information such as the signature of this class.
+  static const nullableType = $DatadogLogsPlugin$NullableType();
+  static const type = $DatadogLogsPlugin$Type();
+  static final _id_Companion = _class.staticFieldId(
+    r'Companion',
+    r'Lcom/datadoghq/flutter/DatadogLogsPlugin$Companion;',
+  );
+
+  /// from: `static public final com.datadoghq.flutter.DatadogLogsPlugin$Companion Companion`
+  /// The returned object must be released after use, by calling the [release] method.
+  static DatadogLogsPlugin$Companion get Companion =>
+      _id_Companion.get(_class, const $DatadogLogsPlugin$Companion$Type());
+
+  static final _id_LOG_LEVEL = _class.staticFieldId(
+    r'LOG_LEVEL',
+    r'Ljava/lang/String;',
+  );
+
+  /// from: `static public final java.lang.String LOG_LEVEL`
+  /// The returned object must be released after use, by calling the [release] method.
+  static jni$_.JString get LOG_LEVEL =>
+      _id_LOG_LEVEL.get(_class, const jni$_.JStringType());
+
+  static final _id_LOG_MESSAGE = _class.staticFieldId(
+    r'LOG_MESSAGE',
+    r'Ljava/lang/String;',
+  );
+
+  /// from: `static public final java.lang.String LOG_MESSAGE`
+  /// The returned object must be released after use, by calling the [release] method.
+  static jni$_.JString get LOG_MESSAGE =>
+      _id_LOG_MESSAGE.get(_class, const jni$_.JStringType());
+
+  static final _id_LOG_CONTEXT = _class.staticFieldId(
+    r'LOG_CONTEXT',
+    r'Ljava/lang/String;',
+  );
+
+  /// from: `static public final java.lang.String LOG_CONTEXT`
+  /// The returned object must be released after use, by calling the [release] method.
+  static jni$_.JString get LOG_CONTEXT =>
+      _id_LOG_CONTEXT.get(_class, const jni$_.JStringType());
+
+  static final _id_LOG_ERROR_MESSAGE = _class.staticFieldId(
+    r'LOG_ERROR_MESSAGE',
+    r'Ljava/lang/String;',
+  );
+
+  /// from: `static public final java.lang.String LOG_ERROR_MESSAGE`
+  /// The returned object must be released after use, by calling the [release] method.
+  static jni$_.JString get LOG_ERROR_MESSAGE =>
+      _id_LOG_ERROR_MESSAGE.get(_class, const jni$_.JStringType());
+
+  static final _id_LOG_ERROR_KIND = _class.staticFieldId(
+    r'LOG_ERROR_KIND',
+    r'Ljava/lang/String;',
+  );
+
+  /// from: `static public final java.lang.String LOG_ERROR_KIND`
+  /// The returned object must be released after use, by calling the [release] method.
+  static jni$_.JString get LOG_ERROR_KIND =>
+      _id_LOG_ERROR_KIND.get(_class, const jni$_.JStringType());
+
+  static final _id_LOG_STACK_TRACE = _class.staticFieldId(
+    r'LOG_STACK_TRACE',
+    r'Ljava/lang/String;',
+  );
+
+  /// from: `static public final java.lang.String LOG_STACK_TRACE`
+  /// The returned object must be released after use, by calling the [release] method.
+  static jni$_.JString get LOG_STACK_TRACE =>
+      _id_LOG_STACK_TRACE.get(_class, const jni$_.JStringType());
+
+  static final _id_LOG_KEY = _class.staticFieldId(
+    r'LOG_KEY',
+    r'Ljava/lang/String;',
+  );
+
+  /// from: `static public final java.lang.String LOG_KEY`
+  /// The returned object must be released after use, by calling the [release] method.
+  static jni$_.JString get LOG_KEY =>
+      _id_LOG_KEY.get(_class, const jni$_.JStringType());
+
+  static final _id_LOG_TAG = _class.staticFieldId(
+    r'LOG_TAG',
+    r'Ljava/lang/String;',
+  );
+
+  /// from: `static public final java.lang.String LOG_TAG`
+  /// The returned object must be released after use, by calling the [release] method.
+  static jni$_.JString get LOG_TAG =>
+      _id_LOG_TAG.get(_class, const jni$_.JStringType());
+
+  static final _id_LOG_VALUE = _class.staticFieldId(
+    r'LOG_VALUE',
+    r'Ljava/lang/String;',
+  );
+
+  /// from: `static public final java.lang.String LOG_VALUE`
+  /// The returned object must be released after use, by calling the [release] method.
+  static jni$_.JString get LOG_VALUE =>
+      _id_LOG_VALUE.get(_class, const jni$_.JStringType());
+
+  static final _id_new$ = _class.constructorId(r'()V');
+
+  static final _new$ =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_NewObject')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public void <init>()`
+  /// The returned object must be released after use, by calling the [release] method.
+  factory DatadogLogsPlugin() {
+    return DatadogLogsPlugin.fromReference(
+      _new$(_class.reference.pointer, _id_new$ as jni$_.JMethodIDPtr).reference,
+    );
+  }
+
+  static final _id_attachToEngine = _class.instanceMethodId(
+    r'attachToEngine',
+    r'(Lio/flutter/embedding/engine/plugins/FlutterPlugin$FlutterPluginBinding;)V',
+  );
+
+  static final _attachToEngine =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JThrowablePtr Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+                jni$_.VarArgs<(jni$_.Pointer<jni$_.Void>,)>,
+              )
+            >
+          >('globalEnv_CallVoidMethod')
+          .asFunction<
+            jni$_.JThrowablePtr Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+              jni$_.Pointer<jni$_.Void>,
+            )
+          >();
+
+  /// from: `public final void attachToEngine(io.flutter.embedding.engine.plugins.FlutterPlugin$FlutterPluginBinding flutterPluginBinding)`
+  void attachToEngine(jni$_.JObject flutterPluginBinding) {
+    final _$flutterPluginBinding = flutterPluginBinding.reference;
+    _attachToEngine(
+      reference.pointer,
+      _id_attachToEngine as jni$_.JMethodIDPtr,
+      _$flutterPluginBinding.pointer,
+    ).check();
+  }
+
+  static final _id_detachFromEngine = _class.instanceMethodId(
+    r'detachFromEngine',
+    r'()V',
+  );
+
+  static final _detachFromEngine =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JThrowablePtr Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallVoidMethod')
+          .asFunction<
+            jni$_.JThrowablePtr Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public final void detachFromEngine()`
+  void detachFromEngine() {
+    _detachFromEngine(
+      reference.pointer,
+      _id_detachFromEngine as jni$_.JMethodIDPtr,
+    ).check();
+  }
+
+  static final _id_getLogger = _class.instanceMethodId(
+    r'getLogger',
+    r'(Ljava/lang/String;)Lcom/datadog/android/log/Logger;',
+  );
+
+  static final _getLogger =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+                jni$_.VarArgs<(jni$_.Pointer<jni$_.Void>,)>,
+              )
+            >
+          >('globalEnv_CallObjectMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+              jni$_.Pointer<jni$_.Void>,
+            )
+          >();
+
+  /// from: `public final com.datadog.android.log.Logger getLogger(java.lang.String string)`
+  /// The returned object must be released after use, by calling the [release] method.
+  jni$_.JObject? getLogger(jni$_.JString string) {
+    final _$string = string.reference;
+    return _getLogger(
+      reference.pointer,
+      _id_getLogger as jni$_.JMethodIDPtr,
+      _$string.pointer,
+    ).object<jni$_.JObject?>(const jni$_.JObjectNullableType());
+  }
+
+  static final _id_onMethodCall = _class.instanceMethodId(
+    r'onMethodCall',
+    r'(Lio/flutter/plugin/common/MethodCall;Lio/flutter/plugin/common/MethodChannel$Result;)V',
+  );
+
+  static final _onMethodCall =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JThrowablePtr Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+                jni$_.VarArgs<
+                  (jni$_.Pointer<jni$_.Void>, jni$_.Pointer<jni$_.Void>)
+                >,
+              )
+            >
+          >('globalEnv_CallVoidMethod')
+          .asFunction<
+            jni$_.JThrowablePtr Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.Pointer<jni$_.Void>,
+            )
+          >();
+
+  /// from: `public void onMethodCall(io.flutter.plugin.common.MethodCall methodCall, io.flutter.plugin.common.MethodChannel$Result result)`
+  void onMethodCall(jni$_.JObject methodCall, jni$_.JObject result) {
+    final _$methodCall = methodCall.reference;
+    final _$result = result.reference;
+    _onMethodCall(
+      reference.pointer,
+      _id_onMethodCall as jni$_.JMethodIDPtr,
+      _$methodCall.pointer,
+      _$result.pointer,
+    ).check();
+  }
+
+  static final _id_setLogsEventMapper = _class.staticMethodId(
+    r'setLogsEventMapper',
+    r'(Lcom/datadoghq/flutter/DatadogLogEventMapper$EventMapper;)V',
+  );
+
+  static final _setLogsEventMapper =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JThrowablePtr Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+                jni$_.VarArgs<(jni$_.Pointer<jni$_.Void>,)>,
+              )
+            >
+          >('globalEnv_CallStaticVoidMethod')
+          .asFunction<
+            jni$_.JThrowablePtr Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+              jni$_.Pointer<jni$_.Void>,
+            )
+          >();
+
+  /// from: `static public final void setLogsEventMapper(com.datadoghq.flutter.DatadogLogEventMapper$EventMapper eventMapper)`
+  static void setLogsEventMapper(
+    DatadogLogEventMapper$EventMapper eventMapper,
+  ) {
+    final _$eventMapper = eventMapper.reference;
+    _setLogsEventMapper(
+      _class.reference.pointer,
+      _id_setLogsEventMapper as jni$_.JMethodIDPtr,
+      _$eventMapper.pointer,
+    ).check();
+  }
+}
+
+final class $DatadogLogsPlugin$NullableType
+    extends jni$_.JObjType<DatadogLogsPlugin?> {
+  @jni$_.internal
+  const $DatadogLogsPlugin$NullableType();
+
+  @jni$_.internal
+  @core$_.override
+  String get signature => r'Lcom/datadoghq/flutter/DatadogLogsPlugin;';
+
+  @jni$_.internal
+  @core$_.override
+  DatadogLogsPlugin? fromReference(jni$_.JReference reference) =>
+      reference.isNull ? null : DatadogLogsPlugin.fromReference(reference);
+  @jni$_.internal
+  @core$_.override
+  jni$_.JObjType get superType => const jni$_.JObjectNullableType();
+
+  @jni$_.internal
+  @core$_.override
+  jni$_.JObjType<DatadogLogsPlugin?> get nullableType => this;
+
+  @jni$_.internal
+  @core$_.override
+  final superCount = 1;
+
+  @core$_.override
+  int get hashCode => ($DatadogLogsPlugin$NullableType).hashCode;
+
+  @core$_.override
+  bool operator ==(Object other) {
+    return other.runtimeType == ($DatadogLogsPlugin$NullableType) &&
+        other is $DatadogLogsPlugin$NullableType;
+  }
+}
+
+final class $DatadogLogsPlugin$Type extends jni$_.JObjType<DatadogLogsPlugin> {
+  @jni$_.internal
+  const $DatadogLogsPlugin$Type();
+
+  @jni$_.internal
+  @core$_.override
+  String get signature => r'Lcom/datadoghq/flutter/DatadogLogsPlugin;';
+
+  @jni$_.internal
+  @core$_.override
+  DatadogLogsPlugin fromReference(jni$_.JReference reference) =>
+      DatadogLogsPlugin.fromReference(reference);
+  @jni$_.internal
+  @core$_.override
+  jni$_.JObjType get superType => const jni$_.JObjectNullableType();
+
+  @jni$_.internal
+  @core$_.override
+  jni$_.JObjType<DatadogLogsPlugin?> get nullableType =>
+      const $DatadogLogsPlugin$NullableType();
+
+  @jni$_.internal
+  @core$_.override
+  final superCount = 1;
+
+  @core$_.override
+  int get hashCode => ($DatadogLogsPlugin$Type).hashCode;
+
+  @core$_.override
+  bool operator ==(Object other) {
+    return other.runtimeType == ($DatadogLogsPlugin$Type) &&
+        other is $DatadogLogsPlugin$Type;
+  }
+}
+
+/// from: `com.datadoghq.flutter.DatadogLogEventMapper$EventMapper`
+class DatadogLogEventMapper$EventMapper extends jni$_.JObject {
+  @jni$_.internal
+  @core$_.override
+  final jni$_.JObjType<DatadogLogEventMapper$EventMapper> $type;
+
+  @jni$_.internal
+  DatadogLogEventMapper$EventMapper.fromReference(jni$_.JReference reference)
+    : $type = type,
+      super.fromReference(reference);
+
+  static final _class = jni$_.JClass.forName(
+    r'com/datadoghq/flutter/DatadogLogEventMapper$EventMapper',
+  );
+
+  /// The type which includes information such as the signature of this class.
+  static const nullableType = $DatadogLogEventMapper$EventMapper$NullableType();
+  static const type = $DatadogLogEventMapper$EventMapper$Type();
+  static final _id_mapLogEvent = _class.instanceMethodId(
+    r'mapLogEvent',
+    r'(Ljava/lang/String;)Ljava/lang/String;',
+  );
+
+  static final _mapLogEvent =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+                jni$_.VarArgs<(jni$_.Pointer<jni$_.Void>,)>,
+              )
+            >
+          >('globalEnv_CallObjectMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+              jni$_.Pointer<jni$_.Void>,
+            )
+          >();
+
+  /// from: `public abstract java.lang.String mapLogEvent(java.lang.String string)`
+  /// The returned object must be released after use, by calling the [release] method.
+  jni$_.JString? mapLogEvent(jni$_.JString string) {
+    final _$string = string.reference;
+    return _mapLogEvent(
+      reference.pointer,
+      _id_mapLogEvent as jni$_.JMethodIDPtr,
+      _$string.pointer,
+    ).object<jni$_.JString?>(const jni$_.JStringNullableType());
+  }
+
+  /// Maps a specific port to the implemented interface.
+  static final core$_.Map<int, $DatadogLogEventMapper$EventMapper> _$impls = {};
+  static jni$_.JObjectPtr _$invoke(
+    int port,
+    jni$_.JObjectPtr descriptor,
+    jni$_.JObjectPtr args,
+  ) {
+    return _$invokeMethod(
+      port,
+      jni$_.MethodInvocation.fromAddresses(0, descriptor.address, args.address),
+    );
+  }
+
+  static final jni$_.Pointer<
+    jni$_.NativeFunction<
+      jni$_.JObjectPtr Function(jni$_.Int64, jni$_.JObjectPtr, jni$_.JObjectPtr)
+    >
+  >
+  _$invokePointer = jni$_.Pointer.fromFunction(_$invoke);
+
+  static jni$_.Pointer<jni$_.Void> _$invokeMethod(
+    int $p,
+    jni$_.MethodInvocation $i,
+  ) {
+    try {
+      final $d = $i.methodDescriptor.toDartString(releaseOriginal: true);
+      final $a = $i.args;
+      if ($d == r'mapLogEvent(Ljava/lang/String;)Ljava/lang/String;') {
+        final $r = _$impls[$p]!.mapLogEvent(
+          $a![0]!.as(const jni$_.JStringType(), releaseOriginal: true),
+        );
+        return ($r as jni$_.JObject?)
+                ?.as(const jni$_.JObjectType())
+                .reference
+                .toPointer() ??
+            jni$_.nullptr;
+      }
+    } catch (e) {
+      return jni$_.ProtectedJniExtensions.newDartException(e);
+    }
+    return jni$_.nullptr;
+  }
+
+  static void implementIn(
+    jni$_.JImplementer implementer,
+    $DatadogLogEventMapper$EventMapper $impl,
+  ) {
+    late final jni$_.RawReceivePort $p;
+    $p = jni$_.RawReceivePort(($m) {
+      if ($m == null) {
+        _$impls.remove($p.sendPort.nativePort);
+        $p.close();
+        return;
+      }
+      final $i = jni$_.MethodInvocation.fromMessage($m);
+      final $r = _$invokeMethod($p.sendPort.nativePort, $i);
+      jni$_.ProtectedJniExtensions.returnResult($i.result, $r);
+    });
+    implementer.add(
+      r'com.datadoghq.flutter.DatadogLogEventMapper$EventMapper',
+      $p,
+      _$invokePointer,
+      [],
+    );
+    final $a = $p.sendPort.nativePort;
+    _$impls[$a] = $impl;
+  }
+
+  factory DatadogLogEventMapper$EventMapper.implement(
+    $DatadogLogEventMapper$EventMapper $impl,
+  ) {
+    final $i = jni$_.JImplementer();
+    implementIn($i, $impl);
+    return DatadogLogEventMapper$EventMapper.fromReference(
+      $i.implementReference(),
+    );
+  }
+}
+
+abstract base mixin class $DatadogLogEventMapper$EventMapper {
+  factory $DatadogLogEventMapper$EventMapper({
+    required jni$_.JString? Function(jni$_.JString string) mapLogEvent,
+  }) = _$DatadogLogEventMapper$EventMapper;
+
+  jni$_.JString? mapLogEvent(jni$_.JString string);
+}
+
+final class _$DatadogLogEventMapper$EventMapper
+    with $DatadogLogEventMapper$EventMapper {
+  _$DatadogLogEventMapper$EventMapper({
+    required jni$_.JString? Function(jni$_.JString string) mapLogEvent,
+  }) : _mapLogEvent = mapLogEvent;
+
+  final jni$_.JString? Function(jni$_.JString string) _mapLogEvent;
+
+  jni$_.JString? mapLogEvent(jni$_.JString string) {
+    return _mapLogEvent(string);
+  }
+}
+
+final class $DatadogLogEventMapper$EventMapper$NullableType
+    extends jni$_.JObjType<DatadogLogEventMapper$EventMapper?> {
+  @jni$_.internal
+  const $DatadogLogEventMapper$EventMapper$NullableType();
+
+  @jni$_.internal
+  @core$_.override
+  String get signature =>
+      r'Lcom/datadoghq/flutter/DatadogLogEventMapper$EventMapper;';
+
+  @jni$_.internal
+  @core$_.override
+  DatadogLogEventMapper$EventMapper? fromReference(
+    jni$_.JReference reference,
+  ) => reference.isNull
+      ? null
+      : DatadogLogEventMapper$EventMapper.fromReference(reference);
+  @jni$_.internal
+  @core$_.override
+  jni$_.JObjType get superType => const jni$_.JObjectType();
+
+  @jni$_.internal
+  @core$_.override
+  jni$_.JObjType<DatadogLogEventMapper$EventMapper?> get nullableType => this;
+
+  @jni$_.internal
+  @core$_.override
+  final superCount = 1;
+
+  @core$_.override
+  int get hashCode =>
+      ($DatadogLogEventMapper$EventMapper$NullableType).hashCode;
+
+  @core$_.override
+  bool operator ==(Object other) {
+    return other.runtimeType ==
+            ($DatadogLogEventMapper$EventMapper$NullableType) &&
+        other is $DatadogLogEventMapper$EventMapper$NullableType;
+  }
+}
+
+final class $DatadogLogEventMapper$EventMapper$Type
+    extends jni$_.JObjType<DatadogLogEventMapper$EventMapper> {
+  @jni$_.internal
+  const $DatadogLogEventMapper$EventMapper$Type();
+
+  @jni$_.internal
+  @core$_.override
+  String get signature =>
+      r'Lcom/datadoghq/flutter/DatadogLogEventMapper$EventMapper;';
+
+  @jni$_.internal
+  @core$_.override
+  DatadogLogEventMapper$EventMapper fromReference(jni$_.JReference reference) =>
+      DatadogLogEventMapper$EventMapper.fromReference(reference);
+  @jni$_.internal
+  @core$_.override
+  jni$_.JObjType get superType => const jni$_.JObjectType();
+
+  @jni$_.internal
+  @core$_.override
+  jni$_.JObjType<DatadogLogEventMapper$EventMapper?> get nullableType =>
+      const $DatadogLogEventMapper$EventMapper$NullableType();
+
+  @jni$_.internal
+  @core$_.override
+  final superCount = 1;
+
+  @core$_.override
+  int get hashCode => ($DatadogLogEventMapper$EventMapper$Type).hashCode;
+
+  @core$_.override
+  bool operator ==(Object other) {
+    return other.runtimeType == ($DatadogLogEventMapper$EventMapper$Type) &&
+        other is $DatadogLogEventMapper$EventMapper$Type;
+  }
+}
+
+/// from: `com.datadoghq.flutter.DatadogLogEventMapper`
+class DatadogLogEventMapper extends jni$_.JObject {
+  @jni$_.internal
+  @core$_.override
+  final jni$_.JObjType<DatadogLogEventMapper> $type;
+
+  @jni$_.internal
+  DatadogLogEventMapper.fromReference(jni$_.JReference reference)
+    : $type = type,
+      super.fromReference(reference);
+
+  static final _class = jni$_.JClass.forName(
+    r'com/datadoghq/flutter/DatadogLogEventMapper',
+  );
+
+  /// The type which includes information such as the signature of this class.
+  static const nullableType = $DatadogLogEventMapper$NullableType();
+  static const type = $DatadogLogEventMapper$Type();
+  static final _id_new$ = _class.constructorId(r'()V');
+
+  static final _new$ =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_NewObject')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public void <init>()`
+  /// The returned object must be released after use, by calling the [release] method.
+  factory DatadogLogEventMapper() {
+    return DatadogLogEventMapper.fromReference(
+      _new$(_class.reference.pointer, _id_new$ as jni$_.JMethodIDPtr).reference,
+    );
+  }
+
+  static final _id_getEventMapper = _class.instanceMethodId(
+    r'getEventMapper',
+    r'()Lcom/datadoghq/flutter/DatadogLogEventMapper$EventMapper;',
+  );
+
+  static final _getEventMapper =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallObjectMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public final com.datadoghq.flutter.DatadogLogEventMapper$EventMapper getEventMapper()`
+  /// The returned object must be released after use, by calling the [release] method.
+  DatadogLogEventMapper$EventMapper? getEventMapper() {
+    return _getEventMapper(
+      reference.pointer,
+      _id_getEventMapper as jni$_.JMethodIDPtr,
+    ).object<DatadogLogEventMapper$EventMapper?>(
+      const $DatadogLogEventMapper$EventMapper$NullableType(),
+    );
+  }
+
+  static final _id_setEventMapper = _class.instanceMethodId(
+    r'setEventMapper',
+    r'(Lcom/datadoghq/flutter/DatadogLogEventMapper$EventMapper;)V',
+  );
+
+  static final _setEventMapper =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JThrowablePtr Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+                jni$_.VarArgs<(jni$_.Pointer<jni$_.Void>,)>,
+              )
+            >
+          >('globalEnv_CallVoidMethod')
+          .asFunction<
+            jni$_.JThrowablePtr Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+              jni$_.Pointer<jni$_.Void>,
+            )
+          >();
+
+  /// from: `public final void setEventMapper(com.datadoghq.flutter.DatadogLogEventMapper$EventMapper eventMapper)`
+  void setEventMapper(DatadogLogEventMapper$EventMapper? eventMapper) {
+    final _$eventMapper = eventMapper?.reference ?? jni$_.jNullReference;
+    _setEventMapper(
+      reference.pointer,
+      _id_setEventMapper as jni$_.JMethodIDPtr,
+      _$eventMapper.pointer,
+    ).check();
+  }
+
+  static final _id_attachMapper = _class.instanceMethodId(
+    r'attachMapper',
+    r'(Lcom/datadog/android/log/LogsConfiguration$Builder;)Lcom/datadog/android/log/LogsConfiguration$Builder;',
+  );
+
+  static final _attachMapper =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+                jni$_.VarArgs<(jni$_.Pointer<jni$_.Void>,)>,
+              )
+            >
+          >('globalEnv_CallObjectMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+              jni$_.Pointer<jni$_.Void>,
+            )
+          >();
+
+  /// from: `public final com.datadog.android.log.LogsConfiguration$Builder attachMapper(com.datadog.android.log.LogsConfiguration$Builder builder)`
+  /// The returned object must be released after use, by calling the [release] method.
+  jni$_.JObject attachMapper(jni$_.JObject builder) {
+    final _$builder = builder.reference;
+    return _attachMapper(
+      reference.pointer,
+      _id_attachMapper as jni$_.JMethodIDPtr,
+      _$builder.pointer,
+    ).object<jni$_.JObject>(const jni$_.JObjectType());
+  }
+}
+
+final class $DatadogLogEventMapper$NullableType
+    extends jni$_.JObjType<DatadogLogEventMapper?> {
+  @jni$_.internal
+  const $DatadogLogEventMapper$NullableType();
+
+  @jni$_.internal
+  @core$_.override
+  String get signature => r'Lcom/datadoghq/flutter/DatadogLogEventMapper;';
+
+  @jni$_.internal
+  @core$_.override
+  DatadogLogEventMapper? fromReference(jni$_.JReference reference) =>
+      reference.isNull ? null : DatadogLogEventMapper.fromReference(reference);
+  @jni$_.internal
+  @core$_.override
+  jni$_.JObjType get superType => const jni$_.JObjectType();
+
+  @jni$_.internal
+  @core$_.override
+  jni$_.JObjType<DatadogLogEventMapper?> get nullableType => this;
+
+  @jni$_.internal
+  @core$_.override
+  final superCount = 1;
+
+  @core$_.override
+  int get hashCode => ($DatadogLogEventMapper$NullableType).hashCode;
+
+  @core$_.override
+  bool operator ==(Object other) {
+    return other.runtimeType == ($DatadogLogEventMapper$NullableType) &&
+        other is $DatadogLogEventMapper$NullableType;
+  }
+}
+
+final class $DatadogLogEventMapper$Type
+    extends jni$_.JObjType<DatadogLogEventMapper> {
+  @jni$_.internal
+  const $DatadogLogEventMapper$Type();
+
+  @jni$_.internal
+  @core$_.override
+  String get signature => r'Lcom/datadoghq/flutter/DatadogLogEventMapper;';
+
+  @jni$_.internal
+  @core$_.override
+  DatadogLogEventMapper fromReference(jni$_.JReference reference) =>
+      DatadogLogEventMapper.fromReference(reference);
+  @jni$_.internal
+  @core$_.override
+  jni$_.JObjType get superType => const jni$_.JObjectType();
+
+  @jni$_.internal
+  @core$_.override
+  jni$_.JObjType<DatadogLogEventMapper?> get nullableType =>
+      const $DatadogLogEventMapper$NullableType();
+
+  @jni$_.internal
+  @core$_.override
+  final superCount = 1;
+
+  @core$_.override
+  int get hashCode => ($DatadogLogEventMapper$Type).hashCode;
+
+  @core$_.override
+  bool operator ==(Object other) {
+    return other.runtimeType == ($DatadogLogEventMapper$Type) &&
+        other is $DatadogLogEventMapper$Type;
+  }
+}
