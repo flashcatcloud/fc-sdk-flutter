@@ -11,6 +11,8 @@ dependencies:
   collection: ^1.15.0
   flutter:
     sdk: flutter
+  flutter_test:
+    sdk: flutter
   http: ">=0.13.4 <2.0.0"
   json_annotation: ^4.9.0
   uuid: ^4.0.0

@@ -25,7 +25,7 @@
         {
             "name": "tracking http client example",
             "type": "dart",
-            "cwd": "packages/datadog_tracking_http_client/example",
+            "cwd": "packages/datadog_dio/example",
             "request": "launch"
         },
         {
