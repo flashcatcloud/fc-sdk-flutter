@@ -12,18 +12,10 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 
-/// A set of callbacks that allow you to provide attributes that should be
-/// attached to a Datadog RUM resource created from a [DatadogDioInterceptor]. This
-/// callback is called as part of the [Interceptor.onResponse] and [Interceptor.onError]
-/// callbacks..
-///
-/// If any of these functions throw, it will prevent proper tracking of this resource.
-abstract interface class DatadogDioAttributeProvider {
-  Map<String, Object?>? onResponse(Response<dynamic> response);
-  Map<String, Object?>? onError(DioException err);
-}
+import '../datadog_dio.dart';
 
 class DatadogDioInterceptor extends Interceptor {
+  @visibleForTesting
   static const String datadogRumExtraKey = '__datadog_rum_key';
 
   final DatadogSdk datadogSdk;
@@ -40,7 +32,7 @@ class DatadogDioInterceptor extends Interceptor {
 
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
-    final rum = DatadogSdk.instance.rum;
+    final rum = datadogSdk.rum;
     if (!kIsWeb && rum != null) {
       _trackRequest(options, rum);
     }
@@ -127,6 +119,11 @@ class DatadogDioInterceptor extends Interceptor {
           );
         }
 
+        if (attributesProvider != null) {
+          final userAttributes = attributesProvider?.onRequest(options);
+          attributes.merge(userAttributes);
+        }
+
         rumKey = _uuid.v1();
         options.extra[datadogRumExtraKey] = rumKey;
         rum.startResource(
@@ -176,5 +173,17 @@ class DatadogDioInterceptor extends Interceptor {
     }
 
     return attributes;
+  }
+}
+
+extension MergeExtension<K, V> on Map<K, V> {
+  // Merge "other" onto this map, overwritting any values in the current map
+  // with its new value.
+  void merge(Map<K, V>? other) {
+    if (other == null) return;
+
+    for (final entry in other.entries) {
+      this[entry.key] = entry.value;
+    }
   }
 }
