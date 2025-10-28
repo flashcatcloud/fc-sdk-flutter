@@ -5,6 +5,7 @@ import 'dart:convert';
 
 import 'package:collection/collection.dart';
 import 'package:datadog_common_test/datadog_common_test.dart';
+import 'package:datadog_common_test/widget_tester_extensions.dart';
 import 'package:datadog_dio_example/main.dart' as app;
 import 'package:datadog_dio_example/scenario_config.dart';
 import 'package:flutter/foundation.dart';
