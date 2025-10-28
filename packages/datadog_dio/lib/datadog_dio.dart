@@ -9,7 +9,7 @@ import 'package:dio/dio.dart';
 /// A set of callbacks that allow you to provide attributes that should be
 /// attached to a Datadog RUM resource created from a [DatadogDioInterceptor]. This
 /// callback is called as part of the [Interceptor.onResponse] and [Interceptor.onError]
-/// callbacks..
+/// callbacks.
 ///
 /// If any of these functions throw, it will prevent proper tracking of this resource.
 abstract interface class DatadogDioAttributeProvider {
