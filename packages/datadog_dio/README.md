@@ -1,7 +1,7 @@
 
 # Datadog Dio integration
 
-> A package for use with Dio and the Datadog SDK, used tro track performance of HTTP calls and enable Datadog Distributed Tracing.
+> A package for use with Dio and the Datadog SDK, used to track performance of HTTP calls and enable Datadog Distributed Tracing.
 
 ## Getting started
 
