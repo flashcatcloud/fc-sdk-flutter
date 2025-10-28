@@ -19,6 +19,13 @@ abstract interface class DatadogDioAttributeProvider {
 }
 
 extension DatadogDio on Dio {
+  /// Add the [DatadogDioInterceptor] to this Dio client.
+  ///
+  /// This method adds Datadog's interceptor as the first interceptor in Dio's
+  /// list to ensure that it is called for all network requests from Dio, as
+  /// other interceptors may decide not to forward information down the
+  /// interceptor chain.  For this reason, it is important that you call
+  /// [addDatadogInterceptor] after any other Dio configuration is complete
   void addDatadogInterceptor(
     DatadogSdk sdk, {
     List<RegExp> ignoreUrlPatterns = const [],

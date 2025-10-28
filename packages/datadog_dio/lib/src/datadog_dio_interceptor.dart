@@ -14,6 +14,9 @@ import 'package:uuid/uuid.dart';
 
 import '../datadog_dio.dart';
 
+/// An interceptor that forwards information about Dio requests to Datadog,
+/// including enabling distributed tracing for hosts specified in
+/// [DatadogConfiguration.firstPartyHosts].
 class DatadogDioInterceptor extends Interceptor {
   @visibleForTesting
   static const String datadogRumExtraKey = '__datadog_rum_key';
