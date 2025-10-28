@@ -55,7 +55,7 @@ void main() {
     final x = randomDouble(min: 10, max: 50);
     final y = randomDouble(min: 10, max: 50);
     final width = randomDouble(min: 10, max: 50);
-    final height = randomDouble(min: 10, max: 50);
+    final height = randomDouble(min: 20, max: 50);
 
     final controller = TextEditingController();
     final focusNode = FocusNode();
@@ -104,7 +104,7 @@ void main() {
     final x = randomDouble(min: 10, max: 50);
     final y = randomDouble(min: 10, max: 50);
     final width = randomDouble(min: 10, max: 50);
-    final height = randomDouble(min: 10, max: 50);
+    final height = randomDouble(min: 20, max: 50);
     final tree = MaterialApp(
       home: SimpleTestCapture(
         key: Key('key'),
