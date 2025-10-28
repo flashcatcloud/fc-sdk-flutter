@@ -454,7 +454,6 @@ void main() {
             any(that: HasHost(equals('non_first_party'))))).thenReturn({});
         when(() => mockRum.contextInjectionSetting)
             .thenReturn(TraceContextInjection.all);
-        //when(() => mockDatadog.platform).thenReturn(mockPlatform);
         // ignore: invalid_use_of_internal_member
         when(() => mockDatadog.internalLogger).thenReturn(InternalLoggerMock());
 

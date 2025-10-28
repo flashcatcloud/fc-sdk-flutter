@@ -1,11 +1,11 @@
 {
-    "name": "example",
-    "short_name": "example",
+    "name": "Dio Example",
+    "short_name": "Dio Example",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "Example usage of the Datadog Dio Interceptor.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
