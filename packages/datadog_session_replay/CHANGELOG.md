@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.0-preview.6
+
+* [Session Replay] Don't capture elements with width or height of zero.
+
 ## 1.0.0-preview.5
 
 * [Session Replay] Downgrade packages that required Dart versions above 3.6.
