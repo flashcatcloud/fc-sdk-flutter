@@ -71,7 +71,7 @@ class DatadogDioInterceptor extends Interceptor {
         );
       } catch (e, st) {
         datadogSdk.internalLogger.sendToDatadog(
-          '$DatadogDioInterceptor encountered an error while attempting '
+          '$DatadogDioInterceptor encountered an error while attempting'
           ' to track a request: $e',
           st,
           e.runtimeType.toString(),
@@ -92,7 +92,7 @@ class DatadogDioInterceptor extends Interceptor {
             rumKey, err.toString(), err.type.toString(), attributes);
       } catch (e, st) {
         datadogSdk.internalLogger.sendToDatadog(
-          '$DatadogDioInterceptor encountered an error while attempting '
+          '$DatadogDioInterceptor encountered an error while attempting'
           ' to track a request: $e',
           st,
           e.runtimeType.toString(),
