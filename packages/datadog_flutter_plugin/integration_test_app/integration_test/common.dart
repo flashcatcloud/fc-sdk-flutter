@@ -4,7 +4,6 @@
 
 import 'dart:async';
 
-import 'package:collection/src/iterable_extensions.dart';
 import 'package:datadog_common_test/datadog_common_test.dart';
 import 'package:datadog_flutter_plugin/datadog_flutter_plugin.dart';
 import 'package:datadog_integration_test_app/main.dart' as app;
@@ -86,26 +85,6 @@ Future<RecordingServerClient> openTestScenario(
   }
 
   return client;
-}
-
-extension Waiter on WidgetTester {
-  Future<bool> waitFor(
-    Finder finder,
-    Duration timeout,
-    bool Function(Element e) predicate,
-  ) async {
-    var endTime = DateTime.now().add(timeout);
-    bool wasFound = false;
-    while (DateTime.now().isBefore(endTime) && !wasFound) {
-      final element = finder.evaluate().firstOrNull;
-      if (element != null) {
-        wasFound = predicate(element);
-      }
-      await pumpAndSettle();
-    }
-
-    return wasFound;
-  }
 }
 
 void verifyCommonEventTags(
