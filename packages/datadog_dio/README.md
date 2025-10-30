@@ -35,3 +35,13 @@ final configuration = DatadogConfiguration(
 Clients that want to track all network requests, including those made by `dart:io` and widgets like `NetworkImage` can continue to use [`datadog_tracking_http_client`](https://pub.dev/packages/datadog_tracking_http_client) to capture these requests. However, depending on your setup, the global overide method used in `enableHttpTracking` may cause resources to be double reported (once by the global override and once by the Dio interceptor).
 
 To avoid this, we recommend using `ignoreUrlPatterns` parameter when calling `enableHttpTracking` to ignore requests made by your Dio client.
+
+# Contributing
+
+Pull requests are welcome. First, open an issue to discuss what you would like
+to change. For more information, read the [Contributing
+guide](../../CONTRIBUTING.md) in the root repository.
+
+# License
+
+[Apache License, v2.0](LICENSE)
