@@ -6,7 +6,7 @@ import '../../datadog_internal.dart';
 import '../logs/log_mapper_proxy.dart';
 import '../logs/logs.dart';
 import 'datadog_android_bridge.dart';
-import 'jsoon_helpers.dart';
+import 'json_helpers.dart';
 
 class AndroidLogEventMapper extends LogMapperProxy {
   final InternalLogger _internalLogger;

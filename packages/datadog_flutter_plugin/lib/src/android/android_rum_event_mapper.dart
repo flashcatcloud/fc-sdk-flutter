@@ -8,7 +8,7 @@ import '../../datadog_flutter_plugin.dart';
 import '../internal_logger.dart';
 import '../rum/rum_mapper_proxy.dart';
 import 'datadog_android_bridge.dart';
-import 'jsoon_helpers.dart';
+import 'json_helpers.dart';
 
 typedef _MapperFunction = Map<String, dynamic>? Function(Map<String, dynamic>);
 

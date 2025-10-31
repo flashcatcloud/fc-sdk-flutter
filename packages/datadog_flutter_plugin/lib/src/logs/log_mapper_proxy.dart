@@ -9,10 +9,12 @@ import 'package:flutter/foundation.dart';
 import '../../datadog_flutter_plugin.dart';
 import '../../datadog_internal.dart';
 import '../android/android_log_event_mapper.dart';
+import '../ios/ios_log_event_mapper.dart';
 
 abstract class LogMapperProxy {
   // This is the same list as in LogEvent.kt
   static const reservedAttributes = {
+    'env',
     'status',
     'service',
     'message',
@@ -47,7 +49,8 @@ abstract class LogMapperProxy {
       final mappedJson = mappedEvent.toJson();
       for (final item in mappedEvent.attributes.entries) {
         // Put extra attributes back
-        if (!reservedAttributes.contains(item.key)) {
+        final keyRoot = item.key.split('.').first;
+        if (!reservedAttributes.contains(keyRoot)) {
           mappedJson[item.key] = item.value;
         }
       }
@@ -70,6 +73,8 @@ abstract class LogMapperProxy {
     } else {
       if (Platform.isAndroid) {
         return AndroidLogEventMapper(config, logger);
+      } else if (Platform.isIOS) {
+        return IosLogEventMapper(config, logger);
       }
     }
     return null;

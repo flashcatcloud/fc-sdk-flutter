@@ -33,5 +33,5 @@ JString? safeEncodeJavaJson(
     logger.error('Error performing mapping deserialization: $e');
     logger.sendToDatadog(e.toString(), st, e.runtimeType.toString());
   }
-  return null;
+  return fallback;
 }

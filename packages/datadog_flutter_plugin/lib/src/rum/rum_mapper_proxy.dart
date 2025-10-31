@@ -8,6 +8,7 @@ import 'package:flutter/foundation.dart';
 
 import '../../datadog_internal.dart';
 import '../android/android_rum_event_mapper.dart';
+import '../ios/ios_rum_event_mapper.dart';
 import 'rum.dart';
 
 abstract class RumMapperProxy {
@@ -96,6 +97,8 @@ abstract class RumMapperProxy {
     } else {
       if (Platform.isAndroid) {
         return AndroidRumEventMapper(config, logger);
+      } else if (Platform.isIOS) {
+        return IosRumEventMapper(config, logger);
       }
     }
     return null;
