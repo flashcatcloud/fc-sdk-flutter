@@ -18,3 +18,4 @@ classes:
   - 'com.datadoghq.flutter.DatadogRumPlugin'
   - 'com.datadoghq.flutter.DatadogLogsPlugin'
   - 'com.datadoghq.flutter.DatadogLogEventMapper'
+  

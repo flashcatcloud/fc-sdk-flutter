@@ -8,7 +8,8 @@ import 'package:flutter/services.dart';
 import '../../datadog_flutter_plugin.dart';
 import '../../datadog_internal.dart';
 import 'ddrum_platform_interface.dart';
-import 'rum_mapper_proxy.dart';
+import 'rum_mapper_proxy_stub.dart'
+    if (dart.library.io) 'rum_mapper_proxy.dart';
 
 class DdRumMethodChannel extends DdRumPlatform {
   @visibleForTesting

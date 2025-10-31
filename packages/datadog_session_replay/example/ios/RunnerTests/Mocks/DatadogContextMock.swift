@@ -176,7 +176,6 @@ extension LocaleInfo: AnyMockable, RandomMockable {
     }
 }
 
-
 extension DeviceInfo: AnyMockable, RandomMockable {
     public static func mockAny() -> DeviceInfo {
         return .mockWith()

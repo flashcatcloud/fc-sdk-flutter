@@ -1,8 +1,5 @@
 package com.datadoghq.flutter
 
-import android.os.Handler
-import android.os.Looper
-import com.datadog.android.Datadog
 import com.datadog.android.rum.RumConfiguration
 import com.datadog.android.rum.model.ActionEvent
 import com.datadog.android.rum.model.ErrorEvent
@@ -10,12 +7,6 @@ import com.datadog.android.rum.model.LongTaskEvent
 import com.datadog.android.rum.model.ResourceEvent
 import com.datadog.android.rum.model.ViewEvent
 import com.google.gson.JsonParser
-import io.flutter.plugin.common.MethodChannel
-import java.util.Collections
-import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.CountDownLatch
-import java.util.concurrent.TimeUnit
-import kotlin.system.measureNanoTime
 
 /**
  * This is a helper class that that simplifies event mapping / scrubbing for RUM events.
@@ -68,7 +59,6 @@ class DatadogRumEventMapper {
     internal fun mapViewEvent(event: ViewEvent): ViewEvent {
         var result: ViewEvent = event
 
-
         eventMapper?.let { mapper ->
             val encodedEvent = event.toJson().toString()
 
@@ -86,6 +76,7 @@ class DatadogRumEventMapper {
         return result
     }
 
+    @Suppress("NestedBlockDepth")
     internal fun mapActionEvent(event: ActionEvent): ActionEvent? {
         var result: ActionEvent? = event
 
@@ -136,6 +127,7 @@ class DatadogRumEventMapper {
         return result
     }
 
+    @Suppress("NestedBlockDepth")
     internal fun mapErrorEvent(event: ErrorEvent): ErrorEvent? {
         var result: ErrorEvent? = event
 
