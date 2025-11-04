@@ -2,9 +2,11 @@
 
 ## Android Changes
 
+Clients using Kotlin should update their Kotlin version to 2.1.0+. Flutter versions above 3.27 warn that older versions of Kotlin will not be supported, and provide instructions for updating.
+
 Clients using Flutter before 3.27 will need to manually update their Android `compileSdkVersion` to be 35+ and their `minSdkVersion` to 23+.
 
-Flutter updated the `flutter.compileSdkVersion` variable to 35 in 3.27, so this change is unnecessary for clients using Flutter versions greater than that.  
+Flutter updated the `flutter.compileSdkVersion` variable to 35 in 3.27, so this change is unnecessary for clients using Flutter versions greater than that.
 
 ## Flutter Web Changes
 

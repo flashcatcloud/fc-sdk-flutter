@@ -302,6 +302,7 @@ public class DatadogLogsPlugin: NSObject, FlutterPlugin {
                 if result["_dd.mapper_error"] != nil {
                     // Error in the mapper, return the unmapped event
                     callback(event)
+                    return
                 }
 
                 // Don't bother to decode, just pull modifiable properties straight from the

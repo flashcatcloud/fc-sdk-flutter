@@ -676,7 +676,7 @@ class MockRUMMonitor: RUMMonitorProtocol, RUMCommandSubscriber {
         case addAttributes(attributes: [AttributeKey: any AttributeValue])
         case removeAttributes(forKeys: [AttributeKey])
         case addViewAttribute(key: DatadogInternal.AttributeKey, value: any DatadogInternal.AttributeValue)
-        case addViewAttributes(attributes: [DatadogInternal.AttributeKey : any DatadogInternal.AttributeValue])
+        case addViewAttributes(attributes: [DatadogInternal.AttributeKey: any DatadogInternal.AttributeValue])
         case removeViewAttribute(key: DatadogInternal.AttributeKey)
         case removeViewAttributes(keys: [DatadogInternal.AttributeKey])
     }
