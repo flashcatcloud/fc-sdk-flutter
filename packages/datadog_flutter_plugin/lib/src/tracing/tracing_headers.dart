@@ -188,12 +188,14 @@ class TracingContext {
   final TracingId traceId;
   final TracingId spanId;
   final TracingId? parentSpanId;
+  final String? rumSessionId;
   final bool sampled;
 
   const TracingContext(
     this.traceId,
     this.spanId,
     this.parentSpanId,
+    this.rumSessionId,
     this.sampled,
   );
 }
@@ -204,8 +206,9 @@ final Random _traceRandom = Random();
 TracingContext generateTracingContext(DatadogRum rum) {
   final traceId = TracingId.traceId();
   final spanId = TracingId.spanId();
-  bool sampled = rum.shouldSampleTrace(traceId);
-  return TracingContext(traceId, spanId, null, sampled);
+  final sessionId = rum.cachedSessionId;
+  bool sampled = rum.shouldSampleTrace(sessionId, traceId);
+  return TracingContext(traceId, spanId, null, sessionId, sampled);
 }
 
 Map<String, Object?> generateDatadogAttributes(

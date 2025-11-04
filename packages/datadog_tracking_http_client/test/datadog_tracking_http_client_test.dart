@@ -78,7 +78,7 @@ void main() {
     when(() => mockDatadog.internalLogger).thenReturn(InternalLogger());
 
     mockRum = MockDdRum();
-    when(() => mockRum.shouldSampleTrace(any())).thenReturn(true);
+    when(() => mockRum.shouldSampleTrace(any(), any())).thenReturn(true);
     when(() => mockRum.contextInjectionSetting)
         .thenReturn(TraceContextInjection.all);
     when(() => mockRum.traceSampleRate).thenReturn(50.0);
@@ -440,7 +440,7 @@ void main() {
       var url = Uri.parse('https://test_url/path');
       final completer = setupMockRequest(url);
 
-      when(() => mockRum.shouldSampleTrace(any())).thenReturn(false);
+      when(() => mockRum.shouldSampleTrace(any(), any())).thenReturn(false);
       when(() => mockRum.traceSampleRate).thenReturn(12.0);
 
       var request = await client.openUrl('get', url);
@@ -684,7 +684,7 @@ void main() {
       test(
           'sets trace headers for first party urls { unsampled, TraceContextInjection.all }',
           () async {
-        when(() => mockRum.shouldSampleTrace(any())).thenReturn(false);
+        when(() => mockRum.shouldSampleTrace(any(), any())).thenReturn(false);
         var url = Uri.parse('https://test_url/path');
         var completer = setupMockRequest(url);
         var mockResponse = setupMockClientResponse(200);
@@ -733,7 +733,7 @@ void main() {
       test(
           'sets trace headers for first party urls { unsampled, TraceContextInjection.sampled }',
           () async {
-        when(() => mockRum.shouldSampleTrace(any())).thenReturn(false);
+        when(() => mockRum.shouldSampleTrace(any(), any())).thenReturn(false);
         when(() => mockRum.contextInjectionSetting)
             .thenReturn(TraceContextInjection.sampled);
         var url = Uri.parse('https://test_url/path');
@@ -905,7 +905,7 @@ void main() {
 
     test('does not set trace headers when should sample returns false',
         () async {
-      when(() => mockRum.shouldSampleTrace(any())).thenReturn(false);
+      when(() => mockRum.shouldSampleTrace(any(), any())).thenReturn(false);
       var url = Uri.parse('https://test_url/path');
       var completer = setupMockRequest(url);
       var mockResponse = setupMockClientResponse(200);
@@ -937,7 +937,7 @@ void main() {
 
     test('does not set trace headers when should sample returns false',
         () async {
-      when(() => mockRum.shouldSampleTrace(any())).thenReturn(false);
+      when(() => mockRum.shouldSampleTrace(any(), any())).thenReturn(false);
       var url = Uri.parse('https://test_url/path');
       var completer = setupMockRequest(url);
       var mockResponse = setupMockClientResponse(200);

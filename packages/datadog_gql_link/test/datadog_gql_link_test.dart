@@ -76,7 +76,7 @@ query UserInfo($id: ID!) {
     when(() => mockDatadog.internalLogger).thenReturn(MockInternalLogger());
 
     mockRum = MockDdRum();
-    when(() => mockRum.shouldSampleTrace(any())).thenReturn(true);
+    when(() => mockRum.shouldSampleTrace(any(), any())).thenReturn(true);
     when(() => mockRum.traceSampleRate).thenReturn(50.0);
   });
 
@@ -751,7 +751,7 @@ query UserInfo($id: ID!) {
         // ignore: invalid_use_of_internal_member
         when(() => mockDatadog.internalLogger).thenReturn(MockInternalLogger());
 
-        when(() => mockRum.shouldSampleTrace(any())).thenReturn(true);
+        when(() => mockRum.shouldSampleTrace(any(), any())).thenReturn(true);
         when(() => mockRum.traceSampleRate).thenReturn(50.0);
         when(() => mockDatadog.rum).thenReturn(mockRum);
       });
@@ -759,7 +759,7 @@ query UserInfo($id: ID!) {
       test('does not set trace attributes when should sample returns false',
           () {
         // Given
-        when(() => mockRum.shouldSampleTrace(any())).thenReturn(false);
+        when(() => mockRum.shouldSampleTrace(any(), any())).thenReturn(false);
         final link =
             DatadogGqlLink(mockDatadog, Uri.parse('https://test_url/graphql'));
         final request = Request(
@@ -781,7 +781,7 @@ query UserInfo($id: ID!) {
 
       test('start resource loading sets tracing attributes', () {
         // Given
-        when(() => mockRum.shouldSampleTrace(any())).thenReturn(true);
+        when(() => mockRum.shouldSampleTrace(any(), any())).thenReturn(true);
         final link =
             DatadogGqlLink(mockDatadog, Uri.parse('https://test_url/graphql'));
         final request = Request(
@@ -811,7 +811,7 @@ query UserInfo($id: ID!) {
 
       // This should not happen as links are url specific, but we should check anyway.
       test('does not set trace headers for third party urls', () async {
-        when(() => mockRum.shouldSampleTrace(any())).thenReturn(true);
+        when(() => mockRum.shouldSampleTrace(any(), any())).thenReturn(true);
         final link = DatadogGqlLink(
             mockDatadog, Uri.parse('https://non_first_party/graphql'));
         final request = Request(
@@ -843,7 +843,7 @@ query UserInfo($id: ID!) {
       test(
           'sets trace headers for first party urls { sampled, TraceContextInjection.all }',
           () {
-        when(() => mockRum.shouldSampleTrace(any())).thenReturn(true);
+        when(() => mockRum.shouldSampleTrace(any(), any())).thenReturn(true);
         when(() => mockRum.contextInjectionSetting)
             .thenReturn(TraceContextInjection.all);
         final link =
@@ -866,7 +866,7 @@ query UserInfo($id: ID!) {
       test(
           'sets trace headers for first party urls { sampled, TraceContextInjection.sampled }',
           () {
-        when(() => mockRum.shouldSampleTrace(any())).thenReturn(true);
+        when(() => mockRum.shouldSampleTrace(any(), any())).thenReturn(true);
         when(() => mockRum.contextInjectionSetting)
             .thenReturn(TraceContextInjection.sampled);
         final link =
@@ -889,7 +889,7 @@ query UserInfo($id: ID!) {
       test(
           'sets trace headers for first party urls { unsampled, TraceContextInjection.all }, ',
           () {
-        when(() => mockRum.shouldSampleTrace(any())).thenReturn(false);
+        when(() => mockRum.shouldSampleTrace(any(), any())).thenReturn(false);
         when(() => mockRum.contextInjectionSetting)
             .thenReturn(TraceContextInjection.all);
         final link =
@@ -912,7 +912,7 @@ query UserInfo($id: ID!) {
       test(
           'does not sets trace headers for first party urls { unsampled, TraceContextInjection.sampled }, ',
           () {
-        when(() => mockRum.shouldSampleTrace(any())).thenReturn(false);
+        when(() => mockRum.shouldSampleTrace(any(), any())).thenReturn(false);
         when(() => mockRum.contextInjectionSetting)
             .thenReturn(TraceContextInjection.sampled);
         final link =

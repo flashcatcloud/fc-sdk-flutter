@@ -50,10 +50,7 @@ class IosRumEventMapper extends RumMapperProxy {
         case 'mapLongTaskEvent':
           return _mapLongTaskEvent(call);
       }
-
-      throw MissingPluginException(
-        'Could not find a method to call for ${call.method}',
-      );
+      // Ignore unknown methods
     } catch (e, st) {
       _internalLogger.sendToDatadog(
         '${call.method} threw an exception: ${e.toString()}.',

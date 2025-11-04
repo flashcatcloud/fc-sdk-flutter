@@ -6,6 +6,8 @@
 package com.datadoghq.flutter
 
 import android.content.Context
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import com.datadog.android.api.SdkCore
 import com.datadog.android.core.configuration.BatchSize
@@ -21,6 +23,7 @@ import com.datadog.android.rum.RumMonitor
 import com.datadog.android.rum.RumPerformanceMetric
 import com.datadog.android.rum.RumResourceKind
 import com.datadog.android.rum.RumResourceMethod
+import com.datadog.android.rum.RumSessionListener
 import com.datadog.android.rum._RumInternalProxy
 import com.datadog.android.rum.configuration.VitalsUpdateFrequency
 import com.datadog.android.rum.metric.networksettled.TimeBasedInitialResourceIdentifier
@@ -34,7 +37,7 @@ import java.lang.ClassCastException
 import java.util.concurrent.TimeUnit
 import kotlin.time.Duration.Companion.seconds
 
-class DatadogRumPlugin : MethodChannel.MethodCallHandler {
+class DatadogRumPlugin : MethodChannel.MethodCallHandler, RumSessionListener {
     companion object {
         const val PARAM_AT = "at"
         const val PARAM_DURATION = "duration"
@@ -144,6 +147,19 @@ class DatadogRumPlugin : MethodChannel.MethodCallHandler {
         }
     }
 
+    override fun onSessionStarted(sessionId: String, isDiscarded: Boolean) {
+        val handler = Handler(Looper.getMainLooper())
+        handler.post {
+            channel.invokeMethod(
+                "onSessionChanged",
+                mapOf(
+                    "sessionId" to sessionId,
+                    "discarded" to isDiscarded
+                )
+            )
+        }
+    }
+
     private fun enable(call: MethodCall, result: Result) {
         val encodedConfig = call.argument<Map<String, Any?>>("configuration")
         val applicationId = encodedConfig?.get("applicationId") as? String
@@ -167,6 +183,7 @@ class DatadogRumPlugin : MethodChannel.MethodCallHandler {
                     .disableUserInteractionTracking()
                     .useViewTrackingStrategy(NoOpViewTrackingStrategy)
                     .setLastInteractionIdentifier(null)
+                    .setSessionListener(this)
 
                 // Mapper initialization
                 configBuilder = attachEventMappers(encodedConfig, configBuilder)

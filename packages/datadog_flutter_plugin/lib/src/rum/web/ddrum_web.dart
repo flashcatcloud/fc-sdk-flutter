@@ -21,6 +21,10 @@ class DdRumWeb extends DdRumPlatform {
   RumWebPluginImpl? _webPlugin;
   ResourceTracker? _resourceTracker;
 
+  @override
+  // Can return this directly, don't need to use a cached version
+  String? get cachedSessionId => DD_RUM?.getInternalContext()?.session_id;
+
   // Because Web needs the full SDK configuration, we have a separate init method
   void initialize(
     DatadogConfiguration configuration,

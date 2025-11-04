@@ -20,6 +20,10 @@ class DdRumMethodChannel extends DdRumPlatform {
   // ignore: unused_field
   RumMapperProxy? _mapperProxy;
 
+  String? _cachedSessionId;
+  @override
+  String? get cachedSessionId => _cachedSessionId;
+
   @override
   Future<void> enable(
     DatadogSdk core,
@@ -30,7 +34,11 @@ class DdRumMethodChannel extends DdRumPlatform {
       core.internalLogger,
     );
 
-    return methodChannel.invokeMethod('enable', {
+    if (ServicesBinding.rootIsolateToken != null) {
+      methodChannel.setMethodCallHandler(handleMethodCall);
+    }
+
+    await methodChannel.invokeMethod('enable', {
       'configuration': configuration.encode(),
     });
   }
@@ -42,7 +50,13 @@ class DdRumMethodChannel extends DdRumPlatform {
 
   @override
   Future<String?> getCurrentSessionId() async {
-    return methodChannel.invokeMethod<String>('getCurrentSessionId', {});
+    final sessionId = await methodChannel.invokeMethod<String>(
+      'getCurrentSessionId',
+      {},
+    );
+    // Pulling this directly means this is the most up to date it can be.
+    _cachedSessionId = sessionId;
+    return sessionId;
   }
 
   @override
@@ -295,6 +309,7 @@ class DdRumMethodChannel extends DdRumPlatform {
 
   @override
   Future<void> stopSession() {
+    _cachedSessionId = null;
     return methodChannel.invokeMethod('stopSession', <String, Object?>{});
   }
 
@@ -315,5 +330,23 @@ class DdRumMethodChannel extends DdRumPlatform {
       'buildTimes': buildTimes,
       'rasterTimes': rasterTimes,
     });
+  }
+
+  void _onSessionChanged(MethodCall call) {
+    if (call.arguments case final Map<dynamic, dynamic> arguments?) {
+      final sessionId = arguments['sessionId'];
+      if (sessionId is String) {
+        _cachedSessionId = sessionId;
+      }
+    }
+  }
+
+  @visibleForTesting
+  Future<dynamic> handleMethodCall(MethodCall call) async {
+    switch (call.method) {
+      case 'onSessionChanged':
+        return _onSessionChanged(call);
+    }
+    // Ignore unknown methods
   }
 }

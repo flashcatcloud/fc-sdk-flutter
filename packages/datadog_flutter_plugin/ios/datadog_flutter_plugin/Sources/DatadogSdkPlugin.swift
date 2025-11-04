@@ -45,7 +45,7 @@ extension Datadog.Configuration {
     }
 }
 
-// swiftlint:disable type_body_length
+// swiftlint:disable:next type_body_length
 public class DatadogSdkPlugin: NSObject, FlutterPlugin {
     let channel: FlutterMethodChannel
 
@@ -121,7 +121,8 @@ public class DatadogSdkPlugin: NSObject, FlutterPlugin {
                 } else {
                     consolePrint(
                         "🔥 The DatadogSDK is already initialized but no previous configuration exists. Did you mean" +
-                        " to use attachToExisting? Note: Datadog does not currently support multiple Flutter engines on iOS.",
+                        " to use attachToExisting? Note: Datadog does not currently support multiple Flutter engines" +
+                        " on iOS.",
                         .error
                     )
                 }
