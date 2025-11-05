@@ -110,3 +110,13 @@ String? convertWebStackTrace(StackTrace? stackTrace) {
 
   return stackTraceString;
 }
+
+String trackingConsentToWeb(TrackingConsent consent) {
+  switch (consent) {
+    case TrackingConsent.granted:
+      return 'granted';
+    case TrackingConsent.notGranted:
+    case TrackingConsent.pending:
+      return 'not-granted';
+  }
+}

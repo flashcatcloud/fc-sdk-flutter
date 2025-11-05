@@ -18,6 +18,7 @@ class DdRumWeb extends DdRumPlatform {
     DatadogConfiguration configuration,
     DatadogRumConfiguration rumConfiguration,
     InternalLogger logger,
+    TrackingConsent trackingConsent,
   ) {
     bool trackResources =
         configuration.additionalConfig[trackResourcesConfigKey] == true;
@@ -60,6 +61,7 @@ class DdRumWeb extends DdRumPlatform {
         trackFrustrations: rumConfiguration.trackFrustrations,
         trackLongTasks: rumConfiguration.detectLongTasks,
         enableExperimentalFeatures: ['feature_flags'.toJS].toJS,
+        trackingConsent: trackingConsentToWeb(trackingConsent),
       ),
     );
   }
@@ -313,6 +315,7 @@ extension type _RumInitOptions._(JSObject _) implements JSObject {
   external String? get proxy;
   external JSArray get allowedTracingUrls;
   external JSArray get enableExperimentalFeatures;
+  external String? get trackingConsent;
 
   external factory _RumInitOptions({
     String applicationId,
@@ -338,6 +341,7 @@ extension type _RumInitOptions._(JSObject _) implements JSObject {
     num? traceSampleRate,
     String? traceContextInjection,
     JSArray enableExperimentalFeatures,
+    String? trackingConsent,
   });
 }
 
@@ -367,6 +371,7 @@ extension type _DdRum._(JSObject _) implements JSObject {
   external void stopSession();
   external void setUser(JsUser newUser);
   external void setUserProperty(String key, JSAny? value);
+  external void setTrackingConsent(String consent);
 }
 
 @JS()
