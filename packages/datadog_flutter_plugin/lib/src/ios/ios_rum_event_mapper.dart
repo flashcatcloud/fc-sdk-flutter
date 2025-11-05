@@ -16,11 +16,10 @@ import '../rum/rum_mapper_proxy.dart';
 ///
 /// We can revisit this when Objective-C ffi supports callbacks syncronously
 /// returning data.
-class IosRumEventMapper extends RumMapperProxy {
+class IosRumEventMapper extends RumMethodChannelMapperProxy {
   static const mapperError = {'_dd.mapper_error': 'mapper error'};
 
   final InternalLogger _internalLogger;
-  final MethodChannel _methodChannel = MethodChannel('datadog_sdk_flutter.rum');
 
   IosRumEventMapper(DatadogRumConfiguration config, InternalLogger logger)
     : _internalLogger = logger,
@@ -30,12 +29,9 @@ class IosRumEventMapper extends RumMapperProxy {
         resourceEventMapper: config.resourceEventMapper,
         errorEventMapper: config.errorEventMapper,
         longTaskEventMapper: config.longTaskEventMapper,
-      ) {
-    if (ServicesBinding.rootIsolateToken != null) {
-      _methodChannel.setMethodCallHandler(handleMethodCall);
-    }
-  }
+      );
 
+  @override
   Future<dynamic> handleMethodCall(MethodCall call) async {
     try {
       switch (call.method) {
@@ -50,7 +46,9 @@ class IosRumEventMapper extends RumMapperProxy {
         case 'mapLongTaskEvent':
           return _mapLongTaskEvent(call);
       }
-      // Ignore unknown methods
+      throw MissingPluginException(
+        'Could not find a method to call for ${call.method}',
+      );
     } catch (e, st) {
       _internalLogger.sendToDatadog(
         '${call.method} threw an exception: ${e.toString()}.',

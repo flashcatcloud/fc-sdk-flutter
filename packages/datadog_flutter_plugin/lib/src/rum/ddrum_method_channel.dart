@@ -343,10 +343,17 @@ class DdRumMethodChannel extends DdRumPlatform {
 
   @visibleForTesting
   Future<dynamic> handleMethodCall(MethodCall call) async {
+    if (call.method.startsWith('map')) {
+      if (_mapperProxy case final RumMethodChannelMapperProxy mapper) {
+        return mapper.handleMethodCall(call);
+      }
+    }
     switch (call.method) {
       case 'onSessionChanged':
         return _onSessionChanged(call);
     }
-    // Ignore unknown methods
+    throw MissingPluginException(
+      'Could not find a method to call for ${call.method}',
+    );
   }
 }
