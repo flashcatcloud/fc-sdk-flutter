@@ -29,7 +29,7 @@ class DdLogsWeb extends DdLogsPlatform {
         site: siteStringForSite(configuration.site),
         service: configuration.service,
         version: configuration.versionTag,
-        trackingConsent: trackingConsentToWeb(trackingConsent),
+        trackingConsent: trackingConsent.webValue(),
       ),
     );
   }

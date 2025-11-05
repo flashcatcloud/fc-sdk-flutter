@@ -61,7 +61,7 @@ class DdRumWeb extends DdRumPlatform {
         trackFrustrations: rumConfiguration.trackFrustrations,
         trackLongTasks: rumConfiguration.detectLongTasks,
         enableExperimentalFeatures: ['feature_flags'.toJS].toJS,
-        trackingConsent: trackingConsentToWeb(trackingConsent),
+        trackingConsent: trackingConsent.webValue(),
       ),
     );
   }

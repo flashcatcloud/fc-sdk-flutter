@@ -41,9 +41,8 @@ class DatadogSdkWeb extends DatadogSdkPlatform {
 
   @override
   Future<void> setTrackingConsent(TrackingConsent trackingConsent) async {
-    final consentString = trackingConsentToWeb(trackingConsent);
-    DD_LOGS?.setTrackingConsent(consentString);
-    DD_RUM?.setTrackingConsent(consentString);
+    DD_LOGS?.setTrackingConsent(trackingConsent.webValue());
+    DD_RUM?.setTrackingConsent(trackingConsent.webValue());
   }
 
   @override

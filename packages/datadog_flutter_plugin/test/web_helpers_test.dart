@@ -14,15 +14,15 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   group('trackingConsentToWeb', () {
     test('converts granted to "granted"', () {
-      expect(trackingConsentToWeb(TrackingConsent.granted), 'granted');
+      expect(TrackingConsent.granted.webValue(), 'granted');
     });
 
     test('converts notGranted to "not-granted"', () {
-      expect(trackingConsentToWeb(TrackingConsent.notGranted), 'not-granted');
+      expect(TrackingConsent.notGranted.webValue(), 'not-granted');
     });
 
     test('converts pending to "not-granted"', () {
-      expect(trackingConsentToWeb(TrackingConsent.pending), 'not-granted');
+      expect(TrackingConsent.pending.webValue(), 'not-granted');
     });
   });
   group('value to js', () {

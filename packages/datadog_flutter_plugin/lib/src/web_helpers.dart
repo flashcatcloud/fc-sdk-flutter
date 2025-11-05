@@ -111,12 +111,14 @@ String? convertWebStackTrace(StackTrace? stackTrace) {
   return stackTraceString;
 }
 
-String trackingConsentToWeb(TrackingConsent consent) {
-  switch (consent) {
-    case TrackingConsent.granted:
-      return 'granted';
-    case TrackingConsent.notGranted:
-    case TrackingConsent.pending:
-      return 'not-granted';
+extension TrackingConsentWebValue on TrackingConsent {
+  String webValue() {
+    switch (this) {
+      case TrackingConsent.granted:
+        return 'granted';
+      case TrackingConsent.notGranted:
+      case TrackingConsent.pending:
+        return 'not-granted';
+    }
   }
 }
