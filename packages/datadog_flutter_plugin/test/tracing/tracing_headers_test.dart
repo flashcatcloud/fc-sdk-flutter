@@ -16,7 +16,7 @@ void main() {
     registerFallbackValue(TracingId(BigInt.one));
 
     mockRum = MockDdRum();
-    when(() => mockRum.shouldSampleTrace(any())).thenReturn(true);
+    when(() => mockRum.shouldSampleTrace(any(), any())).thenReturn(true);
   });
 
   test('TracingIdRepresentation generates proper values', () {
@@ -96,7 +96,7 @@ void main() {
   });
 
   test('Unsampled context does not generate datadog attributes', () {
-    when(() => mockRum.shouldSampleTrace(any())).thenReturn(false);
+    when(() => mockRum.shouldSampleTrace(any(), any())).thenReturn(false);
     final context = generateTracingContext(mockRum);
 
     final attributes = generateDatadogAttributes(context, 30.0);
@@ -214,7 +214,7 @@ void main() {
   test(
     'Datadog tracing headers are generated correctly { TraceContextInjection.all, unsampled }',
     () {
-      when(() => mockRum.shouldSampleTrace(any())).thenReturn(false);
+      when(() => mockRum.shouldSampleTrace(any(), any())).thenReturn(false);
       final context = generateTracingContext(mockRum);
 
       final headers = getTracingHeaders(
@@ -243,7 +243,7 @@ void main() {
   test(
     'Datadog tracing headers are generated correctly { TraceContextInjection.sampled, unsampled }',
     () {
-      when(() => mockRum.shouldSampleTrace(any())).thenReturn(false);
+      when(() => mockRum.shouldSampleTrace(any(), any())).thenReturn(false);
       final context = generateTracingContext(mockRum);
 
       final headers = getTracingHeaders(
@@ -260,7 +260,7 @@ void main() {
   );
 
   test('Default for tracing headers is TraceContextInjection.sampled', () {
-    when(() => mockRum.shouldSampleTrace(any())).thenReturn(false);
+    when(() => mockRum.shouldSampleTrace(any(), any())).thenReturn(false);
     final context = generateTracingContext(mockRum);
 
     final headers = getTracingHeaders(context, TracingHeaderType.datadog);
@@ -274,7 +274,7 @@ void main() {
   test(
     'b3 tracing headers are generated correctly { TraceContextInjection.all, unsampled }',
     () {
-      when(() => mockRum.shouldSampleTrace(any())).thenReturn(false);
+      when(() => mockRum.shouldSampleTrace(any(), any())).thenReturn(false);
       final context = generateTracingContext(mockRum);
 
       final headers = getTracingHeaders(
@@ -290,7 +290,7 @@ void main() {
   test(
     'b3 tracing headers are generated correctly { TraceContextInjection.sampled, unsampled }',
     () {
-      when(() => mockRum.shouldSampleTrace(any())).thenReturn(false);
+      when(() => mockRum.shouldSampleTrace(any(), any())).thenReturn(false);
       final context = generateTracingContext(mockRum);
 
       final headers = getTracingHeaders(
@@ -306,7 +306,7 @@ void main() {
   test(
     'b3multi tracing headers are generated correctly { TraceContextInjection.all, unsampled }',
     () {
-      when(() => mockRum.shouldSampleTrace(any())).thenReturn(false);
+      when(() => mockRum.shouldSampleTrace(any(), any())).thenReturn(false);
       final context = generateTracingContext(mockRum);
 
       final headers = getTracingHeaders(
@@ -325,7 +325,7 @@ void main() {
   test(
     'b3multi tracing headers are generated correctly { TraceContextInjection.sampled, unsampled }',
     () {
-      when(() => mockRum.shouldSampleTrace(any())).thenReturn(false);
+      when(() => mockRum.shouldSampleTrace(any(), any())).thenReturn(false);
       final context = generateTracingContext(mockRum);
 
       final headers = getTracingHeaders(
@@ -344,7 +344,7 @@ void main() {
   test(
     'traceparent tracing headers are generated correctly { TraceContextInjection.all, unsampled }',
     () {
-      when(() => mockRum.shouldSampleTrace(any())).thenReturn(false);
+      when(() => mockRum.shouldSampleTrace(any(), any())).thenReturn(false);
       final context = generateTracingContext(mockRum);
 
       final headers = getTracingHeaders(
@@ -370,7 +370,7 @@ void main() {
   test(
     'traceparent tracing headers are generated correctly { TraceContextInjection.all, unsampled }',
     () {
-      when(() => mockRum.shouldSampleTrace(any())).thenReturn(false);
+      when(() => mockRum.shouldSampleTrace(any(), any())).thenReturn(false);
       final context = generateTracingContext(mockRum);
 
       final headers = getTracingHeaders(

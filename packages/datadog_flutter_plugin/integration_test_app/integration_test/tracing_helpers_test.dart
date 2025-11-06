@@ -49,7 +49,7 @@ void main() {
   testWidgets('generateTracingContext generates proper bit values',
       (WidgetTester tester) async {
     final mockRum = MockDdRum();
-    when(() => mockRum.shouldSampleTrace(any())).thenReturn(true);
+    when(() => mockRum.shouldSampleTrace(any(), any())).thenReturn(true);
 
     final context = generateTracingContext(mockRum);
 
@@ -59,7 +59,7 @@ void main() {
   });
 
   // Check that our math works on web
-  test('Sampling decisions are deterministic', () async {
+  test('Sampling decisions are deterministic by traceId', () async {
     // Lots of extra setup to get a real version of RUM with a mock version of the Core
     final mockInternalLogger = MockInternalLogger();
     DdRumPlatform.instance = DdNoOpRumPlatform();
@@ -101,7 +101,108 @@ void main() {
       );
       final rum = await DatadogRum.enable(mockDatadogSdk, rumConfiguration);
       final tracingId = TracingId(identifier);
-      bool shouldSample = rum!.shouldSampleTrace(tracingId);
+      bool shouldSample = rum!.shouldSampleTrace(null, tracingId);
+      expect(shouldSample, expected);
+    }
+  });
+
+  // Check that our math works on web
+  test('Sampling decisions are deterministic by sessionId', () async {
+    // Lots of extra setup to get a real version of RUM with a mock version of the Core
+    final mockInternalLogger = MockInternalLogger();
+    DdRumPlatform.instance = DdNoOpRumPlatform();
+
+    final mockDatadogSdk = MockDatadogSdk();
+    registerFallbackValue(DatadogSdk.instance);
+    registerFallbackValue(DatadogRumConfiguration(applicationId: ''));
+    registerFallbackValue(RumErrorSource.source);
+    // ignore: invalid_use_of_internal_member
+    when(() => mockDatadogSdk.internalLogger).thenReturn(mockInternalLogger);
+
+    final mockDatadogPlatform = MockDatadogPlatform();
+    when(() => mockDatadogPlatform.updateTelemetryConfiguration(any(), any()))
+        .thenAnswer((_) => Future.value());
+    when(() => mockDatadogSdk.platform).thenReturn(mockDatadogPlatform);
+
+    final mockRumPlatform = MockRumPlatform();
+    when(() => mockRumPlatform.setInternalViewAttribute(any(), any()))
+        .thenAnswer((_) => Future.value());
+
+    // The numbers used in the session UUID are the same numbers truncated to 48 bits,
+    // which sometimes results in a different sampling decision. Created using this program:
+    // https://go.dev/play/p/lUl2SiOHxfZ
+    final inputs = <(String, BigInt, double, bool)>[
+      (
+        '11111111-2222-3333-4444-822107fcfd52',
+        BigInt.parse('5577006791947779410'),
+        94.050909,
+        true
+      ),
+      (
+        '11111111-2222-3333-4444-4dc76695721d',
+        BigInt.parse('15352856648520921629'),
+        43.771419,
+        true
+      ),
+      (
+        '11111111-2222-3333-4444-858149c6e2d1',
+        BigInt.parse('3916589616287113937'),
+        68.682307,
+        true
+      ),
+      (
+        '11111111-2222-3333-4444-cb397916001e',
+        BigInt.parse('9828766684487745566'),
+        15.651925,
+        false
+      ),
+      (
+        '11111111-2222-3333-4444-7f48392907a0',
+        BigInt.parse('894385949183117216'),
+        30.091186,
+        true
+      ),
+      (
+        '11111111-2222-3333-4444-7cc6f3875d04',
+        BigInt.parse('4751997750760398084'),
+        81.363996,
+        true
+      ),
+      (
+        '11111111-2222-3333-4444-ffa2ba517936',
+        BigInt.parse('11199607447739267382'),
+        38.065719,
+        true
+      ),
+      (
+        '11111111-2222-3333-4444-21587cb3ad0b',
+        BigInt.parse('12156940908066221323'),
+        46.888984,
+        false
+      ),
+      (
+        '11111111-2222-3333-4444-768b7c4e0b68',
+        BigInt.parse('11833901312327420776'),
+        29.310186,
+        false
+      ),
+      (
+        '11111111-2222-3333-4444-3f2525632186',
+        BigInt.parse('6263450610539110790'),
+        21.855305,
+        false
+      ),
+    ];
+
+    for (final (sessionId, identifier, sampleRate, expected) in inputs) {
+      final rumConfiguration = DatadogRumConfiguration(
+        applicationId: 'applicationId',
+        traceSampleRate: sampleRate,
+        detectLongTasks: false,
+      );
+      final rum = await DatadogRum.enable(mockDatadogSdk, rumConfiguration);
+      final tracingId = TracingId(identifier);
+      bool shouldSample = rum!.shouldSampleTrace(sessionId, tracingId);
       expect(shouldSample, expected);
     }
   });

@@ -205,7 +205,11 @@ public class DatadogLogsPlugin: NSObject, FlutterPlugin {
     }
 
     // Returns true if this method was handled
-    private func handleGlobalMethod(call: FlutterMethodCall, arguments: [String: Any?], result: @escaping FlutterResult) -> Bool {
+    private func handleGlobalMethod(
+        call: FlutterMethodCall,
+        arguments: [String: Any?],
+        result: @escaping FlutterResult
+    ) -> Bool {
         if call.method == "enable" {
             enable(arguments: arguments, result: result)
             return true

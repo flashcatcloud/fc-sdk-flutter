@@ -5,6 +5,7 @@
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 
 import '../../datadog_internal.dart';
 import '../android/android_rum_event_mapper.dart';
@@ -103,4 +104,16 @@ abstract class RumMapperProxy {
     }
     return null;
   }
+}
+
+abstract class RumMethodChannelMapperProxy extends RumMapperProxy {
+  RumMethodChannelMapperProxy({
+    super.viewEventMapper,
+    super.actionEventMapper,
+    super.resourceEventMapper,
+    super.errorEventMapper,
+    super.longTaskEventMapper,
+  }) : super();
+
+  Future<dynamic> handleMethodCall(MethodCall methodCall);
 }

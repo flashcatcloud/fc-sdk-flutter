@@ -23,8 +23,9 @@ enum RumHttpMethod { post, get, head, put, delete, patch }
 
 RumHttpMethod rumMethodFromMethodString(String value) {
   var lowerValue = value.toLowerCase();
-  return RumHttpMethod.values
-      .firstWhere((e) => e.toString() == 'RumHttpMethod.$lowerValue');
+  return RumHttpMethod.values.firstWhere(
+    (e) => e.toString() == 'RumHttpMethod.$lowerValue',
+  );
 }
 
 /// Describes the type of a RUM Action.
@@ -60,7 +61,7 @@ enum RumResourceType {
   js,
   media,
   other,
-  native
+  native,
 }
 
 RumResourceType resourceTypeFromContentType(ContentType? type) {
@@ -128,8 +129,15 @@ class DatadogRum {
 
   final InvMetricProvider _invMetricProvider = InvMetricProvider();
 
+  /// For internal use only. If you want an accurate sessionId,
+  /// use [getCurrentSessionId].
+  @internal
+  String? get cachedSessionId => _platform.cachedSessionId;
+
   static Future<DatadogRum?> enable(
-      DatadogSdk core, DatadogRumConfiguration configuration) async {
+    DatadogSdk core,
+    DatadogRumConfiguration configuration,
+  ) async {
     DatadogRum? rum;
     await wrapAsync('rum.enable', core.internalLogger, null, () {
       DdRumPlatform.instance.enable(core, configuration);
@@ -141,10 +149,10 @@ class DatadogRum {
 
   @internal
   DatadogRum.fromExisting(DatadogSdk core, DatadogAttachConfiguration config)
-      : traceSampleRate = config.traceSampleRate,
-        _maxSampledTraceId = _getMaxTraceId(config.traceSampleRate),
-        traceContextInjection = config.traceContextInjection,
-        logger = core.internalLogger {
+    : traceSampleRate = config.traceSampleRate,
+      _maxSampledTraceId = _getMaxTraceId(config.traceSampleRate),
+      traceContextInjection = config.traceContextInjection,
+      logger = core.internalLogger {
     _init(
       core: core,
       detectLongTasks: config.detectLongTasks,
@@ -154,10 +162,10 @@ class DatadogRum {
   }
 
   DatadogRum._(DatadogSdk core, DatadogRumConfiguration configuration)
-      : traceSampleRate = configuration.traceSampleRate,
-        _maxSampledTraceId = _getMaxTraceId(configuration.traceSampleRate),
-        traceContextInjection = configuration.traceContextInjection,
-        logger = core.internalLogger {
+    : traceSampleRate = configuration.traceSampleRate,
+      _maxSampledTraceId = _getMaxTraceId(configuration.traceSampleRate),
+      traceContextInjection = configuration.traceContextInjection,
+      logger = core.internalLogger {
     _init(
       core: core,
       detectLongTasks: configuration.detectLongTasks,
@@ -172,8 +180,9 @@ class DatadogRum {
     required double longTaskThreshold,
     required bool reportFlutterPerformance,
   }) {
-    final isBackgroundIsolate =
-        kIsWeb ? false : ServicesBinding.rootIsolateToken == null;
+    final isBackgroundIsolate = kIsWeb
+        ? false
+        : ServicesBinding.rootIsolateToken == null;
     // Don't allow initialization of foreground stuff in background isolates
     if (!isBackgroundIsolate) {
       // Never use long task observer on web -- the Browser SDK should
@@ -186,20 +195,24 @@ class DatadogRum {
         _longTaskObserver!.init();
       }
       if (reportFlutterPerformance) {
-        ambiguate(SchedulerBinding.instance)
-            ?.addTimingsCallback(_timingsCallback);
+        ambiguate(
+          SchedulerBinding.instance,
+        )?.addTimingsCallback(_timingsCallback);
       }
 
       core.updateConfigurationInfo(
-          LateConfigurationProperty.trackFlutterPerformance,
-          reportFlutterPerformance);
+        LateConfigurationProperty.trackFlutterPerformance,
+        reportFlutterPerformance,
+      );
       core.updateConfigurationInfo(
-          LateConfigurationProperty.trackCrossPlatformLongTasks,
-          detectLongTasks);
+        LateConfigurationProperty.trackCrossPlatformLongTasks,
+        detectLongTasks,
+      );
     } else {
       if (detectLongTasks || reportFlutterPerformance) {
         logger.warn(
-            'Attaching to the DatadogSdk from a background isolate does not support detecting long tasks or reporting Flutter performance.');
+          'Attaching to the DatadogSdk from a background isolate does not support detecting long tasks or reporting Flutter performance.',
+        );
       }
     }
   }
@@ -216,8 +229,12 @@ class DatadogRum {
   /// Get the current active session ID. The session ID will be null if no
   /// session is active or if the session has been sampled out.
   Future<String?> getCurrentSessionId() {
-    return wrapAsync('rum.getCurrentSessionId', logger, null,
-        () => _platform.getCurrentSessionId());
+    return wrapAsync(
+      'rum.getCurrentSessionId',
+      logger,
+      null,
+      () => _platform.getCurrentSessionId(),
+    );
   }
 
   /// Notifies that the View identified by [key] starts being presented to the
@@ -226,8 +243,11 @@ class DatadogRum {
   /// who's values must be supported by [StandardMessageCodec].
   ///
   /// The [key] passed here must match the [key] passed to [stopView] later.
-  void startView(String key,
-      [String? name, Map<String, Object?> attributes = const {}]) {
+  void startView(
+    String key, [
+    String? name,
+    Map<String, Object?> attributes = const {},
+  ]) {
     name ??= key;
     final currentTime = timeProvider.now();
     _currentViewInfo = _ViewInfo(key, name, currentTime);
@@ -295,10 +315,13 @@ class DatadogRum {
     wrap('rum.addError', logger, attributes, () {
       final currentTime = timeProvider.now();
       return _platform.addError(
-          currentTime, error, source, stackTrace, errorType, {
-        DatadogPlatformAttributeKey.errorSourceType: 'flutter',
-        ...attributes
-      });
+        currentTime,
+        error,
+        source,
+        stackTrace,
+        errorType,
+        {DatadogPlatformAttributeKey.errorSourceType: 'flutter', ...attributes},
+      );
     });
   }
 
@@ -323,10 +346,13 @@ class DatadogRum {
     wrap('rum.addErrorInfo', logger, attributes, () {
       final currentTime = timeProvider.now();
       return _platform.addErrorInfo(
-          currentTime, message, source, stackTrace, errorType, {
-        DatadogPlatformAttributeKey.errorSourceType: 'flutter',
-        ...attributes
-      });
+        currentTime,
+        message,
+        source,
+        stackTrace,
+        errorType,
+        {DatadogPlatformAttributeKey.errorSourceType: 'flutter', ...attributes},
+      );
     });
   }
 
@@ -356,12 +382,21 @@ class DatadogRum {
   /// and should be sent to [stopResource] or
   /// [stopResourceWithError] / [stopResourceWithErrorInfo] when
   /// resource loading is complete.
-  void startResource(String key, RumHttpMethod httpMethod, String url,
-      [Map<String, Object?> attributes = const {}]) {
+  void startResource(
+    String key,
+    RumHttpMethod httpMethod,
+    String url, [
+    Map<String, Object?> attributes = const {},
+  ]) {
     wrap('rum.startResource', logger, attributes, () {
       final currentTime = timeProvider.now();
       return _platform.startResource(
-          currentTime, key, httpMethod, url, attributes);
+        currentTime,
+        key,
+        httpMethod,
+        url,
+        attributes,
+      );
     });
   }
 
@@ -369,36 +404,63 @@ class DatadogRum {
   /// successfully and supplies additional information about the Resource loaded,
   /// including its [kind], the [statusCode] of the response, the [size] of the
   /// Resource, and any other custom [attributes] to attach to the resource.
-  void stopResource(String key, int? statusCode, RumResourceType kind,
-      [int? size, Map<String, Object?> attributes = const {}]) {
+  void stopResource(
+    String key,
+    int? statusCode,
+    RumResourceType kind, [
+    int? size,
+    Map<String, Object?> attributes = const {},
+  ]) {
     wrap('rum.stopResource', logger, attributes, () {
       final currentTime = timeProvider.now();
       return _platform.stopResource(
-          currentTime, key, statusCode, kind, size, attributes);
+        currentTime,
+        key,
+        statusCode,
+        kind,
+        size,
+        attributes,
+      );
     });
   }
 
   /// Notifies that the Resource identified by [key] stopped being loaded with an
   /// Exception specified by [error]. You can optionally supply custom
   /// [attributes] to attach to this Resource.
-  void stopResourceWithError(String key, Exception error,
-      [Map<String, Object?> attributes = const {}]) {
+  void stopResourceWithError(
+    String key,
+    Exception error, [
+    Map<String, Object?> attributes = const {},
+  ]) {
     wrap('rum.stopResourceWithError', logger, attributes, () {
       final currentTime = timeProvider.now();
       return _platform.stopResourceWithError(
-          currentTime, key, error, attributes);
+        currentTime,
+        key,
+        error,
+        attributes,
+      );
     });
   }
 
   /// Notifies that the Resource identified by [key] stopped being loaded with
   /// the supplied [message]. You can optionally supply custom [attributes] to
   /// attach to this Resource.
-  void stopResourceWithErrorInfo(String key, String message, String type,
-      [Map<String, Object?> attributes = const {}]) {
+  void stopResourceWithErrorInfo(
+    String key,
+    String message,
+    String type, [
+    Map<String, Object?> attributes = const {},
+  ]) {
     wrap('rum.stopResourceWithErrorInfo', logger, attributes, () {
       final currentTime = timeProvider.now();
       return _platform.stopResourceWithErrorInfo(
-          currentTime, key, message, type, attributes);
+        currentTime,
+        key,
+        message,
+        type,
+        attributes,
+      );
     });
   }
 
@@ -407,13 +469,19 @@ class DatadogRum {
   /// This is used to a track discrete User Actions (e.g. "tap") specified by
   /// [type]. The [name] and [attributes] supplied will be associated with this
   /// user action.
-  void addAction(RumActionType type, String name,
-      [Map<String, Object?> attributes = const {}]) {
+  void addAction(
+    RumActionType type,
+    String name, [
+    Map<String, Object?> attributes = const {},
+  ]) {
     wrap('rum.addAction', logger, attributes, () {
       final currentTime = timeProvider.now();
       if (_currentViewInfo != null) {
         _invMetricProvider.trackAction(
-            _currentViewInfo!.viewKey, currentTime, type);
+          _currentViewInfo!.viewKey,
+          currentTime,
+          type,
+        );
       }
       return _platform.addAction(currentTime, type, name, attributes);
     });
@@ -424,8 +492,11 @@ class DatadogRum {
   /// Action must be stopped with [stopAction], and will be stopped
   /// automatically if it lasts for more than 10 seconds. You can optionally
   /// provide custom [attributes].
-  void startAction(RumActionType type, String name,
-      [Map<String, Object?> attributes = const {}]) {
+  void startAction(
+    RumActionType type,
+    String name, [
+    Map<String, Object?> attributes = const {},
+  ]) {
     wrap('rum.startAction', logger, attributes, () {
       final currentTime = timeProvider.now();
       return _platform.startAction(currentTime, type, name, attributes);
@@ -435,8 +506,11 @@ class DatadogRum {
   /// Notifies that the User Action of [type], named [name] has stopped.
   /// This is used to stop tracking long running user actions (e.g. "scroll"),
   /// started with [startAction].
-  void stopAction(RumActionType type, String name,
-      [Map<String, Object?> attributes = const {}]) {
+  void stopAction(
+    RumActionType type,
+    String name, [
+    Map<String, Object?> attributes = const {},
+  ]) {
     wrap('rum.stopAction', logger, attributes, () {
       final currentTime = timeProvider.now();
       return _platform.stopAction(currentTime, type, name, attributes);
@@ -489,7 +563,7 @@ class DatadogRum {
   ///
   /// This is used by Datadog tracing plugins like `datadog_tracing_http_client`
   /// to add the proper headers to network requests.
-  bool shouldSampleTrace(TracingId traceId) {
+  bool shouldSampleTrace(String? sessionId, TracingId traceId) {
     if (traceSampleRate >= 100) return true;
     if (traceSampleRate <= 0) return false;
 
@@ -497,11 +571,17 @@ class DatadogRum {
     //
     //   (identifier * knuthFactor) < max_trace_id
     //
-    // We use the low bits of the trace id in case it is 128 bits, to be consistent with the C++ implementation:
-    // https://github.com/DataDog/dd-trace-cpp/blob/159629edc438ae45f2bb318eb7bd51abd05e94b5/src/datadog/trace_sampler.cpp#L57
-    //
-    // The trace id also must be truncated back down to 64-bits after hashing.
-    final lowBits = traceId.value & _maxTraceId;
+    // We use the low 48 bits from the session id if it exists, or the low bits of the trace id if it doesn't
+    BigInt? lowBits;
+
+    if (sessionId != null) {
+      final uuidParts = sessionId.split('-');
+      if (uuidParts.length == 5) {
+        lowBits = BigInt.tryParse(uuidParts[4], radix: 16);
+      }
+    }
+
+    lowBits ??= traceId.value & _maxTraceId;
 
     return ((lowBits * _knuthFactor) & _maxTraceId) < _maxSampledTraceId;
   }
@@ -527,17 +607,22 @@ class DatadogRum {
     if (_currentViewInfo case final currentViewInfo?) {
       if (viewKey == currentViewInfo.viewKey) {
         final currentTime = timeProvider.now();
-        final fbcTime =
-            (currentTime.difference(currentViewInfo.viewStart)).inNanoseconds;
+        final fbcTime = (currentTime.difference(
+          currentViewInfo.viewStart,
+        )).inNanoseconds;
         wrap('rum.setInternalViewAttribute', logger, null, () {
           _platform.setInternalViewAttribute(
-              DatadogRumPlatformAttributeKey.firstBuildComplete, fbcTime);
+            DatadogRumPlatformAttributeKey.firstBuildComplete,
+            fbcTime,
+          );
           _invMetricProvider.trackViewFirstBuildComplete(viewKey, currentTime);
 
           final invValue = _invMetricProvider.valueForView(viewKey);
           if (invValue != null) {
             _platform.setInternalViewAttribute(
-                DatadogRumPlatformAttributeKey.customInvValue, invValue);
+              DatadogRumPlatformAttributeKey.customInvValue,
+              invValue,
+            );
           }
         });
       }
@@ -549,10 +634,12 @@ class DatadogRum {
       var buildTimes = <double>[];
       var rasterTimes = <double>[];
       for (final timing in timings) {
-        buildTimes.add(timing.buildDuration.inMicroseconds /
-            Duration.microsecondsPerSecond);
-        rasterTimes.add(timing.rasterDuration.inMicroseconds /
-            Duration.microsecondsPerSecond);
+        buildTimes.add(
+          timing.buildDuration.inMicroseconds / Duration.microsecondsPerSecond,
+        );
+        rasterTimes.add(
+          timing.rasterDuration.inMicroseconds / Duration.microsecondsPerSecond,
+        );
       }
 
       wrap('rum.updatePerformanceMetrics', logger, null, () {
