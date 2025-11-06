@@ -75,7 +75,9 @@ Future<void> main() async {
   }
 
   await DatadogSdk.runApp(configuration, TrackingConsent.granted, () async {
-    final dio = Dio()
+    final dio = Dio(BaseOptions(
+      validateStatus: (status) => status != null && status < 300,
+    ))
       ..addDatadogInterceptor(
         DatadogSdk.instance,
       );

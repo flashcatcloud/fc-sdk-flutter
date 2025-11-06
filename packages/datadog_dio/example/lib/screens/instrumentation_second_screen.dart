@@ -64,6 +64,15 @@ class _InstrumentationSecondScreenState
     });
     await widget.dio.postUri(Uri.parse(_config.thirdPartyPostUrl));
 
+    setState(() {
+      _buttonText = 'Third party missing url';
+    });
+    try {
+      await widget.dio.getUri(Uri.parse(_config.thirdPartyMissingUrl));
+    } catch (_) {
+      // Do nothing, this will throw from Dio
+    }
+
     await Future.delayed(const Duration(milliseconds: 100));
     setState(() {
       _buttonText = 'All Done';

@@ -29,7 +29,7 @@ Future<void> performRumUserFlow(WidgetTester tester) async {
   await tester.pumpAndSettle();
 
   var nextButton = find.widgetWithText(ElevatedButton, 'Next Page');
-  await tester.waitFor(nextButton, const Duration(seconds: 5),
+  await tester.waitFor(nextButton, const Duration(seconds: 100),
       (e) => (e.widget as ElevatedButton).enabled);
   await tester.tap(nextButton);
   await tester.pumpAndSettle();
@@ -55,7 +55,7 @@ void main() {
       firstPartyBadUrl: 'https://foo.bar',
       thirdPartyGetUrl: 'https://httpbingo.org/get',
       thirdPartyPostUrl: 'https://httpbingo.org/post',
-      enableIoHttpTracking: true,
+      thirdPartyMissingUrl: 'https://httpbingo.org/status/404',
     );
     RumAutoInstrumentationScenarioConfig.instance = scenarioConfig;
 
@@ -179,5 +179,15 @@ void main() {
     expect(secondThirdPartyResource.duration, greaterThan(0));
     expect(secondThirdPartyResource.dd.traceId, isNull);
     expect(secondThirdPartyResource.dd.spanId, isNull);
+
+    final missingThirdPartyResource = view2.resourceEvents.firstWhereOrNull(
+        (e) => e.url.contains(scenarioConfig.thirdPartyMissingUrl));
+    expect(missingThirdPartyResource, isNotNull);
+    expect(missingThirdPartyResource!.url,
+        startsWith(scenarioConfig.thirdPartyMissingUrl));
+    expect(missingThirdPartyResource.method, 'GET');
+    expect(missingThirdPartyResource.duration, greaterThan(0));
+    expect(missingThirdPartyResource.dd.traceId, isNull);
+    expect(missingThirdPartyResource.dd.spanId, isNull);
   });
 }

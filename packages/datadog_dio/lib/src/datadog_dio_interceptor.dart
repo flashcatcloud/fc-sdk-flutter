@@ -49,26 +49,7 @@ class DatadogDioInterceptor extends Interceptor {
     final rumKey = response.requestOptions.extra[datadogRumExtraKey];
     if (!kIsWeb && rum != null && rumKey is String) {
       try {
-        final contentTypeHeader =
-            response.headers[Headers.contentTypeHeader]?.firstOrNull;
-        final contentType = contentTypeHeader != null
-            ? ContentType.parse(contentTypeHeader)
-            : ContentType.text;
-        final resourceType = resourceTypeFromContentType(contentType);
-        int? contentLength;
-        final contentLengthHeader =
-            response.headers[Headers.contentLengthHeader]?.firstOrNull;
-        if (contentLengthHeader != null) {
-          contentLength = int.tryParse(contentLengthHeader);
-        }
-        final attributes = attributesProvider?.onResponse(response) ?? {};
-        rum.stopResource(
-          rumKey,
-          response.statusCode,
-          resourceType,
-          contentLength,
-          attributes,
-        );
+        _stopWithResponse(rum, rumKey, response);
       } catch (e, st) {
         datadogSdk.internalLogger.sendToDatadog(
           '$DatadogDioInterceptor encountered an error while attempting'
@@ -87,9 +68,18 @@ class DatadogDioInterceptor extends Interceptor {
     final rumKey = err.requestOptions.extra[datadogRumExtraKey];
     if (!kIsWeb && rum != null && rumKey is String) {
       try {
-        final attributes = attributesProvider?.onError(err) ?? {};
-        rum.stopResourceWithErrorInfo(
-            rumKey, err.toString(), err.type.toString(), attributes);
+        if (err.type == DioExceptionType.badResponse &&
+            err.response?.statusCode != null) {
+          // Response completed successfully, but Dio throws an exception for
+          // certain status codes if ValidateStatus is configured. This breaks
+          // distributed tracing, so we stop our resource properly instead of
+          // adding it as an error.
+          _stopWithResponse(rum, rumKey, err.response!);
+        } else {
+          final attributes = attributesProvider?.onError(err) ?? {};
+          rum.stopResourceWithErrorInfo(
+              rumKey, err.toString(), err.type.toString(), attributes);
+        }
       } catch (e, st) {
         datadogSdk.internalLogger.sendToDatadog(
           '$DatadogDioInterceptor encountered an error while attempting'
@@ -100,6 +90,30 @@ class DatadogDioInterceptor extends Interceptor {
       }
     }
     super.onError(err, handler);
+  }
+
+  void _stopWithResponse(
+      DatadogRum rum, String rumKey, Response<dynamic> response) {
+    final contentTypeHeader =
+        response.headers[Headers.contentTypeHeader]?.firstOrNull;
+    final contentType = contentTypeHeader != null
+        ? ContentType.parse(contentTypeHeader)
+        : ContentType.text;
+    final resourceType = resourceTypeFromContentType(contentType);
+    int? contentLength;
+    final contentLengthHeader =
+        response.headers[Headers.contentLengthHeader]?.firstOrNull;
+    if (contentLengthHeader != null) {
+      contentLength = int.tryParse(contentLengthHeader);
+    }
+    final attributes = attributesProvider?.onResponse(response) ?? {};
+    rum.stopResource(
+      rumKey,
+      response.statusCode,
+      resourceType,
+      contentLength,
+      attributes,
+    );
   }
 
   void _trackRequest(RequestOptions options, DatadogRum rum) {
