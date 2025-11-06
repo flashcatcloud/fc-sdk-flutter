@@ -8,7 +8,7 @@ class RumAutoInstrumentationScenarioConfig {
   final String firstPartyBadUrl;
   final String thirdPartyGetUrl;
   final String thirdPartyPostUrl;
-  final bool enableIoHttpTracking;
+  final String thirdPartyMissingUrl;
 
   RumAutoInstrumentationScenarioConfig({
     this.firstPartyHosts = const ['foo.bar'],
@@ -17,7 +17,7 @@ class RumAutoInstrumentationScenarioConfig {
     this.firstPartyBadUrl = 'https://foo.bar',
     this.thirdPartyGetUrl = 'https://httpbingo.org/get',
     this.thirdPartyPostUrl = 'https://httpbingo.org/post',
-    this.enableIoHttpTracking = true,
+    this.thirdPartyMissingUrl = 'https://httpbingo.org/status/404',
   });
 
   static RumAutoInstrumentationScenarioConfig? _instance;

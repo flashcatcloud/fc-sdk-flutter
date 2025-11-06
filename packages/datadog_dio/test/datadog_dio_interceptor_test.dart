@@ -412,6 +412,54 @@ void main() {
           rumKey, dioErrorString, dioErrorTypeString, {'my_attribute': 100}));
     });
 
+    test('the interceptor stops resources as non-errors on badResponse', () {
+      // Given
+      final interceptor = DatadogDioInterceptor(datadogSdk: mockDatadog);
+      final requestOptions =
+          RequestOptions(path: 'https://test_uri', method: 'POST', headers: {});
+      final rumKey = randomString();
+      requestOptions.extra[DatadogDioInterceptor.datadogRumExtraKey] = rumKey;
+      final response =
+          Response(requestOptions: requestOptions, statusCode: 404);
+
+      // When
+      final dioException = DioException.badResponse(
+          statusCode: 404, requestOptions: requestOptions, response: response);
+      final handler = ErrorInterceptorHandlerMock();
+      interceptor.onError(dioException, handler);
+
+      // Then
+      verify(() => mockRum.stopResource(rumKey, 404, any()));
+      verify(() => handler.next(dioException));
+    });
+
+    test('the interceptor adds provided attributes as non-error on badResponse',
+        () {
+      // Given
+      final attributeProvider = DatadogDioAttributeProviderMock();
+      when(() => attributeProvider.onResponse(any()))
+          .thenReturn({'my_attribute': 100});
+      final interceptor = DatadogDioInterceptor(
+          datadogSdk: mockDatadog, attributesProvider: attributeProvider);
+      final requestOptions =
+          RequestOptions(path: 'https://test_uri', method: 'POST', headers: {});
+      final rumKey = randomString();
+      requestOptions.extra[DatadogDioInterceptor.datadogRumExtraKey] = rumKey;
+      final response =
+          Response(requestOptions: requestOptions, statusCode: 404);
+
+      // When
+      final dioException = DioException.badResponse(
+          statusCode: 404, requestOptions: requestOptions, response: response);
+      final handler = ErrorInterceptorHandlerMock();
+      interceptor.onError(dioException, handler);
+
+      // Then
+      verify(() => mockRum
+          .stopResource(rumKey, 404, any(), any(), {'my_attribute': 100}));
+      verify(() => handler.next(dioException));
+    });
+
     test('the interceptor ignores requests that match a regex', () {
       // Given
       final interceptor = DatadogDioInterceptor(
