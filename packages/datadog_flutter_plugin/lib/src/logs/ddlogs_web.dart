@@ -17,7 +17,10 @@ import 'ddweb_helpers.dart';
 class DdLogsWeb extends DdLogsPlatform {
   final Map<String, Logger> _activeLoggers = {};
 
-  static void initLogs(DatadogConfiguration configuration) {
+  static void initLogs(
+    DatadogConfiguration configuration,
+    TrackingConsent trackingConsent,
+  ) {
     DD_LOGS?.init(
       _LogInitOptions(
         clientToken: configuration.clientToken,
@@ -26,6 +29,7 @@ class DdLogsWeb extends DdLogsPlatform {
         site: siteStringForSite(configuration.site),
         service: configuration.service,
         version: configuration.versionTag,
+        trackingConsent: trackingConsent.webValue(),
       ),
     );
   }
@@ -161,6 +165,7 @@ extension type _LogInitOptions._(JSObject _) implements JSObject {
   external String? get proxy;
   external String? get service;
   external String? get version;
+  external String? get trackingConsent;
 
   external factory _LogInitOptions({
     String clientToken,
@@ -169,6 +174,7 @@ extension type _LogInitOptions._(JSObject _) implements JSObject {
     String? service,
     String? proxy,
     String? version,
+    String? trackingConsent,
   });
 }
 
@@ -201,6 +207,8 @@ extension type _DdLogs._(JSObject _) implements JSObject {
     String name,
     _JsLoggerConfiguration? configuration,
   );
+
+  external void setTrackingConsent(String consent);
 }
 
 @JS()

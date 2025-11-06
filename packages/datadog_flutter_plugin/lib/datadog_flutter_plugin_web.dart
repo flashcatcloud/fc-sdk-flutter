@@ -40,7 +40,10 @@ class DatadogSdkWeb extends DatadogSdkPlatform {
   Future<void> setSdkVerbosity(CoreLoggerLevel verbosity) async {}
 
   @override
-  Future<void> setTrackingConsent(TrackingConsent trackingConsent) async {}
+  Future<void> setTrackingConsent(TrackingConsent trackingConsent) async {
+    DD_LOGS?.setTrackingConsent(trackingConsent.webValue());
+    DD_RUM?.setTrackingConsent(trackingConsent.webValue());
+  }
 
   @override
   Future<void> setUserInfo(
@@ -75,7 +78,7 @@ class DatadogSdkWeb extends DatadogSdkPlatform {
     bool logsInitialized = false;
     try {
       if (configuration.loggingConfiguration != null) {
-        DdLogsWeb.initLogs(configuration);
+        DdLogsWeb.initLogs(configuration, trackingConsent);
         logsInitialized = true;
       }
     } catch (e) {
@@ -93,6 +96,7 @@ class DatadogSdkWeb extends DatadogSdkPlatform {
           configuration,
           configuration.rumConfiguration!,
           internalLogger,
+          trackingConsent,
         );
         rumInitialized = true;
       }
