@@ -52,7 +52,8 @@ class DatadogGrpcInterceptor extends ClientInterceptor {
     final rumKey = uuid.v1();
     final headerTypes = _datadog.headerTypesForHost(Uri.parse(fullPath));
 
-    final mergedHeaders = options.metadata;
+    // Copy metadata to make it mutable
+    final mergedHeaders = Map<String, String>.from(options.metadata);
 
     if (rum != null) {
       var attributes = <String, Object?>{
