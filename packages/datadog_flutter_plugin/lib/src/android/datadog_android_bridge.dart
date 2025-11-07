@@ -1163,11 +1163,13 @@ class DatadogRumPlugin extends jni$_.JObject {
 
   /// from: `public final com.datadoghq.flutter.DatadogSdkPlugin$ConfigurationTelemetryOverrides getTelemetryOverrides()`
   /// The returned object must be released after use, by calling the [release] method.
-  jni$_.JObject? getTelemetryOverrides() {
+  DatadogSdkPlugin$ConfigurationTelemetryOverrides? getTelemetryOverrides() {
     return _getTelemetryOverrides(
       reference.pointer,
       _id_getTelemetryOverrides as jni$_.JMethodIDPtr,
-    ).object<jni$_.JObject?>(const jni$_.JObjectNullableType());
+    ).object<DatadogSdkPlugin$ConfigurationTelemetryOverrides?>(
+      const $DatadogSdkPlugin$ConfigurationTelemetryOverrides$NullableType(),
+    );
   }
 
   static final _id_setTelemetryOverrides = _class.instanceMethodId(
@@ -1194,7 +1196,10 @@ class DatadogRumPlugin extends jni$_.JObject {
           >();
 
   /// from: `public final void setTelemetryOverrides(com.datadoghq.flutter.DatadogSdkPlugin$ConfigurationTelemetryOverrides configurationTelemetryOverrides)`
-  void setTelemetryOverrides(jni$_.JObject? configurationTelemetryOverrides) {
+  void setTelemetryOverrides(
+    DatadogSdkPlugin$ConfigurationTelemetryOverrides?
+    configurationTelemetryOverrides,
+  ) {
     final _$configurationTelemetryOverrides =
         configurationTelemetryOverrides?.reference ?? jni$_.jNullReference;
     _setTelemetryOverrides(
@@ -1301,6 +1306,41 @@ class DatadogRumPlugin extends jni$_.JObject {
       _id_onMethodCall as jni$_.JMethodIDPtr,
       _$methodCall.pointer,
       _$result.pointer,
+    ).check();
+  }
+
+  static final _id_onSessionStarted = _class.instanceMethodId(
+    r'onSessionStarted',
+    r'(Ljava/lang/String;Z)V',
+  );
+
+  static final _onSessionStarted =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JThrowablePtr Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+                jni$_.VarArgs<(jni$_.Pointer<jni$_.Void>, jni$_.Int32)>,
+              )
+            >
+          >('globalEnv_CallVoidMethod')
+          .asFunction<
+            jni$_.JThrowablePtr Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+              jni$_.Pointer<jni$_.Void>,
+              int,
+            )
+          >();
+
+  /// from: `public void onSessionStarted(java.lang.String string, boolean z)`
+  void onSessionStarted(jni$_.JString string, bool z) {
+    final _$string = string.reference;
+    _onSessionStarted(
+      reference.pointer,
+      _id_onSessionStarted as jni$_.JMethodIDPtr,
+      _$string.pointer,
+      z ? 1 : 0,
     ).check();
   }
 
@@ -2430,5 +2470,4698 @@ final class $DatadogLogEventMapper$Type
   bool operator ==(Object other) {
     return other.runtimeType == ($DatadogLogEventMapper$Type) &&
         other is $DatadogLogEventMapper$Type;
+  }
+}
+
+/// from: `com.datadoghq.flutter.DatadogSdkPlugin$Companion`
+class DatadogSdkPlugin$Companion extends jni$_.JObject {
+  @jni$_.internal
+  @core$_.override
+  final jni$_.JObjType<DatadogSdkPlugin$Companion> $type;
+
+  @jni$_.internal
+  DatadogSdkPlugin$Companion.fromReference(jni$_.JReference reference)
+    : $type = type,
+      super.fromReference(reference);
+
+  static final _class = jni$_.JClass.forName(
+    r'com/datadoghq/flutter/DatadogSdkPlugin$Companion',
+  );
+
+  /// The type which includes information such as the signature of this class.
+  static const nullableType = $DatadogSdkPlugin$Companion$NullableType();
+  static const type = $DatadogSdkPlugin$Companion$Type();
+  static final _id_getPreviousConfiguration = _class.instanceMethodId(
+    r'getPreviousConfiguration',
+    r'()Ljava/util/Map;',
+  );
+
+  static final _getPreviousConfiguration =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallObjectMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public final java.util.Map<java.lang.String, java.lang.Object> getPreviousConfiguration()`
+  /// The returned object must be released after use, by calling the [release] method.
+  jni$_.JMap<jni$_.JString, jni$_.JObject?>? getPreviousConfiguration() {
+    return _getPreviousConfiguration(
+      reference.pointer,
+      _id_getPreviousConfiguration as jni$_.JMethodIDPtr,
+    ).object<jni$_.JMap<jni$_.JString, jni$_.JObject?>?>(
+      const jni$_.JMapNullableType<jni$_.JString, jni$_.JObject?>(
+        jni$_.JStringType(),
+        jni$_.JObjectNullableType(),
+      ),
+    );
+  }
+
+  static final _id_setPreviousConfiguration = _class.instanceMethodId(
+    r'setPreviousConfiguration',
+    r'(Ljava/util/Map;)V',
+  );
+
+  static final _setPreviousConfiguration =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JThrowablePtr Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+                jni$_.VarArgs<(jni$_.Pointer<jni$_.Void>,)>,
+              )
+            >
+          >('globalEnv_CallVoidMethod')
+          .asFunction<
+            jni$_.JThrowablePtr Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+              jni$_.Pointer<jni$_.Void>,
+            )
+          >();
+
+  /// from: `public final void setPreviousConfiguration(java.util.Map<java.lang.String, ? extends java.lang.Object> map)`
+  void setPreviousConfiguration(
+    jni$_.JMap<jni$_.JString, jni$_.JObject?>? map,
+  ) {
+    final _$map = map?.reference ?? jni$_.jNullReference;
+    _setPreviousConfiguration(
+      reference.pointer,
+      _id_setPreviousConfiguration as jni$_.JMethodIDPtr,
+      _$map.pointer,
+    ).check();
+  }
+
+  static final _id_getCoreContext = _class.instanceMethodId(
+    r'getCoreContext',
+    r'()Lcom/datadog/android/api/context/DatadogContext;',
+  );
+
+  static final _getCoreContext =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallObjectMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public final com.datadog.android.api.context.DatadogContext getCoreContext()`
+  /// The returned object must be released after use, by calling the [release] method.
+  DatadogContext? getCoreContext() {
+    return _getCoreContext(
+      reference.pointer,
+      _id_getCoreContext as jni$_.JMethodIDPtr,
+    ).object<DatadogContext?>(const $DatadogContext$NullableType());
+  }
+
+  static final _id_new$ = _class.constructorId(
+    r'(Lkotlin/jvm/internal/DefaultConstructorMarker;)V',
+  );
+
+  static final _new$ =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+                jni$_.VarArgs<(jni$_.Pointer<jni$_.Void>,)>,
+              )
+            >
+          >('globalEnv_NewObject')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+              jni$_.Pointer<jni$_.Void>,
+            )
+          >();
+
+  /// from: `synthetic public void <init>(kotlin.jvm.internal.DefaultConstructorMarker defaultConstructorMarker)`
+  /// The returned object must be released after use, by calling the [release] method.
+  factory DatadogSdkPlugin$Companion(jni$_.JObject? defaultConstructorMarker) {
+    final _$defaultConstructorMarker =
+        defaultConstructorMarker?.reference ?? jni$_.jNullReference;
+    return DatadogSdkPlugin$Companion.fromReference(
+      _new$(
+        _class.reference.pointer,
+        _id_new$ as jni$_.JMethodIDPtr,
+        _$defaultConstructorMarker.pointer,
+      ).reference,
+    );
+  }
+}
+
+final class $DatadogSdkPlugin$Companion$NullableType
+    extends jni$_.JObjType<DatadogSdkPlugin$Companion?> {
+  @jni$_.internal
+  const $DatadogSdkPlugin$Companion$NullableType();
+
+  @jni$_.internal
+  @core$_.override
+  String get signature => r'Lcom/datadoghq/flutter/DatadogSdkPlugin$Companion;';
+
+  @jni$_.internal
+  @core$_.override
+  DatadogSdkPlugin$Companion? fromReference(jni$_.JReference reference) =>
+      reference.isNull
+      ? null
+      : DatadogSdkPlugin$Companion.fromReference(reference);
+  @jni$_.internal
+  @core$_.override
+  jni$_.JObjType get superType => const jni$_.JObjectType();
+
+  @jni$_.internal
+  @core$_.override
+  jni$_.JObjType<DatadogSdkPlugin$Companion?> get nullableType => this;
+
+  @jni$_.internal
+  @core$_.override
+  final superCount = 1;
+
+  @core$_.override
+  int get hashCode => ($DatadogSdkPlugin$Companion$NullableType).hashCode;
+
+  @core$_.override
+  bool operator ==(Object other) {
+    return other.runtimeType == ($DatadogSdkPlugin$Companion$NullableType) &&
+        other is $DatadogSdkPlugin$Companion$NullableType;
+  }
+}
+
+final class $DatadogSdkPlugin$Companion$Type
+    extends jni$_.JObjType<DatadogSdkPlugin$Companion> {
+  @jni$_.internal
+  const $DatadogSdkPlugin$Companion$Type();
+
+  @jni$_.internal
+  @core$_.override
+  String get signature => r'Lcom/datadoghq/flutter/DatadogSdkPlugin$Companion;';
+
+  @jni$_.internal
+  @core$_.override
+  DatadogSdkPlugin$Companion fromReference(jni$_.JReference reference) =>
+      DatadogSdkPlugin$Companion.fromReference(reference);
+  @jni$_.internal
+  @core$_.override
+  jni$_.JObjType get superType => const jni$_.JObjectType();
+
+  @jni$_.internal
+  @core$_.override
+  jni$_.JObjType<DatadogSdkPlugin$Companion?> get nullableType =>
+      const $DatadogSdkPlugin$Companion$NullableType();
+
+  @jni$_.internal
+  @core$_.override
+  final superCount = 1;
+
+  @core$_.override
+  int get hashCode => ($DatadogSdkPlugin$Companion$Type).hashCode;
+
+  @core$_.override
+  bool operator ==(Object other) {
+    return other.runtimeType == ($DatadogSdkPlugin$Companion$Type) &&
+        other is $DatadogSdkPlugin$Companion$Type;
+  }
+}
+
+/// from: `com.datadoghq.flutter.DatadogSdkPlugin$ConfigurationTelemetryOverrides`
+class DatadogSdkPlugin$ConfigurationTelemetryOverrides extends jni$_.JObject {
+  @jni$_.internal
+  @core$_.override
+  final jni$_.JObjType<DatadogSdkPlugin$ConfigurationTelemetryOverrides> $type;
+
+  @jni$_.internal
+  DatadogSdkPlugin$ConfigurationTelemetryOverrides.fromReference(
+    jni$_.JReference reference,
+  ) : $type = type,
+      super.fromReference(reference);
+
+  static final _class = jni$_.JClass.forName(
+    r'com/datadoghq/flutter/DatadogSdkPlugin$ConfigurationTelemetryOverrides',
+  );
+
+  /// The type which includes information such as the signature of this class.
+  static const nullableType =
+      $DatadogSdkPlugin$ConfigurationTelemetryOverrides$NullableType();
+  static const type = $DatadogSdkPlugin$ConfigurationTelemetryOverrides$Type();
+  static final _id_new$ = _class.constructorId(r'(ZZZZZZZLjava/lang/String;)V');
+
+  static final _new$ =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+                jni$_.VarArgs<
+                  (
+                    jni$_.Int32,
+                    jni$_.Int32,
+                    jni$_.Int32,
+                    jni$_.Int32,
+                    jni$_.Int32,
+                    jni$_.Int32,
+                    jni$_.Int32,
+                    jni$_.Pointer<jni$_.Void>,
+                  )
+                >,
+              )
+            >
+          >('globalEnv_NewObject')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+              int,
+              int,
+              int,
+              int,
+              int,
+              int,
+              int,
+              jni$_.Pointer<jni$_.Void>,
+            )
+          >();
+
+  /// from: `public void <init>(boolean z, boolean z1, boolean z2, boolean z3, boolean z4, boolean z5, boolean z6, java.lang.String string)`
+  /// The returned object must be released after use, by calling the [release] method.
+  factory DatadogSdkPlugin$ConfigurationTelemetryOverrides(
+    bool z,
+    bool z1,
+    bool z2,
+    bool z3,
+    bool z4,
+    bool z5,
+    bool z6,
+    jni$_.JString? string,
+  ) {
+    final _$string = string?.reference ?? jni$_.jNullReference;
+    return DatadogSdkPlugin$ConfigurationTelemetryOverrides.fromReference(
+      _new$(
+        _class.reference.pointer,
+        _id_new$ as jni$_.JMethodIDPtr,
+        z ? 1 : 0,
+        z1 ? 1 : 0,
+        z2 ? 1 : 0,
+        z3 ? 1 : 0,
+        z4 ? 1 : 0,
+        z5 ? 1 : 0,
+        z6 ? 1 : 0,
+        _$string.pointer,
+      ).reference,
+    );
+  }
+
+  static final _id_new$1 = _class.constructorId(
+    r'(ZZZZZZZLjava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V',
+  );
+
+  static final _new$1 =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+                jni$_.VarArgs<
+                  (
+                    jni$_.Int32,
+                    jni$_.Int32,
+                    jni$_.Int32,
+                    jni$_.Int32,
+                    jni$_.Int32,
+                    jni$_.Int32,
+                    jni$_.Int32,
+                    jni$_.Pointer<jni$_.Void>,
+                    jni$_.Int32,
+                    jni$_.Pointer<jni$_.Void>,
+                  )
+                >,
+              )
+            >
+          >('globalEnv_NewObject')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+              int,
+              int,
+              int,
+              int,
+              int,
+              int,
+              int,
+              jni$_.Pointer<jni$_.Void>,
+              int,
+              jni$_.Pointer<jni$_.Void>,
+            )
+          >();
+
+  /// from: `synthetic public void <init>(boolean z, boolean z1, boolean z2, boolean z3, boolean z4, boolean z5, boolean z6, java.lang.String string, int i, kotlin.jvm.internal.DefaultConstructorMarker defaultConstructorMarker)`
+  /// The returned object must be released after use, by calling the [release] method.
+  factory DatadogSdkPlugin$ConfigurationTelemetryOverrides.new$1(
+    bool z,
+    bool z1,
+    bool z2,
+    bool z3,
+    bool z4,
+    bool z5,
+    bool z6,
+    jni$_.JString? string,
+    int i,
+    jni$_.JObject? defaultConstructorMarker,
+  ) {
+    final _$string = string?.reference ?? jni$_.jNullReference;
+    final _$defaultConstructorMarker =
+        defaultConstructorMarker?.reference ?? jni$_.jNullReference;
+    return DatadogSdkPlugin$ConfigurationTelemetryOverrides.fromReference(
+      _new$1(
+        _class.reference.pointer,
+        _id_new$1 as jni$_.JMethodIDPtr,
+        z ? 1 : 0,
+        z1 ? 1 : 0,
+        z2 ? 1 : 0,
+        z3 ? 1 : 0,
+        z4 ? 1 : 0,
+        z5 ? 1 : 0,
+        z6 ? 1 : 0,
+        _$string.pointer,
+        i,
+        _$defaultConstructorMarker.pointer,
+      ).reference,
+    );
+  }
+
+  static final _id_getTrackViewsManually = _class.instanceMethodId(
+    r'getTrackViewsManually',
+    r'()Z',
+  );
+
+  static final _getTrackViewsManually =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallBooleanMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public final boolean getTrackViewsManually()`
+  bool getTrackViewsManually() {
+    return _getTrackViewsManually(
+      reference.pointer,
+      _id_getTrackViewsManually as jni$_.JMethodIDPtr,
+    ).boolean;
+  }
+
+  static final _id_setTrackViewsManually = _class.instanceMethodId(
+    r'setTrackViewsManually',
+    r'(Z)V',
+  );
+
+  static final _setTrackViewsManually =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JThrowablePtr Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+                jni$_.VarArgs<(jni$_.Int32,)>,
+              )
+            >
+          >('globalEnv_CallVoidMethod')
+          .asFunction<
+            jni$_.JThrowablePtr Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+              int,
+            )
+          >();
+
+  /// from: `public final void setTrackViewsManually(boolean z)`
+  void setTrackViewsManually(bool z) {
+    _setTrackViewsManually(
+      reference.pointer,
+      _id_setTrackViewsManually as jni$_.JMethodIDPtr,
+      z ? 1 : 0,
+    ).check();
+  }
+
+  static final _id_getTrackInteractions = _class.instanceMethodId(
+    r'getTrackInteractions',
+    r'()Z',
+  );
+
+  static final _getTrackInteractions =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallBooleanMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public final boolean getTrackInteractions()`
+  bool getTrackInteractions() {
+    return _getTrackInteractions(
+      reference.pointer,
+      _id_getTrackInteractions as jni$_.JMethodIDPtr,
+    ).boolean;
+  }
+
+  static final _id_setTrackInteractions = _class.instanceMethodId(
+    r'setTrackInteractions',
+    r'(Z)V',
+  );
+
+  static final _setTrackInteractions =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JThrowablePtr Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+                jni$_.VarArgs<(jni$_.Int32,)>,
+              )
+            >
+          >('globalEnv_CallVoidMethod')
+          .asFunction<
+            jni$_.JThrowablePtr Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+              int,
+            )
+          >();
+
+  /// from: `public final void setTrackInteractions(boolean z)`
+  void setTrackInteractions(bool z) {
+    _setTrackInteractions(
+      reference.pointer,
+      _id_setTrackInteractions as jni$_.JMethodIDPtr,
+      z ? 1 : 0,
+    ).check();
+  }
+
+  static final _id_getTrackErrors = _class.instanceMethodId(
+    r'getTrackErrors',
+    r'()Z',
+  );
+
+  static final _getTrackErrors =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallBooleanMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public final boolean getTrackErrors()`
+  bool getTrackErrors() {
+    return _getTrackErrors(
+      reference.pointer,
+      _id_getTrackErrors as jni$_.JMethodIDPtr,
+    ).boolean;
+  }
+
+  static final _id_setTrackErrors = _class.instanceMethodId(
+    r'setTrackErrors',
+    r'(Z)V',
+  );
+
+  static final _setTrackErrors =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JThrowablePtr Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+                jni$_.VarArgs<(jni$_.Int32,)>,
+              )
+            >
+          >('globalEnv_CallVoidMethod')
+          .asFunction<
+            jni$_.JThrowablePtr Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+              int,
+            )
+          >();
+
+  /// from: `public final void setTrackErrors(boolean z)`
+  void setTrackErrors(bool z) {
+    _setTrackErrors(
+      reference.pointer,
+      _id_setTrackErrors as jni$_.JMethodIDPtr,
+      z ? 1 : 0,
+    ).check();
+  }
+
+  static final _id_getTrackNetworkRequests = _class.instanceMethodId(
+    r'getTrackNetworkRequests',
+    r'()Z',
+  );
+
+  static final _getTrackNetworkRequests =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallBooleanMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public final boolean getTrackNetworkRequests()`
+  bool getTrackNetworkRequests() {
+    return _getTrackNetworkRequests(
+      reference.pointer,
+      _id_getTrackNetworkRequests as jni$_.JMethodIDPtr,
+    ).boolean;
+  }
+
+  static final _id_setTrackNetworkRequests = _class.instanceMethodId(
+    r'setTrackNetworkRequests',
+    r'(Z)V',
+  );
+
+  static final _setTrackNetworkRequests =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JThrowablePtr Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+                jni$_.VarArgs<(jni$_.Int32,)>,
+              )
+            >
+          >('globalEnv_CallVoidMethod')
+          .asFunction<
+            jni$_.JThrowablePtr Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+              int,
+            )
+          >();
+
+  /// from: `public final void setTrackNetworkRequests(boolean z)`
+  void setTrackNetworkRequests(bool z) {
+    _setTrackNetworkRequests(
+      reference.pointer,
+      _id_setTrackNetworkRequests as jni$_.JMethodIDPtr,
+      z ? 1 : 0,
+    ).check();
+  }
+
+  static final _id_getTrackNativeViews = _class.instanceMethodId(
+    r'getTrackNativeViews',
+    r'()Z',
+  );
+
+  static final _getTrackNativeViews =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallBooleanMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public final boolean getTrackNativeViews()`
+  bool getTrackNativeViews() {
+    return _getTrackNativeViews(
+      reference.pointer,
+      _id_getTrackNativeViews as jni$_.JMethodIDPtr,
+    ).boolean;
+  }
+
+  static final _id_setTrackNativeViews = _class.instanceMethodId(
+    r'setTrackNativeViews',
+    r'(Z)V',
+  );
+
+  static final _setTrackNativeViews =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JThrowablePtr Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+                jni$_.VarArgs<(jni$_.Int32,)>,
+              )
+            >
+          >('globalEnv_CallVoidMethod')
+          .asFunction<
+            jni$_.JThrowablePtr Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+              int,
+            )
+          >();
+
+  /// from: `public final void setTrackNativeViews(boolean z)`
+  void setTrackNativeViews(bool z) {
+    _setTrackNativeViews(
+      reference.pointer,
+      _id_setTrackNativeViews as jni$_.JMethodIDPtr,
+      z ? 1 : 0,
+    ).check();
+  }
+
+  static final _id_getTrackCrossPlatformLongTasks = _class.instanceMethodId(
+    r'getTrackCrossPlatformLongTasks',
+    r'()Z',
+  );
+
+  static final _getTrackCrossPlatformLongTasks =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallBooleanMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public final boolean getTrackCrossPlatformLongTasks()`
+  bool getTrackCrossPlatformLongTasks() {
+    return _getTrackCrossPlatformLongTasks(
+      reference.pointer,
+      _id_getTrackCrossPlatformLongTasks as jni$_.JMethodIDPtr,
+    ).boolean;
+  }
+
+  static final _id_setTrackCrossPlatformLongTasks = _class.instanceMethodId(
+    r'setTrackCrossPlatformLongTasks',
+    r'(Z)V',
+  );
+
+  static final _setTrackCrossPlatformLongTasks =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JThrowablePtr Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+                jni$_.VarArgs<(jni$_.Int32,)>,
+              )
+            >
+          >('globalEnv_CallVoidMethod')
+          .asFunction<
+            jni$_.JThrowablePtr Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+              int,
+            )
+          >();
+
+  /// from: `public final void setTrackCrossPlatformLongTasks(boolean z)`
+  void setTrackCrossPlatformLongTasks(bool z) {
+    _setTrackCrossPlatformLongTasks(
+      reference.pointer,
+      _id_setTrackCrossPlatformLongTasks as jni$_.JMethodIDPtr,
+      z ? 1 : 0,
+    ).check();
+  }
+
+  static final _id_getTrackFlutterPerformance = _class.instanceMethodId(
+    r'getTrackFlutterPerformance',
+    r'()Z',
+  );
+
+  static final _getTrackFlutterPerformance =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallBooleanMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public final boolean getTrackFlutterPerformance()`
+  bool getTrackFlutterPerformance() {
+    return _getTrackFlutterPerformance(
+      reference.pointer,
+      _id_getTrackFlutterPerformance as jni$_.JMethodIDPtr,
+    ).boolean;
+  }
+
+  static final _id_setTrackFlutterPerformance = _class.instanceMethodId(
+    r'setTrackFlutterPerformance',
+    r'(Z)V',
+  );
+
+  static final _setTrackFlutterPerformance =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JThrowablePtr Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+                jni$_.VarArgs<(jni$_.Int32,)>,
+              )
+            >
+          >('globalEnv_CallVoidMethod')
+          .asFunction<
+            jni$_.JThrowablePtr Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+              int,
+            )
+          >();
+
+  /// from: `public final void setTrackFlutterPerformance(boolean z)`
+  void setTrackFlutterPerformance(bool z) {
+    _setTrackFlutterPerformance(
+      reference.pointer,
+      _id_setTrackFlutterPerformance as jni$_.JMethodIDPtr,
+      z ? 1 : 0,
+    ).check();
+  }
+
+  static final _id_getDartVersion = _class.instanceMethodId(
+    r'getDartVersion',
+    r'()Ljava/lang/String;',
+  );
+
+  static final _getDartVersion =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallObjectMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public final java.lang.String getDartVersion()`
+  /// The returned object must be released after use, by calling the [release] method.
+  jni$_.JString? getDartVersion() {
+    return _getDartVersion(
+      reference.pointer,
+      _id_getDartVersion as jni$_.JMethodIDPtr,
+    ).object<jni$_.JString?>(const jni$_.JStringNullableType());
+  }
+
+  static final _id_setDartVersion = _class.instanceMethodId(
+    r'setDartVersion',
+    r'(Ljava/lang/String;)V',
+  );
+
+  static final _setDartVersion =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JThrowablePtr Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+                jni$_.VarArgs<(jni$_.Pointer<jni$_.Void>,)>,
+              )
+            >
+          >('globalEnv_CallVoidMethod')
+          .asFunction<
+            jni$_.JThrowablePtr Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+              jni$_.Pointer<jni$_.Void>,
+            )
+          >();
+
+  /// from: `public final void setDartVersion(java.lang.String string)`
+  void setDartVersion(jni$_.JString? string) {
+    final _$string = string?.reference ?? jni$_.jNullReference;
+    _setDartVersion(
+      reference.pointer,
+      _id_setDartVersion as jni$_.JMethodIDPtr,
+      _$string.pointer,
+    ).check();
+  }
+
+  static final _id_component1 = _class.instanceMethodId(r'component1', r'()Z');
+
+  static final _component1 =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallBooleanMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public final boolean component1()`
+  bool component1() {
+    return _component1(
+      reference.pointer,
+      _id_component1 as jni$_.JMethodIDPtr,
+    ).boolean;
+  }
+
+  static final _id_component2 = _class.instanceMethodId(r'component2', r'()Z');
+
+  static final _component2 =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallBooleanMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public final boolean component2()`
+  bool component2() {
+    return _component2(
+      reference.pointer,
+      _id_component2 as jni$_.JMethodIDPtr,
+    ).boolean;
+  }
+
+  static final _id_component3 = _class.instanceMethodId(r'component3', r'()Z');
+
+  static final _component3 =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallBooleanMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public final boolean component3()`
+  bool component3() {
+    return _component3(
+      reference.pointer,
+      _id_component3 as jni$_.JMethodIDPtr,
+    ).boolean;
+  }
+
+  static final _id_component4 = _class.instanceMethodId(r'component4', r'()Z');
+
+  static final _component4 =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallBooleanMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public final boolean component4()`
+  bool component4() {
+    return _component4(
+      reference.pointer,
+      _id_component4 as jni$_.JMethodIDPtr,
+    ).boolean;
+  }
+
+  static final _id_component5 = _class.instanceMethodId(r'component5', r'()Z');
+
+  static final _component5 =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallBooleanMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public final boolean component5()`
+  bool component5() {
+    return _component5(
+      reference.pointer,
+      _id_component5 as jni$_.JMethodIDPtr,
+    ).boolean;
+  }
+
+  static final _id_component6 = _class.instanceMethodId(r'component6', r'()Z');
+
+  static final _component6 =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallBooleanMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public final boolean component6()`
+  bool component6() {
+    return _component6(
+      reference.pointer,
+      _id_component6 as jni$_.JMethodIDPtr,
+    ).boolean;
+  }
+
+  static final _id_component7 = _class.instanceMethodId(r'component7', r'()Z');
+
+  static final _component7 =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallBooleanMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public final boolean component7()`
+  bool component7() {
+    return _component7(
+      reference.pointer,
+      _id_component7 as jni$_.JMethodIDPtr,
+    ).boolean;
+  }
+
+  static final _id_component8 = _class.instanceMethodId(
+    r'component8',
+    r'()Ljava/lang/String;',
+  );
+
+  static final _component8 =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallObjectMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public final java.lang.String component8()`
+  /// The returned object must be released after use, by calling the [release] method.
+  jni$_.JString? component8() {
+    return _component8(
+      reference.pointer,
+      _id_component8 as jni$_.JMethodIDPtr,
+    ).object<jni$_.JString?>(const jni$_.JStringNullableType());
+  }
+
+  static final _id_copy = _class.instanceMethodId(
+    r'copy',
+    r'(ZZZZZZZLjava/lang/String;)Lcom/datadoghq/flutter/DatadogSdkPlugin$ConfigurationTelemetryOverrides;',
+  );
+
+  static final _copy =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+                jni$_.VarArgs<
+                  (
+                    jni$_.Int32,
+                    jni$_.Int32,
+                    jni$_.Int32,
+                    jni$_.Int32,
+                    jni$_.Int32,
+                    jni$_.Int32,
+                    jni$_.Int32,
+                    jni$_.Pointer<jni$_.Void>,
+                  )
+                >,
+              )
+            >
+          >('globalEnv_CallObjectMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+              int,
+              int,
+              int,
+              int,
+              int,
+              int,
+              int,
+              jni$_.Pointer<jni$_.Void>,
+            )
+          >();
+
+  /// from: `public final com.datadoghq.flutter.DatadogSdkPlugin$ConfigurationTelemetryOverrides copy(boolean z, boolean z1, boolean z2, boolean z3, boolean z4, boolean z5, boolean z6, java.lang.String string)`
+  /// The returned object must be released after use, by calling the [release] method.
+  DatadogSdkPlugin$ConfigurationTelemetryOverrides copy(
+    bool z,
+    bool z1,
+    bool z2,
+    bool z3,
+    bool z4,
+    bool z5,
+    bool z6,
+    jni$_.JString? string,
+  ) {
+    final _$string = string?.reference ?? jni$_.jNullReference;
+    return _copy(
+      reference.pointer,
+      _id_copy as jni$_.JMethodIDPtr,
+      z ? 1 : 0,
+      z1 ? 1 : 0,
+      z2 ? 1 : 0,
+      z3 ? 1 : 0,
+      z4 ? 1 : 0,
+      z5 ? 1 : 0,
+      z6 ? 1 : 0,
+      _$string.pointer,
+    ).object<DatadogSdkPlugin$ConfigurationTelemetryOverrides>(
+      const $DatadogSdkPlugin$ConfigurationTelemetryOverrides$Type(),
+    );
+  }
+
+  static final _id_toString$1 = _class.instanceMethodId(
+    r'toString',
+    r'()Ljava/lang/String;',
+  );
+
+  static final _toString$1 =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallObjectMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public java.lang.String toString()`
+  /// The returned object must be released after use, by calling the [release] method.
+  jni$_.JString toString$1() {
+    return _toString$1(
+      reference.pointer,
+      _id_toString$1 as jni$_.JMethodIDPtr,
+    ).object<jni$_.JString>(const jni$_.JStringType());
+  }
+
+  static final _id_hashCode$1 = _class.instanceMethodId(r'hashCode', r'()I');
+
+  static final _hashCode$1 =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallIntMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public int hashCode()`
+  int hashCode$1() {
+    return _hashCode$1(
+      reference.pointer,
+      _id_hashCode$1 as jni$_.JMethodIDPtr,
+    ).integer;
+  }
+
+  static final _id_equals = _class.instanceMethodId(
+    r'equals',
+    r'(Ljava/lang/Object;)Z',
+  );
+
+  static final _equals =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+                jni$_.VarArgs<(jni$_.Pointer<jni$_.Void>,)>,
+              )
+            >
+          >('globalEnv_CallBooleanMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+              jni$_.Pointer<jni$_.Void>,
+            )
+          >();
+
+  /// from: `public boolean equals(java.lang.Object object)`
+  bool equals(jni$_.JObject? object) {
+    final _$object = object?.reference ?? jni$_.jNullReference;
+    return _equals(
+      reference.pointer,
+      _id_equals as jni$_.JMethodIDPtr,
+      _$object.pointer,
+    ).boolean;
+  }
+
+  static final _id_new$2 = _class.constructorId(r'()V');
+
+  static final _new$2 =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_NewObject')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public void <init>()`
+  /// The returned object must be released after use, by calling the [release] method.
+  factory DatadogSdkPlugin$ConfigurationTelemetryOverrides.new$2() {
+    return DatadogSdkPlugin$ConfigurationTelemetryOverrides.fromReference(
+      _new$2(
+        _class.reference.pointer,
+        _id_new$2 as jni$_.JMethodIDPtr,
+      ).reference,
+    );
+  }
+}
+
+final class $DatadogSdkPlugin$ConfigurationTelemetryOverrides$NullableType
+    extends jni$_.JObjType<DatadogSdkPlugin$ConfigurationTelemetryOverrides?> {
+  @jni$_.internal
+  const $DatadogSdkPlugin$ConfigurationTelemetryOverrides$NullableType();
+
+  @jni$_.internal
+  @core$_.override
+  String get signature =>
+      r'Lcom/datadoghq/flutter/DatadogSdkPlugin$ConfigurationTelemetryOverrides;';
+
+  @jni$_.internal
+  @core$_.override
+  DatadogSdkPlugin$ConfigurationTelemetryOverrides? fromReference(
+    jni$_.JReference reference,
+  ) => reference.isNull
+      ? null
+      : DatadogSdkPlugin$ConfigurationTelemetryOverrides.fromReference(
+          reference,
+        );
+  @jni$_.internal
+  @core$_.override
+  jni$_.JObjType get superType => const jni$_.JObjectType();
+
+  @jni$_.internal
+  @core$_.override
+  jni$_.JObjType<DatadogSdkPlugin$ConfigurationTelemetryOverrides?>
+  get nullableType => this;
+
+  @jni$_.internal
+  @core$_.override
+  final superCount = 1;
+
+  @core$_.override
+  int get hashCode =>
+      ($DatadogSdkPlugin$ConfigurationTelemetryOverrides$NullableType).hashCode;
+
+  @core$_.override
+  bool operator ==(Object other) {
+    return other.runtimeType ==
+            ($DatadogSdkPlugin$ConfigurationTelemetryOverrides$NullableType) &&
+        other is $DatadogSdkPlugin$ConfigurationTelemetryOverrides$NullableType;
+  }
+}
+
+final class $DatadogSdkPlugin$ConfigurationTelemetryOverrides$Type
+    extends jni$_.JObjType<DatadogSdkPlugin$ConfigurationTelemetryOverrides> {
+  @jni$_.internal
+  const $DatadogSdkPlugin$ConfigurationTelemetryOverrides$Type();
+
+  @jni$_.internal
+  @core$_.override
+  String get signature =>
+      r'Lcom/datadoghq/flutter/DatadogSdkPlugin$ConfigurationTelemetryOverrides;';
+
+  @jni$_.internal
+  @core$_.override
+  DatadogSdkPlugin$ConfigurationTelemetryOverrides fromReference(
+    jni$_.JReference reference,
+  ) =>
+      DatadogSdkPlugin$ConfigurationTelemetryOverrides.fromReference(reference);
+  @jni$_.internal
+  @core$_.override
+  jni$_.JObjType get superType => const jni$_.JObjectType();
+
+  @jni$_.internal
+  @core$_.override
+  jni$_.JObjType<DatadogSdkPlugin$ConfigurationTelemetryOverrides?>
+  get nullableType =>
+      const $DatadogSdkPlugin$ConfigurationTelemetryOverrides$NullableType();
+
+  @jni$_.internal
+  @core$_.override
+  final superCount = 1;
+
+  @core$_.override
+  int get hashCode =>
+      ($DatadogSdkPlugin$ConfigurationTelemetryOverrides$Type).hashCode;
+
+  @core$_.override
+  bool operator ==(Object other) {
+    return other.runtimeType ==
+            ($DatadogSdkPlugin$ConfigurationTelemetryOverrides$Type) &&
+        other is $DatadogSdkPlugin$ConfigurationTelemetryOverrides$Type;
+  }
+}
+
+/// from: `com.datadoghq.flutter.DatadogSdkPlugin`
+class DatadogSdkPlugin extends jni$_.JObject {
+  @jni$_.internal
+  @core$_.override
+  final jni$_.JObjType<DatadogSdkPlugin> $type;
+
+  @jni$_.internal
+  DatadogSdkPlugin.fromReference(jni$_.JReference reference)
+    : $type = type,
+      super.fromReference(reference);
+
+  static final _class = jni$_.JClass.forName(
+    r'com/datadoghq/flutter/DatadogSdkPlugin',
+  );
+
+  /// The type which includes information such as the signature of this class.
+  static const nullableType = $DatadogSdkPlugin$NullableType();
+  static const type = $DatadogSdkPlugin$Type();
+  static final _id_Companion = _class.staticFieldId(
+    r'Companion',
+    r'Lcom/datadoghq/flutter/DatadogSdkPlugin$Companion;',
+  );
+
+  /// from: `static public final com.datadoghq.flutter.DatadogSdkPlugin$Companion Companion`
+  /// The returned object must be released after use, by calling the [release] method.
+  static DatadogSdkPlugin$Companion get Companion =>
+      _id_Companion.get(_class, const $DatadogSdkPlugin$Companion$Type());
+
+  static final _id_CONTRACT_VIOLATION = _class.staticFieldId(
+    r'CONTRACT_VIOLATION',
+    r'Ljava/lang/String;',
+  );
+
+  /// from: `static public final java.lang.String CONTRACT_VIOLATION`
+  /// The returned object must be released after use, by calling the [release] method.
+  static jni$_.JString get CONTRACT_VIOLATION =>
+      _id_CONTRACT_VIOLATION.get(_class, const jni$_.JStringType());
+
+  static final _id_INVALID_OPERATION = _class.staticFieldId(
+    r'INVALID_OPERATION',
+    r'Ljava/lang/String;',
+  );
+
+  /// from: `static public final java.lang.String INVALID_OPERATION`
+  /// The returned object must be released after use, by calling the [release] method.
+  static jni$_.JString get INVALID_OPERATION =>
+      _id_INVALID_OPERATION.get(_class, const jni$_.JStringType());
+
+  static final _id_ARG_VALUE = _class.staticFieldId(
+    r'ARG_VALUE',
+    r'Ljava/lang/String;',
+  );
+
+  /// from: `static public final java.lang.String ARG_VALUE`
+  /// The returned object must be released after use, by calling the [release] method.
+  static jni$_.JString get ARG_VALUE =>
+      _id_ARG_VALUE.get(_class, const jni$_.JStringType());
+
+  static final _id_ARG_EXTRA_INFO = _class.staticFieldId(
+    r'ARG_EXTRA_INFO',
+    r'Ljava/lang/String;',
+  );
+
+  /// from: `static public final java.lang.String ARG_EXTRA_INFO`
+  /// The returned object must be released after use, by calling the [release] method.
+  static jni$_.JString get ARG_EXTRA_INFO =>
+      _id_ARG_EXTRA_INFO.get(_class, const jni$_.JStringType());
+
+  static final _id_new$ = _class.constructorId(r'()V');
+
+  static final _new$ =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_NewObject')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public void <init>()`
+  /// The returned object must be released after use, by calling the [release] method.
+  factory DatadogSdkPlugin() {
+    return DatadogSdkPlugin.fromReference(
+      _new$(_class.reference.pointer, _id_new$ as jni$_.JMethodIDPtr).reference,
+    );
+  }
+
+  static final _id_onAttachedToEngine = _class.instanceMethodId(
+    r'onAttachedToEngine',
+    r'(Lio/flutter/embedding/engine/plugins/FlutterPlugin$FlutterPluginBinding;)V',
+  );
+
+  static final _onAttachedToEngine =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JThrowablePtr Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+                jni$_.VarArgs<(jni$_.Pointer<jni$_.Void>,)>,
+              )
+            >
+          >('globalEnv_CallVoidMethod')
+          .asFunction<
+            jni$_.JThrowablePtr Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+              jni$_.Pointer<jni$_.Void>,
+            )
+          >();
+
+  /// from: `public void onAttachedToEngine(io.flutter.embedding.engine.plugins.FlutterPlugin$FlutterPluginBinding flutterPluginBinding)`
+  void onAttachedToEngine(jni$_.JObject flutterPluginBinding) {
+    final _$flutterPluginBinding = flutterPluginBinding.reference;
+    _onAttachedToEngine(
+      reference.pointer,
+      _id_onAttachedToEngine as jni$_.JMethodIDPtr,
+      _$flutterPluginBinding.pointer,
+    ).check();
+  }
+
+  static final _id_onMethodCall = _class.instanceMethodId(
+    r'onMethodCall',
+    r'(Lio/flutter/plugin/common/MethodCall;Lio/flutter/plugin/common/MethodChannel$Result;)V',
+  );
+
+  static final _onMethodCall =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JThrowablePtr Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+                jni$_.VarArgs<
+                  (jni$_.Pointer<jni$_.Void>, jni$_.Pointer<jni$_.Void>)
+                >,
+              )
+            >
+          >('globalEnv_CallVoidMethod')
+          .asFunction<
+            jni$_.JThrowablePtr Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.Pointer<jni$_.Void>,
+            )
+          >();
+
+  /// from: `public void onMethodCall(io.flutter.plugin.common.MethodCall methodCall, io.flutter.plugin.common.MethodChannel$Result result)`
+  void onMethodCall(jni$_.JObject methodCall, jni$_.JObject result) {
+    final _$methodCall = methodCall.reference;
+    final _$result = result.reference;
+    _onMethodCall(
+      reference.pointer,
+      _id_onMethodCall as jni$_.JMethodIDPtr,
+      _$methodCall.pointer,
+      _$result.pointer,
+    ).check();
+  }
+
+  static final _id_initialize = _class.instanceMethodId(
+    r'initialize',
+    r'(Ljava/util/Map;Lcom/datadog/android/privacy/TrackingConsent;)V',
+  );
+
+  static final _initialize =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JThrowablePtr Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+                jni$_.VarArgs<
+                  (jni$_.Pointer<jni$_.Void>, jni$_.Pointer<jni$_.Void>)
+                >,
+              )
+            >
+          >('globalEnv_CallVoidMethod')
+          .asFunction<
+            jni$_.JThrowablePtr Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.Pointer<jni$_.Void>,
+            )
+          >();
+
+  /// from: `public final void initialize(java.util.Map<java.lang.String, ? extends java.lang.Object> map, com.datadog.android.privacy.TrackingConsent trackingConsent)`
+  void initialize(
+    jni$_.JMap<jni$_.JString, jni$_.JObject?> map,
+    jni$_.JObject trackingConsent,
+  ) {
+    final _$map = map.reference;
+    final _$trackingConsent = trackingConsent.reference;
+    _initialize(
+      reference.pointer,
+      _id_initialize as jni$_.JMethodIDPtr,
+      _$map.pointer,
+      _$trackingConsent.pointer,
+    ).check();
+  }
+
+  static final _id_configurationBuilderFromEncoded = _class.instanceMethodId(
+    r'configurationBuilderFromEncoded',
+    r'(Ljava/util/Map;)Lcom/datadog/android/core/configuration/Configuration$Builder;',
+  );
+
+  static final _configurationBuilderFromEncoded =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+                jni$_.VarArgs<(jni$_.Pointer<jni$_.Void>,)>,
+              )
+            >
+          >('globalEnv_CallObjectMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+              jni$_.Pointer<jni$_.Void>,
+            )
+          >();
+
+  /// from: `public final com.datadog.android.core.configuration.Configuration$Builder configurationBuilderFromEncoded(java.util.Map<java.lang.String, ? extends java.lang.Object> map)`
+  /// The returned object must be released after use, by calling the [release] method.
+  jni$_.JObject? configurationBuilderFromEncoded(
+    jni$_.JMap<jni$_.JString, jni$_.JObject?> map,
+  ) {
+    final _$map = map.reference;
+    return _configurationBuilderFromEncoded(
+      reference.pointer,
+      _id_configurationBuilderFromEncoded as jni$_.JMethodIDPtr,
+      _$map.pointer,
+    ).object<jni$_.JObject?>(const jni$_.JObjectNullableType());
+  }
+
+  static final _id_onDetachedFromEngine = _class.instanceMethodId(
+    r'onDetachedFromEngine',
+    r'(Lio/flutter/embedding/engine/plugins/FlutterPlugin$FlutterPluginBinding;)V',
+  );
+
+  static final _onDetachedFromEngine =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JThrowablePtr Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+                jni$_.VarArgs<(jni$_.Pointer<jni$_.Void>,)>,
+              )
+            >
+          >('globalEnv_CallVoidMethod')
+          .asFunction<
+            jni$_.JThrowablePtr Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+              jni$_.Pointer<jni$_.Void>,
+            )
+          >();
+
+  /// from: `public void onDetachedFromEngine(io.flutter.embedding.engine.plugins.FlutterPlugin$FlutterPluginBinding flutterPluginBinding)`
+  void onDetachedFromEngine(jni$_.JObject flutterPluginBinding) {
+    final _$flutterPluginBinding = flutterPluginBinding.reference;
+    _onDetachedFromEngine(
+      reference.pointer,
+      _id_onDetachedFromEngine as jni$_.JMethodIDPtr,
+      _$flutterPluginBinding.pointer,
+    ).check();
+  }
+}
+
+final class $DatadogSdkPlugin$NullableType
+    extends jni$_.JObjType<DatadogSdkPlugin?> {
+  @jni$_.internal
+  const $DatadogSdkPlugin$NullableType();
+
+  @jni$_.internal
+  @core$_.override
+  String get signature => r'Lcom/datadoghq/flutter/DatadogSdkPlugin;';
+
+  @jni$_.internal
+  @core$_.override
+  DatadogSdkPlugin? fromReference(jni$_.JReference reference) =>
+      reference.isNull ? null : DatadogSdkPlugin.fromReference(reference);
+  @jni$_.internal
+  @core$_.override
+  jni$_.JObjType get superType => const jni$_.JObjectNullableType();
+
+  @jni$_.internal
+  @core$_.override
+  jni$_.JObjType<DatadogSdkPlugin?> get nullableType => this;
+
+  @jni$_.internal
+  @core$_.override
+  final superCount = 1;
+
+  @core$_.override
+  int get hashCode => ($DatadogSdkPlugin$NullableType).hashCode;
+
+  @core$_.override
+  bool operator ==(Object other) {
+    return other.runtimeType == ($DatadogSdkPlugin$NullableType) &&
+        other is $DatadogSdkPlugin$NullableType;
+  }
+}
+
+final class $DatadogSdkPlugin$Type extends jni$_.JObjType<DatadogSdkPlugin> {
+  @jni$_.internal
+  const $DatadogSdkPlugin$Type();
+
+  @jni$_.internal
+  @core$_.override
+  String get signature => r'Lcom/datadoghq/flutter/DatadogSdkPlugin;';
+
+  @jni$_.internal
+  @core$_.override
+  DatadogSdkPlugin fromReference(jni$_.JReference reference) =>
+      DatadogSdkPlugin.fromReference(reference);
+  @jni$_.internal
+  @core$_.override
+  jni$_.JObjType get superType => const jni$_.JObjectNullableType();
+
+  @jni$_.internal
+  @core$_.override
+  jni$_.JObjType<DatadogSdkPlugin?> get nullableType =>
+      const $DatadogSdkPlugin$NullableType();
+
+  @jni$_.internal
+  @core$_.override
+  final superCount = 1;
+
+  @core$_.override
+  int get hashCode => ($DatadogSdkPlugin$Type).hashCode;
+
+  @core$_.override
+  bool operator ==(Object other) {
+    return other.runtimeType == ($DatadogSdkPlugin$Type) &&
+        other is $DatadogSdkPlugin$Type;
+  }
+}
+
+/// from: `com.datadog.android.api.context.DatadogContext`
+class DatadogContext extends jni$_.JObject {
+  @jni$_.internal
+  @core$_.override
+  final jni$_.JObjType<DatadogContext> $type;
+
+  @jni$_.internal
+  DatadogContext.fromReference(jni$_.JReference reference)
+    : $type = type,
+      super.fromReference(reference);
+
+  static final _class = jni$_.JClass.forName(
+    r'com/datadog/android/api/context/DatadogContext',
+  );
+
+  /// The type which includes information such as the signature of this class.
+  static const nullableType = $DatadogContext$NullableType();
+  static const type = $DatadogContext$Type();
+  static final _id_new$ = _class.constructorId(
+    r'(Lcom/datadog/android/DatadogSite;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lcom/datadog/android/api/context/TimeInfo;Lcom/datadog/android/api/context/ProcessInfo;Lcom/datadog/android/api/context/NetworkInfo;Lcom/datadog/android/api/context/DeviceInfo;Lcom/datadog/android/api/context/UserInfo;Lcom/datadog/android/api/context/AccountInfo;Lcom/datadog/android/privacy/TrackingConsent;Ljava/lang/String;Ljava/util/Map;)V',
+  );
+
+  static final _new$ =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+                jni$_.VarArgs<
+                  (
+                    jni$_.Pointer<jni$_.Void>,
+                    jni$_.Pointer<jni$_.Void>,
+                    jni$_.Pointer<jni$_.Void>,
+                    jni$_.Pointer<jni$_.Void>,
+                    jni$_.Pointer<jni$_.Void>,
+                    jni$_.Pointer<jni$_.Void>,
+                    jni$_.Pointer<jni$_.Void>,
+                    jni$_.Pointer<jni$_.Void>,
+                    jni$_.Pointer<jni$_.Void>,
+                    jni$_.Pointer<jni$_.Void>,
+                    jni$_.Pointer<jni$_.Void>,
+                    jni$_.Pointer<jni$_.Void>,
+                    jni$_.Pointer<jni$_.Void>,
+                    jni$_.Pointer<jni$_.Void>,
+                    jni$_.Pointer<jni$_.Void>,
+                    jni$_.Pointer<jni$_.Void>,
+                    jni$_.Pointer<jni$_.Void>,
+                  )
+                >,
+              )
+            >
+          >('globalEnv_NewObject')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.Pointer<jni$_.Void>,
+            )
+          >();
+
+  /// from: `public void <init>(com.datadog.android.DatadogSite datadogSite, java.lang.String string, java.lang.String string1, java.lang.String string2, java.lang.String string3, java.lang.String string4, java.lang.String string5, java.lang.String string6, com.datadog.android.api.context.TimeInfo timeInfo, com.datadog.android.api.context.ProcessInfo processInfo, com.datadog.android.api.context.NetworkInfo networkInfo, com.datadog.android.api.context.DeviceInfo deviceInfo, com.datadog.android.api.context.UserInfo userInfo, com.datadog.android.api.context.AccountInfo accountInfo, com.datadog.android.privacy.TrackingConsent trackingConsent, java.lang.String string7, java.util.Map<java.lang.String, ? extends java.util.Map> map)`
+  /// The returned object must be released after use, by calling the [release] method.
+  factory DatadogContext(
+    jni$_.JObject datadogSite,
+    jni$_.JString string,
+    jni$_.JString string1,
+    jni$_.JString string2,
+    jni$_.JString string3,
+    jni$_.JString string4,
+    jni$_.JString string5,
+    jni$_.JString string6,
+    jni$_.JObject timeInfo,
+    jni$_.JObject processInfo,
+    jni$_.JObject networkInfo,
+    jni$_.JObject deviceInfo,
+    UserInfo userInfo,
+    AccountInfo? accountInfo,
+    jni$_.JObject trackingConsent,
+    jni$_.JString? string7,
+    jni$_.JMap<jni$_.JString, jni$_.JMap<jni$_.JString, jni$_.JObject?>> map,
+  ) {
+    final _$datadogSite = datadogSite.reference;
+    final _$string = string.reference;
+    final _$string1 = string1.reference;
+    final _$string2 = string2.reference;
+    final _$string3 = string3.reference;
+    final _$string4 = string4.reference;
+    final _$string5 = string5.reference;
+    final _$string6 = string6.reference;
+    final _$timeInfo = timeInfo.reference;
+    final _$processInfo = processInfo.reference;
+    final _$networkInfo = networkInfo.reference;
+    final _$deviceInfo = deviceInfo.reference;
+    final _$userInfo = userInfo.reference;
+    final _$accountInfo = accountInfo?.reference ?? jni$_.jNullReference;
+    final _$trackingConsent = trackingConsent.reference;
+    final _$string7 = string7?.reference ?? jni$_.jNullReference;
+    final _$map = map.reference;
+    return DatadogContext.fromReference(
+      _new$(
+        _class.reference.pointer,
+        _id_new$ as jni$_.JMethodIDPtr,
+        _$datadogSite.pointer,
+        _$string.pointer,
+        _$string1.pointer,
+        _$string2.pointer,
+        _$string3.pointer,
+        _$string4.pointer,
+        _$string5.pointer,
+        _$string6.pointer,
+        _$timeInfo.pointer,
+        _$processInfo.pointer,
+        _$networkInfo.pointer,
+        _$deviceInfo.pointer,
+        _$userInfo.pointer,
+        _$accountInfo.pointer,
+        _$trackingConsent.pointer,
+        _$string7.pointer,
+        _$map.pointer,
+      ).reference,
+    );
+  }
+
+  static final _id_getSite = _class.instanceMethodId(
+    r'getSite',
+    r'()Lcom/datadog/android/DatadogSite;',
+  );
+
+  static final _getSite =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallObjectMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public final com.datadog.android.DatadogSite getSite()`
+  /// The returned object must be released after use, by calling the [release] method.
+  jni$_.JObject getSite() {
+    return _getSite(
+      reference.pointer,
+      _id_getSite as jni$_.JMethodIDPtr,
+    ).object<jni$_.JObject>(const jni$_.JObjectType());
+  }
+
+  static final _id_getClientToken = _class.instanceMethodId(
+    r'getClientToken',
+    r'()Ljava/lang/String;',
+  );
+
+  static final _getClientToken =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallObjectMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public final java.lang.String getClientToken()`
+  /// The returned object must be released after use, by calling the [release] method.
+  jni$_.JString getClientToken() {
+    return _getClientToken(
+      reference.pointer,
+      _id_getClientToken as jni$_.JMethodIDPtr,
+    ).object<jni$_.JString>(const jni$_.JStringType());
+  }
+
+  static final _id_getService = _class.instanceMethodId(
+    r'getService',
+    r'()Ljava/lang/String;',
+  );
+
+  static final _getService =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallObjectMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public final java.lang.String getService()`
+  /// The returned object must be released after use, by calling the [release] method.
+  jni$_.JString getService() {
+    return _getService(
+      reference.pointer,
+      _id_getService as jni$_.JMethodIDPtr,
+    ).object<jni$_.JString>(const jni$_.JStringType());
+  }
+
+  static final _id_getEnv = _class.instanceMethodId(
+    r'getEnv',
+    r'()Ljava/lang/String;',
+  );
+
+  static final _getEnv =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallObjectMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public final java.lang.String getEnv()`
+  /// The returned object must be released after use, by calling the [release] method.
+  jni$_.JString getEnv() {
+    return _getEnv(
+      reference.pointer,
+      _id_getEnv as jni$_.JMethodIDPtr,
+    ).object<jni$_.JString>(const jni$_.JStringType());
+  }
+
+  static final _id_getVersion = _class.instanceMethodId(
+    r'getVersion',
+    r'()Ljava/lang/String;',
+  );
+
+  static final _getVersion =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallObjectMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public final java.lang.String getVersion()`
+  /// The returned object must be released after use, by calling the [release] method.
+  jni$_.JString getVersion() {
+    return _getVersion(
+      reference.pointer,
+      _id_getVersion as jni$_.JMethodIDPtr,
+    ).object<jni$_.JString>(const jni$_.JStringType());
+  }
+
+  static final _id_getVariant = _class.instanceMethodId(
+    r'getVariant',
+    r'()Ljava/lang/String;',
+  );
+
+  static final _getVariant =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallObjectMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public final java.lang.String getVariant()`
+  /// The returned object must be released after use, by calling the [release] method.
+  jni$_.JString getVariant() {
+    return _getVariant(
+      reference.pointer,
+      _id_getVariant as jni$_.JMethodIDPtr,
+    ).object<jni$_.JString>(const jni$_.JStringType());
+  }
+
+  static final _id_getSource = _class.instanceMethodId(
+    r'getSource',
+    r'()Ljava/lang/String;',
+  );
+
+  static final _getSource =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallObjectMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public final java.lang.String getSource()`
+  /// The returned object must be released after use, by calling the [release] method.
+  jni$_.JString getSource() {
+    return _getSource(
+      reference.pointer,
+      _id_getSource as jni$_.JMethodIDPtr,
+    ).object<jni$_.JString>(const jni$_.JStringType());
+  }
+
+  static final _id_getSdkVersion = _class.instanceMethodId(
+    r'getSdkVersion',
+    r'()Ljava/lang/String;',
+  );
+
+  static final _getSdkVersion =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallObjectMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public final java.lang.String getSdkVersion()`
+  /// The returned object must be released after use, by calling the [release] method.
+  jni$_.JString getSdkVersion() {
+    return _getSdkVersion(
+      reference.pointer,
+      _id_getSdkVersion as jni$_.JMethodIDPtr,
+    ).object<jni$_.JString>(const jni$_.JStringType());
+  }
+
+  static final _id_getTime = _class.instanceMethodId(
+    r'getTime',
+    r'()Lcom/datadog/android/api/context/TimeInfo;',
+  );
+
+  static final _getTime =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallObjectMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public final com.datadog.android.api.context.TimeInfo getTime()`
+  /// The returned object must be released after use, by calling the [release] method.
+  jni$_.JObject getTime() {
+    return _getTime(
+      reference.pointer,
+      _id_getTime as jni$_.JMethodIDPtr,
+    ).object<jni$_.JObject>(const jni$_.JObjectType());
+  }
+
+  static final _id_getProcessInfo = _class.instanceMethodId(
+    r'getProcessInfo',
+    r'()Lcom/datadog/android/api/context/ProcessInfo;',
+  );
+
+  static final _getProcessInfo =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallObjectMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public final com.datadog.android.api.context.ProcessInfo getProcessInfo()`
+  /// The returned object must be released after use, by calling the [release] method.
+  jni$_.JObject getProcessInfo() {
+    return _getProcessInfo(
+      reference.pointer,
+      _id_getProcessInfo as jni$_.JMethodIDPtr,
+    ).object<jni$_.JObject>(const jni$_.JObjectType());
+  }
+
+  static final _id_getNetworkInfo = _class.instanceMethodId(
+    r'getNetworkInfo',
+    r'()Lcom/datadog/android/api/context/NetworkInfo;',
+  );
+
+  static final _getNetworkInfo =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallObjectMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public final com.datadog.android.api.context.NetworkInfo getNetworkInfo()`
+  /// The returned object must be released after use, by calling the [release] method.
+  jni$_.JObject getNetworkInfo() {
+    return _getNetworkInfo(
+      reference.pointer,
+      _id_getNetworkInfo as jni$_.JMethodIDPtr,
+    ).object<jni$_.JObject>(const jni$_.JObjectType());
+  }
+
+  static final _id_getDeviceInfo = _class.instanceMethodId(
+    r'getDeviceInfo',
+    r'()Lcom/datadog/android/api/context/DeviceInfo;',
+  );
+
+  static final _getDeviceInfo =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallObjectMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public final com.datadog.android.api.context.DeviceInfo getDeviceInfo()`
+  /// The returned object must be released after use, by calling the [release] method.
+  jni$_.JObject getDeviceInfo() {
+    return _getDeviceInfo(
+      reference.pointer,
+      _id_getDeviceInfo as jni$_.JMethodIDPtr,
+    ).object<jni$_.JObject>(const jni$_.JObjectType());
+  }
+
+  static final _id_getUserInfo = _class.instanceMethodId(
+    r'getUserInfo',
+    r'()Lcom/datadog/android/api/context/UserInfo;',
+  );
+
+  static final _getUserInfo =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallObjectMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public final com.datadog.android.api.context.UserInfo getUserInfo()`
+  /// The returned object must be released after use, by calling the [release] method.
+  UserInfo getUserInfo() {
+    return _getUserInfo(
+      reference.pointer,
+      _id_getUserInfo as jni$_.JMethodIDPtr,
+    ).object<UserInfo>(const $UserInfo$Type());
+  }
+
+  static final _id_getAccountInfo = _class.instanceMethodId(
+    r'getAccountInfo',
+    r'()Lcom/datadog/android/api/context/AccountInfo;',
+  );
+
+  static final _getAccountInfo =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallObjectMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public final com.datadog.android.api.context.AccountInfo getAccountInfo()`
+  /// The returned object must be released after use, by calling the [release] method.
+  AccountInfo? getAccountInfo() {
+    return _getAccountInfo(
+      reference.pointer,
+      _id_getAccountInfo as jni$_.JMethodIDPtr,
+    ).object<AccountInfo?>(const $AccountInfo$NullableType());
+  }
+
+  static final _id_getTrackingConsent = _class.instanceMethodId(
+    r'getTrackingConsent',
+    r'()Lcom/datadog/android/privacy/TrackingConsent;',
+  );
+
+  static final _getTrackingConsent =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallObjectMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public final com.datadog.android.privacy.TrackingConsent getTrackingConsent()`
+  /// The returned object must be released after use, by calling the [release] method.
+  jni$_.JObject getTrackingConsent() {
+    return _getTrackingConsent(
+      reference.pointer,
+      _id_getTrackingConsent as jni$_.JMethodIDPtr,
+    ).object<jni$_.JObject>(const jni$_.JObjectType());
+  }
+
+  static final _id_getAppBuildId = _class.instanceMethodId(
+    r'getAppBuildId',
+    r'()Ljava/lang/String;',
+  );
+
+  static final _getAppBuildId =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallObjectMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public final java.lang.String getAppBuildId()`
+  /// The returned object must be released after use, by calling the [release] method.
+  jni$_.JString? getAppBuildId() {
+    return _getAppBuildId(
+      reference.pointer,
+      _id_getAppBuildId as jni$_.JMethodIDPtr,
+    ).object<jni$_.JString?>(const jni$_.JStringNullableType());
+  }
+
+  static final _id_getFeaturesContext = _class.instanceMethodId(
+    r'getFeaturesContext',
+    r'()Ljava/util/Map;',
+  );
+
+  static final _getFeaturesContext =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallObjectMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public final java.util.Map<java.lang.String, java.util.Map<java.lang.String, java.lang.Object>> getFeaturesContext()`
+  /// The returned object must be released after use, by calling the [release] method.
+  jni$_.JMap<jni$_.JString, jni$_.JMap<jni$_.JString, jni$_.JObject?>>
+  getFeaturesContext() {
+    return _getFeaturesContext(
+      reference.pointer,
+      _id_getFeaturesContext as jni$_.JMethodIDPtr,
+    ).object<
+      jni$_.JMap<jni$_.JString, jni$_.JMap<jni$_.JString, jni$_.JObject?>>
+    >(
+      const jni$_.JMapType<
+        jni$_.JString,
+        jni$_.JMap<jni$_.JString, jni$_.JObject?>
+      >(
+        jni$_.JStringType(),
+        jni$_.JMapType<jni$_.JString, jni$_.JObject?>(
+          jni$_.JStringType(),
+          jni$_.JObjectNullableType(),
+        ),
+      ),
+    );
+  }
+
+  static final _id_component1 = _class.instanceMethodId(
+    r'component1',
+    r'()Lcom/datadog/android/DatadogSite;',
+  );
+
+  static final _component1 =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallObjectMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public final com.datadog.android.DatadogSite component1()`
+  /// The returned object must be released after use, by calling the [release] method.
+  jni$_.JObject component1() {
+    return _component1(
+      reference.pointer,
+      _id_component1 as jni$_.JMethodIDPtr,
+    ).object<jni$_.JObject>(const jni$_.JObjectType());
+  }
+
+  static final _id_component2 = _class.instanceMethodId(
+    r'component2',
+    r'()Ljava/lang/String;',
+  );
+
+  static final _component2 =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallObjectMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public final java.lang.String component2()`
+  /// The returned object must be released after use, by calling the [release] method.
+  jni$_.JString component2() {
+    return _component2(
+      reference.pointer,
+      _id_component2 as jni$_.JMethodIDPtr,
+    ).object<jni$_.JString>(const jni$_.JStringType());
+  }
+
+  static final _id_component3 = _class.instanceMethodId(
+    r'component3',
+    r'()Ljava/lang/String;',
+  );
+
+  static final _component3 =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallObjectMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public final java.lang.String component3()`
+  /// The returned object must be released after use, by calling the [release] method.
+  jni$_.JString component3() {
+    return _component3(
+      reference.pointer,
+      _id_component3 as jni$_.JMethodIDPtr,
+    ).object<jni$_.JString>(const jni$_.JStringType());
+  }
+
+  static final _id_component4 = _class.instanceMethodId(
+    r'component4',
+    r'()Ljava/lang/String;',
+  );
+
+  static final _component4 =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallObjectMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public final java.lang.String component4()`
+  /// The returned object must be released after use, by calling the [release] method.
+  jni$_.JString component4() {
+    return _component4(
+      reference.pointer,
+      _id_component4 as jni$_.JMethodIDPtr,
+    ).object<jni$_.JString>(const jni$_.JStringType());
+  }
+
+  static final _id_component5 = _class.instanceMethodId(
+    r'component5',
+    r'()Ljava/lang/String;',
+  );
+
+  static final _component5 =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallObjectMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public final java.lang.String component5()`
+  /// The returned object must be released after use, by calling the [release] method.
+  jni$_.JString component5() {
+    return _component5(
+      reference.pointer,
+      _id_component5 as jni$_.JMethodIDPtr,
+    ).object<jni$_.JString>(const jni$_.JStringType());
+  }
+
+  static final _id_component6 = _class.instanceMethodId(
+    r'component6',
+    r'()Ljava/lang/String;',
+  );
+
+  static final _component6 =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallObjectMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public final java.lang.String component6()`
+  /// The returned object must be released after use, by calling the [release] method.
+  jni$_.JString component6() {
+    return _component6(
+      reference.pointer,
+      _id_component6 as jni$_.JMethodIDPtr,
+    ).object<jni$_.JString>(const jni$_.JStringType());
+  }
+
+  static final _id_component7 = _class.instanceMethodId(
+    r'component7',
+    r'()Ljava/lang/String;',
+  );
+
+  static final _component7 =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallObjectMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public final java.lang.String component7()`
+  /// The returned object must be released after use, by calling the [release] method.
+  jni$_.JString component7() {
+    return _component7(
+      reference.pointer,
+      _id_component7 as jni$_.JMethodIDPtr,
+    ).object<jni$_.JString>(const jni$_.JStringType());
+  }
+
+  static final _id_component8 = _class.instanceMethodId(
+    r'component8',
+    r'()Ljava/lang/String;',
+  );
+
+  static final _component8 =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallObjectMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public final java.lang.String component8()`
+  /// The returned object must be released after use, by calling the [release] method.
+  jni$_.JString component8() {
+    return _component8(
+      reference.pointer,
+      _id_component8 as jni$_.JMethodIDPtr,
+    ).object<jni$_.JString>(const jni$_.JStringType());
+  }
+
+  static final _id_component9 = _class.instanceMethodId(
+    r'component9',
+    r'()Lcom/datadog/android/api/context/TimeInfo;',
+  );
+
+  static final _component9 =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallObjectMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public final com.datadog.android.api.context.TimeInfo component9()`
+  /// The returned object must be released after use, by calling the [release] method.
+  jni$_.JObject component9() {
+    return _component9(
+      reference.pointer,
+      _id_component9 as jni$_.JMethodIDPtr,
+    ).object<jni$_.JObject>(const jni$_.JObjectType());
+  }
+
+  static final _id_component10 = _class.instanceMethodId(
+    r'component10',
+    r'()Lcom/datadog/android/api/context/ProcessInfo;',
+  );
+
+  static final _component10 =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallObjectMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public final com.datadog.android.api.context.ProcessInfo component10()`
+  /// The returned object must be released after use, by calling the [release] method.
+  jni$_.JObject component10() {
+    return _component10(
+      reference.pointer,
+      _id_component10 as jni$_.JMethodIDPtr,
+    ).object<jni$_.JObject>(const jni$_.JObjectType());
+  }
+
+  static final _id_component11 = _class.instanceMethodId(
+    r'component11',
+    r'()Lcom/datadog/android/api/context/NetworkInfo;',
+  );
+
+  static final _component11 =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallObjectMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public final com.datadog.android.api.context.NetworkInfo component11()`
+  /// The returned object must be released after use, by calling the [release] method.
+  jni$_.JObject component11() {
+    return _component11(
+      reference.pointer,
+      _id_component11 as jni$_.JMethodIDPtr,
+    ).object<jni$_.JObject>(const jni$_.JObjectType());
+  }
+
+  static final _id_component12 = _class.instanceMethodId(
+    r'component12',
+    r'()Lcom/datadog/android/api/context/DeviceInfo;',
+  );
+
+  static final _component12 =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallObjectMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public final com.datadog.android.api.context.DeviceInfo component12()`
+  /// The returned object must be released after use, by calling the [release] method.
+  jni$_.JObject component12() {
+    return _component12(
+      reference.pointer,
+      _id_component12 as jni$_.JMethodIDPtr,
+    ).object<jni$_.JObject>(const jni$_.JObjectType());
+  }
+
+  static final _id_component13 = _class.instanceMethodId(
+    r'component13',
+    r'()Lcom/datadog/android/api/context/UserInfo;',
+  );
+
+  static final _component13 =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallObjectMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public final com.datadog.android.api.context.UserInfo component13()`
+  /// The returned object must be released after use, by calling the [release] method.
+  UserInfo component13() {
+    return _component13(
+      reference.pointer,
+      _id_component13 as jni$_.JMethodIDPtr,
+    ).object<UserInfo>(const $UserInfo$Type());
+  }
+
+  static final _id_component14 = _class.instanceMethodId(
+    r'component14',
+    r'()Lcom/datadog/android/api/context/AccountInfo;',
+  );
+
+  static final _component14 =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallObjectMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public final com.datadog.android.api.context.AccountInfo component14()`
+  /// The returned object must be released after use, by calling the [release] method.
+  AccountInfo? component14() {
+    return _component14(
+      reference.pointer,
+      _id_component14 as jni$_.JMethodIDPtr,
+    ).object<AccountInfo?>(const $AccountInfo$NullableType());
+  }
+
+  static final _id_component15 = _class.instanceMethodId(
+    r'component15',
+    r'()Lcom/datadog/android/privacy/TrackingConsent;',
+  );
+
+  static final _component15 =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallObjectMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public final com.datadog.android.privacy.TrackingConsent component15()`
+  /// The returned object must be released after use, by calling the [release] method.
+  jni$_.JObject component15() {
+    return _component15(
+      reference.pointer,
+      _id_component15 as jni$_.JMethodIDPtr,
+    ).object<jni$_.JObject>(const jni$_.JObjectType());
+  }
+
+  static final _id_component16 = _class.instanceMethodId(
+    r'component16',
+    r'()Ljava/lang/String;',
+  );
+
+  static final _component16 =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallObjectMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public final java.lang.String component16()`
+  /// The returned object must be released after use, by calling the [release] method.
+  jni$_.JString? component16() {
+    return _component16(
+      reference.pointer,
+      _id_component16 as jni$_.JMethodIDPtr,
+    ).object<jni$_.JString?>(const jni$_.JStringNullableType());
+  }
+
+  static final _id_component17 = _class.instanceMethodId(
+    r'component17',
+    r'()Ljava/util/Map;',
+  );
+
+  static final _component17 =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallObjectMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public final java.util.Map<java.lang.String, java.util.Map<java.lang.String, java.lang.Object>> component17()`
+  /// The returned object must be released after use, by calling the [release] method.
+  jni$_.JMap<jni$_.JString, jni$_.JMap<jni$_.JString, jni$_.JObject?>>
+  component17() {
+    return _component17(
+      reference.pointer,
+      _id_component17 as jni$_.JMethodIDPtr,
+    ).object<
+      jni$_.JMap<jni$_.JString, jni$_.JMap<jni$_.JString, jni$_.JObject?>>
+    >(
+      const jni$_.JMapType<
+        jni$_.JString,
+        jni$_.JMap<jni$_.JString, jni$_.JObject?>
+      >(
+        jni$_.JStringType(),
+        jni$_.JMapType<jni$_.JString, jni$_.JObject?>(
+          jni$_.JStringType(),
+          jni$_.JObjectNullableType(),
+        ),
+      ),
+    );
+  }
+
+  static final _id_copy = _class.instanceMethodId(
+    r'copy',
+    r'(Lcom/datadog/android/DatadogSite;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lcom/datadog/android/api/context/TimeInfo;Lcom/datadog/android/api/context/ProcessInfo;Lcom/datadog/android/api/context/NetworkInfo;Lcom/datadog/android/api/context/DeviceInfo;Lcom/datadog/android/api/context/UserInfo;Lcom/datadog/android/api/context/AccountInfo;Lcom/datadog/android/privacy/TrackingConsent;Ljava/lang/String;Ljava/util/Map;)Lcom/datadog/android/api/context/DatadogContext;',
+  );
+
+  static final _copy =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+                jni$_.VarArgs<
+                  (
+                    jni$_.Pointer<jni$_.Void>,
+                    jni$_.Pointer<jni$_.Void>,
+                    jni$_.Pointer<jni$_.Void>,
+                    jni$_.Pointer<jni$_.Void>,
+                    jni$_.Pointer<jni$_.Void>,
+                    jni$_.Pointer<jni$_.Void>,
+                    jni$_.Pointer<jni$_.Void>,
+                    jni$_.Pointer<jni$_.Void>,
+                    jni$_.Pointer<jni$_.Void>,
+                    jni$_.Pointer<jni$_.Void>,
+                    jni$_.Pointer<jni$_.Void>,
+                    jni$_.Pointer<jni$_.Void>,
+                    jni$_.Pointer<jni$_.Void>,
+                    jni$_.Pointer<jni$_.Void>,
+                    jni$_.Pointer<jni$_.Void>,
+                    jni$_.Pointer<jni$_.Void>,
+                    jni$_.Pointer<jni$_.Void>,
+                  )
+                >,
+              )
+            >
+          >('globalEnv_CallObjectMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.Pointer<jni$_.Void>,
+            )
+          >();
+
+  /// from: `public final com.datadog.android.api.context.DatadogContext copy(com.datadog.android.DatadogSite datadogSite, java.lang.String string, java.lang.String string1, java.lang.String string2, java.lang.String string3, java.lang.String string4, java.lang.String string5, java.lang.String string6, com.datadog.android.api.context.TimeInfo timeInfo, com.datadog.android.api.context.ProcessInfo processInfo, com.datadog.android.api.context.NetworkInfo networkInfo, com.datadog.android.api.context.DeviceInfo deviceInfo, com.datadog.android.api.context.UserInfo userInfo, com.datadog.android.api.context.AccountInfo accountInfo, com.datadog.android.privacy.TrackingConsent trackingConsent, java.lang.String string7, java.util.Map<java.lang.String, ? extends java.util.Map> map)`
+  /// The returned object must be released after use, by calling the [release] method.
+  DatadogContext copy(
+    jni$_.JObject datadogSite,
+    jni$_.JString string,
+    jni$_.JString string1,
+    jni$_.JString string2,
+    jni$_.JString string3,
+    jni$_.JString string4,
+    jni$_.JString string5,
+    jni$_.JString string6,
+    jni$_.JObject timeInfo,
+    jni$_.JObject processInfo,
+    jni$_.JObject networkInfo,
+    jni$_.JObject deviceInfo,
+    UserInfo userInfo,
+    AccountInfo? accountInfo,
+    jni$_.JObject trackingConsent,
+    jni$_.JString? string7,
+    jni$_.JMap<jni$_.JString, jni$_.JMap<jni$_.JString, jni$_.JObject?>> map,
+  ) {
+    final _$datadogSite = datadogSite.reference;
+    final _$string = string.reference;
+    final _$string1 = string1.reference;
+    final _$string2 = string2.reference;
+    final _$string3 = string3.reference;
+    final _$string4 = string4.reference;
+    final _$string5 = string5.reference;
+    final _$string6 = string6.reference;
+    final _$timeInfo = timeInfo.reference;
+    final _$processInfo = processInfo.reference;
+    final _$networkInfo = networkInfo.reference;
+    final _$deviceInfo = deviceInfo.reference;
+    final _$userInfo = userInfo.reference;
+    final _$accountInfo = accountInfo?.reference ?? jni$_.jNullReference;
+    final _$trackingConsent = trackingConsent.reference;
+    final _$string7 = string7?.reference ?? jni$_.jNullReference;
+    final _$map = map.reference;
+    return _copy(
+      reference.pointer,
+      _id_copy as jni$_.JMethodIDPtr,
+      _$datadogSite.pointer,
+      _$string.pointer,
+      _$string1.pointer,
+      _$string2.pointer,
+      _$string3.pointer,
+      _$string4.pointer,
+      _$string5.pointer,
+      _$string6.pointer,
+      _$timeInfo.pointer,
+      _$processInfo.pointer,
+      _$networkInfo.pointer,
+      _$deviceInfo.pointer,
+      _$userInfo.pointer,
+      _$accountInfo.pointer,
+      _$trackingConsent.pointer,
+      _$string7.pointer,
+      _$map.pointer,
+    ).object<DatadogContext>(const $DatadogContext$Type());
+  }
+
+  static final _id_toString$1 = _class.instanceMethodId(
+    r'toString',
+    r'()Ljava/lang/String;',
+  );
+
+  static final _toString$1 =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallObjectMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public java.lang.String toString()`
+  /// The returned object must be released after use, by calling the [release] method.
+  jni$_.JString toString$1() {
+    return _toString$1(
+      reference.pointer,
+      _id_toString$1 as jni$_.JMethodIDPtr,
+    ).object<jni$_.JString>(const jni$_.JStringType());
+  }
+
+  static final _id_hashCode$1 = _class.instanceMethodId(r'hashCode', r'()I');
+
+  static final _hashCode$1 =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallIntMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public int hashCode()`
+  int hashCode$1() {
+    return _hashCode$1(
+      reference.pointer,
+      _id_hashCode$1 as jni$_.JMethodIDPtr,
+    ).integer;
+  }
+
+  static final _id_equals = _class.instanceMethodId(
+    r'equals',
+    r'(Ljava/lang/Object;)Z',
+  );
+
+  static final _equals =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+                jni$_.VarArgs<(jni$_.Pointer<jni$_.Void>,)>,
+              )
+            >
+          >('globalEnv_CallBooleanMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+              jni$_.Pointer<jni$_.Void>,
+            )
+          >();
+
+  /// from: `public boolean equals(java.lang.Object object)`
+  bool equals(jni$_.JObject? object) {
+    final _$object = object?.reference ?? jni$_.jNullReference;
+    return _equals(
+      reference.pointer,
+      _id_equals as jni$_.JMethodIDPtr,
+      _$object.pointer,
+    ).boolean;
+  }
+}
+
+final class $DatadogContext$NullableType
+    extends jni$_.JObjType<DatadogContext?> {
+  @jni$_.internal
+  const $DatadogContext$NullableType();
+
+  @jni$_.internal
+  @core$_.override
+  String get signature => r'Lcom/datadog/android/api/context/DatadogContext;';
+
+  @jni$_.internal
+  @core$_.override
+  DatadogContext? fromReference(jni$_.JReference reference) =>
+      reference.isNull ? null : DatadogContext.fromReference(reference);
+  @jni$_.internal
+  @core$_.override
+  jni$_.JObjType get superType => const jni$_.JObjectType();
+
+  @jni$_.internal
+  @core$_.override
+  jni$_.JObjType<DatadogContext?> get nullableType => this;
+
+  @jni$_.internal
+  @core$_.override
+  final superCount = 1;
+
+  @core$_.override
+  int get hashCode => ($DatadogContext$NullableType).hashCode;
+
+  @core$_.override
+  bool operator ==(Object other) {
+    return other.runtimeType == ($DatadogContext$NullableType) &&
+        other is $DatadogContext$NullableType;
+  }
+}
+
+final class $DatadogContext$Type extends jni$_.JObjType<DatadogContext> {
+  @jni$_.internal
+  const $DatadogContext$Type();
+
+  @jni$_.internal
+  @core$_.override
+  String get signature => r'Lcom/datadog/android/api/context/DatadogContext;';
+
+  @jni$_.internal
+  @core$_.override
+  DatadogContext fromReference(jni$_.JReference reference) =>
+      DatadogContext.fromReference(reference);
+  @jni$_.internal
+  @core$_.override
+  jni$_.JObjType get superType => const jni$_.JObjectType();
+
+  @jni$_.internal
+  @core$_.override
+  jni$_.JObjType<DatadogContext?> get nullableType =>
+      const $DatadogContext$NullableType();
+
+  @jni$_.internal
+  @core$_.override
+  final superCount = 1;
+
+  @core$_.override
+  int get hashCode => ($DatadogContext$Type).hashCode;
+
+  @core$_.override
+  bool operator ==(Object other) {
+    return other.runtimeType == ($DatadogContext$Type) &&
+        other is $DatadogContext$Type;
+  }
+}
+
+/// from: `com.datadog.android.api.context.UserInfo$Companion`
+class UserInfo$Companion extends jni$_.JObject {
+  @jni$_.internal
+  @core$_.override
+  final jni$_.JObjType<UserInfo$Companion> $type;
+
+  @jni$_.internal
+  UserInfo$Companion.fromReference(jni$_.JReference reference)
+    : $type = type,
+      super.fromReference(reference);
+
+  static final _class = jni$_.JClass.forName(
+    r'com/datadog/android/api/context/UserInfo$Companion',
+  );
+
+  /// The type which includes information such as the signature of this class.
+  static const nullableType = $UserInfo$Companion$NullableType();
+  static const type = $UserInfo$Companion$Type();
+  static final _id_fromJson = _class.instanceMethodId(
+    r'fromJson',
+    r'(Ljava/lang/String;)Lcom/datadog/android/api/context/UserInfo;',
+  );
+
+  static final _fromJson =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+                jni$_.VarArgs<(jni$_.Pointer<jni$_.Void>,)>,
+              )
+            >
+          >('globalEnv_CallObjectMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+              jni$_.Pointer<jni$_.Void>,
+            )
+          >();
+
+  /// from: `public final com.datadog.android.api.context.UserInfo fromJson(java.lang.String string)`
+  /// The returned object must be released after use, by calling the [release] method.
+  UserInfo fromJson(jni$_.JString string) {
+    final _$string = string.reference;
+    return _fromJson(
+      reference.pointer,
+      _id_fromJson as jni$_.JMethodIDPtr,
+      _$string.pointer,
+    ).object<UserInfo>(const $UserInfo$Type());
+  }
+
+  static final _id_fromJsonObject = _class.instanceMethodId(
+    r'fromJsonObject',
+    r'(Lcom/google/gson/JsonObject;)Lcom/datadog/android/api/context/UserInfo;',
+  );
+
+  static final _fromJsonObject =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+                jni$_.VarArgs<(jni$_.Pointer<jni$_.Void>,)>,
+              )
+            >
+          >('globalEnv_CallObjectMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+              jni$_.Pointer<jni$_.Void>,
+            )
+          >();
+
+  /// from: `public final com.datadog.android.api.context.UserInfo fromJsonObject(com.google.gson.JsonObject jsonObject)`
+  /// The returned object must be released after use, by calling the [release] method.
+  UserInfo fromJsonObject(jni$_.JObject jsonObject) {
+    final _$jsonObject = jsonObject.reference;
+    return _fromJsonObject(
+      reference.pointer,
+      _id_fromJsonObject as jni$_.JMethodIDPtr,
+      _$jsonObject.pointer,
+    ).object<UserInfo>(const $UserInfo$Type());
+  }
+
+  static final _id_new$ = _class.constructorId(
+    r'(Lkotlin/jvm/internal/DefaultConstructorMarker;)V',
+  );
+
+  static final _new$ =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+                jni$_.VarArgs<(jni$_.Pointer<jni$_.Void>,)>,
+              )
+            >
+          >('globalEnv_NewObject')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+              jni$_.Pointer<jni$_.Void>,
+            )
+          >();
+
+  /// from: `synthetic public void <init>(kotlin.jvm.internal.DefaultConstructorMarker defaultConstructorMarker)`
+  /// The returned object must be released after use, by calling the [release] method.
+  factory UserInfo$Companion(jni$_.JObject? defaultConstructorMarker) {
+    final _$defaultConstructorMarker =
+        defaultConstructorMarker?.reference ?? jni$_.jNullReference;
+    return UserInfo$Companion.fromReference(
+      _new$(
+        _class.reference.pointer,
+        _id_new$ as jni$_.JMethodIDPtr,
+        _$defaultConstructorMarker.pointer,
+      ).reference,
+    );
+  }
+}
+
+final class $UserInfo$Companion$NullableType
+    extends jni$_.JObjType<UserInfo$Companion?> {
+  @jni$_.internal
+  const $UserInfo$Companion$NullableType();
+
+  @jni$_.internal
+  @core$_.override
+  String get signature =>
+      r'Lcom/datadog/android/api/context/UserInfo$Companion;';
+
+  @jni$_.internal
+  @core$_.override
+  UserInfo$Companion? fromReference(jni$_.JReference reference) =>
+      reference.isNull ? null : UserInfo$Companion.fromReference(reference);
+  @jni$_.internal
+  @core$_.override
+  jni$_.JObjType get superType => const jni$_.JObjectType();
+
+  @jni$_.internal
+  @core$_.override
+  jni$_.JObjType<UserInfo$Companion?> get nullableType => this;
+
+  @jni$_.internal
+  @core$_.override
+  final superCount = 1;
+
+  @core$_.override
+  int get hashCode => ($UserInfo$Companion$NullableType).hashCode;
+
+  @core$_.override
+  bool operator ==(Object other) {
+    return other.runtimeType == ($UserInfo$Companion$NullableType) &&
+        other is $UserInfo$Companion$NullableType;
+  }
+}
+
+final class $UserInfo$Companion$Type
+    extends jni$_.JObjType<UserInfo$Companion> {
+  @jni$_.internal
+  const $UserInfo$Companion$Type();
+
+  @jni$_.internal
+  @core$_.override
+  String get signature =>
+      r'Lcom/datadog/android/api/context/UserInfo$Companion;';
+
+  @jni$_.internal
+  @core$_.override
+  UserInfo$Companion fromReference(jni$_.JReference reference) =>
+      UserInfo$Companion.fromReference(reference);
+  @jni$_.internal
+  @core$_.override
+  jni$_.JObjType get superType => const jni$_.JObjectType();
+
+  @jni$_.internal
+  @core$_.override
+  jni$_.JObjType<UserInfo$Companion?> get nullableType =>
+      const $UserInfo$Companion$NullableType();
+
+  @jni$_.internal
+  @core$_.override
+  final superCount = 1;
+
+  @core$_.override
+  int get hashCode => ($UserInfo$Companion$Type).hashCode;
+
+  @core$_.override
+  bool operator ==(Object other) {
+    return other.runtimeType == ($UserInfo$Companion$Type) &&
+        other is $UserInfo$Companion$Type;
+  }
+}
+
+/// from: `com.datadog.android.api.context.UserInfo`
+class UserInfo extends jni$_.JObject {
+  @jni$_.internal
+  @core$_.override
+  final jni$_.JObjType<UserInfo> $type;
+
+  @jni$_.internal
+  UserInfo.fromReference(jni$_.JReference reference)
+    : $type = type,
+      super.fromReference(reference);
+
+  static final _class = jni$_.JClass.forName(
+    r'com/datadog/android/api/context/UserInfo',
+  );
+
+  /// The type which includes information such as the signature of this class.
+  static const nullableType = $UserInfo$NullableType();
+  static const type = $UserInfo$Type();
+  static final _id_Companion = _class.staticFieldId(
+    r'Companion',
+    r'Lcom/datadog/android/api/context/UserInfo$Companion;',
+  );
+
+  /// from: `static public final com.datadog.android.api.context.UserInfo$Companion Companion`
+  /// The returned object must be released after use, by calling the [release] method.
+  static UserInfo$Companion get Companion =>
+      _id_Companion.get(_class, const $UserInfo$Companion$Type());
+
+  static final _id_new$ = _class.constructorId(
+    r'(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;)V',
+  );
+
+  static final _new$ =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+                jni$_.VarArgs<
+                  (
+                    jni$_.Pointer<jni$_.Void>,
+                    jni$_.Pointer<jni$_.Void>,
+                    jni$_.Pointer<jni$_.Void>,
+                    jni$_.Pointer<jni$_.Void>,
+                    jni$_.Pointer<jni$_.Void>,
+                  )
+                >,
+              )
+            >
+          >('globalEnv_NewObject')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.Pointer<jni$_.Void>,
+            )
+          >();
+
+  /// from: `public void <init>(java.lang.String string, java.lang.String string1, java.lang.String string2, java.lang.String string3, java.util.Map<java.lang.String, ? extends java.lang.Object> map)`
+  /// The returned object must be released after use, by calling the [release] method.
+  factory UserInfo(
+    jni$_.JString? string,
+    jni$_.JString? string1,
+    jni$_.JString? string2,
+    jni$_.JString? string3,
+    jni$_.JMap<jni$_.JString, jni$_.JObject?> map,
+  ) {
+    final _$string = string?.reference ?? jni$_.jNullReference;
+    final _$string1 = string1?.reference ?? jni$_.jNullReference;
+    final _$string2 = string2?.reference ?? jni$_.jNullReference;
+    final _$string3 = string3?.reference ?? jni$_.jNullReference;
+    final _$map = map.reference;
+    return UserInfo.fromReference(
+      _new$(
+        _class.reference.pointer,
+        _id_new$ as jni$_.JMethodIDPtr,
+        _$string.pointer,
+        _$string1.pointer,
+        _$string2.pointer,
+        _$string3.pointer,
+        _$map.pointer,
+      ).reference,
+    );
+  }
+
+  static final _id_new$1 = _class.constructorId(
+    r'(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;ILkotlin/jvm/internal/DefaultConstructorMarker;)V',
+  );
+
+  static final _new$1 =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+                jni$_.VarArgs<
+                  (
+                    jni$_.Pointer<jni$_.Void>,
+                    jni$_.Pointer<jni$_.Void>,
+                    jni$_.Pointer<jni$_.Void>,
+                    jni$_.Pointer<jni$_.Void>,
+                    jni$_.Pointer<jni$_.Void>,
+                    jni$_.Int32,
+                    jni$_.Pointer<jni$_.Void>,
+                  )
+                >,
+              )
+            >
+          >('globalEnv_NewObject')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.Pointer<jni$_.Void>,
+              int,
+              jni$_.Pointer<jni$_.Void>,
+            )
+          >();
+
+  /// from: `synthetic public void <init>(java.lang.String string, java.lang.String string1, java.lang.String string2, java.lang.String string3, java.util.Map map, int i, kotlin.jvm.internal.DefaultConstructorMarker defaultConstructorMarker)`
+  /// The returned object must be released after use, by calling the [release] method.
+  factory UserInfo.new$1(
+    jni$_.JString? string,
+    jni$_.JString? string1,
+    jni$_.JString? string2,
+    jni$_.JString? string3,
+    jni$_.JMap<jni$_.JObject?, jni$_.JObject?>? map,
+    int i,
+    jni$_.JObject? defaultConstructorMarker,
+  ) {
+    final _$string = string?.reference ?? jni$_.jNullReference;
+    final _$string1 = string1?.reference ?? jni$_.jNullReference;
+    final _$string2 = string2?.reference ?? jni$_.jNullReference;
+    final _$string3 = string3?.reference ?? jni$_.jNullReference;
+    final _$map = map?.reference ?? jni$_.jNullReference;
+    final _$defaultConstructorMarker =
+        defaultConstructorMarker?.reference ?? jni$_.jNullReference;
+    return UserInfo.fromReference(
+      _new$1(
+        _class.reference.pointer,
+        _id_new$1 as jni$_.JMethodIDPtr,
+        _$string.pointer,
+        _$string1.pointer,
+        _$string2.pointer,
+        _$string3.pointer,
+        _$map.pointer,
+        i,
+        _$defaultConstructorMarker.pointer,
+      ).reference,
+    );
+  }
+
+  static final _id_getAnonymousId = _class.instanceMethodId(
+    r'getAnonymousId',
+    r'()Ljava/lang/String;',
+  );
+
+  static final _getAnonymousId =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallObjectMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public final java.lang.String getAnonymousId()`
+  /// The returned object must be released after use, by calling the [release] method.
+  jni$_.JString? getAnonymousId() {
+    return _getAnonymousId(
+      reference.pointer,
+      _id_getAnonymousId as jni$_.JMethodIDPtr,
+    ).object<jni$_.JString?>(const jni$_.JStringNullableType());
+  }
+
+  static final _id_getId = _class.instanceMethodId(
+    r'getId',
+    r'()Ljava/lang/String;',
+  );
+
+  static final _getId =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallObjectMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public final java.lang.String getId()`
+  /// The returned object must be released after use, by calling the [release] method.
+  jni$_.JString? getId() {
+    return _getId(
+      reference.pointer,
+      _id_getId as jni$_.JMethodIDPtr,
+    ).object<jni$_.JString?>(const jni$_.JStringNullableType());
+  }
+
+  static final _id_getName = _class.instanceMethodId(
+    r'getName',
+    r'()Ljava/lang/String;',
+  );
+
+  static final _getName =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallObjectMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public final java.lang.String getName()`
+  /// The returned object must be released after use, by calling the [release] method.
+  jni$_.JString? getName() {
+    return _getName(
+      reference.pointer,
+      _id_getName as jni$_.JMethodIDPtr,
+    ).object<jni$_.JString?>(const jni$_.JStringNullableType());
+  }
+
+  static final _id_getEmail = _class.instanceMethodId(
+    r'getEmail',
+    r'()Ljava/lang/String;',
+  );
+
+  static final _getEmail =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallObjectMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public final java.lang.String getEmail()`
+  /// The returned object must be released after use, by calling the [release] method.
+  jni$_.JString? getEmail() {
+    return _getEmail(
+      reference.pointer,
+      _id_getEmail as jni$_.JMethodIDPtr,
+    ).object<jni$_.JString?>(const jni$_.JStringNullableType());
+  }
+
+  static final _id_getAdditionalProperties = _class.instanceMethodId(
+    r'getAdditionalProperties',
+    r'()Ljava/util/Map;',
+  );
+
+  static final _getAdditionalProperties =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallObjectMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public final java.util.Map<java.lang.String, java.lang.Object> getAdditionalProperties()`
+  /// The returned object must be released after use, by calling the [release] method.
+  jni$_.JMap<jni$_.JString, jni$_.JObject?> getAdditionalProperties() {
+    return _getAdditionalProperties(
+      reference.pointer,
+      _id_getAdditionalProperties as jni$_.JMethodIDPtr,
+    ).object<jni$_.JMap<jni$_.JString, jni$_.JObject?>>(
+      const jni$_.JMapType<jni$_.JString, jni$_.JObject?>(
+        jni$_.JStringType(),
+        jni$_.JObjectNullableType(),
+      ),
+    );
+  }
+
+  static final _id_component1 = _class.instanceMethodId(
+    r'component1',
+    r'()Ljava/lang/String;',
+  );
+
+  static final _component1 =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallObjectMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public final java.lang.String component1()`
+  /// The returned object must be released after use, by calling the [release] method.
+  jni$_.JString? component1() {
+    return _component1(
+      reference.pointer,
+      _id_component1 as jni$_.JMethodIDPtr,
+    ).object<jni$_.JString?>(const jni$_.JStringNullableType());
+  }
+
+  static final _id_component2 = _class.instanceMethodId(
+    r'component2',
+    r'()Ljava/lang/String;',
+  );
+
+  static final _component2 =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallObjectMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public final java.lang.String component2()`
+  /// The returned object must be released after use, by calling the [release] method.
+  jni$_.JString? component2() {
+    return _component2(
+      reference.pointer,
+      _id_component2 as jni$_.JMethodIDPtr,
+    ).object<jni$_.JString?>(const jni$_.JStringNullableType());
+  }
+
+  static final _id_component3 = _class.instanceMethodId(
+    r'component3',
+    r'()Ljava/lang/String;',
+  );
+
+  static final _component3 =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallObjectMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public final java.lang.String component3()`
+  /// The returned object must be released after use, by calling the [release] method.
+  jni$_.JString? component3() {
+    return _component3(
+      reference.pointer,
+      _id_component3 as jni$_.JMethodIDPtr,
+    ).object<jni$_.JString?>(const jni$_.JStringNullableType());
+  }
+
+  static final _id_component4 = _class.instanceMethodId(
+    r'component4',
+    r'()Ljava/lang/String;',
+  );
+
+  static final _component4 =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallObjectMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public final java.lang.String component4()`
+  /// The returned object must be released after use, by calling the [release] method.
+  jni$_.JString? component4() {
+    return _component4(
+      reference.pointer,
+      _id_component4 as jni$_.JMethodIDPtr,
+    ).object<jni$_.JString?>(const jni$_.JStringNullableType());
+  }
+
+  static final _id_component5 = _class.instanceMethodId(
+    r'component5',
+    r'()Ljava/util/Map;',
+  );
+
+  static final _component5 =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallObjectMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public final java.util.Map<java.lang.String, java.lang.Object> component5()`
+  /// The returned object must be released after use, by calling the [release] method.
+  jni$_.JMap<jni$_.JString, jni$_.JObject?> component5() {
+    return _component5(
+      reference.pointer,
+      _id_component5 as jni$_.JMethodIDPtr,
+    ).object<jni$_.JMap<jni$_.JString, jni$_.JObject?>>(
+      const jni$_.JMapType<jni$_.JString, jni$_.JObject?>(
+        jni$_.JStringType(),
+        jni$_.JObjectNullableType(),
+      ),
+    );
+  }
+
+  static final _id_copy = _class.instanceMethodId(
+    r'copy',
+    r'(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;)Lcom/datadog/android/api/context/UserInfo;',
+  );
+
+  static final _copy =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+                jni$_.VarArgs<
+                  (
+                    jni$_.Pointer<jni$_.Void>,
+                    jni$_.Pointer<jni$_.Void>,
+                    jni$_.Pointer<jni$_.Void>,
+                    jni$_.Pointer<jni$_.Void>,
+                    jni$_.Pointer<jni$_.Void>,
+                  )
+                >,
+              )
+            >
+          >('globalEnv_CallObjectMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.Pointer<jni$_.Void>,
+            )
+          >();
+
+  /// from: `public final com.datadog.android.api.context.UserInfo copy(java.lang.String string, java.lang.String string1, java.lang.String string2, java.lang.String string3, java.util.Map<java.lang.String, ? extends java.lang.Object> map)`
+  /// The returned object must be released after use, by calling the [release] method.
+  UserInfo copy(
+    jni$_.JString? string,
+    jni$_.JString? string1,
+    jni$_.JString? string2,
+    jni$_.JString? string3,
+    jni$_.JMap<jni$_.JString, jni$_.JObject?> map,
+  ) {
+    final _$string = string?.reference ?? jni$_.jNullReference;
+    final _$string1 = string1?.reference ?? jni$_.jNullReference;
+    final _$string2 = string2?.reference ?? jni$_.jNullReference;
+    final _$string3 = string3?.reference ?? jni$_.jNullReference;
+    final _$map = map.reference;
+    return _copy(
+      reference.pointer,
+      _id_copy as jni$_.JMethodIDPtr,
+      _$string.pointer,
+      _$string1.pointer,
+      _$string2.pointer,
+      _$string3.pointer,
+      _$map.pointer,
+    ).object<UserInfo>(const $UserInfo$Type());
+  }
+
+  static final _id_toString$1 = _class.instanceMethodId(
+    r'toString',
+    r'()Ljava/lang/String;',
+  );
+
+  static final _toString$1 =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallObjectMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public java.lang.String toString()`
+  /// The returned object must be released after use, by calling the [release] method.
+  jni$_.JString toString$1() {
+    return _toString$1(
+      reference.pointer,
+      _id_toString$1 as jni$_.JMethodIDPtr,
+    ).object<jni$_.JString>(const jni$_.JStringType());
+  }
+
+  static final _id_hashCode$1 = _class.instanceMethodId(r'hashCode', r'()I');
+
+  static final _hashCode$1 =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallIntMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public int hashCode()`
+  int hashCode$1() {
+    return _hashCode$1(
+      reference.pointer,
+      _id_hashCode$1 as jni$_.JMethodIDPtr,
+    ).integer;
+  }
+
+  static final _id_equals = _class.instanceMethodId(
+    r'equals',
+    r'(Ljava/lang/Object;)Z',
+  );
+
+  static final _equals =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+                jni$_.VarArgs<(jni$_.Pointer<jni$_.Void>,)>,
+              )
+            >
+          >('globalEnv_CallBooleanMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+              jni$_.Pointer<jni$_.Void>,
+            )
+          >();
+
+  /// from: `public boolean equals(java.lang.Object object)`
+  bool equals(jni$_.JObject? object) {
+    final _$object = object?.reference ?? jni$_.jNullReference;
+    return _equals(
+      reference.pointer,
+      _id_equals as jni$_.JMethodIDPtr,
+      _$object.pointer,
+    ).boolean;
+  }
+
+  static final _id_new$2 = _class.constructorId(r'()V');
+
+  static final _new$2 =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_NewObject')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public void <init>()`
+  /// The returned object must be released after use, by calling the [release] method.
+  factory UserInfo.new$2() {
+    return UserInfo.fromReference(
+      _new$2(
+        _class.reference.pointer,
+        _id_new$2 as jni$_.JMethodIDPtr,
+      ).reference,
+    );
+  }
+
+  static final _id_fromJson = _class.staticMethodId(
+    r'fromJson',
+    r'(Ljava/lang/String;)Lcom/datadog/android/api/context/UserInfo;',
+  );
+
+  static final _fromJson =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+                jni$_.VarArgs<(jni$_.Pointer<jni$_.Void>,)>,
+              )
+            >
+          >('globalEnv_CallStaticObjectMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+              jni$_.Pointer<jni$_.Void>,
+            )
+          >();
+
+  /// from: `static public final com.datadog.android.api.context.UserInfo fromJson(java.lang.String string)`
+  /// The returned object must be released after use, by calling the [release] method.
+  static UserInfo fromJson(jni$_.JString string) {
+    final _$string = string.reference;
+    return _fromJson(
+      _class.reference.pointer,
+      _id_fromJson as jni$_.JMethodIDPtr,
+      _$string.pointer,
+    ).object<UserInfo>(const $UserInfo$Type());
+  }
+
+  static final _id_fromJsonObject = _class.staticMethodId(
+    r'fromJsonObject',
+    r'(Lcom/google/gson/JsonObject;)Lcom/datadog/android/api/context/UserInfo;',
+  );
+
+  static final _fromJsonObject =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+                jni$_.VarArgs<(jni$_.Pointer<jni$_.Void>,)>,
+              )
+            >
+          >('globalEnv_CallStaticObjectMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+              jni$_.Pointer<jni$_.Void>,
+            )
+          >();
+
+  /// from: `static public final com.datadog.android.api.context.UserInfo fromJsonObject(com.google.gson.JsonObject jsonObject)`
+  /// The returned object must be released after use, by calling the [release] method.
+  static UserInfo fromJsonObject(jni$_.JObject jsonObject) {
+    final _$jsonObject = jsonObject.reference;
+    return _fromJsonObject(
+      _class.reference.pointer,
+      _id_fromJsonObject as jni$_.JMethodIDPtr,
+      _$jsonObject.pointer,
+    ).object<UserInfo>(const $UserInfo$Type());
+  }
+}
+
+final class $UserInfo$NullableType extends jni$_.JObjType<UserInfo?> {
+  @jni$_.internal
+  const $UserInfo$NullableType();
+
+  @jni$_.internal
+  @core$_.override
+  String get signature => r'Lcom/datadog/android/api/context/UserInfo;';
+
+  @jni$_.internal
+  @core$_.override
+  UserInfo? fromReference(jni$_.JReference reference) =>
+      reference.isNull ? null : UserInfo.fromReference(reference);
+  @jni$_.internal
+  @core$_.override
+  jni$_.JObjType get superType => const jni$_.JObjectType();
+
+  @jni$_.internal
+  @core$_.override
+  jni$_.JObjType<UserInfo?> get nullableType => this;
+
+  @jni$_.internal
+  @core$_.override
+  final superCount = 1;
+
+  @core$_.override
+  int get hashCode => ($UserInfo$NullableType).hashCode;
+
+  @core$_.override
+  bool operator ==(Object other) {
+    return other.runtimeType == ($UserInfo$NullableType) &&
+        other is $UserInfo$NullableType;
+  }
+}
+
+final class $UserInfo$Type extends jni$_.JObjType<UserInfo> {
+  @jni$_.internal
+  const $UserInfo$Type();
+
+  @jni$_.internal
+  @core$_.override
+  String get signature => r'Lcom/datadog/android/api/context/UserInfo;';
+
+  @jni$_.internal
+  @core$_.override
+  UserInfo fromReference(jni$_.JReference reference) =>
+      UserInfo.fromReference(reference);
+  @jni$_.internal
+  @core$_.override
+  jni$_.JObjType get superType => const jni$_.JObjectType();
+
+  @jni$_.internal
+  @core$_.override
+  jni$_.JObjType<UserInfo?> get nullableType => const $UserInfo$NullableType();
+
+  @jni$_.internal
+  @core$_.override
+  final superCount = 1;
+
+  @core$_.override
+  int get hashCode => ($UserInfo$Type).hashCode;
+
+  @core$_.override
+  bool operator ==(Object other) {
+    return other.runtimeType == ($UserInfo$Type) && other is $UserInfo$Type;
+  }
+}
+
+/// from: `com.datadog.android.api.context.AccountInfo`
+class AccountInfo extends jni$_.JObject {
+  @jni$_.internal
+  @core$_.override
+  final jni$_.JObjType<AccountInfo> $type;
+
+  @jni$_.internal
+  AccountInfo.fromReference(jni$_.JReference reference)
+    : $type = type,
+      super.fromReference(reference);
+
+  static final _class = jni$_.JClass.forName(
+    r'com/datadog/android/api/context/AccountInfo',
+  );
+
+  /// The type which includes information such as the signature of this class.
+  static const nullableType = $AccountInfo$NullableType();
+  static const type = $AccountInfo$Type();
+  static final _id_new$ = _class.constructorId(
+    r'(Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;)V',
+  );
+
+  static final _new$ =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+                jni$_.VarArgs<
+                  (
+                    jni$_.Pointer<jni$_.Void>,
+                    jni$_.Pointer<jni$_.Void>,
+                    jni$_.Pointer<jni$_.Void>,
+                  )
+                >,
+              )
+            >
+          >('globalEnv_NewObject')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.Pointer<jni$_.Void>,
+            )
+          >();
+
+  /// from: `public void <init>(java.lang.String string, java.lang.String string1, java.util.Map<java.lang.String, ? extends java.lang.Object> map)`
+  /// The returned object must be released after use, by calling the [release] method.
+  factory AccountInfo(
+    jni$_.JString string,
+    jni$_.JString? string1,
+    jni$_.JMap<jni$_.JString, jni$_.JObject?> map,
+  ) {
+    final _$string = string.reference;
+    final _$string1 = string1?.reference ?? jni$_.jNullReference;
+    final _$map = map.reference;
+    return AccountInfo.fromReference(
+      _new$(
+        _class.reference.pointer,
+        _id_new$ as jni$_.JMethodIDPtr,
+        _$string.pointer,
+        _$string1.pointer,
+        _$map.pointer,
+      ).reference,
+    );
+  }
+
+  static final _id_new$1 = _class.constructorId(
+    r'(Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;ILkotlin/jvm/internal/DefaultConstructorMarker;)V',
+  );
+
+  static final _new$1 =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+                jni$_.VarArgs<
+                  (
+                    jni$_.Pointer<jni$_.Void>,
+                    jni$_.Pointer<jni$_.Void>,
+                    jni$_.Pointer<jni$_.Void>,
+                    jni$_.Int32,
+                    jni$_.Pointer<jni$_.Void>,
+                  )
+                >,
+              )
+            >
+          >('globalEnv_NewObject')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.Pointer<jni$_.Void>,
+              int,
+              jni$_.Pointer<jni$_.Void>,
+            )
+          >();
+
+  /// from: `synthetic public void <init>(java.lang.String string, java.lang.String string1, java.util.Map map, int i, kotlin.jvm.internal.DefaultConstructorMarker defaultConstructorMarker)`
+  /// The returned object must be released after use, by calling the [release] method.
+  factory AccountInfo.new$1(
+    jni$_.JString? string,
+    jni$_.JString? string1,
+    jni$_.JMap<jni$_.JObject?, jni$_.JObject?>? map,
+    int i,
+    jni$_.JObject? defaultConstructorMarker,
+  ) {
+    final _$string = string?.reference ?? jni$_.jNullReference;
+    final _$string1 = string1?.reference ?? jni$_.jNullReference;
+    final _$map = map?.reference ?? jni$_.jNullReference;
+    final _$defaultConstructorMarker =
+        defaultConstructorMarker?.reference ?? jni$_.jNullReference;
+    return AccountInfo.fromReference(
+      _new$1(
+        _class.reference.pointer,
+        _id_new$1 as jni$_.JMethodIDPtr,
+        _$string.pointer,
+        _$string1.pointer,
+        _$map.pointer,
+        i,
+        _$defaultConstructorMarker.pointer,
+      ).reference,
+    );
+  }
+
+  static final _id_getId = _class.instanceMethodId(
+    r'getId',
+    r'()Ljava/lang/String;',
+  );
+
+  static final _getId =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallObjectMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public final java.lang.String getId()`
+  /// The returned object must be released after use, by calling the [release] method.
+  jni$_.JString getId() {
+    return _getId(
+      reference.pointer,
+      _id_getId as jni$_.JMethodIDPtr,
+    ).object<jni$_.JString>(const jni$_.JStringType());
+  }
+
+  static final _id_getName = _class.instanceMethodId(
+    r'getName',
+    r'()Ljava/lang/String;',
+  );
+
+  static final _getName =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallObjectMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public final java.lang.String getName()`
+  /// The returned object must be released after use, by calling the [release] method.
+  jni$_.JString? getName() {
+    return _getName(
+      reference.pointer,
+      _id_getName as jni$_.JMethodIDPtr,
+    ).object<jni$_.JString?>(const jni$_.JStringNullableType());
+  }
+
+  static final _id_getExtraInfo = _class.instanceMethodId(
+    r'getExtraInfo',
+    r'()Ljava/util/Map;',
+  );
+
+  static final _getExtraInfo =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallObjectMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public final java.util.Map<java.lang.String, java.lang.Object> getExtraInfo()`
+  /// The returned object must be released after use, by calling the [release] method.
+  jni$_.JMap<jni$_.JString, jni$_.JObject?> getExtraInfo() {
+    return _getExtraInfo(
+      reference.pointer,
+      _id_getExtraInfo as jni$_.JMethodIDPtr,
+    ).object<jni$_.JMap<jni$_.JString, jni$_.JObject?>>(
+      const jni$_.JMapType<jni$_.JString, jni$_.JObject?>(
+        jni$_.JStringType(),
+        jni$_.JObjectNullableType(),
+      ),
+    );
+  }
+
+  static final _id_component1 = _class.instanceMethodId(
+    r'component1',
+    r'()Ljava/lang/String;',
+  );
+
+  static final _component1 =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallObjectMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public final java.lang.String component1()`
+  /// The returned object must be released after use, by calling the [release] method.
+  jni$_.JString component1() {
+    return _component1(
+      reference.pointer,
+      _id_component1 as jni$_.JMethodIDPtr,
+    ).object<jni$_.JString>(const jni$_.JStringType());
+  }
+
+  static final _id_component2 = _class.instanceMethodId(
+    r'component2',
+    r'()Ljava/lang/String;',
+  );
+
+  static final _component2 =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallObjectMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public final java.lang.String component2()`
+  /// The returned object must be released after use, by calling the [release] method.
+  jni$_.JString? component2() {
+    return _component2(
+      reference.pointer,
+      _id_component2 as jni$_.JMethodIDPtr,
+    ).object<jni$_.JString?>(const jni$_.JStringNullableType());
+  }
+
+  static final _id_component3 = _class.instanceMethodId(
+    r'component3',
+    r'()Ljava/util/Map;',
+  );
+
+  static final _component3 =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallObjectMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public final java.util.Map<java.lang.String, java.lang.Object> component3()`
+  /// The returned object must be released after use, by calling the [release] method.
+  jni$_.JMap<jni$_.JString, jni$_.JObject?> component3() {
+    return _component3(
+      reference.pointer,
+      _id_component3 as jni$_.JMethodIDPtr,
+    ).object<jni$_.JMap<jni$_.JString, jni$_.JObject?>>(
+      const jni$_.JMapType<jni$_.JString, jni$_.JObject?>(
+        jni$_.JStringType(),
+        jni$_.JObjectNullableType(),
+      ),
+    );
+  }
+
+  static final _id_copy = _class.instanceMethodId(
+    r'copy',
+    r'(Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;)Lcom/datadog/android/api/context/AccountInfo;',
+  );
+
+  static final _copy =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+                jni$_.VarArgs<
+                  (
+                    jni$_.Pointer<jni$_.Void>,
+                    jni$_.Pointer<jni$_.Void>,
+                    jni$_.Pointer<jni$_.Void>,
+                  )
+                >,
+              )
+            >
+          >('globalEnv_CallObjectMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.Pointer<jni$_.Void>,
+            )
+          >();
+
+  /// from: `public final com.datadog.android.api.context.AccountInfo copy(java.lang.String string, java.lang.String string1, java.util.Map<java.lang.String, ? extends java.lang.Object> map)`
+  /// The returned object must be released after use, by calling the [release] method.
+  AccountInfo copy(
+    jni$_.JString string,
+    jni$_.JString? string1,
+    jni$_.JMap<jni$_.JString, jni$_.JObject?> map,
+  ) {
+    final _$string = string.reference;
+    final _$string1 = string1?.reference ?? jni$_.jNullReference;
+    final _$map = map.reference;
+    return _copy(
+      reference.pointer,
+      _id_copy as jni$_.JMethodIDPtr,
+      _$string.pointer,
+      _$string1.pointer,
+      _$map.pointer,
+    ).object<AccountInfo>(const $AccountInfo$Type());
+  }
+
+  static final _id_toString$1 = _class.instanceMethodId(
+    r'toString',
+    r'()Ljava/lang/String;',
+  );
+
+  static final _toString$1 =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallObjectMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public java.lang.String toString()`
+  /// The returned object must be released after use, by calling the [release] method.
+  jni$_.JString toString$1() {
+    return _toString$1(
+      reference.pointer,
+      _id_toString$1 as jni$_.JMethodIDPtr,
+    ).object<jni$_.JString>(const jni$_.JStringType());
+  }
+
+  static final _id_hashCode$1 = _class.instanceMethodId(r'hashCode', r'()I');
+
+  static final _hashCode$1 =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallIntMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `public int hashCode()`
+  int hashCode$1() {
+    return _hashCode$1(
+      reference.pointer,
+      _id_hashCode$1 as jni$_.JMethodIDPtr,
+    ).integer;
+  }
+
+  static final _id_equals = _class.instanceMethodId(
+    r'equals',
+    r'(Ljava/lang/Object;)Z',
+  );
+
+  static final _equals =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+                jni$_.VarArgs<(jni$_.Pointer<jni$_.Void>,)>,
+              )
+            >
+          >('globalEnv_CallBooleanMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+              jni$_.Pointer<jni$_.Void>,
+            )
+          >();
+
+  /// from: `public boolean equals(java.lang.Object object)`
+  bool equals(jni$_.JObject? object) {
+    final _$object = object?.reference ?? jni$_.jNullReference;
+    return _equals(
+      reference.pointer,
+      _id_equals as jni$_.JMethodIDPtr,
+      _$object.pointer,
+    ).boolean;
+  }
+}
+
+final class $AccountInfo$NullableType extends jni$_.JObjType<AccountInfo?> {
+  @jni$_.internal
+  const $AccountInfo$NullableType();
+
+  @jni$_.internal
+  @core$_.override
+  String get signature => r'Lcom/datadog/android/api/context/AccountInfo;';
+
+  @jni$_.internal
+  @core$_.override
+  AccountInfo? fromReference(jni$_.JReference reference) =>
+      reference.isNull ? null : AccountInfo.fromReference(reference);
+  @jni$_.internal
+  @core$_.override
+  jni$_.JObjType get superType => const jni$_.JObjectType();
+
+  @jni$_.internal
+  @core$_.override
+  jni$_.JObjType<AccountInfo?> get nullableType => this;
+
+  @jni$_.internal
+  @core$_.override
+  final superCount = 1;
+
+  @core$_.override
+  int get hashCode => ($AccountInfo$NullableType).hashCode;
+
+  @core$_.override
+  bool operator ==(Object other) {
+    return other.runtimeType == ($AccountInfo$NullableType) &&
+        other is $AccountInfo$NullableType;
+  }
+}
+
+final class $AccountInfo$Type extends jni$_.JObjType<AccountInfo> {
+  @jni$_.internal
+  const $AccountInfo$Type();
+
+  @jni$_.internal
+  @core$_.override
+  String get signature => r'Lcom/datadog/android/api/context/AccountInfo;';
+
+  @jni$_.internal
+  @core$_.override
+  AccountInfo fromReference(jni$_.JReference reference) =>
+      AccountInfo.fromReference(reference);
+  @jni$_.internal
+  @core$_.override
+  jni$_.JObjType get superType => const jni$_.JObjectType();
+
+  @jni$_.internal
+  @core$_.override
+  jni$_.JObjType<AccountInfo?> get nullableType =>
+      const $AccountInfo$NullableType();
+
+  @jni$_.internal
+  @core$_.override
+  final superCount = 1;
+
+  @core$_.override
+  int get hashCode => ($AccountInfo$Type).hashCode;
+
+  @core$_.override
+  bool operator ==(Object other) {
+    return other.runtimeType == ($AccountInfo$Type) &&
+        other is $AccountInfo$Type;
   }
 }

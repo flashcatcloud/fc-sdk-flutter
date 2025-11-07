@@ -45,6 +45,9 @@ class DatadogSdkWeb extends DatadogSdkPlatform {
   }
 
   @override
+  DatadogContext? get cachedContext => null;
+
+  @override
   Future<void> setSdkVerbosity(CoreLoggerLevel verbosity) async {}
 
   @override
@@ -84,7 +87,10 @@ class DatadogSdkWeb extends DatadogSdkPlatform {
 
   @override
   Future<void> setAccountInfo(
-      String id, String? name, Map<String, Object?> extraInfo) async {
+    String id,
+    String? name,
+    Map<String, Object?> extraInfo,
+  ) async {
     final jsAccount = JsAccount(id: id, name: name);
     DD_LOGS?.setAccount(jsAccount);
     DD_RUM?.setAccount(jsAccount);
@@ -101,11 +107,15 @@ class DatadogSdkWeb extends DatadogSdkPlatform {
   Future<void> addAccountExtraInfo(Map<String, Object?> extraInfo) async {
     for (final entry in extraInfo.entries) {
       DD_LOGS?.setAccountProperty(
-          entry.key, valueToJs(entry.value, 'extraInfo'));
+        entry.key,
+        valueToJs(entry.value, 'extraInfo'),
+      );
     }
     for (final entry in extraInfo.entries) {
       DD_RUM?.setAccountProperty(
-          entry.key, valueToJs(entry.value, 'extraInfo'));
+        entry.key,
+        valueToJs(entry.value, 'extraInfo'),
+      );
     }
   }
 

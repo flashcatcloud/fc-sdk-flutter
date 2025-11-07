@@ -8,12 +8,28 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 import '../datadog_flutter_plugin.dart';
+import 'android/android_plugin_stub.dart'
+    if (dart.library.io) 'android/android_plugin_ffi.dart';
 import 'datadog_sdk_platform_interface.dart';
 import 'internal_logger.dart';
 
 class DatadogSdkMethodChannel extends DatadogSdkPlatform {
   @visibleForTesting
   final methodChannel = const MethodChannel('datadog_sdk_flutter');
+
+  LogCallback? _logCallback;
+
+  // Used by iOS, not by Andoid at the moment
+  DatadogContext? _cachedContext;
+  @override
+  DatadogContext? get cachedContext {
+    if (Platform.isIOS) {
+      return _cachedContext;
+    } else if (Platform.isAndroid) {
+      return AndroidDatadogFlutterPlugin.getContext();
+    }
+    return null;
+  }
 
   @override
   Future<void> setSdkVerbosity(CoreLoggerLevel verbosity) {
@@ -88,11 +104,8 @@ class DatadogSdkMethodChannel extends DatadogSdkPlatform {
     LogCallback? logCallback,
     required InternalLogger internalLogger,
   }) async {
-    final callbackHandler = MethodCallHandler(logCallback: logCallback);
-
-    if (logCallback != null) {
-      methodChannel.setMethodCallHandler(callbackHandler.handleMethodCall);
-    }
+    _logCallback = logCallback;
+    methodChannel.setMethodCallHandler(handleMethodCall);
 
     await methodChannel.invokeMethod<void>('initialize', {
       'configuration': configuration.encode(),
@@ -157,18 +170,19 @@ class DatadogSdkMethodChannel extends DatadogSdkPlatform {
   Future<Object?> getInternalVar(String name) {
     return methodChannel.invokeMethod('getInternalVar', {'name': name});
   }
-}
-
-@visibleForTesting
-class MethodCallHandler {
-  final LogCallback? logCallback;
-
-  MethodCallHandler({this.logCallback});
 
   Future<dynamic> handleMethodCall(MethodCall call) async {
     switch (call.method) {
       case 'logCallback':
-        logCallback?.call(call.arguments as String);
+        _logCallback?.call(call.arguments as String);
+        return null;
+      case 'onContextChanged':
+        if (call.arguments case final Map<dynamic, dynamic> args) {
+          _cachedContext = DatadogContext(
+            userId: args['user.id'],
+            accountId: args['account.id'],
+          );
+        }
         return null;
     }
   }

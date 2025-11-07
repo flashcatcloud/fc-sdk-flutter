@@ -48,10 +48,11 @@ void main() {
 
   testWidgets('generateTracingContext generates proper bit values',
       (WidgetTester tester) async {
+    final mockDatadogSdk = MockDatadogSdk();
     final mockRum = MockDdRum();
     when(() => mockRum.shouldSampleTrace(any(), any())).thenReturn(true);
 
-    final context = generateTracingContext(mockRum);
+    final context = generateTracingContext(mockDatadogSdk, mockRum);
 
     expect(context.traceId.value.bitLength, lessThanOrEqualTo(128));
     expect(context.spanId.value.bitLength, lessThanOrEqualTo(63));

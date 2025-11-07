@@ -2,18 +2,30 @@
 // This product includes software developed at Datadog (https://www.datadoghq.com/).
 // Copyright 2023-Present Datadog, Inc.
 
+import 'package:datadog_common_test/datadog_common_test.dart';
 import 'package:datadog_flutter_plugin/datadog_flutter_plugin.dart';
-import 'package:datadog_flutter_plugin/src/tracing/tracing_headers.dart';
+import 'package:datadog_flutter_plugin/datadog_internal.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+
+class MockDatadogSdk extends Mock implements DatadogSdk {}
+
+class MockDatadogPlatform extends Mock implements DatadogSdkPlatform {}
 
 class MockDdRum extends Mock implements DatadogRum {}
 
 void main() {
+  late MockDatadogSdk mockSdk;
+  late MockDatadogPlatform mockPlatform;
   late MockDdRum mockRum;
 
   setUp(() {
     registerFallbackValue(TracingId(BigInt.one));
+
+    mockPlatform = MockDatadogPlatform();
+
+    mockSdk = MockDatadogSdk();
+    when(() => mockSdk.platform).thenReturn(mockPlatform);
 
     mockRum = MockDdRum();
     when(() => mockRum.shouldSampleTrace(any(), any())).thenReturn(true);
@@ -72,7 +84,7 @@ void main() {
   });
 
   test('generateTracingContext generates proper bit values', () {
-    final context = generateTracingContext(mockRum);
+    final context = generateTracingContext(mockSdk, mockRum);
 
     expect(context.traceId.value.bitLength, lessThanOrEqualTo(128));
     expect(context.spanId.value.bitLength, lessThanOrEqualTo(63));
@@ -80,7 +92,7 @@ void main() {
   });
 
   test('Datadog attributes generated correctly', () {
-    final context = generateTracingContext(mockRum);
+    final context = generateTracingContext(mockSdk, mockRum);
 
     final attributes = generateDatadogAttributes(context, 30.0);
 
@@ -97,7 +109,7 @@ void main() {
 
   test('Unsampled context does not generate datadog attributes', () {
     when(() => mockRum.shouldSampleTrace(any(), any())).thenReturn(false);
-    final context = generateTracingContext(mockRum);
+    final context = generateTracingContext(mockSdk, mockRum);
 
     final attributes = generateDatadogAttributes(context, 30.0);
 
@@ -112,11 +124,13 @@ void main() {
     test(
       'Datadog tracing headers are generated correctly { $contextInjection, sampled }',
       () {
-        final context = generateTracingContext(mockRum);
+        final context = generateTracingContext(mockSdk, mockRum);
 
-        final headers = getTracingHeaders(
+        final headers = <String, String>{};
+        injectTracingHeaders(
           context,
           TracingHeaderType.datadog,
+          headers,
           contextInjection: contextInjection,
         );
 
@@ -140,11 +154,13 @@ void main() {
     test(
       'b3 tracing headers are generated correctly { $contextInjection, sampled }',
       () {
-        final context = generateTracingContext(mockRum);
+        final context = generateTracingContext(mockSdk, mockRum);
 
-        final headers = getTracingHeaders(
+        final headers = <String, String>{};
+        injectTracingHeaders(
           context,
           TracingHeaderType.b3,
+          headers,
           contextInjection: contextInjection,
         );
 
@@ -163,11 +179,13 @@ void main() {
     test(
       'b3multi tracing headers are generated correctly { $contextInjection, sampled }',
       () {
-        final context = generateTracingContext(mockRum);
+        final context = generateTracingContext(mockSdk, mockRum);
 
-        final headers = getTracingHeaders(
+        final headers = <String, String>{};
+        injectTracingHeaders(
           context,
           TracingHeaderType.b3multi,
+          headers,
           contextInjection: contextInjection,
         );
 
@@ -188,11 +206,13 @@ void main() {
     test(
       'tracecontext tracing headers are generated correctly { $contextInjection, sampled }',
       () {
-        final context = generateTracingContext(mockRum);
+        final context = generateTracingContext(mockSdk, mockRum);
 
-        final headers = getTracingHeaders(
+        final headers = <String, String>{};
+        injectTracingHeaders(
           context,
           TracingHeaderType.tracecontext,
+          headers,
           contextInjection: contextInjection,
         );
 
@@ -209,17 +229,85 @@ void main() {
         expect(headers['tracestate'], expectedStateHeader.toLowerCase());
       },
     );
+
+    test(
+      'Datadog tracing headers generate baggage header { $contextInjection, sampled }',
+      () {
+        // Given
+        final datadogContext = DatadogContext(
+          accountId: randomString(),
+          userId: randomString(),
+        );
+        final sessionId = randomString();
+        when(() => mockPlatform.cachedContext).thenReturn(datadogContext);
+        when(() => mockRum.cachedSessionId).thenReturn(sessionId);
+
+        when(() => mockRum.shouldSampleTrace(any(), any())).thenReturn(true);
+        final context = generateTracingContext(mockSdk, mockRum);
+
+        // When
+        final headers = <String, String>{};
+        injectTracingHeaders(
+          context,
+          TracingHeaderType.datadog,
+          headers,
+          contextInjection: TraceContextInjection.sampled,
+        );
+
+        // Then
+        final baggage = headers['baggage'];
+        final baggageValues = baggage!.split(',');
+        expect(baggageValues, contains('session.id=$sessionId'));
+        expect(baggageValues, contains('user.id=${datadogContext.userId}'));
+        expect(baggageValues, contains('account.id=$sessionId'));
+      },
+    );
+
+    test(
+      'tracecontext tracing headers generate baggage header { $contextInjection, sampled }',
+      () {
+        // Given
+        final datadogContext = DatadogContext(
+          accountId: randomString(),
+          userId: randomString(),
+        );
+        final sessionId = randomString();
+        when(() => mockPlatform.cachedContext).thenReturn(datadogContext);
+        when(() => mockRum.cachedSessionId).thenReturn(sessionId);
+
+        when(() => mockRum.shouldSampleTrace(any(), any())).thenReturn(true);
+        final context = generateTracingContext(mockSdk, mockRum);
+
+        // When
+        final headers = <String, String>{};
+        injectTracingHeaders(
+          context,
+          TracingHeaderType.tracecontext,
+          headers,
+          contextInjection: TraceContextInjection.sampled,
+        );
+
+        // Then
+        final baggage = headers['baggage'];
+        final baggageValues = baggage!.split(',');
+        expect(baggageValues, contains('session.id=$sessionId'));
+        expect(baggageValues, contains('user.id=${datadogContext.userId}'));
+        expect(baggageValues, contains('account.id=$sessionId'));
+      },
+    );
   }
 
   test(
     'Datadog tracing headers are generated correctly { TraceContextInjection.all, unsampled }',
     () {
       when(() => mockRum.shouldSampleTrace(any(), any())).thenReturn(false);
-      final context = generateTracingContext(mockRum);
+      final context = generateTracingContext(mockSdk, mockRum);
 
-      final headers = getTracingHeaders(
+      final headers = <String, String>{};
+      injectTracingHeaders(
         context,
         TracingHeaderType.datadog,
+        headers,
         contextInjection: TraceContextInjection.all,
       );
 
@@ -244,11 +332,13 @@ void main() {
     'Datadog tracing headers are generated correctly { TraceContextInjection.sampled, unsampled }',
     () {
       when(() => mockRum.shouldSampleTrace(any(), any())).thenReturn(false);
-      final context = generateTracingContext(mockRum);
+      final context = generateTracingContext(mockSdk, mockRum);
 
-      final headers = getTracingHeaders(
+      final headers = <String, String>{};
+      injectTracingHeaders(
         context,
         TracingHeaderType.datadog,
+        headers,
         contextInjection: TraceContextInjection.sampled,
       );
 
@@ -259,11 +349,137 @@ void main() {
     },
   );
 
+  test(
+    'Datadog tracing headers generate baggage header { TraceContextInjection.all, unsampled }',
+    () {
+      // Given
+      final datadogContext = DatadogContext(
+        accountId: randomString(),
+        userId: randomString(),
+      );
+      final sessionId = randomString();
+      when(() => mockPlatform.cachedContext).thenReturn(datadogContext);
+      when(() => mockRum.cachedSessionId).thenReturn(sessionId);
+      when(() => mockRum.shouldSampleTrace(any(), any())).thenReturn(false);
+      final context = generateTracingContext(mockSdk, mockRum);
+
+      // When
+      final headers = <String, String>{};
+      injectTracingHeaders(
+        context,
+        TracingHeaderType.datadog,
+        headers,
+        contextInjection: TraceContextInjection.all,
+      );
+
+      // Then
+      final baggage = headers['baggage'];
+      final baggageValues = baggage!.split(',');
+      expect(baggageValues, contains('session.id=$sessionId'));
+      expect(baggageValues, contains('user.id=${datadogContext.userId}'));
+      expect(baggageValues, contains('account.id=${datadogContext.accountId}'));
+    },
+  );
+
+  test(
+    'Datadog tracing headers generate baggage header { TraceContextInjection.sampled, unsampled }',
+    () {
+      // Given
+      final datadogContext = DatadogContext(
+        accountId: randomString(),
+        userId: randomString(),
+      );
+      final sessionId = randomString();
+      when(() => mockPlatform.cachedContext).thenReturn(datadogContext);
+      when(() => mockRum.cachedSessionId).thenReturn(sessionId);
+
+      when(() => mockRum.shouldSampleTrace(any(), any())).thenReturn(false);
+      final context = generateTracingContext(mockSdk, mockRum);
+
+      // When
+      final headers = <String, String>{};
+      injectTracingHeaders(
+        context,
+        TracingHeaderType.datadog,
+        headers,
+        contextInjection: TraceContextInjection.sampled,
+      );
+
+      // Then
+      final baggage = headers['baggage'];
+      expect(baggage, isNull);
+    },
+  );
+
+  test(
+    'tracecontext tracing headers generate baggage header { TraceContextInjection.all, unsampled }',
+    () {
+      // Given
+      final datadogContext = DatadogContext(
+        accountId: randomString(),
+        userId: randomString(),
+      );
+      final sessionId = randomString();
+      when(() => mockPlatform.cachedContext).thenReturn(datadogContext);
+      when(() => mockRum.cachedSessionId).thenReturn(sessionId);
+
+      when(() => mockRum.shouldSampleTrace(any(), any())).thenReturn(false);
+      final context = generateTracingContext(mockSdk, mockRum);
+
+      // When
+      final headers = <String, String>{};
+      injectTracingHeaders(
+        context,
+        TracingHeaderType.tracecontext,
+        headers,
+        contextInjection: TraceContextInjection.all,
+      );
+
+      // Then
+      final baggage = headers['baggage'];
+      final baggageValues = baggage!.split(',');
+      expect(baggageValues, contains('session.id=$sessionId'));
+      expect(baggageValues, contains('user.id=${datadogContext.userId}'));
+      expect(baggageValues, contains('account.id=${datadogContext.accountId}'));
+    },
+  );
+
+  test(
+    'tracecontext tracing headers generate baggage header { TraceContextInjection.sampled, unsampled }',
+    () {
+      // Given
+      final datadogContext = DatadogContext(
+        accountId: randomString(),
+        userId: randomString(),
+      );
+      final sessionId = randomString();
+      when(() => mockPlatform.cachedContext).thenReturn(datadogContext);
+      when(() => mockRum.cachedSessionId).thenReturn(sessionId);
+
+      when(() => mockRum.shouldSampleTrace(any(), any())).thenReturn(false);
+      final context = generateTracingContext(mockSdk, mockRum);
+
+      // When
+      final headers = <String, String>{};
+      injectTracingHeaders(
+        context,
+        TracingHeaderType.tracecontext,
+        headers,
+        contextInjection: TraceContextInjection.sampled,
+      );
+
+      // Then
+      final baggage = headers['baggage'];
+      expect(baggage, isNull);
+    },
+  );
+
   test('Default for tracing headers is TraceContextInjection.sampled', () {
     when(() => mockRum.shouldSampleTrace(any(), any())).thenReturn(false);
-    final context = generateTracingContext(mockRum);
+    final context = generateTracingContext(mockSdk, mockRum);
 
-    final headers = getTracingHeaders(context, TracingHeaderType.datadog);
+    final headers = <String, String>{};
+    injectTracingHeaders(context, TracingHeaderType.datadog, headers);
 
     expect(headers['x-datadog-trace-id'], isNull);
     expect(headers['x-datadog-parent-id'], isNull);
@@ -275,11 +491,13 @@ void main() {
     'b3 tracing headers are generated correctly { TraceContextInjection.all, unsampled }',
     () {
       when(() => mockRum.shouldSampleTrace(any(), any())).thenReturn(false);
-      final context = generateTracingContext(mockRum);
+      final context = generateTracingContext(mockSdk, mockRum);
 
-      final headers = getTracingHeaders(
+      final headers = <String, String>{};
+      injectTracingHeaders(
         context,
         TracingHeaderType.b3,
+        headers,
         contextInjection: TraceContextInjection.all,
       );
 
@@ -291,11 +509,13 @@ void main() {
     'b3 tracing headers are generated correctly { TraceContextInjection.sampled, unsampled }',
     () {
       when(() => mockRum.shouldSampleTrace(any(), any())).thenReturn(false);
-      final context = generateTracingContext(mockRum);
+      final context = generateTracingContext(mockSdk, mockRum);
 
-      final headers = getTracingHeaders(
+      final headers = <String, String>{};
+      injectTracingHeaders(
         context,
         TracingHeaderType.b3,
+        headers,
         contextInjection: TraceContextInjection.sampled,
       );
 
@@ -307,11 +527,13 @@ void main() {
     'b3multi tracing headers are generated correctly { TraceContextInjection.all, unsampled }',
     () {
       when(() => mockRum.shouldSampleTrace(any(), any())).thenReturn(false);
-      final context = generateTracingContext(mockRum);
+      final context = generateTracingContext(mockSdk, mockRum);
 
-      final headers = getTracingHeaders(
+      final headers = <String, String>{};
+      injectTracingHeaders(
         context,
         TracingHeaderType.b3multi,
+        headers,
         contextInjection: TraceContextInjection.all,
       );
 
@@ -326,11 +548,13 @@ void main() {
     'b3multi tracing headers are generated correctly { TraceContextInjection.sampled, unsampled }',
     () {
       when(() => mockRum.shouldSampleTrace(any(), any())).thenReturn(false);
-      final context = generateTracingContext(mockRum);
+      final context = generateTracingContext(mockSdk, mockRum);
 
-      final headers = getTracingHeaders(
+      final headers = <String, String>{};
+      injectTracingHeaders(
         context,
         TracingHeaderType.b3multi,
+        headers,
         contextInjection: TraceContextInjection.sampled,
       );
 
@@ -345,11 +569,13 @@ void main() {
     'traceparent tracing headers are generated correctly { TraceContextInjection.all, unsampled }',
     () {
       when(() => mockRum.shouldSampleTrace(any(), any())).thenReturn(false);
-      final context = generateTracingContext(mockRum);
+      final context = generateTracingContext(mockSdk, mockRum);
 
-      final headers = getTracingHeaders(
+      final headers = <String, String>{};
+      injectTracingHeaders(
         context,
         TracingHeaderType.tracecontext,
+        headers,
         contextInjection: TraceContextInjection.all,
       );
 
@@ -371,11 +597,13 @@ void main() {
     'traceparent tracing headers are generated correctly { TraceContextInjection.all, unsampled }',
     () {
       when(() => mockRum.shouldSampleTrace(any(), any())).thenReturn(false);
-      final context = generateTracingContext(mockRum);
+      final context = generateTracingContext(mockSdk, mockRum);
 
-      final headers = getTracingHeaders(
+      final headers = <String, String>{};
+      injectTracingHeaders(
         context,
         TracingHeaderType.tracecontext,
+        headers,
         contextInjection: TraceContextInjection.sampled,
       );
 
@@ -383,4 +611,115 @@ void main() {
       expect(headers['tracestate'], isNull);
     },
   );
+
+  group('baggage header merging', () {
+    test('no baggage header creates new header', () {
+      // Given
+      String? oldBaggage;
+      final datadogContext = DatadogContext(
+        accountId: randomString(),
+        userId: randomString(),
+      );
+      final sessionId = randomString();
+      when(() => mockPlatform.cachedContext).thenReturn(datadogContext);
+      when(() => mockRum.cachedSessionId).thenReturn(sessionId);
+
+      when(() => mockRum.shouldSampleTrace(any(), any())).thenReturn(true);
+      final context = generateTracingContext(mockSdk, mockRum);
+
+      // When
+      String newBaggage = mergeW3CBaggageHeader(context, oldBaggage);
+
+      // Then
+      final baggageValues = newBaggage.split(',');
+      expect(baggageValues, contains('session.id=$sessionId'));
+      expect(baggageValues, contains('user.id=${datadogContext.userId}'));
+      expect(baggageValues, contains('account.id=${datadogContext.accountId}'));
+    });
+
+    test('existing baggage header adds new values', () {
+      // Given
+      String oldBaggage = 'test_value_1=1,test_value_2=string';
+      final datadogContext = DatadogContext(
+        accountId: randomString(),
+        userId: randomString(),
+      );
+      final sessionId = randomString();
+      when(() => mockPlatform.cachedContext).thenReturn(datadogContext);
+      when(() => mockRum.cachedSessionId).thenReturn(sessionId);
+
+      when(() => mockRum.shouldSampleTrace(any(), any())).thenReturn(true);
+      final context = generateTracingContext(mockSdk, mockRum);
+
+      // When
+      String newBaggage = mergeW3CBaggageHeader(context, oldBaggage);
+
+      // Then
+      final baggageValues = newBaggage.split(',');
+      // Old values are unmodified
+      expect(baggageValues, contains('test_value_1=1'));
+      expect(baggageValues, contains('test_value_2=string'));
+
+      expect(baggageValues, contains('session.id=$sessionId'));
+      expect(baggageValues, contains('user.id=${datadogContext.userId}'));
+      expect(baggageValues, contains('account.id=${datadogContext.accountId}'));
+    });
+
+    test('existing baggage header overwrites existing values', () {
+      // Given
+      String oldBaggage = 'session.id=old_value,test_value_2=string';
+      final datadogContext = DatadogContext(
+        accountId: randomString(),
+        userId: randomString(),
+      );
+      final sessionId = randomString();
+      when(() => mockPlatform.cachedContext).thenReturn(datadogContext);
+      when(() => mockRum.cachedSessionId).thenReturn(sessionId);
+
+      when(() => mockRum.shouldSampleTrace(any(), any())).thenReturn(true);
+      final context = generateTracingContext(mockSdk, mockRum);
+
+      // When
+      String newBaggage = mergeW3CBaggageHeader(context, oldBaggage);
+
+      // Then
+      final baggageValues = newBaggage.split(',');
+      // Old values are unmodified
+      expect(baggageValues, contains('test_value_2=string'));
+
+      // Session.id is overwritten
+      expect(baggageValues, contains('session.id=$sessionId'));
+    });
+
+    test('baggage header merge deals with complicated baggage', () {
+      // Given
+      String oldBaggage =
+          ' toto=1,car= Dacia Sandero ,session.id = 2,testProp=1; testProp2=4;prop3 ';
+      final datadogContext = DatadogContext(
+        accountId: randomString(),
+        userId: randomString(),
+      );
+      final sessionId = randomString();
+      when(() => mockPlatform.cachedContext).thenReturn(datadogContext);
+      when(() => mockRum.cachedSessionId).thenReturn(sessionId);
+
+      when(() => mockRum.shouldSampleTrace(any(), any())).thenReturn(true);
+      final context = generateTracingContext(mockSdk, mockRum);
+
+      // When
+      String newBaggage = mergeW3CBaggageHeader(context, oldBaggage);
+
+      // Then
+      final baggageValues = newBaggage.split(',');
+      // Old values are unmodified
+      expect(baggageValues, contains('toto=1'));
+      expect(baggageValues, contains('car=Dacia Sandero'));
+      expect(baggageValues, contains('testProp=1; testProp2=4;prop3'));
+
+      // New values are appended or overwritten
+      expect(baggageValues, contains('session.id=$sessionId'));
+      expect(baggageValues, contains('user.id=${datadogContext.userId}'));
+      expect(baggageValues, contains('account.id=${datadogContext.accountId}'));
+    });
+  });
 }
