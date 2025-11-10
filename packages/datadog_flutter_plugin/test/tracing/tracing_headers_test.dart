@@ -5,6 +5,7 @@
 import 'package:datadog_common_test/datadog_common_test.dart';
 import 'package:datadog_flutter_plugin/datadog_flutter_plugin.dart';
 import 'package:datadog_flutter_plugin/datadog_internal.dart';
+import 'package:datadog_flutter_plugin/src/tracing/baggage_helpers.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -719,13 +720,49 @@ void main() {
       final baggageValues = newBaggage.split(',');
       // Old values are unmodified
       expect(baggageValues, contains('toto=1'));
-      expect(baggageValues, contains('car=Dacia Sandero'));
-      expect(baggageValues, contains('testProp=1; testProp2=4;prop3'));
+      expect(baggageValues, contains('car=Dacia%20Sandero'));
+      expect(baggageValues, contains('testProp=1;testProp2=4;prop3'));
 
       // New values are appended or overwritten
       expect(baggageValues, contains('session.id=$sessionId'));
       expect(baggageValues, contains('user.id=${datadogContext.userId}'));
       expect(baggageValues, contains('account.id=${datadogContext.accountId}'));
     });
+
+    test(
+      'baggage header merge percent encodes spaces and non-ASCII characters',
+      () {
+        // Given
+        String oldBaggage =
+            ' toto=1,car= Dacia%20Sandero ,session.id = 2,testProp=1; testProp2=4;prop3 ';
+        final datadogContext = DatadogContext(
+          accountId: randomString(),
+          userId: 'Amélie',
+        );
+        when(() => mockPlatform.cachedContext).thenReturn(datadogContext);
+        when(() => mockRum.cachedSessionId).thenReturn('😅');
+
+        when(() => mockRum.shouldSampleTrace(any(), any())).thenReturn(true);
+        final context = generateTracingContext(mockSdk, mockRum);
+
+        // When
+        String newBaggage = mergeW3CBaggageHeader(context, oldBaggage);
+
+        // Then
+        final baggageValues = newBaggage.split(',');
+        // Old values are unmodified
+        expect(baggageValues, contains('toto=1'));
+        expect(baggageValues, contains('car=Dacia%20Sandero'));
+        expect(baggageValues, contains('testProp=1;testProp2=4;prop3'));
+
+        // New values are appended or overwritten
+        expect(baggageValues, contains('session.id=%F0%9F%98%85'));
+        expect(baggageValues, contains('user.id=Am%C3%A9lie'));
+        expect(
+          baggageValues,
+          contains('account.id=${datadogContext.accountId}'),
+        );
+      },
+    );
   });
 }

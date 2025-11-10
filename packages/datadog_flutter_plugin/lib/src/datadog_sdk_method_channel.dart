@@ -52,6 +52,10 @@ class DatadogSdkMethodChannel extends DatadogSdkPlatform {
     String? email,
     Map<String, Object?> extraInfo,
   ) {
+    _cachedContext = DatadogContext(
+      userId: id,
+      accountId: _cachedContext?.accountId,
+    );
     return methodChannel.invokeMethod('setUserInfo', {
       'id': id,
       'name': name,
@@ -69,6 +73,10 @@ class DatadogSdkMethodChannel extends DatadogSdkPlatform {
 
   @override
   Future<void> clearUserInfo() {
+    _cachedContext = DatadogContext(
+      userId: null,
+      accountId: _cachedContext?.accountId,
+    );
     return methodChannel.invokeMethod('clearUserInfo', {});
   }
 
@@ -78,6 +86,10 @@ class DatadogSdkMethodChannel extends DatadogSdkPlatform {
     String? name,
     Map<String, Object?> extraInfo,
   ) {
+    _cachedContext = DatadogContext(
+      userId: _cachedContext?.userId,
+      accountId: id,
+    );
     return methodChannel.invokeMethod('setAccountInfo', {
       'id': id,
       'name': name,
@@ -94,6 +106,10 @@ class DatadogSdkMethodChannel extends DatadogSdkPlatform {
 
   @override
   Future<void> clearAccountInfo() {
+    _cachedContext = DatadogContext(
+      userId: _cachedContext?.userId,
+      accountId: null,
+    );
     return methodChannel.invokeMethod('clearAccountInfo', {});
   }
 

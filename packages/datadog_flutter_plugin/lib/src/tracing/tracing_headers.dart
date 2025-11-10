@@ -8,6 +8,7 @@ import 'package:flutter/foundation.dart';
 
 import '../../datadog_flutter_plugin.dart';
 import '../../datadog_internal.dart';
+import 'baggage_helpers.dart';
 
 /// The type of tracing header to inject into first party requests.
 enum TracingHeaderType {
@@ -47,12 +48,6 @@ class W3CTracingHeaders {
   static const traceparent = 'traceparent';
   static const tracestate = 'tracestate';
   static const baggage = 'baggage';
-}
-
-class W3CHeadersBaggageKeys {
-  static const sessionId = 'session.id';
-  static const accountId = 'account.id';
-  static const userId = 'user.id';
 }
 
 /// Controls how we print a TracingId
@@ -248,40 +243,6 @@ Map<String, Object?> generateDatadogAttributes(
   }
 
   return attributes;
-}
-
-String mergeW3CBaggageHeader(TracingContext context, String? baggageHeader) {
-  baggageHeader ??= '';
-  Map<String, String> baggageValueMap = Map.fromEntries(
-    baggageHeader.split(',').map((v) {
-      v = v.trim();
-      final firstEqualsIndex = v.indexOf('=');
-      if (firstEqualsIndex < 0) return null;
-
-      final key = v.substring(0, firstEqualsIndex).trim();
-      final value = v.substring(firstEqualsIndex + 1).trim();
-
-      return MapEntry(key, value);
-    }).whereType<MapEntry<String, String>>(),
-  );
-
-  if (context.rumSessionId case final sessionId?) {
-    baggageValueMap[W3CHeadersBaggageKeys.sessionId] = sessionId;
-  }
-
-  if (context.userId case final userId?) {
-    baggageValueMap[W3CHeadersBaggageKeys.userId] = userId;
-  }
-
-  if (context.accountId case final accountId?) {
-    baggageValueMap[W3CHeadersBaggageKeys.accountId] = accountId;
-  }
-
-  final newBaggageHeader = baggageValueMap.entries
-      .map((e) => '${e.key}=${e.value}')
-      .join(',');
-
-  return newBaggageHeader;
 }
 
 void injectTracingHeaders(

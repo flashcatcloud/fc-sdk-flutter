@@ -491,7 +491,6 @@ void main() {
     mockDatadog = DatadogSdkMock();
     when(() => mockDatadog.platform).thenReturn(mockPlatform);
 
-    when(() => mockDatadog.platform).thenReturn(mockPlatform);
     mockRum = RumMock();
     when(() => mockDatadog.rum).thenReturn(mockRum);
     when(() => mockRum.shouldSampleTrace(any(), any())).thenReturn(true);
