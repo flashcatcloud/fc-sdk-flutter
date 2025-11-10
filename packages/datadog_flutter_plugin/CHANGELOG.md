@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.16.0
+
+* [Web] Add tracking consent support.
+
 ## 2.15.0
 
 * [Web] Add extra user info support. See [#852](https://github.com/DataDog/dd-sdk-flutter/issues/852)
