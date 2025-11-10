@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.0.0-preview.6
+
+* [Session Replay] Don't capture elements with width or height of zero.
+
+## 1.0.0-preview.5
+
+* [Session Replay] Downgrade packages that required Dart versions above 3.6.
+
+## 1.0.0-preview.4
+
+* Fix an issue with custom endpoints on iOS.
+* Drop session replay Dart requirement to 3.6.
+
 ## 1.0.0-preview.3
 
 * Add classes to Proguard rules to prevent stripping. See [#851](https://github.com/DataDog/dd-sdk-flutter/issues/851).

@@ -18,7 +18,6 @@ const _sensitiveInputTypes = [
   TextInputType.phone,
   TextInputType.emailAddress,
   TextInputType.streetAddress,
-  TextInputType.twitter,
   TextInputType.visiblePassword,
 ];
 
@@ -129,15 +128,15 @@ class InputDecoratorRecorder implements ElementRecorder {
 
     return containerStyle != null
         ? SpecificElement(
-          subtreeStrategy: CaptureNodeSubtreeStrategy.record,
-          nodes: [
-            ContainerNode(
-              attributes,
-              wireframeId: keyGenerator.keyForElement(element),
-              style: containerStyle,
-            ),
-          ],
-        )
+            subtreeStrategy: CaptureNodeSubtreeStrategy.record,
+            nodes: [
+              ContainerNode(
+                attributes,
+                wireframeId: keyGenerator.keyForElement(element),
+                style: containerStyle,
+              ),
+            ],
+          )
         : null;
   }
 }

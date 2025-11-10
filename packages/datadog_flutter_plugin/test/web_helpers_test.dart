@@ -7,10 +7,24 @@
 import 'dart:js_interop';
 import 'dart:js_interop_unsafe';
 
+import 'package:datadog_flutter_plugin/datadog_flutter_plugin.dart';
 import 'package:datadog_flutter_plugin/src/web_helpers.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  group('trackingConsentToWeb', () {
+    test('converts granted to "granted"', () {
+      expect(TrackingConsent.granted.webValue(), 'granted');
+    });
+
+    test('converts notGranted to "not-granted"', () {
+      expect(TrackingConsent.notGranted.webValue(), 'not-granted');
+    });
+
+    test('converts pending to "not-granted"', () {
+      expect(TrackingConsent.pending.webValue(), 'not-granted');
+    });
+  });
   group('value to js', () {
     test('converts simple values', () {
       expect(1, (valueToJs(1, 'integer') as JSNumber).toDartInt);

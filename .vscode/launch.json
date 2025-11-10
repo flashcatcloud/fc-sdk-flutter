@@ -29,6 +29,12 @@
             "request": "launch"
         },
         {
+            "name": "dio example",
+            "type": "dart",
+            "cwd": "packages/datadog_dio/example",
+            "request": "launch"
+        },
+        {
             "name": "In App Webview example",
             "type": "dart",
             "cwd": "packages/datadog_inappwebview_tracking/example",

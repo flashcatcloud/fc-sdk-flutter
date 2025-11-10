@@ -17,18 +17,23 @@ import 'ddweb_helpers.dart';
 class DdLogsWeb extends DdLogsPlatform {
   final Map<String, Logger> _activeLoggers = {};
 
-  static void initLogs(DatadogConfiguration configuration) {
-    DD_LOGS?.init(_LogInitOptions(
-      clientToken: configuration.clientToken,
-      env: configuration.env,
-      proxy: configuration.loggingConfiguration?.customEndpoint,
-      site: siteStringForSite(configuration.site),
-      service: configuration.service,
-      version: configuration.versionTag,
-      variant: configuration.flavor,
-      source: 'flutter',
-      sdkVersion: DatadogSdk.sdkVersion,
-    ));
+  static void initLogs(
+    DatadogConfiguration configuration,
+    TrackingConsent trackingConsent,
+  ) {
+    DD_LOGS?.init(
+      _LogInitOptions(
+        clientToken: configuration.clientToken,
+        env: configuration.env,
+        proxy: configuration.loggingConfiguration?.customEndpoint,
+        site: siteStringForSite(configuration.site),
+        service: configuration.service,
+        version: configuration.versionTag,
+        variant: configuration.flavor,
+        source: 'flutter',		
+        trackingConsent: trackingConsent.webValue(),
+      ),
+    );
   }
 
   @override
@@ -177,6 +182,7 @@ extension type _LogInitOptions._(JSObject _) implements JSObject {
   external String? get source;
   external String? get sdkVersion;
   external String? get variant;
+  external String? get trackingConsent;
 
   external factory _LogInitOptions({
     String clientToken,
@@ -188,6 +194,7 @@ extension type _LogInitOptions._(JSObject _) implements JSObject {
     String? source,
     String? sdkVersion,
     String? variant,
+    String? trackingConsent,
   });
 }
 
@@ -226,6 +233,7 @@ extension type _DdLogs._(JSObject _) implements JSObject {
 
   external void setGlobalContextProperty(String key, JSAny? property);
   external void removeGlobalContextProperty(String key);
+  external void setTrackingConsent(String consent);
 }
 
 @JS()
