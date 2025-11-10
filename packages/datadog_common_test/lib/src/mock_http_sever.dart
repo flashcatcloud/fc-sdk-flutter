@@ -151,17 +151,14 @@ abstract class RecordingServerClient {
 
   /// Call [pollForSession] specifically pulling out requets for Logs only.
   Future<void> pollForLogs(Duration timeout, LogHandler handler) async {
-    print('Polling for logs');
     final logs = <LogDecoder>[];
     await pollSessionRequests(timeout, (requests) {
-      print('requests! ${requests.length}');
       final newLogs = requests
           .map((e) => e.asLogs())
           .whereType<List<LogDecoder>>()
           .expand((e) => e)
           .toList();
       logs.addAll(newLogs);
-      print('logs! ${logs.length}');
       return handler(logs);
     });
   }

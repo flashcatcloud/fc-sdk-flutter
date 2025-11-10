@@ -30,7 +30,8 @@ class DdLogsWeb extends DdLogsPlatform {
         service: configuration.service,
         version: configuration.versionTag,
         variant: configuration.flavor,
-        source: 'flutter',		
+        sdkVersion: DatadogSdk.sdkVersion,
+        source: 'flutter',
         trackingConsent: trackingConsent.webValue(),
       ),
     );
@@ -229,7 +230,9 @@ extension type _DdLogs._(JSObject _) implements JSObject {
 
   @internal
   external Logger? createLogger(
-      String name, _JsLoggerConfiguration? configuration);
+    String name,
+    _JsLoggerConfiguration? configuration,
+  );
 
   external void setGlobalContextProperty(String key, JSAny? property);
   external void removeGlobalContextProperty(String key);
