@@ -85,7 +85,6 @@ class RequestLog {
   }
 
   List<LogDecoder>? asLogs() {
-    print('as logs');
     List<dynamic>? logJson;
     try {
       if (jsonData is List) {
@@ -100,7 +99,6 @@ class RequestLog {
       logJson = data.split('\n').map((e) => json.decode(e)).toList();
       // ignore: empty_catches
     } on TypeError {}
-    print('DONE');
     return logJson
         ?.whereType<Map<String, Object?>>()
         .where((e) => e.containsKey('message') && e['type'] != 'telemetry')

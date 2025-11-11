@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.16.0
+
+* [Web] Add tracking consent support.
+
+## 2.15.0
+
+* [Web] Add extra user info support. See [#852](https://github.com/DataDog/dd-sdk-flutter/issues/852)
+
 ## 2.14.0
 
 * [WEB] Fix `valueToJs` for WASM builds. See [#820](https://github.com/DataDog/dd-sdk-flutter/issues/820).

@@ -129,11 +129,11 @@ class SessionReplayRecorder {
     required TreeCapturePrivacy defaultCapturePrivacy,
     required TouchPrivacyLevel touchPrivacyLevel,
   }) : this._(
-         KeyGenerator(),
-         timeProvider,
-         defaultCapturePrivacy,
-         touchPrivacyLevel,
-       );
+          KeyGenerator(),
+          timeProvider,
+          defaultCapturePrivacy,
+          touchPrivacyLevel,
+        );
 
   SessionReplayRecorder._(
     KeyGenerator keyGenerator,
@@ -158,9 +158,9 @@ class SessionReplayRecorder {
     DatadogTimeProvider timeProvider = const DefaultTimeProvider(),
     required TreeCapturePrivacy defaultCapturePrivacy,
     required TouchPrivacyLevel touchPrivacyLevel,
-  }) : _timeProvider = timeProvider,
-       _defaultTreeCapturePrivacy = defaultCapturePrivacy,
-       _touchPrivacyLevel = touchPrivacyLevel {
+  })  : _timeProvider = timeProvider,
+        _defaultTreeCapturePrivacy = defaultCapturePrivacy,
+        _touchPrivacyLevel = touchPrivacyLevel {
     _populateElementRecorderMap(elementRecorders);
   }
 
@@ -221,8 +221,8 @@ class SessionReplayRecorder {
       }
     });
 
-    final addedProcessingTimelineTask =
-        TimelineTask()..start('Datadog SR Capture Processing');
+    final addedProcessingTimelineTask = TimelineTask()
+      ..start('Datadog SR Capture Processing');
 
     // Process anything that needs additional processing
     final nodes = <CaptureNode>[];
@@ -325,7 +325,7 @@ class SessionReplayRecorder {
 
       final untransformedPaintBounds = renderObject.paintBounds;
       // Don't capture things that take up no space.
-      if (untransformedPaintBounds.width == 0 &&
+      if (untransformedPaintBounds.width == 0 ||
           untransformedPaintBounds.height == 0) {
         return;
       }
