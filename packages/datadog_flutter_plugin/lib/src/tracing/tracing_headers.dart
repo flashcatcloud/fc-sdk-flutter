@@ -8,7 +8,6 @@ import 'package:flutter/foundation.dart';
 
 import '../../datadog_flutter_plugin.dart';
 import '../../datadog_internal.dart';
-import 'baggage_helpers.dart';
 
 /// The type of tracing header to inject into first party requests.
 enum TracingHeaderType {
@@ -248,7 +247,7 @@ Map<String, Object?> generateDatadogAttributes(
 void injectTracingHeaders(
   TracingContext context,
   TracingHeaderType headersType,
-  Map<String, String> headers, {
+  Map<String, dynamic> headers, {
   TraceContextInjection contextInjection = TraceContextInjection.sampled,
 }) {
   const String baggageHeaderName = 'baggage';

@@ -125,7 +125,7 @@ class DatadogDioInterceptor extends Interceptor {
         var attributes = <String, Object?>{};
         // Is first party?
         if (tracingHeaders.isNotEmpty) {
-          var context = generateTracingContext(rum);
+          var context = generateTracingContext(datadogSdk, rum);
 
           attributes = _appendRequestHeaders(
             options,
@@ -180,11 +180,8 @@ class DatadogDioInterceptor extends Interceptor {
           context, datadogSdk.rum?.traceSampleRate ?? 0);
 
       for (final headerType in tracingHeaderTypes) {
-        requestOptions.headers.addAll(getTracingHeaders(
-          context,
-          headerType,
-          contextInjection: contextInjection,
-        ));
+        injectTracingHeaders(context, headerType, requestOptions.headers,
+            contextInjection: contextInjection);
       }
     }
 

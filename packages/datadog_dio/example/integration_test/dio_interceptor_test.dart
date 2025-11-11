@@ -117,6 +117,13 @@ void main() {
       expect(testRequest.requestHeaders['x-datadog-sampling-priority']?.first,
           '1');
       expect(testRequest.requestHeaders['x-datadog-origin']?.first, 'rum');
+
+      final baggageHeader = testRequest.requestHeaders['baggage']?.first;
+      final baggageValues = baggageHeader?.split(',');
+      expect(baggageValues?.firstWhereOrNull((e) => e.contains('session.id')),
+          isNotNull);
+      expect(baggageValues, contains('user.id=integration_test_user'));
+      expect(baggageValues, contains('account.id=integration_test_account'));
     }
 
     final getEvent = view2.resourceEvents

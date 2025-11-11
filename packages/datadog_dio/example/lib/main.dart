@@ -81,6 +81,10 @@ Future<void> main() async {
       ..addDatadogInterceptor(
         DatadogSdk.instance,
       );
+    // User for testing baggage headers
+    DatadogSdk.instance.setUserInfo(id: 'integration_test_user');
+    DatadogSdk.instance.setAccountInfo(id: 'integration_test_account');
+
     runApp(DatadogAutoIntegrationTestApp(dio: dio));
   });
 }
