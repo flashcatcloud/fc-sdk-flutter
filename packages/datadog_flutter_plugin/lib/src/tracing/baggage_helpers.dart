@@ -58,6 +58,8 @@ Map<String, String> _deconstructBaggageHeader(
   Map<String, String> baggageValueMap = Map.fromEntries(
     baggageHeader.split(',').map((v) {
       v = v.trim();
+      if (v.isEmpty) return null;
+
       final firstEqualsIndex = v.indexOf('=');
       if (firstEqualsIndex < 0) {
         logger.warn(
