@@ -98,7 +98,7 @@ SPEC CHECKSUMS:
   DatadogLogs: 084f7974d6dbe053b5fbabc07a245a700c1514f7
   DatadogRUM: c9356f806db3599386f854bdb53494216600d2ae
   DictionaryCoder: f7115fcd074c8301e91f2eb862da1ea7d0385e61
-  Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
+  Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
   integration_test: 252f60fa39af5e17c3aa9899d35d908a0721b573
   objective_c: 77e887b5ba1827970907e10e832eec1683f3431d
   PLCrashReporter: db59ef96fa3d25f3650040d02ec2798cffee75f2
