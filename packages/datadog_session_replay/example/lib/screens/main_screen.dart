@@ -17,7 +17,9 @@ class _RouteScreen {
 }
 
 class MainScreen extends StatefulWidget {
-  const MainScreen({super.key});
+  final VoidCallback onRecreateKey;
+
+  const MainScreen({super.key, required this.onRecreateKey});
 
   @override
   State<MainScreen> createState() => _MainScreenState();
@@ -71,6 +73,10 @@ class _MainScreenState extends State<MainScreen> {
               child: Text('Stop Session'),
             ),
             for (final route in routes) _routeButton(context, route),
+            ElevatedButton(
+              onPressed: widget.onRecreateKey,
+              child: Text('Recreate Capture Widget'),
+            ),
           ],
         ),
       ),

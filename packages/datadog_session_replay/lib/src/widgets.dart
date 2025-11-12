@@ -48,6 +48,12 @@ class _SessionReplayCaptureState extends State<SessionReplayCapture> {
   }
 
   @override
+  void dispose() {
+    widget.sessionReplay.removeElement(widget.key!);
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     Widget builtChild = RumUserActionDetector(
       rum: widget.rum,
