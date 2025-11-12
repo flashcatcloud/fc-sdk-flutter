@@ -15,7 +15,9 @@ class DatadogSdkNoOpPlatform extends DatadogSdkPlatform {
   }
 
   @override
-  Future<AttachResponse?> attachToExisting() async {
+  Future<AttachResponse?> attachToExisting(
+    DatadogAttachConfiguration attachConfig,
+  ) async {
     return AttachResponse(loggingEnabled: false, rumEnabled: false);
   }
 
@@ -96,5 +98,10 @@ class DatadogSdkNoOpPlatform extends DatadogSdkPlatform {
     Map<String, Object?> extraInfo,
   ) {
     return Future.value();
+  }
+
+  @override
+  Future<IsolateAttachResponse?> attachToIsolate() {
+    return Future.value(null);
   }
 }

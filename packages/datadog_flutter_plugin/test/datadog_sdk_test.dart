@@ -61,7 +61,7 @@ void main() {
         const PlatformInitializationResult(logs: true, rum: true),
       ),
     );
-    when(() => mockPlatform.attachToExisting()).thenAnswer(
+    when(() => mockPlatform.attachToExisting(any())).thenAnswer(
       (_) => Future<AttachResponse?>.value(
         AttachResponse(loggingEnabled: false, rumEnabled: false),
       ),
@@ -282,7 +282,7 @@ void main() {
   test('attachToExisting calls out to platform', () async {
     await datadogSdk.attachToExisting(DatadogAttachConfiguration());
 
-    verify(() => mockPlatform.attachToExisting());
+    verify(() => mockPlatform.attachToExisting(any()));
     expect(datadogSdk.logs, isNull);
     expect(datadogSdk.rum, isNull);
   });
@@ -308,7 +308,7 @@ void main() {
   });
 
   test('attachToExisting with loggingEnabled creates Logging bridge', () async {
-    when(() => mockPlatform.attachToExisting()).thenAnswer(
+    when(() => mockPlatform.attachToExisting(any())).thenAnswer(
       (invocation) => Future<AttachResponse?>.value(
         AttachResponse(loggingEnabled: true, rumEnabled: false),
       ),
@@ -321,7 +321,7 @@ void main() {
   });
 
   test('attachToExisting with rumEnabled creates RUM bridge', () async {
-    when(() => mockPlatform.attachToExisting()).thenAnswer(
+    when(() => mockPlatform.attachToExisting(any())).thenAnswer(
       (invocation) => Future<AttachResponse?>.value(
         AttachResponse(loggingEnabled: false, rumEnabled: true),
       ),
@@ -334,7 +334,7 @@ void main() {
   });
 
   test('attachToExisting with rumEnabled forwards RUM parameters', () async {
-    when(() => mockPlatform.attachToExisting()).thenAnswer(
+    when(() => mockPlatform.attachToExisting(any())).thenAnswer(
       (invocation) => Future<AttachResponse?>.value(
         AttachResponse(loggingEnabled: false, rumEnabled: true),
       ),
@@ -694,7 +694,7 @@ void main() {
   test(
     'plugin added to configuration is created during attachToExisting',
     () async {
-      when(() => mockPlatform.attachToExisting()).thenAnswer(
+      when(() => mockPlatform.attachToExisting(any())).thenAnswer(
         (invocation) => Future<AttachResponse?>.value(
           AttachResponse(loggingEnabled: false, rumEnabled: false),
         ),

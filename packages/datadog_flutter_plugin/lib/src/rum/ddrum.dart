@@ -161,6 +161,21 @@ class DatadogRum {
     );
   }
 
+  @internal
+  DatadogRum.forBackgroundIsolate(
+    DatadogSdk core,
+    this.traceSampleRate,
+    this.traceContextInjection,
+  ) : _maxSampledTraceId = _getMaxTraceId(traceSampleRate),
+      logger = core.internalLogger {
+    _init(
+      core: core,
+      detectLongTasks: false,
+      longTaskThreshold: 0.0,
+      reportFlutterPerformance: false,
+    );
+  }
+
   DatadogRum._(DatadogSdk core, DatadogRumConfiguration configuration)
     : traceSampleRate = configuration.traceSampleRate,
       _maxSampledTraceId = _getMaxTraceId(configuration.traceSampleRate),

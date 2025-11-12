@@ -295,9 +295,6 @@ class DatadogSdkPlugin : FlutterPlugin, MethodCallHandler {
     private fun attachToExisting(): Map<String, Any> {
         val loggingEnabled = Logs.isEnabled()
         val rumEnabled = GlobalRumMonitor.isRegistered()
-        if (rumEnabled) {
-            rumPlugin.attachToExistingSdk(GlobalRumMonitor.get())
-        }
 
         return mapOf<String, Any>(
             "loggingEnabled" to loggingEnabled,

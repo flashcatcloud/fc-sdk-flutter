@@ -92,7 +92,13 @@ public class DatadogRumPlugin: NSObject, FlutterPlugin {
             return
         }
 
-        if call.method != "enable" && rum == nil {
+        if call.method == "enable" {
+            enable(arguments: arguments, call: call)
+            result(nil)
+            return
+        }
+
+        if !ensureRumEnabled() {
             result(
                 FlutterError.invalidOperation(
                     message: "Attempting to call RUM method (\(call.method)) when RUM has not been enabled."
@@ -102,10 +108,6 @@ public class DatadogRumPlugin: NSObject, FlutterPlugin {
         }
 
         switch call.method {
-        case "enable":
-            enable(arguments: arguments, call: call)
-            result(nil)
-
         case "deinitialize":
             deinitialize(arguments: arguments, call: call)
             result(nil)
@@ -342,9 +344,16 @@ public class DatadogRumPlugin: NSObject, FlutterPlugin {
         }
     }
 
-    internal func attachToExisting(rumInstance: RUMMonitorProtocol) {
-        rum = rumInstance
+    private func ensureRumEnabled() -> Bool {
+        if rum == nil {
+            if RUM._internal.isEnabled() {
+                rum = RUMMonitor.shared()
+            }
+        }
+
+        return rum != nil
     }
+
 
     private func enable(arguments: [String: Any?], call: FlutterMethodCall) {
         let configArg = arguments["configuration"] as? [String: Any?]

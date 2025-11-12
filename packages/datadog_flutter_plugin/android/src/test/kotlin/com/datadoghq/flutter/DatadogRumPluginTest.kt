@@ -10,6 +10,7 @@ import assertk.assertThat
 import assertk.assertions.isEqualTo
 import assertk.assertions.isNotNull
 import com.datadog.android.Datadog
+import com.datadog.android.rum.GlobalRumMonitor
 import com.datadog.android.rum.Rum
 import com.datadog.android.rum.RumActionType
 import com.datadog.android.rum.RumConfiguration
@@ -36,7 +37,6 @@ import io.mockk.unmockkStatic
 import io.mockk.verify
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.RepeatedTest
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.kotlin.mock
@@ -62,6 +62,7 @@ class DatadogRumPluginTest {
         DatadogRumPlugin.resetConfig();
         unmockkStatic(Log::class)
         unmockkStatic(Rum::class)
+        unmockkStatic(GlobalRumMonitor::class)
     }
 
     @Test
@@ -221,6 +222,9 @@ class DatadogRumPluginTest {
     @Test
     fun `M return invalidOperation W method called { !enabled }`() {
         //GIVEN
+        mockkStatic(GlobalRumMonitor::class)
+        every { GlobalRumMonitor.isRegistered(any()) } returns false
+
         val plugin = DatadogRumPlugin()
         val call = MethodCall(
             "startView",

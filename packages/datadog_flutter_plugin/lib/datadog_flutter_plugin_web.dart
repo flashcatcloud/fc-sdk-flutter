@@ -165,7 +165,9 @@ class DatadogSdkWeb extends DatadogSdkPlatform {
   }
 
   @override
-  Future<AttachResponse?> attachToExisting() async {
+  Future<AttachResponse?> attachToExisting(
+    DatadogAttachConfiguration attachConfig,
+  ) async {
     return null;
   }
 
@@ -194,5 +196,10 @@ class DatadogSdkWeb extends DatadogSdkPlatform {
   @override
   Future<void> clearAllData() async {
     // Not currently supported
+  }
+
+  @override
+  Future<IsolateAttachResponse?> attachToIsolate() async {
+    return null;
   }
 }

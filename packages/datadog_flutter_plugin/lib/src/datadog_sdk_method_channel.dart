@@ -2,7 +2,10 @@
 // This product includes software developed at Datadog (https://www.datadoghq.com/).
 // Copyright 2016-Present Datadog, Inc.
 
+import 'dart:async';
 import 'dart:io';
+import 'dart:isolate';
+import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -13,7 +16,27 @@ import 'android/android_plugin_stub.dart'
 import 'datadog_sdk_platform_interface.dart';
 import 'internal_logger.dart';
 
+@immutable
+class _IsolateAttachRequest {
+  final SendPort sendPort;
+
+  const _IsolateAttachRequest({required this.sendPort});
+}
+
+class DatadogCommunicationError extends Error {
+  final Object unknownMessage;
+  DatadogCommunicationError(this.unknownMessage);
+
+  @override
+  String toString() {
+    return 'Uknown object sent in internal communicaiton: $unknownMessage';
+  }
+}
+
 class DatadogSdkMethodChannel extends DatadogSdkPlatform {
+  static const String globalCommunicationPortName =
+      'datadog.global.isolate.port';
+
   @visibleForTesting
   final methodChannel = const MethodChannel('datadog_sdk_flutter');
 
@@ -29,6 +52,37 @@ class DatadogSdkMethodChannel extends DatadogSdkPlatform {
       return AndroidDatadogFlutterPlugin.getContext();
     }
     return null;
+  }
+
+  final ReceivePort _globalRecievePort = ReceivePort(
+    'Datadog Isolate Communication Port',
+  );
+
+  @override
+  Future<IsolateAttachResponse?> attachToIsolate() {
+    // Grab the main instance's send port
+    final sendPort = IsolateNameServer.lookupPortByName(
+      globalCommunicationPortName,
+    );
+    if (sendPort != null) {
+      final completer = Completer<IsolateAttachResponse>();
+      // Listen on my receive port for a response
+      _globalRecievePort.first.then((response) {
+        if (response is IsolateAttachResponse) {
+          BackgroundIsolateBinaryMessenger.ensureInitialized(
+            response.rootIsolateToken,
+          );
+          completer.complete(response);
+        } else {
+          completer.completeError(DatadogCommunicationError(response));
+        }
+      });
+      sendPort.send(
+        _IsolateAttachRequest(sendPort: _globalRecievePort.sendPort),
+      );
+      return completer.future;
+    }
+    return Future.value(null);
   }
 
   @override
@@ -130,11 +184,24 @@ class DatadogSdkMethodChannel extends DatadogSdkPlatform {
       'setLogCallback': logCallback != null,
     });
 
+    _initIsolateCommunication(
+      CapturedConfiguration(
+        loggingEnabled: configuration.loggingConfiguration != null,
+        rumEnabled: configuration.rumConfiguration != null,
+        traceSampleRate: configuration.rumConfiguration?.traceSampleRate,
+        traceContextInjection:
+            configuration.rumConfiguration?.traceContextInjection,
+        firstPartyHosts: configuration.firstPartyHostsWithTracingHeaders,
+      ),
+    );
+
     return const PlatformInitializationResult(logs: true, rum: true);
   }
 
   @override
-  Future<AttachResponse?> attachToExisting() async {
+  Future<AttachResponse?> attachToExisting(
+    DatadogAttachConfiguration attachConfig,
+  ) async {
     final channelResponse = await methodChannel
         .invokeMapMethod<String, Object?>(
           'attachToExisting',
@@ -144,6 +211,17 @@ class DatadogSdkMethodChannel extends DatadogSdkPlatform {
     AttachResponse? response;
     if (channelResponse != null) {
       response = AttachResponse.decode(channelResponse);
+      if (response != null) {
+        _initIsolateCommunication(
+          CapturedConfiguration(
+            loggingEnabled: response.loggingEnabled,
+            rumEnabled: response.rumEnabled,
+            traceSampleRate: attachConfig.traceSampleRate,
+            traceContextInjection: attachConfig.traceContextInjection,
+            firstPartyHosts: attachConfig.firstPartyHostsWithTracingHeaders,
+          ),
+        );
+      }
     }
     return response;
   }
@@ -185,6 +263,27 @@ class DatadogSdkMethodChannel extends DatadogSdkPlatform {
 
   Future<Object?> getInternalVar(String name) {
     return methodChannel.invokeMethod('getInternalVar', {'name': name});
+  }
+
+  void _initIsolateCommunication(CapturedConfiguration capturedConfiguration) {
+    // If the RootIsolateToken is null, we were started on a background isolate... somehow
+    final rootIsolateToken = RootIsolateToken.instance;
+    if (rootIsolateToken == null) return;
+
+    IsolateNameServer.registerPortWithName(
+      _globalRecievePort.sendPort,
+      globalCommunicationPortName,
+    );
+    _globalRecievePort.listen((message) {
+      if (message is _IsolateAttachRequest) {
+        message.sendPort.send(
+          IsolateAttachResponse(
+            rootIsolateToken: rootIsolateToken,
+            capturedConfiguration: capturedConfiguration,
+          ),
+        );
+      }
+    });
   }
 
   Future<dynamic> handleMethodCall(MethodCall call) async {

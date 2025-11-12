@@ -386,7 +386,6 @@ public class DatadogSdkPlugin: NSObject, FlutterPlugin, DatadogFeature {
         }
 
         if RUM._internal.isEnabled() {
-            DatadogRumPlugin.instance.attachToExisting(rumInstance: RUMMonitor.shared())
             rumEnabled = true
         }
 
