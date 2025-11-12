@@ -30,12 +30,14 @@ bool _isSafeCharCode(int charCode) {
     case 0x2c: // ,
     case 0x3b: // ;
     case 0x5c: // \
+    case 0x25: // %
       return false;
   }
   return true;
 }
 
 String _encodeBaggageValue(String value) {
+  value = _percentDecode(value);
   final sb = StringBuffer();
   for (final rune in value.runes) {
     if (_isSafeCharCode(rune)) {
@@ -51,6 +53,13 @@ String _encodeBaggageValue(String value) {
   return sb.toString();
 }
 
+String _percentDecode(String value) {
+  // This looks for percent encoded values and replaces them with their decoded
+  // values, leaving stand alone percents.
+  final escapeRE = RegExp(r'(?:%[\da-fA-F]{2})+');
+  return value.replaceAllMapped(escapeRE, (m) => Uri.decodeComponent(m[0]!));
+}
+
 Map<String, String> _deconstructBaggageHeader(
   String baggageHeader,
   InternalLogger logger,
@@ -62,34 +71,30 @@ Map<String, String> _deconstructBaggageHeader(
 
       final firstEqualsIndex = v.indexOf('=');
       if (firstEqualsIndex < 0) {
-        logger.warn(
-          'Dropped invalid baggage header entry "$v". Key missing value.',
-        );
-        return null;
+        logger.warn('Invalid baggage header entry "$v". Key missing value.');
+        return v;
       }
 
       final key = v.substring(0, firstEqualsIndex).trim();
       if (!_baggageTokenRegExp.hasMatch(key)) {
         logger.warn(
-          'Dropping invalid baggage header entry "$v". Key not compliant to RFC 7230 grammar.',
+          'Invalid baggage header entry "$v". Key not compliant to RFC 7230 grammar.',
         );
-        return null;
+        return v;
       }
 
       final rawValue = v.substring(firstEqualsIndex + 1).trim();
 
       final rawProperties = rawValue.split(';');
-      final properties = <String>[_encodeBaggageValue(rawProperties.first)];
+      final properties = <String>[rawProperties.first];
       if (rawProperties.length > 1) {
         for (var rawProperty in rawProperties.sublist(1)) {
-          rawProperty = rawProperty.trim();
           final firstEqualsIndex = rawProperty.indexOf('=');
           if (firstEqualsIndex < 0) {
             if (!_baggageTokenRegExp.hasMatch(rawProperty)) {
               logger.warn(
-                'Dropping invalid baggage header entry "$rawProperty". Key not compliant to RFC 7230 grammar.',
+                'Invalid baggage header entry "$rawProperty". Key not compliant to RFC 7230 grammar.',
               );
-              continue;
             }
             properties.add(rawProperty);
           } else {
@@ -99,13 +104,10 @@ Map<String, String> _deconstructBaggageHeader(
                 .trim();
             if (!_baggageTokenRegExp.hasMatch(propertyKey)) {
               logger.warn(
-                'Dropping invalid baggage header entry "$rawProperty". Key not compliant to RFC 7230 grammar.',
+                'Invalid baggage header entry "$rawProperty". Key not compliant to RFC 7230 grammar.',
               );
-              continue;
             }
-            properties.add(
-              '$propertyKey=${_encodeBaggageValue(propertyValue)}',
-            );
+            properties.add('$propertyKey=$propertyValue');
           }
         }
       }
