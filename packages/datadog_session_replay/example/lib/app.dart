@@ -28,46 +28,58 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  final captureKey = GlobalKey();
+  var captureKey = GlobalKey();
+  GoRouter? router;
 
-  final router = GoRouter(
-    observers: [DatadogNavigationObserver(datadogSdk: DatadogSdk.instance)],
-    routes: [
-      GoRoute(path: '/', builder: (context, state) => const MainScreen()),
-      GoRoute(
-        path: Routes.simpleContainers,
-        builder: (context, state) => const SimpleContainersScreen(),
-      ),
-      GoRoute(
-        path: Routes.textRecording,
-        builder: (context, state) => TextRecordingScreen(),
-      ),
-      GoRoute(
-        path: Routes.cupertinoWidgets,
-        builder: (context, state) => CupertinoWidgetsScreen(),
-      ),
-      GoRoute(
-        path: Routes.materialWidgets,
-        builder: (context, state) => MaterialWidgetsScreen(),
-      ),
-      GoRoute(
-        path: Routes.textFieldWidgets,
-        builder: (context, state) => TextFieldsScreen(),
-      ),
-      GoRoute(
-        path: Routes.slivers,
-        builder: (context, state) => SliversScreen(),
-      ),
-      GoRoute(
-        path: Routes.imageWidgets,
-        builder: (context, state) => ImagesScreen(),
-      ),
-      GoRoute(
-        path: Routes.touchPrivacy,
-        builder: (context, state) => TouchPrivacyScreen(),
-      ),
-    ],
-  );
+  _MyAppState() {
+    router = GoRouter(
+      observers: [DatadogNavigationObserver(datadogSdk: DatadogSdk.instance)],
+      routes: [
+        GoRoute(
+          path: '/',
+          builder: (context, state) => MainScreen(onRecreateKey: _recreateKey),
+        ),
+        GoRoute(
+          path: Routes.simpleContainers,
+          builder: (context, state) => const SimpleContainersScreen(),
+        ),
+        GoRoute(
+          path: Routes.textRecording,
+          builder: (context, state) => TextRecordingScreen(),
+        ),
+        GoRoute(
+          path: Routes.cupertinoWidgets,
+          builder: (context, state) => CupertinoWidgetsScreen(),
+        ),
+        GoRoute(
+          path: Routes.materialWidgets,
+          builder: (context, state) => MaterialWidgetsScreen(),
+        ),
+        GoRoute(
+          path: Routes.textFieldWidgets,
+          builder: (context, state) => TextFieldsScreen(),
+        ),
+        GoRoute(
+          path: Routes.slivers,
+          builder: (context, state) => SliversScreen(),
+        ),
+        GoRoute(
+          path: Routes.imageWidgets,
+          builder: (context, state) => ImagesScreen(),
+        ),
+        GoRoute(
+          path: Routes.touchPrivacy,
+          builder: (context, state) => TouchPrivacyScreen(),
+        ),
+      ],
+    );
+  }
+
+  void _recreateKey() {
+    setState(() {
+      captureKey = GlobalKey();
+    });
+  }
 
   @override
   void initState() {

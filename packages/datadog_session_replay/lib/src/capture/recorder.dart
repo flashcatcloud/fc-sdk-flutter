@@ -201,6 +201,10 @@ class SessionReplayRecorder {
           if (renderObject?.debugNeedsLayout == true) continue;
         }
 
+        /// This shouldn't happen as we now remove widgets from capture requests during
+        /// dispose. But, just in case, let's skip any widgets that are in a defunct state.
+        if (!e.mounted) continue;
+
         // In debug mode, Flutter will assert if you attempt to access the size of an
         // object that shouldn't have size. We can skip elements that have no size for
         // whatever reason.
