@@ -53,11 +53,11 @@ String _encodeBaggageValue(String value) {
   return sb.toString();
 }
 
+final _escapeRE = RegExp(r'(?:%[\da-fA-F]{2})+');
 String _percentDecode(String value) {
   // This looks for percent encoded values and replaces them with their decoded
   // values, leaving stand alone percents.
-  final escapeRE = RegExp(r'(?:%[\da-fA-F]{2})+');
-  return value.replaceAllMapped(escapeRE, (m) => Uri.decodeComponent(m[0]!));
+  return value.replaceAllMapped(_escapeRE, (m) => Uri.decodeComponent(m[0]!));
 }
 
 Map<String, String> _deconstructBaggageHeader(

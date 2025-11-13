@@ -91,7 +91,8 @@ void main() {
             });
           }
         }
-        return RumSessionDecoder.fromEvents(rumLog).visits.length >= 3;
+        final session = RumSessionDecoder.fromEvents(rumLog);
+        return session.visits.length >= 4;
       },
     );
 

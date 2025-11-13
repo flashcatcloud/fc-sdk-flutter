@@ -487,7 +487,6 @@ void main() {
     await server.serve(port: port);
 
     mockPlatform = DatadogPlatformMock();
-    mockPlatform = DatadogPlatformMock();
     mockDatadog = DatadogSdkMock();
     when(() => mockDatadog.platform).thenReturn(mockPlatform);
 
