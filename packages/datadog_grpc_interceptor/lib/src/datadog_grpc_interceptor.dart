@@ -52,7 +52,8 @@ class DatadogGrpcInterceptor extends ClientInterceptor {
     final rumKey = uuid.v1();
     final headerTypes = _datadog.headerTypesForHost(Uri.parse(fullPath));
 
-    var addedHeaders = <String, String>{};
+    // Copy metadata to make it mutable
+    final mergedHeaders = Map<String, String>.from(options.metadata);
 
     if (rum != null) {
       var attributes = <String, Object?>{
@@ -60,7 +61,7 @@ class DatadogGrpcInterceptor extends ClientInterceptor {
       };
       TracingContext? tracingContext;
       if (headerTypes.isNotEmpty) {
-        tracingContext = generateTracingContext(rum);
+        tracingContext = generateTracingContext(_datadog, rum);
 
         attributes[DatadogRumPlatformAttributeKey.rulePsr] =
             rum.traceSampleRate / 100.0;
@@ -72,8 +73,8 @@ class DatadogGrpcInterceptor extends ClientInterceptor {
         }
 
         for (final tracingType in headerTypes) {
-          addedHeaders.addAll(getTracingHeaders(tracingContext, tracingType,
-              contextInjection: rum.contextInjectionSetting));
+          injectTracingHeaders(tracingContext, tracingType, mergedHeaders,
+              contextInjection: rum.contextInjectionSetting);
         }
       }
 
@@ -85,7 +86,7 @@ class DatadogGrpcInterceptor extends ClientInterceptor {
       );
     }
 
-    options = options.mergedWith(CallOptions(metadata: addedHeaders));
+    options = options.mergedWith(CallOptions(metadata: mergedHeaders));
 
     final future = invoker(method, request, options);
     future.then((v) {

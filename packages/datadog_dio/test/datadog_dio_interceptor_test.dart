@@ -12,6 +12,8 @@ import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
+class DatadogPlatformMock extends Mock implements DatadogSdkPlatform {}
+
 class DatadogSdkMock extends Mock implements DatadogSdk {}
 
 class RumMock extends Mock implements DatadogRum {}
@@ -129,6 +131,7 @@ void verifyHeaders(
 }
 
 void main() {
+  late DatadogPlatformMock mockPlatform;
   late DatadogSdkMock mockDatadog;
   late RumMock mockRum;
 
@@ -144,7 +147,10 @@ void main() {
   });
 
   setUp(() {
+    mockPlatform = DatadogPlatformMock();
+
     mockDatadog = DatadogSdkMock();
+    when(() => mockDatadog.platform).thenReturn(mockPlatform);
     when(() => mockDatadog
             .headerTypesForHost(any(that: HasHost(equals('test_url')))))
         .thenReturn({TracingHeaderType.datadog});
@@ -497,6 +503,7 @@ void main() {
     group('when rum is enabled with $headerType tracing headers', () {
       setUp(() {
         mockDatadog = DatadogSdkMock();
+        when(() => mockDatadog.platform).thenReturn(mockPlatform);
         when(() => mockDatadog.headerTypesForHost(
             any(that: HasHost(equals('test_url'))))).thenReturn({headerType});
         when(() => mockDatadog.headerTypesForHost(

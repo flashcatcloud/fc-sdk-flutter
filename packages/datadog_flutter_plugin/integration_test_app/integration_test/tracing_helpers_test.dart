@@ -4,6 +4,7 @@
 
 import 'package:datadog_flutter_plugin/datadog_flutter_plugin.dart';
 import 'package:datadog_flutter_plugin/datadog_internal.dart';
+import 'package:datadog_flutter_plugin/src/datadog_noop_platform.dart';
 import 'package:datadog_flutter_plugin/src/rum/ddrum_noop_platform.dart';
 import 'package:datadog_flutter_plugin/src/rum/ddrum_platform_interface.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -48,10 +49,13 @@ void main() {
 
   testWidgets('generateTracingContext generates proper bit values',
       (WidgetTester tester) async {
+    final mockDatadogSdk = MockDatadogSdk();
+    when(() => mockDatadogSdk.platform).thenReturn(DatadogSdkNoOpPlatform());
+
     final mockRum = MockDdRum();
     when(() => mockRum.shouldSampleTrace(any(), any())).thenReturn(true);
 
-    final context = generateTracingContext(mockRum);
+    final context = generateTracingContext(mockDatadogSdk, mockRum);
 
     expect(context.traceId.value.bitLength, lessThanOrEqualTo(128));
     expect(context.spanId.value.bitLength, lessThanOrEqualTo(63));

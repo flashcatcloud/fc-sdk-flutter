@@ -9,6 +9,8 @@ import android.util.Log
 import com.datadog.android.Datadog
 import com.datadog.android.DatadogSite
 import com.datadog.android._InternalProxy
+import com.datadog.android.api.context.DatadogContext
+import com.datadog.android.core.InternalSdkCore
 import com.datadog.android.core.configuration.BatchProcessingLevel
 import com.datadog.android.core.configuration.Configuration
 import com.datadog.android.log.Logs
@@ -38,6 +40,11 @@ class DatadogSdkPlugin : FlutterPlugin, MethodCallHandler {
         // but the application will still be running. We keep the configuration separate
         // from the plugin to warn about reinitialization.
         var previousConfiguration: Map<String, Any?>? = null
+
+        fun getCoreContext(): DatadogContext? {
+            val sdkCore = Datadog.getInstance() as? InternalSdkCore
+            return sdkCore?.getDatadogContext()
+        }
     }
 
     data class ConfigurationTelemetryOverrides(

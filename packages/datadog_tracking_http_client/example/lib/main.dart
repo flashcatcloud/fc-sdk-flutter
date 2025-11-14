@@ -77,6 +77,10 @@ Future<void> main() async {
   }
 
   await DatadogSdk.runApp(configuration, TrackingConsent.granted, () async {
+    // User for testing baggage headers
+    DatadogSdk.instance.setUserInfo(id: 'integration_test_user');
+    DatadogSdk.instance.setAccountInfo(id: 'integration_test_account');
+
     runApp(const DatadogAutoIntegrationTestApp());
   });
 }

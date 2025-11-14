@@ -17,6 +17,7 @@ export 'src/helpers.dart';
 export 'src/internal_logger.dart';
 export 'src/rum/attributes.dart';
 export 'src/time_provider.dart';
+export 'src/tracing/baggage_helpers.dart';
 export 'src/tracing/tracing_headers.dart';
 
 // Because resource tracking is in a separate package, but web needs resource
@@ -65,8 +66,9 @@ String? sanitizeHost(String host, InternalLogger internalLogger) {
   final uri = Uri.tryParse(host);
   if (uri != null) {
     if (uri.hasScheme) {
-      internalLogger
-          .warn('$host is a url and will be sanitized to: ${uri.host}.');
+      internalLogger.warn(
+        '$host is a url and will be sanitized to: ${uri.host}.',
+      );
       host = uri.host;
     }
 
@@ -87,14 +89,16 @@ class FirstPartyHost {
   final RegExp regExp;
 
   FirstPartyHost._(this.hostName, this.headerTypes)
-      : regExp = RegExp('^(.*\\.)*${RegExp.escape(hostName)}\$');
+    : regExp = RegExp('^(.*\\.)*${RegExp.escape(hostName)}\$');
 
   bool matches(Uri uri) {
     return regExp.hasMatch(uri.host.toString());
   }
 
   static List<FirstPartyHost> createSanitized(
-      Map<String, Set<TracingHeaderType>> hosts, InternalLogger logger) {
+    Map<String, Set<TracingHeaderType>> hosts,
+    InternalLogger logger,
+  ) {
     var firstPartyHosts = <FirstPartyHost>[];
     for (var entry in hosts.entries) {
       var sanitizedHost = sanitizeHost(entry.key, logger);

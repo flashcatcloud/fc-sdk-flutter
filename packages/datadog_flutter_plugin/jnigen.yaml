@@ -18,4 +18,7 @@ classes:
   - 'com.datadoghq.flutter.DatadogRumPlugin'
   - 'com.datadoghq.flutter.DatadogLogsPlugin'
   - 'com.datadoghq.flutter.DatadogLogEventMapper'
-  
+  - 'com.datadoghq.flutter.DatadogSdkPlugin'
+  - 'com.datadog.android.api.context.DatadogContext'
+  - 'com.datadog.android.api.context.UserInfo'
+  - 'com.datadog.android.api.context.AccountInfo'
