@@ -87,7 +87,7 @@ class ContainerStyle {
   ) {
     switch (decoration) {
       case BoxDecoration boxDecoration:
-        return _captureBoxDecoration(boxDecoration);
+        return _captureBoxDecoration(boxDecoration, attributes);
       case ShapeDecoration shapeDecoration:
         return _captureShapeDecoration(shapeDecoration, attributes);
     }
@@ -130,8 +130,14 @@ InputBorder _getDefaultInputBorder() {
   return const UnderlineInputBorder();
 }
 
-ContainerStyle _captureBoxDecoration(BoxDecoration decoration) {
+ContainerStyle _captureBoxDecoration(
+    BoxDecoration decoration, CapturedViewAttributes attributes) {
   double? cornerRadius = decoration.borderRadius?.resolve(null).topLeft.x;
+  if (decoration.shape == BoxShape.circle) {
+    // Show this as a circle even if it has border radius
+    final shortSide = attributes.paintBounds.shortestSide;
+    cornerRadius = shortSide / 2;
+  }
   Color? backgroundColor = decoration.color;
   double? borderWidth;
   Color? borderColor;

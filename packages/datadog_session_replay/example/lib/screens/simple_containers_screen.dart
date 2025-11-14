@@ -37,6 +37,15 @@ class SimpleContainersScreen extends StatelessWidget {
               alignment: Alignment.center,
               child: Text('In a Container\n'),
             ),
+            Container(
+              width: 100.0,
+              height: 100.0,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(width: 2),
+                color: Colors.amber,
+              ),
+            ),
           ],
         ),
       ),
