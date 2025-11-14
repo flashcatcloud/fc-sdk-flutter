@@ -50,6 +50,7 @@ class DdRumWeb extends DdRumPlatform {
     DD_RUM?.init(
       _RumInitOptions(
         applicationId: rumConfiguration.applicationId,
+        propagateTraceBaggage: true,
         clientToken: configuration.clientToken,
         site: siteStringForSite(configuration.site),
         sessionSampleRate: rumConfiguration.sessionSamplingRate,
@@ -393,6 +394,7 @@ extension type _TracingUrl._(JSObject _) implements JSObject {
 @anonymous
 extension type _RumInitOptions._(JSObject _) implements JSObject {
   external String get applicationId;
+  external bool? get propagateTraceBaggage;
   external String get clientToken;
   external String get site;
   external String? get service;
@@ -418,6 +420,7 @@ extension type _RumInitOptions._(JSObject _) implements JSObject {
 
   external factory _RumInitOptions({
     String applicationId,
+    bool? propagateTraceBaggage,
     String clientToken,
     String site,
     String? service,
