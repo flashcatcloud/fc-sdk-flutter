@@ -2,7 +2,7 @@
 
 ## 1.0.0-preview.7
 
-* [Session Replay] Fix using BoxShape.circle in BoxDecoration.
+* [Session Replay] Fix using `BoxShape.circle` in `BoxDecoration`.
 * [Session Replay] Don't attempt to capture unmounted widgets.
 
 ## 1.0.0-preview.6
