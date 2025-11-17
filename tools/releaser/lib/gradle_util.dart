@@ -34,8 +34,8 @@ class UpdateGradleFilesCommand extends Command {
       bool inMavenBlock = false;
       bool writeMavenBlock = true;
       await transformFile(file, logger, args.dryRun, (line) {
-        // Other packages can keep looser version constraints
-        if (args.packageName == 'datadog_flutter_plugin') {
+        // If we're shipping datadog_flutter_plugin, use tighter constraints
+        if (args.packages.contains((e) => e.name == 'datadog_flutter_plugin')) {
           final versionMatch = versionRegex.firstMatch(line);
           if (versionMatch != null) {
             final oldVersion = versionMatch.group(1);

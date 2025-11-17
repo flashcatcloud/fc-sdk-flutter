@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:collection/collection.dart';
 import 'package:logging/logging.dart';
 import 'package:path/path.dart' as path;
 
@@ -21,8 +22,10 @@ class PinCocoapodsVersionCommand extends Command {
     }
 
     // Other packages can keep looser version constraints
-    if (args.packageName == 'datadog_flutter_plugin') {
-      if (!await _pinPodspecVersion(args, logger)) {
+    final pinedPackage = args.packages
+        .firstWhereOrNull((e) => e.name == 'datadog_flutter_plugin');
+    if (pinedPackage != null) {
+      if (!await _pinPodspecVersion(args, pinedPackage, logger)) {
         return false;
       }
     }
@@ -60,13 +63,13 @@ class PinCocoapodsVersionCommand extends Command {
     return true;
   }
 
-  Future<bool> _pinPodspecVersion(CommandArguments args, Logger logger) async {
-    final podspecLocation = 'ios/${args.packageName}.podspec';
+  Future<bool> _pinPodspecVersion(
+      CommandArguments args, PackageRelease package, Logger logger) async {
+    final podspecLocation = 'ios/${package.name}.podspec';
 
     final file = File(
       path.join(
-        args.gitDir.path,
-        'packages/${args.packageName}',
+        getPackageRoot(args, package),
         podspecLocation,
       ),
     );

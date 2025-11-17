@@ -30,52 +30,55 @@ class GenerateChangelogCommand extends Command {
 
   @override
   Future<bool> run(CommandArguments args, Logger logger) async {
-    final lastReleaseSha = await _findLastReleaseSha(logger, args);
-    if (lastReleaseSha == null) {
-      Logger.root.shout(
-          '⚠️ Could not find last release! Hopefully this is a new package!.');
-      Logger.root.shout(
-          '‼️ Changelogs cannot be generated for an initial release! Make sure you have what you need in there.');
-      return _waitForConfirmation(logger);
-    }
+    for (final package in args.packages) {
+      final lastReleaseSha = await _findLastReleaseSha(logger, args, package);
+      if (lastReleaseSha == null) {
+        Logger.root.shout(
+            '⚠️ Could not find last release! Hopefully this is a new package!.');
+        Logger.root.shout(
+            '‼️ Changelogs cannot be generated for an initial release! Make sure you have what you need in there.');
+      } else {
+        final commits =
+            await _getCommits(args, package, '$lastReleaseSha..HEAD');
 
-    final commits = await _getCommits(args, '$lastReleaseSha..HEAD');
+        final changelogItems = _getChangelogItems(commits);
+        logger.fine(
+            'Found ${changelogItems.length} changelog items for ${package.name} version ${package.version}');
 
-    final changelogItems = _getChangelogItems(commits);
-    logger.fine(
-        'Found ${changelogItems.length} changelog items for ${args.packageName} version ${args.version}');
+        final versionChangelog = changelogItems.map((e) => '* $e').join('\n');
 
-    final versionChangelog = changelogItems.map((e) => '* $e').join('\n');
-
-    final file = File(path.join(args.packageRoot, 'CHANGELOG.md'));
-    if (!file.existsSync()) {
-      Logger.root.shout('❌ Could not find file CHANGELOG.md for package.');
-      return false;
-    }
-
-    bool didWriteChangelog = false;
-    await transformFile(file, logger, args.dryRun, (line) {
-      if (didWriteChangelog) return line;
-
-      if (line.startsWith('##')) {
-        String? oldLine = line;
-        if (line == '## Unreleased') {
-          logger
-              .info('ℹ️ ## Unreleased headers are no longer needed. Removing.');
-          oldLine = null;
+        final file =
+            File(path.join(getPackageRoot(args, package), 'CHANGELOG.md'));
+        if (!file.existsSync()) {
+          Logger.root.shout('❌ Could not find file CHANGELOG.md for package.');
+          return false;
         }
 
-        line = '## ${args.version}\n\n$versionChangelog\n';
-        if (oldLine != null) {
-          line += '\n$oldLine';
-        }
-        didWriteChangelog = true;
+        bool didWriteChangelog = false;
+        await transformFile(file, logger, args.dryRun, (line) {
+          if (didWriteChangelog) return line;
+
+          if (line.startsWith('##')) {
+            String? oldLine = line;
+            if (line == '## Unreleased') {
+              logger.info(
+                  'ℹ️ ## Unreleased headers are no longer needed. Removing.');
+              oldLine = null;
+            }
+
+            line = '## ${package.version}\n\n$versionChangelog\n';
+            if (oldLine != null) {
+              line += '\n$oldLine';
+            }
+            didWriteChangelog = true;
+          }
+          return line;
+        });
       }
-      return line;
-    });
+    }
 
     print(
-        'Verify the CHANGELOG.md changes and add changes from iOS and Android Native SDK updates.');
+        'Verify the CHANGELOG.md changes for all packages and add changes from iOS and Android Native SDK updates.');
     print(
         'For reference iOS SDK will be updated to ${args.iOSRelease} and Android SDK will be updated to ${args.androidRelease}.');
 
@@ -104,10 +107,10 @@ class GenerateChangelogCommand extends Command {
   }
 
   Future<String?> _findLastReleaseSha(
-      Logger logger, CommandArguments args) async {
+      Logger logger, CommandArguments args, PackageRelease package) async {
     final packageTags = await args.gitDir
         .tags()
-        .where((t) => t.tag.startsWith('${args.packageName}/'))
+        .where((t) => t.tag.startsWith('${package.name}/'))
         .toList();
 
     Version? _getVersion(Tag tag) {
@@ -140,14 +143,15 @@ class GenerateChangelogCommand extends Command {
   }
 
   Future<List<String>> _getCommits(
-      CommandArguments args, String commitRange) async {
+      CommandArguments args, PackageRelease package, String commitRange) async {
+    final packageRoot = getPackageRoot(args, package);
     final result = await args.gitDir.runCommand([
       '--no-pager',
       'log',
       commitRange,
       '--pretty=format:%H|||%an <%aE>|||%ai|||%B||||',
       '--',
-      args.packageRoot
+      packageRoot
     ]);
 
     final rawCommits = (result.stdout as String)

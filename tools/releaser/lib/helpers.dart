@@ -8,6 +8,9 @@ import 'dart:io';
 import 'package:git/git.dart';
 import 'package:logging/logging.dart';
 import 'package:path/path.dart' as path;
+import 'package:version/version.dart';
+
+import 'command.dart';
 
 bool hasNativeDependency(String packageName) {
   return packageName == 'datadog_flutter_plugin' ||
@@ -26,6 +29,10 @@ Future<GitDir?> getGitDir(String? root) async {
     currentPath,
     allowSubdirectory: true,
   );
+}
+
+String getPackageRoot(CommandArguments args, PackageRelease package) {
+  return path.join(args.gitDir.path, 'packages/${package.name}');
 }
 
 Future<void> transformFile(
@@ -55,4 +62,15 @@ Future<void> transformFile(
     await sync.flush();
     logger.info(' ✏️ Wrote ${file.path}');
   }
+}
+
+bool validateVersionNumber(String versionNumber, Logger logger) {
+  try {
+    final _ = Version.parse(versionNumber);
+    return true;
+  } on FormatException {
+    logger.shout(
+        '❌ Version $versionNumber does not parse properly as a semantic version');
+  }
+  return false;
 }

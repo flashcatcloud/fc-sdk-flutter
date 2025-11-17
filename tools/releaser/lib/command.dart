@@ -5,12 +5,16 @@
 import 'package:git/git.dart';
 import 'package:logging/logging.dart';
 
-class CommandArguments {
-  // The name of the packge we're releasing
-  final String packageName;
+class PackageRelease {
+  final String name;
+  final String version;
 
-  // The path to the root of the package
-  final String packageRoot;
+  PackageRelease({required this.name, required this.version});
+}
+
+class CommandArguments {
+  // The list of packages to release
+  final List<PackageRelease> packages;
 
   // The GitDir for the current repo
   final GitDir gitDir;
@@ -20,9 +24,6 @@ class CommandArguments {
 
   // Skip changelog check
   final bool skipChangelogCheck;
-
-  // The version we're releasing
-  final String version;
 
   // The release of the iOS SDK we want this release to refer to
   String? iOSRelease;
@@ -34,12 +35,10 @@ class CommandArguments {
   final bool dryRun;
 
   CommandArguments({
-    required this.packageName,
-    required this.packageRoot,
+    required this.packages,
     required this.gitDir,
     required this.skipGitChecks,
     required this.skipChangelogCheck,
-    required this.version,
     required this.iOSRelease,
     required this.androidRelease,
     required this.dryRun,

@@ -4,6 +4,7 @@
 
 import 'dart:io';
 
+import 'package:collection/collection.dart';
 import 'package:logging/logging.dart';
 import 'package:path/path.dart' as path;
 import 'package:version/version.dart';
@@ -16,17 +17,23 @@ enum VersionBumpType { major, minor, rev, prerelease }
 class UpdateVersionsCommand extends Command {
   @override
   Future<bool> run(CommandArguments args, Logger logger) async {
-    if (!await updateVersions(
-        args.packageRoot, args.version, logger, args.dryRun)) {
-      return false;
+    for (final package in args.packages) {
+      final packageRoot = getPackageRoot(args, package);
+      if (!await updateVersions(
+          packageRoot, package.version, logger, args.dryRun)) {
+        return false;
+      }
     }
 
-    if (args.packageName == 'datadog_flutter_plugin') {
-      if (!await _updateReadmeVersions(args, logger)) {
+    final corePackage = args.packages
+        .firstWhereOrNull((e) => e.name == 'datadog_flutter_plugin');
+
+    if (corePackage != null) {
+      if (!await _updateReadmeVersions(args, corePackage, logger)) {
         return false;
       }
 
-      if (!await _updateNativeSDKVersions(args, logger)) {
+      if (!await _updateNativeSDKVersions(args, corePackage, logger)) {
         return false;
       }
     }
@@ -42,32 +49,36 @@ class BumpVersionCommand extends Command {
 
   @override
   Future<bool> run(CommandArguments args, Logger logger) async {
-    final version = Version.parse(args.version);
-    Version newVersion;
-    switch (bumpType) {
-      case VersionBumpType.major:
-        newVersion = version.incrementMajor();
-        break;
-      case VersionBumpType.minor:
-        newVersion = version.incrementMinor();
-        break;
-      case VersionBumpType.rev:
-        newVersion = version.incrementPatch();
-        break;
-      case VersionBumpType.prerelease:
-        try {
-          newVersion = version.incrementPreRelease();
-        } catch (e) {
-          logger.shout(
-              '❌ Failed to increment the pre-release version of $version. Is it not a pre-release?');
-          return false;
-        }
-        break;
-    }
+    bool success = true;
+    for (final package in args.packages) {
+      final version = Version.parse(package.version);
+      Version newVersion;
+      switch (bumpType) {
+        case VersionBumpType.major:
+          newVersion = version.incrementMajor();
+          break;
+        case VersionBumpType.minor:
+          newVersion = version.incrementMinor();
+          break;
+        case VersionBumpType.rev:
+          newVersion = version.incrementPatch();
+          break;
+        case VersionBumpType.prerelease:
+          try {
+            newVersion = version.incrementPreRelease();
+          } catch (e) {
+            logger.shout(
+                '❌ Failed to increment the pre-release version of $version. Is it not a pre-release?');
+            return false;
+          }
+          break;
+      }
 
-    logger.info('🔀 Bumping version to $newVersion');
-    return updateVersions(
-        args.packageRoot, newVersion.toString(), logger, args.dryRun);
+      logger.info('🔀 Bumping version to $newVersion');
+      success &= await updateVersions(getPackageRoot(args, package),
+          newVersion.toString(), logger, args.dryRun);
+    }
+    return success;
   }
 }
 
@@ -125,8 +136,10 @@ Future<bool> _updateVersionDartFile(
   return true;
 }
 
-Future<bool> _updateReadmeVersions(CommandArguments args, Logger logger) async {
-  final changelogFile = File(path.join(args.packageRoot, 'README.md'));
+Future<bool> _updateReadmeVersions(
+    CommandArguments args, PackageRelease package, Logger logger) async {
+  final packageRoot = getPackageRoot(args, package);
+  final changelogFile = File(path.join(packageRoot, 'README.md'));
   if (!changelogFile.existsSync()) {
     logger.shout('⁉️ Could not find README.md at ${changelogFile.path}');
     return false;
@@ -163,11 +176,12 @@ Future<bool> _updateReadmeVersions(CommandArguments args, Logger logger) async {
 }
 
 Future<bool> _updateNativeSDKVersions(
-    CommandArguments args, Logger logger) async {
+    CommandArguments args, PackageRelease package, Logger logger) async {
+  final packageRoot = getPackageRoot(args, package);
   final nativeSDKVersionsFile =
-      File(path.join(args.packageRoot, 'NATIVE_SDK_VERSIONS.md'));
+      File(path.join(packageRoot, 'NATIVE_SDK_VERSIONS.md'));
   final newVersionEntry =
-      '| ${args.version} | ${args.iOSRelease} | ${args.androidRelease} |';
+      '| ${package.version} | ${args.iOSRelease} | ${args.androidRelease} |';
   final header = '| Flutter | iOS SDK | Android SDK |';
   final separator = '|---------|---------|-------------|';
 
@@ -184,9 +198,9 @@ Future<bool> _updateNativeSDKVersions(
     if (!line.startsWith('|')) continue;
 
     final parts = line.split('|').map((s) => s.trim()).toList();
-    if (parts.length > 1 && parts[1] == args.version) {
+    if (parts.length > 1 && parts[1] == package.version) {
       logger.info(
-          '✅ Version ${args.version} already exists in NATIVE_SDK_VERSIONS.md, skipping.');
+          '✅ Version ${package.version} already exists in NATIVE_SDK_VERSIONS.md, skipping.');
       return true;
     }
   }
