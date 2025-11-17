@@ -15,10 +15,7 @@ class AttachResponse {
   final bool loggingEnabled;
   final bool rumEnabled;
 
-  AttachResponse({
-    required this.loggingEnabled,
-    required this.rumEnabled,
-  });
+  AttachResponse({required this.loggingEnabled, required this.rumEnabled});
 
   static AttachResponse? decode(Map<String, Object?> json) {
     try {
@@ -27,8 +24,11 @@ class AttachResponse {
         rumEnabled: json['rumEnabled'] as bool,
       );
     } catch (e, st) {
-      DatadogSdk.instance.internalLogger
-          .sendToDatadog('Failed to deserialize AttachResponse: $e', st, null);
+      DatadogSdk.instance.internalLogger.sendToDatadog(
+        'Failed to deserialize AttachResponse: $e',
+        st,
+        null,
+      );
     }
 
     return null;
@@ -46,6 +46,14 @@ class PlatformInitializationResult {
   const PlatformInitializationResult({required this.logs, required this.rum});
 }
 
+@immutable
+class DatadogContext {
+  final String? userId;
+  final String? accountId;
+
+  const DatadogContext({required this.userId, required this.accountId});
+}
+
 abstract class DatadogSdkPlatform extends PlatformInterface {
   DatadogSdkPlatform() : super(token: _token);
 
@@ -60,11 +68,26 @@ abstract class DatadogSdkPlatform extends PlatformInterface {
     _instance = instance;
   }
 
+  DatadogContext? get cachedContext;
+
   Future<void> setSdkVerbosity(CoreLoggerLevel verbosity);
   Future<void> setTrackingConsent(TrackingConsent trackingConsent);
   Future<void> setUserInfo(
-      String? id, String? name, String? email, Map<String, Object?> extraInfo);
+    String id,
+    String? name,
+    String? email,
+    Map<String, Object?> extraInfo,
+  );
+  Future<void> clearUserInfo();
   Future<void> addUserExtraInfo(Map<String, Object?> extraInfo);
+
+  Future<void> setAccountInfo(
+    String id,
+    String? name,
+    Map<String, Object?> extraInfo,
+  );
+  Future<void> clearAccountInfo();
+  Future<void> addAccountExtraInfo(Map<String, Object?> extraInfo);
 
   Future<void> sendTelemetryDebug(String message);
   Future<void> sendTelemetryError(String message, String? stack, String? kind);

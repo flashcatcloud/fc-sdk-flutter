@@ -71,11 +71,9 @@ class DatadogGqlLink extends Link {
     }
 
     final tracingHeaderTypes = datadogSdk.headerTypesForHost(uri);
-    bool shouldSample = false;
     TracingContext? tracingContext;
     if (tracingHeaderTypes.isNotEmpty) {
-      shouldSample = rum.shouldSampleTrace();
-      tracingContext = generateTracingContext(shouldSample);
+      tracingContext = generateTracingContext(datadogSdk, rum);
     }
 
     final internalAttributes = _getInternalAttributes(request);
@@ -206,21 +204,14 @@ class DatadogGqlLink extends Link {
 
       if (rum != null && tracingHeaderTypes.isNotEmpty) {
         return request.updateContextEntry<HttpLinkHeaders>((context) {
-          bool shouldSample = rum.shouldSampleTrace();
           var headers = context?.headers ?? <String, String>{};
 
           // No tracing context, generate one ourselves
-          final tracingContext = generateTracingContext(shouldSample);
+          final tracingContext = generateTracingContext(datadogSdk, rum);
 
           for (final headerType in tracingHeaderTypes) {
-            final newHeaders = getTracingHeaders(tracingContext, headerType,
+            injectTracingHeaders(tracingContext, headerType, headers,
                 contextInjection: rum.contextInjectionSetting);
-            for (final entry in newHeaders.entries) {
-              // Don't replace exiting headers
-              if (!headers.containsKey(entry.key)) {
-                headers[entry.key] = entry.value;
-              }
-            }
           }
 
           return HttpLinkHeaders(headers: headers);

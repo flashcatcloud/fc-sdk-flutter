@@ -34,7 +34,6 @@ Future<void> performRumUserFlow(WidgetTester tester) async {
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-  // TODO: Figure out why
   testWidgets('test auto instrumentation', (WidgetTester tester) async {
     final sessionRecorder = await startMockServer();
 
@@ -92,7 +91,8 @@ void main() {
             });
           }
         }
-        return RumSessionDecoder.fromEvents(rumLog).visits.length >= 3;
+        final session = RumSessionDecoder.fromEvents(rumLog);
+        return session.visits.length >= 4;
       },
     );
 

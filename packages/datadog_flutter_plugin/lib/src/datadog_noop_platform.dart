@@ -7,6 +7,9 @@ import '../datadog_internal.dart';
 
 class DatadogSdkNoOpPlatform extends DatadogSdkPlatform {
   @override
+  DatadogContext? get cachedContext => null;
+
+  @override
   Future<void> addUserExtraInfo(Map<String, Object?> extraInfo) {
     return Future.value();
   }
@@ -53,7 +56,11 @@ class DatadogSdkNoOpPlatform extends DatadogSdkPlatform {
 
   @override
   Future<void> setUserInfo(
-      String? id, String? name, String? email, Map<String, Object?> extraInfo) {
+    String? id,
+    String? name,
+    String? email,
+    Map<String, Object?> extraInfo,
+  ) {
     return Future.value();
   }
 
@@ -64,6 +71,30 @@ class DatadogSdkNoOpPlatform extends DatadogSdkPlatform {
 
   @override
   Future<void> clearAllData() {
+    return Future.value();
+  }
+
+  @override
+  Future<void> addAccountExtraInfo(Map<String, Object?> extraInfo) {
+    return Future.value();
+  }
+
+  @override
+  Future<void> clearAccountInfo() {
+    return Future.value();
+  }
+
+  @override
+  Future<void> clearUserInfo() {
+    return Future.value();
+  }
+
+  @override
+  Future<void> setAccountInfo(
+    String id,
+    String? name,
+    Map<String, Object?> extraInfo,
+  ) {
     return Future.value();
   }
 }

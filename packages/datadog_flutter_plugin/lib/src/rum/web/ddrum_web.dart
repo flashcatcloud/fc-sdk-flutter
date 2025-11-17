@@ -5,14 +5,26 @@
 
 import 'dart:js_interop';
 
-import '../../datadog_flutter_plugin.dart';
-import '../../datadog_flutter_plugin_web.dart';
-import '../../datadog_internal.dart';
-import '../logs/ddweb_helpers.dart';
-import '../web_helpers.dart';
-import 'ddrum_platform_interface.dart';
+import 'package:uuid/uuid.dart';
+
+import '../../../datadog_flutter_plugin.dart';
+import '../../../datadog_flutter_plugin_web.dart';
+import '../../../datadog_internal.dart';
+import '../../web_helpers.dart';
+import '../ddrum_platform_interface.dart';
+import 'raw_events.dart';
+import 'resource_tracker.dart';
+import 'rum_web_plugin.dart';
 
 class DdRumWeb extends DdRumPlatform {
+  final Uuid _uuid = Uuid();
+  RumWebPluginImpl? _webPlugin;
+  ResourceTracker? _resourceTracker;
+
+  @override
+  // Can return this directly, don't need to use a cached version
+  String? get cachedSessionId => DD_RUM?.getInternalContext()?.session_id;
+
   // Because Web needs the full SDK configuration, we have a separate init method
   void initialize(
     DatadogConfiguration configuration,
@@ -28,9 +40,17 @@ class DdRumWeb extends DdRumPlatform {
       logger,
     );
 
+    _webPlugin = RumWebPluginImpl();
+    final plugins = [
+      createJSInteropWrapper<RumWebPluginImpl>(_webPlugin!),
+    ].toJS;
+
+    _resourceTracker = ResourceTracker(_webPlugin!);
+
     DD_RUM?.init(
       _RumInitOptions(
         applicationId: rumConfiguration.applicationId,
+        propagateTraceBaggage: true,
         clientToken: configuration.clientToken,
         site: siteStringForSite(configuration.site),
         sessionSampleRate: rumConfiguration.sessionSamplingRate,
@@ -57,11 +77,18 @@ class DdRumWeb extends DdRumPlatform {
           rumConfiguration.traceContextInjection,
         ),
         trackViewsManually: true,
+        trackUserInteractions: false,
         trackResources: trackResources,
         trackFrustrations: rumConfiguration.trackFrustrations,
         trackLongTasks: rumConfiguration.detectLongTasks,
         enableExperimentalFeatures: ['feature_flags'.toJS].toJS,
         trackingConsent: trackingConsent.webValue(),
+        // TODO(RUM-11211): Support and document web configuration options.
+        compressIntakeRequests: false,
+        plugins: plugins,
+        variant: configuration.flavor,
+        source: 'flutter',
+        sdkVersion: DatadogSdk.sdkVersion,
       ),
     );
   }
@@ -99,17 +126,29 @@ class DdRumWeb extends DdRumPlatform {
     String? errorType,
     Map<String, dynamic> attributes,
   ) async {
-    var jsError = JSError();
-    jsError.stack = convertWebStackTrace(stackTrace);
-    jsError.message = error.toString();
-    jsError.name = errorType ?? 'Error';
+    final epochTime = timestamp.millisecondsSinceEpoch;
+    final eventTime = _toRelativeTime(timestamp);
 
     final fingerprint = attributes.remove(DatadogAttributes.errorFingerprint);
-    if (fingerprint != null) {
-      jsError.dd_fingerprint = fingerprint;
-    }
 
-    DD_RUM?.addError(jsError, attributesToJs(attributes, 'attributes'));
+    final id = _uuid.v4();
+    final context = attributesToJs(attributes, 'attributes');
+    _webPlugin?.addEvent(
+      eventTime,
+      RumWebRawErrorEvent(
+        date: epochTime.toJS,
+        context: context,
+        error: RumWebRawErrorData(
+          id: id.toString(),
+          message: error.toString(),
+          source: errorSourceToJs(source),
+          stack: convertWebStackTrace(stackTrace),
+          type: errorType ?? 'UnknownError',
+          fingerprint: fingerprint,
+        ),
+      ),
+      RumWebErrorEventDomainContext(),
+    );
   }
 
   @override
@@ -121,17 +160,30 @@ class DdRumWeb extends DdRumPlatform {
     String? errorType,
     Map<String, dynamic> attributes,
   ) async {
-    var jsError = JSError();
-    jsError.stack = convertWebStackTrace(stackTrace);
-    jsError.message = message;
-    jsError.name = errorType ?? 'Error';
+    final epochTime = timestamp.millisecondsSinceEpoch;
+    final eventTime = _toRelativeTime(timestamp);
 
     final fingerprint = attributes.remove(DatadogAttributes.errorFingerprint);
-    if (fingerprint != null) {
-      jsError.dd_fingerprint = fingerprint;
-    }
 
-    DD_RUM?.addError(jsError, attributesToJs(attributes, 'attributes'));
+    final id = _uuid.v4();
+    final context = attributesToJs(attributes, 'attributes');
+
+    _webPlugin?.addEvent(
+      eventTime,
+      RumWebRawErrorEvent(
+        date: epochTime.toJS,
+        context: context,
+        error: RumWebRawErrorData(
+          id: id.toString(),
+          message: message,
+          source: errorSourceToJs(source),
+          stack: convertWebStackTrace(stackTrace),
+          type: errorType ?? 'UnknownError',
+          fingerprint: fingerprint,
+        ),
+      ),
+      RumWebErrorEventDomainContext(),
+    );
   }
 
   @override
@@ -151,7 +203,26 @@ class DdRumWeb extends DdRumPlatform {
     String name,
     Map<String, dynamic> attributes,
   ) async {
-    DD_RUM?.addAction(name, attributesToJs(attributes, 'attributes'));
+    final epochTime = timestamp.millisecondsSinceEpoch;
+    final eventTime = _toRelativeTime(timestamp);
+
+    final id = _uuid.v4();
+    final context = attributesToJs(attributes, 'attributes');
+
+    // TODO(RUM-): Replace with plugin bridge call.
+    _webPlugin?.addEvent(
+      eventTime,
+      RumWebRawActionEvent(
+        date: epochTime.toJS,
+        context: context,
+        action: RumWebRawActionData(
+          id: id.toString(),
+          type: actionTypeToJs(type),
+          target: RumWebActionTarget(name: name),
+        ),
+      ),
+      RumWebActionEventDomainContext(),
+    );
   }
 
   @override
@@ -167,7 +238,13 @@ class DdRumWeb extends DdRumPlatform {
     String url,
     Map<String, dynamic> attributes,
   ) async {
-    // NOOP
+    _resourceTracker?.startResource(
+      timestamp,
+      key,
+      httpMethod,
+      url,
+      attributes,
+    );
   }
 
   @override
@@ -199,7 +276,14 @@ class DdRumWeb extends DdRumPlatform {
     int? size,
     Map<String, dynamic> attributes,
   ) async {
-    // NOOP
+    _resourceTracker?.stopResource(
+      timestamp,
+      key,
+      statusCode,
+      kind,
+      size,
+      attributes,
+    );
   }
 
   @override
@@ -209,7 +293,7 @@ class DdRumWeb extends DdRumPlatform {
     Exception error,
     Map<String, dynamic> attributes,
   ) async {
-    // NOOP
+    _resourceTracker?.stopResourceWithError(timestamp, key, error, attributes);
   }
 
   @override
@@ -220,7 +304,13 @@ class DdRumWeb extends DdRumPlatform {
     String type,
     Map<String, dynamic> attributes,
   ) async {
-    // NOOP
+    _resourceTracker?.stopResourceWithErrorInfo(
+      timestamp,
+      key,
+      message,
+      type,
+      attributes,
+    );
   }
 
   @override
@@ -264,6 +354,11 @@ class DdRumWeb extends DdRumPlatform {
   ) async {
     // NOOP - Not supported by the Browser SDK
   }
+
+  JSNumber _toRelativeTime(DateTime time) {
+    return _webPlugin?.getEventRelativeTime(time) ??
+        time.microsecondsSinceEpoch.toJS;
+  }
 }
 
 JSString _headerTypeToPropagatorType(TracingHeaderType type) {
@@ -299,6 +394,7 @@ extension type _TracingUrl._(JSObject _) implements JSObject {
 @anonymous
 extension type _RumInitOptions._(JSObject _) implements JSObject {
   external String get applicationId;
+  external bool? get propagateTraceBaggage;
   external String get clientToken;
   external String get site;
   external String? get service;
@@ -315,10 +411,16 @@ extension type _RumInitOptions._(JSObject _) implements JSObject {
   external String? get proxy;
   external JSArray get allowedTracingUrls;
   external JSArray get enableExperimentalFeatures;
+  external bool get compressIntakeRequests;
+  external JSArray? get plugins;
+  external String? get source;
+  external String? get sdkVersion;
+  external String? get variant;
   external String? get trackingConsent;
 
   external factory _RumInitOptions({
     String applicationId,
+    bool? propagateTraceBaggage,
     String clientToken,
     String site,
     String? service,
@@ -341,6 +443,11 @@ extension type _RumInitOptions._(JSObject _) implements JSObject {
     num? traceSampleRate,
     String? traceContextInjection,
     JSArray enableExperimentalFeatures,
+    bool compressIntakeRequests,
+    JSArray? plugins,
+    String? source,
+    String? sdkVersion,
+    String? variant,
     String? trackingConsent,
   });
 }
@@ -371,6 +478,10 @@ extension type _DdRum._(JSObject _) implements JSObject {
   external void stopSession();
   external void setUser(JsUser newUser);
   external void setUserProperty(String key, JSAny? value);
+  external void clearUser();
+  external void setAccount(JsAccount userInfo);
+  external void setAccountProperty(String key, JSAny? value);
+  external void clearAccount();
   external void setTrackingConsent(String consent);
 }
 

@@ -348,22 +348,29 @@ class _DatadogTrackingHttpRequest implements HttpClientRequest {
           client.datadogSdk.headerTypesForHost(innerContext.uri);
 
       if (rum != null && tracingHeaderTypes.isNotEmpty) {
-        bool shouldSample = rum.shouldSampleTrace();
-
         // No tracing context, generate one ourselves
-        _tracingContext ??= generateTracingContext(shouldSample);
+        _tracingContext ??= generateTracingContext(client.datadogSdk, rum);
 
+        final newHeaders = <String, String>{};
         for (final headerType in tracingHeaderTypes) {
-          final newHeaders = getTracingHeaders(
+          injectTracingHeaders(
             _tracingContext!,
             headerType,
+            newHeaders,
             contextInjection: rum.contextInjectionSetting,
           );
-          for (final entry in newHeaders.entries) {
-            // Don't replace exiting headers
-            if (headers.value(entry.key) == null) {
-              headers.add(entry.key, entry.value);
-            }
+        }
+        // Because of the custom `HttpHeaders` type, we have to manually merge these headers.
+        for (final entry in newHeaders.entries) {
+          // Baggage headers should be merged, existing headers should not be replaced
+          if (entry.key == 'baggage') {
+            // This ends up regenerating the baggage from context, but that should be fine,
+            // as injecting multiple different header types would do the same thing.
+            final baggageValue = headers['baggage']?.firstOrNull;
+            headers.set('baggage',
+                mergeW3CBaggageHeader(_tracingContext!, baggageValue));
+          } else if (headers.value(entry.key) == null) {
+            headers.add(entry.key, entry.value);
           }
         }
       }

@@ -46,6 +46,7 @@ class OTelHttpTracingHeaders {
 class W3CTracingHeaders {
   static const traceparent = 'traceparent';
   static const tracestate = 'tracestate';
+  static const baggage = 'baggage';
 }
 
 /// Controls how we print a TracingId
@@ -89,8 +90,12 @@ class TracingId {
 
   const TracingId(this.value);
 
+  TracingId.zero() : this(BigInt.zero);
+
   static TracingId fromString(
-      String? id, TracingIdRepresentation representation) {
+    String? id,
+    TracingIdRepresentation representation,
+  ) {
     if (id == null) {
       return TracingId(BigInt.zero);
     }
@@ -184,58 +189,101 @@ class TracingContext {
   final TracingId traceId;
   final TracingId spanId;
   final TracingId? parentSpanId;
+  final String? rumSessionId;
+  final String? userId;
+  final String? accountId;
   final bool sampled;
 
   const TracingContext(
-      this.traceId, this.spanId, this.parentSpanId, this.sampled);
+    this.traceId,
+    this.spanId,
+    this.parentSpanId,
+    this.rumSessionId,
+    this.userId,
+    this.accountId,
+    this.sampled,
+  );
 }
 
 final Random _traceRandom = Random();
 
 /// Generate a tracing context
-TracingContext generateTracingContext(bool sampled) {
-  return TracingContext(TracingId.traceId(), TracingId.spanId(), null, sampled);
+TracingContext generateTracingContext(DatadogSdk sdk, DatadogRum rum) {
+  final traceId = TracingId.traceId();
+  final spanId = TracingId.spanId();
+  final sessionId = rum.cachedSessionId;
+  bool sampled = rum.shouldSampleTrace(sessionId, traceId);
+  final context = sdk.platform.cachedContext;
+  return TracingContext(
+    traceId,
+    spanId,
+    null,
+    sessionId,
+    context?.userId,
+    context?.accountId,
+    sampled,
+  );
 }
 
 Map<String, Object?> generateDatadogAttributes(
-    TracingContext? context, double samplingRate) {
+  TracingContext? context,
+  double samplingRate,
+) {
   var attributes = <String, Object?>{};
 
   if (context != null) {
     attributes[DatadogRumPlatformAttributeKey.rulePsr] = samplingRate / 100.0;
     if (context.sampled) {
-      attributes[DatadogRumPlatformAttributeKey.traceID] =
-          context.traceId.asString(TracingIdRepresentation.hex32Chars);
-      attributes[DatadogRumPlatformAttributeKey.spanID] =
-          context.spanId.asString(TracingIdRepresentation.decimal);
+      attributes[DatadogRumPlatformAttributeKey.traceID] = context.traceId
+          .asString(TracingIdRepresentation.hex32Chars);
+      attributes[DatadogRumPlatformAttributeKey.spanID] = context.spanId
+          .asString(TracingIdRepresentation.decimal);
     }
   }
 
   return attributes;
 }
 
-Map<String, String> getTracingHeaders(
+void injectTracingHeaders(
   TracingContext context,
-  TracingHeaderType headersType, {
-  TraceContextInjection contextInjection = TraceContextInjection.all,
+  TracingHeaderType headersType,
+  Map<String, dynamic> headers, {
+  TraceContextInjection contextInjection = TraceContextInjection.sampled,
 }) {
-  var headers = <String, String>{};
+  const String baggageHeaderName = 'baggage';
 
   final sampledString = context.sampled ? '1' : '0';
   bool shouldInjectHeaders =
       context.sampled || contextInjection == TraceContextInjection.all;
 
+  void addHeader(String key, String value) {
+    if (!headers.containsKey(key)) {
+      headers[key] = value;
+    }
+  }
+
   switch (headersType) {
     case TracingHeaderType.datadog:
       if (shouldInjectHeaders) {
-        headers[DatadogHttpTracingHeaders.traceId] =
-            context.traceId.asString(TracingIdRepresentation.lowDecimal);
-        headers[DatadogHttpTracingHeaders.tags] =
-            '${DatadogHttpTracingHeaders.traceIdTag}=${context.traceId.asString(TracingIdRepresentation.highHex16Chars)}';
-        headers[DatadogHttpTracingHeaders.parentId] =
-            context.spanId.asString(TracingIdRepresentation.decimal);
-        headers[DatadogHttpTracingHeaders.origin] = 'rum';
-        headers[DatadogHttpTracingHeaders.samplingPriority] = sampledString;
+        addHeader(
+          DatadogHttpTracingHeaders.traceId,
+          context.traceId.asString(TracingIdRepresentation.lowDecimal),
+        );
+        addHeader(
+          DatadogHttpTracingHeaders.tags,
+          '${DatadogHttpTracingHeaders.traceIdTag}=${context.traceId.asString(TracingIdRepresentation.highHex16Chars)}',
+        );
+        addHeader(
+          DatadogHttpTracingHeaders.parentId,
+          context.spanId.asString(TracingIdRepresentation.decimal),
+        );
+        addHeader(DatadogHttpTracingHeaders.origin, 'rum');
+        addHeader(DatadogHttpTracingHeaders.samplingPriority, sampledString);
+
+        headers[baggageHeaderName] = mergeW3CBaggageHeader(
+          context,
+          headers[baggageHeaderName],
+        );
       }
       break;
     case TracingHeaderType.b3:
@@ -246,48 +294,57 @@ Map<String, String> getTracingHeaders(
           sampledString,
           context.parentSpanId?.asString(TracingIdRepresentation.hex16Chars),
         ].whereType<String>().join('-');
-        headers[OTelHttpTracingHeaders.singleB3] = headerValue;
+        addHeader(OTelHttpTracingHeaders.singleB3, headerValue);
       } else if (contextInjection == TraceContextInjection.all) {
-        headers[OTelHttpTracingHeaders.singleB3] = sampledString;
+        addHeader(OTelHttpTracingHeaders.singleB3, sampledString);
       }
       break;
     case TracingHeaderType.b3multi:
       if (shouldInjectHeaders) {
-        headers[OTelHttpTracingHeaders.multipleSampled] = sampledString;
+        addHeader(OTelHttpTracingHeaders.multipleSampled, sampledString);
       }
 
       if (context.sampled) {
-        headers[OTelHttpTracingHeaders.multipleTraceId] =
-            context.traceId.asString(TracingIdRepresentation.hex32Chars);
-        headers[OTelHttpTracingHeaders.multipleSpanId] =
-            context.spanId.asString(TracingIdRepresentation.hex16Chars);
+        addHeader(
+          OTelHttpTracingHeaders.multipleTraceId,
+          context.traceId.asString(TracingIdRepresentation.hex32Chars),
+        );
+        addHeader(
+          OTelHttpTracingHeaders.multipleSpanId,
+          context.spanId.asString(TracingIdRepresentation.hex16Chars),
+        );
         if (context.parentSpanId != null) {
-          headers[OTelHttpTracingHeaders.multipleParentId] = context
-              .parentSpanId!
-              .asString(TracingIdRepresentation.hex16Chars);
+          addHeader(
+            OTelHttpTracingHeaders.multipleParentId,
+            context.parentSpanId!.asString(TracingIdRepresentation.hex16Chars),
+          );
         }
       }
       break;
     case TracingHeaderType.tracecontext:
       if (shouldInjectHeaders) {
-        final spanString =
-            context.spanId.asString(TracingIdRepresentation.hex16Chars);
+        final spanString = context.spanId.asString(
+          TracingIdRepresentation.hex16Chars,
+        );
         final parentHeaderValue = [
           '00', // Version Code
           context.traceId.asString(TracingIdRepresentation.hex32Chars),
           spanString,
-          context.sampled ? '01' : '00'
+          context.sampled ? '01' : '00',
         ].join('-');
         final stateHeaderValue = [
           's:$sampledString',
           'o:rum',
           'p:$spanString',
         ].join(';');
-        headers[W3CTracingHeaders.traceparent] = parentHeaderValue;
-        headers[W3CTracingHeaders.tracestate] = 'dd=$stateHeaderValue';
+        addHeader(W3CTracingHeaders.traceparent, parentHeaderValue);
+        addHeader(W3CTracingHeaders.tracestate, 'dd=$stateHeaderValue');
+
+        headers[baggageHeaderName] = mergeW3CBaggageHeader(
+          context,
+          headers[baggageHeaderName],
+        );
       }
       break;
   }
-
-  return headers;
 }

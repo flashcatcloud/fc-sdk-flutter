@@ -80,11 +80,11 @@ class DatadogClient extends http.BaseClient {
       return _innerClient.send(request);
     }
 
-    return _trackingSend(request, rum);
+    return _trackingSend(request, datadogSdk, rum);
   }
 
   Future<http.StreamedResponse> _trackingSend(
-      http.BaseRequest request, DatadogRum rum) async {
+      http.BaseRequest request, DatadogSdk sdk, DatadogRum rum) async {
     String? rumKey;
 
     if (_shouldTrackRequest(request)) {
@@ -94,8 +94,7 @@ class DatadogClient extends http.BaseClient {
         var attributes = <String, Object?>{};
         // Is first party?
         if (tracingHeaders.isNotEmpty) {
-          var shouldSample = rum.shouldSampleTrace();
-          var context = generateTracingContext(shouldSample);
+          var context = generateTracingContext(sdk, rum);
 
           attributes = _appendRequestHeaders(
             request,
@@ -250,11 +249,8 @@ class DatadogClient extends http.BaseClient {
           context, datadogSdk.rum?.traceSampleRate ?? 0);
 
       for (final headerType in tracingHeaderTypes) {
-        request.headers.addAll(getTracingHeaders(
-          context,
-          headerType,
-          contextInjection: contextInjection,
-        ));
+        injectTracingHeaders(context, headerType, request.headers,
+            contextInjection: contextInjection);
       }
     }
 

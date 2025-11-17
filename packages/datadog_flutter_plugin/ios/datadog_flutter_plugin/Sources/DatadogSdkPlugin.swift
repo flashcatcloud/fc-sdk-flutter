@@ -45,8 +45,41 @@ extension Datadog.Configuration {
     }
 }
 
-// swiftlint:disable type_body_length
-public class DatadogSdkPlugin: NSObject, FlutterPlugin {
+public class ContextMessageReceiver: FeatureMessageReceiver {
+    let channel: FlutterMethodChannel
+
+    init(channel: FlutterMethodChannel) {
+        self.channel = channel
+    }
+
+    public func receive(message: DatadogInternal.FeatureMessage, from core: any DatadogInternal.DatadogCoreProtocol) -> Bool {
+        switch message {
+        case .context(let context):
+            // Pull out the context that Flutter cares about
+            let rumContext = context.additionalContext(ofType: RUMCoreContext.self)
+            var broadcastContext: [String: Any?] = [
+                "user.id": context.userInfo?.id,
+                "account.id": context.accountInfo?.id,
+                "rum.session.id": rumContext?.sessionID,
+                "rum.view.id": rumContext?.viewID
+            ]
+            channel.invokeMethod("onContextChanged", arguments: broadcastContext)
+            return true
+        default:
+            return false
+        }
+    }
+    
+}
+
+// swiftlint:disable:next type_body_length
+public class DatadogSdkPlugin: NSObject, FlutterPlugin, DatadogFeature {
+    public static var name: String = "flutter_plugin"
+
+    public var messageReceiver: FeatureMessageReceiver { contextReciever }
+
+    let contextReciever: ContextMessageReceiver
+
     let channel: FlutterMethodChannel
 
     var currentConfiguration: [AnyHashable: Any]?
@@ -55,6 +88,7 @@ public class DatadogSdkPlugin: NSObject, FlutterPlugin {
 
     public init(channel: FlutterMethodChannel) {
         self.channel = channel
+        self.contextReciever = ContextMessageReceiver(channel: channel)
         super.init()
     }
 
@@ -109,6 +143,9 @@ public class DatadogSdkPlugin: NSObject, FlutterPlugin {
                             CrashReporting.enable()
                         }
                     }
+                    //swiftlint:disable:next force_try
+                    try! core?.register(feature: self)
+
                 } else if let currentConfiguration = currentConfiguration {
                     let dict = NSDictionary(dictionary: configArg as [AnyHashable: Any])
                     if !dict.isEqual(to: currentConfiguration) {
@@ -121,7 +158,8 @@ public class DatadogSdkPlugin: NSObject, FlutterPlugin {
                 } else {
                     consolePrint(
                         "🔥 The DatadogSDK is already initialized but no previous configuration exists. Did you mean" +
-                        " to use attachToExisting? Note: Datadog does not currently support multiple Flutter engines on iOS.",
+                        " to use attachToExisting? Note: Datadog does not currently support multiple Flutter engines" +
+                        " on iOS.",
                         .error
                     )
                 }
@@ -150,8 +188,8 @@ public class DatadogSdkPlugin: NSObject, FlutterPlugin {
                 result(FlutterError.missingParameter(methodName: call.method))
             }
         case "setUserInfo":
-            if let extraInfo = arguments["extraInfo"] as? [String: Any?] {
-                let id = arguments["id"] as? String
+            if let id = arguments["id"] as? String,
+               let extraInfo = arguments["extraInfo"] as? [String: Any?] {
                 let name = arguments["name"] as? String
                 let email = arguments["email"] as? String
                 let encodedAttributes = castFlutterAttributesToSwift(extraInfo)
@@ -160,10 +198,34 @@ public class DatadogSdkPlugin: NSObject, FlutterPlugin {
             } else {
                 result(FlutterError.missingParameter(methodName: call.method))
             }
+        case "clearUserInfo":
+            Datadog.clearUserInfo()
+            result(nil)
         case "addUserExtraInfo":
             if let extraInfo = arguments["extraInfo"] as? [String: Any?] {
                 let encodedAttributes = castFlutterAttributesToSwift(extraInfo)
                 Datadog.addUserExtraInfo(encodedAttributes)
+                result(nil)
+            } else {
+                result(FlutterError.missingParameter(methodName: call.method))
+            }
+        case "setAccountInfo":
+            if let id = arguments["id"] as? String,
+               let extraInfo = arguments["extraInfo"] as? [String: Any?] {
+                let name = arguments["name"] as? String
+                let encodedAttributes = castFlutterAttributesToSwift(extraInfo)
+                Datadog.setAccountInfo(id: id, name: name, extraInfo: encodedAttributes)
+                result(nil)
+            } else {
+                result(FlutterError.missingParameter(methodName: call.method))
+            }
+        case "clearAccountInfo":
+            Datadog.clearAccountInfo()
+            result(nil)
+        case "addAccountExtraInfo":
+            if let extraInfo = arguments["extraInfo"] as? [String: Any?] {
+                let encodedAttributes = castFlutterAttributesToSwift(extraInfo)
+                Datadog.addAccountExtraInfo(encodedAttributes)
                 result(nil)
             } else {
                 result(FlutterError.missingParameter(methodName: call.method))
