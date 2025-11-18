@@ -3,7 +3,7 @@ description: "Demonstrates how to use the datadog_session_replay plugin."
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
 environment:
-  sdk: ^3.7.2
+  sdk: ^3.6.0
 
 dependencies:
   flutter:
