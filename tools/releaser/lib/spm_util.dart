@@ -3,6 +3,7 @@
 // Copyright 2025-Present Datadog, Inc.
 import 'dart:io';
 
+import 'package:collection/collection.dart';
 import 'package:logging/logging.dart';
 import 'package:path/path.dart' as path;
 
@@ -18,8 +19,10 @@ class PinSwiftPackageVersion extends Command {
   @override
   Future<bool> run(CommandArguments args, Logger logger) async {
     // Other packages can keep looser version constraints
-    if (args.packageName == 'datadog_flutter_plugin') {
-      if (!await _pinSpmVersion(args, logger)) {
+    final corePacakge = args.packages
+        .firstWhereOrNull((e) => e.name == 'datadog_flutter_plugin');
+    if (corePacakge != null) {
+      if (!await _pinSpmVersion(args, corePacakge, logger)) {
         return false;
       }
     }
@@ -27,10 +30,11 @@ class PinSwiftPackageVersion extends Command {
     return true;
   }
 
-  Future<bool> _pinSpmVersion(CommandArguments args, Logger logger) {
+  Future<bool> _pinSpmVersion(
+      CommandArguments args, PackageRelease package, Logger logger) {
     return pinSpmVersion(
       args.gitDir.path,
-      args.packageName,
+      package.name,
       'exact: "${args.iOSRelease}"',
       args.dryRun,
       logger,

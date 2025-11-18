@@ -5,7 +5,6 @@
 import 'package:git/git.dart';
 import 'package:logging/logging.dart';
 import 'package:path/path.dart' as path;
-import 'package:version/version.dart';
 
 import 'command.dart';
 import 'github_cmd_wrapper.dart';
@@ -20,8 +19,6 @@ class ValidateReleaseCommand extends Command {
   Future<bool> run(CommandArguments args, Logger logger) async {
     final gitRoot = args.gitDir.path;
     logger.finest(' -- Monorepo root is $gitRoot');
-    final packagePath = path.join(gitRoot, 'packages', args.packageName);
-    logger.finest(' -- Package root is $packagePath');
 
     if (!args.dryRun && !args.skipGitChecks) {
       if (!await _validateBranchState(args.gitDir, logger)) {
@@ -31,32 +28,20 @@ class ValidateReleaseCommand extends Command {
 
     // From here on out, we can validate multiple rules before returning.
     bool isValid = true;
-
-    isValid &= _validateVersionNumber(args.version, logger);
-
-    if (isValid) {
-      if (hasNativeDependency(args.packageName)) {
+    for (final release in args.packages) {
+      final packagePath = path.join(gitRoot, 'packages', release.name);
+      logger.finest(' -- Checking valid native releases for ${release.name}');
+      if (hasNativeDependency(release.name)) {
         if (!await _validateiOSRelease(packagePath, args, logger)) {
-          return false;
+          isValid = false;
         }
         if (!await _validateAndroidRelease(packagePath, args, logger)) {
-          return false;
+          isValid = false;
         }
       }
     }
 
     return isValid;
-  }
-
-  bool _validateVersionNumber(String versionNumber, Logger logger) {
-    try {
-      final _ = Version.parse(versionNumber);
-      return true;
-    } on FormatException {
-      logger.shout(
-          '❌ Version $versionNumber does not parse properly as a semantic version');
-    }
-    return false;
   }
 
   Future<bool> _validateBranchState(GitDir gitDir, Logger logger) async {
@@ -127,23 +112,26 @@ class ValidateReleaseCommand extends Command {
 class ValidatePublishDryRun extends Command {
   @override
   Future<bool> run(CommandArguments args, Logger logger) async {
-    logger.info(
-        'ℹ️ Running `flutter pub publish --dry-run` in ${args.packageRoot}');
-    final exitCode = await runProcess(
-      'flutter',
-      ['pub', 'publish', '--dry-run'],
-      workingDirectory: args.packageRoot,
-      stdout: (line) => logger.fine(line),
-      stderr: (line) => logger.shout(line),
-    );
-    if (exitCode != 0) {
-      logger.info('❌ Publish exited with code $exitCode.');
-      logger.info('Fix the above errors and try again.');
-      return false;
-    } else {
-      logger.info('✅ Publish dry-run went fine.');
+    var finalResult = true;
+    for (final package in args.packages) {
+      final packageRoot = getPackageRoot(args, package);
+      logger.info('ℹ️ Running `flutter pub publish --dry-run` in $packageRoot');
+      final exitCode = await runProcess(
+        'flutter',
+        ['pub', 'publish', '--dry-run'],
+        workingDirectory: packageRoot,
+        stdout: (line) => logger.fine(line),
+        stderr: (line) => logger.shout(line),
+      );
+      if (exitCode != 0) {
+        logger.info('❌ Publish exited with code $exitCode.');
+        logger.info('Fix the above errors and try again.');
+        return finalResult = false;
+      } else {
+        logger.info('✅ Publish dry-run went fine.');
+      }
     }
 
-    return true;
+    return finalResult;
   }
 }
