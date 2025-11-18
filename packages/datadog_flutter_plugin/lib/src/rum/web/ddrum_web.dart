@@ -73,6 +73,8 @@ class DdRumWeb extends DdRumPlatform {
             ),
         ].toJS,
         traceSampleRate: rumConfiguration.traceSampleRate,
+        trackSessionAcrossSubdomains:
+            configuration.trackSessionsAcrossSubdomains,
         traceContextInjection: _contextInjectionString(
           rumConfiguration.traceContextInjection,
         ),
@@ -83,12 +85,15 @@ class DdRumWeb extends DdRumPlatform {
         trackLongTasks: rumConfiguration.detectLongTasks,
         enableExperimentalFeatures: ['feature_flags'.toJS].toJS,
         trackingConsent: trackingConsent.webValue(),
-        // TODO(RUM-11211): Support and document web configuration options.
         compressIntakeRequests: false,
         plugins: plugins,
         variant: configuration.flavor,
         source: 'flutter',
+        sessionPersistence: configuration.sessionPersistence?.webValue(),
         sdkVersion: DatadogSdk.sdkVersion,
+        usePartitionedCrossSiteSessionCookie:
+            configuration.usePartitionedCrossSiteSessionCookie,
+        useSecureSessionCookie: configuration.useSecureSessionCookie,
       ),
     );
   }
@@ -393,62 +398,39 @@ extension type _TracingUrl._(JSObject _) implements JSObject {
 
 @anonymous
 extension type _RumInitOptions._(JSObject _) implements JSObject {
-  external String get applicationId;
-  external bool? get propagateTraceBaggage;
-  external String get clientToken;
-  external String get site;
-  external String? get service;
-  external String? get env;
-  external String? get version;
-  external bool? get trackViewsManually;
-  external bool? get trackUserInteractions;
-  external bool? get trackFrustrations;
-  external bool? get trackLongTasks;
-  external String? get defaultPrivacyLevel;
-  external num? get sessionSampleRate;
-  external num? get sessionReplaySampleRate;
-  external bool? get silentMultipleInit;
-  external String? get proxy;
-  external JSArray get allowedTracingUrls;
-  external JSArray get enableExperimentalFeatures;
-  external bool get compressIntakeRequests;
-  external JSArray? get plugins;
-  external String? get source;
-  external String? get sdkVersion;
-  external String? get variant;
-  external String? get trackingConsent;
-
   external factory _RumInitOptions({
+    JSArray allowedTracingUrls,
     String applicationId,
-    bool? propagateTraceBaggage,
     String clientToken,
-    String site,
-    String? service,
-    String? env,
-    String? version,
-    bool? trackResources,
-    bool? trackViewsManually,
-    // ignore: unused_element_parameter
-    bool? trackUserInteractions,
-    bool? trackFrustrations,
-    bool? trackLongTasks,
+    bool compressIntakeRequests,
     // ignore: unused_element_parameter
     String? defaultPrivacyLevel,
+    JSArray enableExperimentalFeatures,
+    String? env,
+    JSArray? plugins,
+    bool? propagateTraceBaggage,
+    String? proxy,
+    String? sdkVersion,
+    String? service,
+    String? sessionPersistence,
     num? sessionSampleRate,
     num? sessionReplaySampleRate,
-    // ignore: unused_element_parameter
-    bool? silentMultipleInit,
-    String? proxy,
-    JSArray allowedTracingUrls,
-    num? traceSampleRate,
-    String? traceContextInjection,
-    JSArray enableExperimentalFeatures,
-    bool compressIntakeRequests,
-    JSArray? plugins,
+    String site,
     String? source,
-    String? sdkVersion,
-    String? variant,
+    String? traceContextInjection,
+    num? traceSampleRate,
+    bool? trackSessionAcrossSubdomains,
+    bool? trackFrustrations,
     String? trackingConsent,
+    bool? trackResources,
+    // ignore: unused_element_parameter
+    bool? trackUserInteractions,
+    bool? trackViewsManually,
+    bool? trackLongTasks,
+    bool? usePartitionedCrossSiteSessionCookie,
+    bool? useSecureSessionCookie,
+    String? version,
+    String? variant,
   });
 }
 

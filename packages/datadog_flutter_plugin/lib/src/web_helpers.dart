@@ -56,7 +56,9 @@ JSAny? valueToJs(Object? value, String parameterName) {
     for (final item in value.entries) {
       String key = item.key is String ? item.key : item.key.toString();
       jsMap.setProperty(
-          key.toJS, valueToJs(item.value, '$parameterName.${item.key}'));
+        key.toJS,
+        valueToJs(item.value, '$parameterName.${item.key}'),
+      );
     }
     return jsMap;
   }
@@ -68,18 +70,23 @@ JSAny? valueToJs(Object? value, String parameterName) {
       // and a properly supported `add` method wasn't added until Dart 3.10, so
       // call `push` directly to create the array.
       jsArray.callMethod(
-          'push'.toJS, valueToJs(value[i], '$parameterName[$i]'));
+        'push'.toJS,
+        valueToJs(value[i], '$parameterName[$i]'),
+      );
     }
     return jsArray;
   }
 
   throw ArgumentError(
-      'Could not convert ${value.runtimeType} to javascript.', parameterName);
+    'Could not convert ${value.runtimeType} to javascript.',
+    parameterName,
+  );
 }
 
 // Regex specifying the format of a frame in a Dart stack trace.
-final _dartLineRegex =
-    RegExp(r'(?<file>.+) (?<location>\d+:\d+)\s*(?<function>.+)');
+final _dartLineRegex = RegExp(
+  r'(?<file>.+) (?<location>\d+:\d+)\s*(?<function>.+)',
+);
 
 @JS('RegExp')
 extension type JSRegExp._(JSObject _) implements JSObject {
@@ -119,6 +126,17 @@ extension TrackingConsentWebValue on TrackingConsent {
       case TrackingConsent.notGranted:
       case TrackingConsent.pending:
         return 'not-granted';
+    }
+  }
+}
+
+extension SessionPersistenceWebValue on WebSessionPersistence {
+  String webValue() {
+    switch (this) {
+      case WebSessionPersistence.cookie:
+        return 'cookie';
+      case WebSessionPersistence.localStorage:
+        return 'local-storage';
     }
   }
 }

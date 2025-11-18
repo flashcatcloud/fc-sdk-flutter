@@ -26,12 +26,19 @@ class DdLogsWeb extends DdLogsPlatform {
         clientToken: configuration.clientToken,
         env: configuration.env,
         proxy: configuration.loggingConfiguration?.customEndpoint,
-        site: siteStringForSite(configuration.site),
+        sdkVersion: DatadogSdk.sdkVersion,
         service: configuration.service,
+        sessionPersistence: configuration.sessionPersistence?.webValue(),
+        site: siteStringForSite(configuration.site),
+        source: 'flutter',
+        storeContextsAcrossPages: configuration.storeContextAcrossPages,
+        trackSessionAcrossSubdomains:
+            configuration.trackSessionsAcrossSubdomains,
+        usePartitionedCrossSiteSessionCookie:
+            configuration.usePartitionedCrossSiteSessionCookie,
+        useSecureSessionCookie: configuration.useSecureSessionCookie,
         version: configuration.versionTag,
         variant: configuration.flavor,
-        sdkVersion: DatadogSdk.sdkVersion,
-        source: 'flutter',
         trackingConsent: trackingConsent.webValue(),
       ),
     );
@@ -174,28 +181,22 @@ String _toWebLogLevel(LogLevel level) {
 
 @anonymous
 extension type _LogInitOptions._(JSObject _) implements JSObject {
-  external String get clientToken;
-  external String get site;
-  external String get env;
-  external String? get proxy;
-  external String? get service;
-  external String? get version;
-  external String? get source;
-  external String? get sdkVersion;
-  external String? get variant;
-  external String? get trackingConsent;
-
   external factory _LogInitOptions({
     String clientToken,
-    String site,
     String env,
-    String? service,
     String? proxy,
-    String? version,
-    String? source,
     String? sdkVersion,
-    String? variant,
+    String? service,
+    String? sessionPersistence,
+    String site,
+    String? source,
+    bool? storeContextsAcrossPages,
     String? trackingConsent,
+    bool? trackSessionAcrossSubdomains,
+    bool? usePartitionedCrossSiteSessionCookie,
+    bool? useSecureSessionCookie,
+    String? variant,
+    String? version,
   });
 }
 
