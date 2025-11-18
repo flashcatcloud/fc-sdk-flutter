@@ -100,11 +100,11 @@ class DatadogRumPlugin : MethodChannel.MethodCallHandler, RumSessionListener {
     override fun onMethodCall(call: MethodCall, result: Result) {
         if (call.method == "enable") {
             enable(call, result)
-            return;
+            return
         }
 
         if (!ensureRumEnabled(call, result)) {
-            return;
+            return
         }
 
         try {

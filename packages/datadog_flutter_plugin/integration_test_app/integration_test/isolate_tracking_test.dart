@@ -80,22 +80,3 @@ void main() {
     expect(view1.errorEvents[0].source, 'network');
   });
 }
-
-// MARK - Utilities
-
-class _BecameInactiveMatcher extends Matcher {
-  const _BecameInactiveMatcher();
-
-  @override
-  Description describe(Description description) {
-    return description.add('was a view that eventually became inactive');
-  }
-
-  @override
-  bool matches(dynamic item, Map<dynamic, dynamic> matchState) {
-    if (item is RumViewVisit) {
-      return item.viewEvents.last.view.isActive == false;
-    }
-    return false;
-  }
-}

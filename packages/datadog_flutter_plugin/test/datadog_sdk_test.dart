@@ -40,6 +40,7 @@ void main() {
     registerFallbackValue(FakeDatadogConfiguration());
     registerFallbackValue(DatadogLoggingConfiguration());
     registerFallbackValue(DatadogLoggerConfiguration());
+    registerFallbackValue(DatadogAttachConfiguration());
     registerFallbackValue(LateConfigurationProperty.trackErrors);
     registerFallbackValue(InternalLogger());
     registerFallbackValue(CoreLoggerLevel.error);
