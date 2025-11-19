@@ -5,7 +5,7 @@ import 'package:datadog_flutter_plugin/datadog_flutter_plugin.dart';
 import 'package:flutter/material.dart';
 
 class InstrumentationThirdScreen extends StatefulWidget {
-  const InstrumentationThirdScreen({Key? key}) : super(key: key);
+  const InstrumentationThirdScreen({super.key});
 
   @override
   State<InstrumentationThirdScreen> createState() =>
