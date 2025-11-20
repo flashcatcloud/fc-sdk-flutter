@@ -7,6 +7,8 @@
 package com.datadoghq.flutter.sessionreplay.feature
 
 import android.content.Context
+import android.os.Handler
+import android.os.Looper
 import com.datadog.android.api.feature.Feature
 import com.datadog.android.api.feature.FeatureContextUpdateReceiver
 import com.datadog.android.api.feature.FeatureEventReceiver
@@ -32,7 +34,8 @@ internal interface FlutterSessionReplayFeature : StorageBackedFeature {
 internal class DefaultFlutterSessionReplayFeature(
     private val sdkCore: FeatureSdkCore,
     private val onContextChanged: (RumContext) -> Unit,
-    private val customEndpointUrl: String?
+    private val customEndpointUrl: String?,
+    private val mainThreadHandler: Handler = Handler(Looper.getMainLooper())
 ) : FlutterSessionReplayFeature,
     StorageBackedFeature,
     FeatureEventReceiver,
@@ -88,10 +91,12 @@ internal class DefaultFlutterSessionReplayFeature(
     override fun onReceive(event: Any) {
     }
 
-    override fun onContextUpdate(featureName: String, event: Map<String, Any?>) {
+    override fun onContextUpdate(featureName: String, context: Map<String, Any?>) {
         if (featureName == Feature.RUM_FEATURE_NAME) {
-            val context = RumContext(event)
-            onContextChanged(context)
+            val rumContext = RumContext(context)
+            mainThreadHandler.post {
+                onContextChanged(rumContext)
+            }
         }
     }
 
