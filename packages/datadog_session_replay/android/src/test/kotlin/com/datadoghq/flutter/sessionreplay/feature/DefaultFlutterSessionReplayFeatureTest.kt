@@ -6,6 +6,7 @@
 
 package com.datadoghq.flutter.sessionreplay.feature
 
+import android.os.Handler
 import assertk.assertThat
 import assertk.assertions.isEqualTo
 import assertk.assertions.isNotNull
@@ -20,12 +21,25 @@ import io.mockk.every
 import io.mockk.invoke
 import io.mockk.mockk
 import io.mockk.verify
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 
 @ExtendWith(ForgeExtension::class)
 internal class DefaultFlutterSessionReplayFeatureTest {
     var mockCore: FeatureSdkCore = mockk(relaxed = true)
+    val mockHandler: Handler = mockk()
+
+    @BeforeEach
+    fun beforeAll() {
+        every {
+            mockHandler.post(any())
+        }.answers {
+            val runnable = arg<Runnable>(0)
+            runnable.run()
+            true
+        }
+    }
 
     @Test
     fun `M call context changed callback W onContextUpdate`(
@@ -42,7 +56,8 @@ internal class DefaultFlutterSessionReplayFeatureTest {
         val feature = DefaultFlutterSessionReplayFeature(
             mockCore,
             onContextChanged,
-            customEndpoint
+            customEndpoint,
+            mockHandler
         )
         val contextValue = mapOf(
             "application_id" to applicationId,
@@ -54,7 +69,7 @@ internal class DefaultFlutterSessionReplayFeatureTest {
         // When
         feature.onContextUpdate(Feature.RUM_FEATURE_NAME, contextValue)
 
-        // Then - note the transform of property names
+        // Then - verify on the back of the Looper. Note the transform of property names
         val expectedContextValue = DefaultFlutterSessionReplayFeature.RumContext(
             applicationId,
             sessionId,
@@ -77,7 +92,8 @@ internal class DefaultFlutterSessionReplayFeatureTest {
         val feature = DefaultFlutterSessionReplayFeature(
             mockCore,
             onContextChanged,
-            customEndpoint
+            customEndpoint,
+            mockHandler
         )
         var context = mutableMapOf<String, Any?>()
         every { mockCore.updateFeatureContext(any(), any(), captureLambda()) } answers {
@@ -113,7 +129,8 @@ internal class DefaultFlutterSessionReplayFeatureTest {
         val feature = DefaultFlutterSessionReplayFeature(
             mockCore,
             onContextChanged,
-            customEndpoint
+            customEndpoint,
+            mockHandler
         )
         var context = mutableMapOf<String, Any?>()
         every { mockCore.updateFeatureContext(any(), any(), captureLambda()) } answers {

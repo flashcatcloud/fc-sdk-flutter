@@ -34,7 +34,8 @@ internal interface FlutterSessionReplayFeature : StorageBackedFeature {
 internal class DefaultFlutterSessionReplayFeature(
     private val sdkCore: FeatureSdkCore,
     private val onContextChanged: (RumContext) -> Unit,
-    private val customEndpointUrl: String?
+    private val customEndpointUrl: String?,
+    private val mainThreadHandler: Handler = Handler(Looper.getMainLooper())
 ) : FlutterSessionReplayFeature,
     StorageBackedFeature,
     FeatureEventReceiver,
@@ -93,7 +94,7 @@ internal class DefaultFlutterSessionReplayFeature(
     override fun onContextUpdate(featureName: String, context: Map<String, Any?>) {
         if (featureName == Feature.RUM_FEATURE_NAME) {
             val rumContext = RumContext(context)
-            Handler(Looper.getMainLooper()).post {
+            mainThreadHandler.post {
                 onContextChanged(rumContext)
             }
         }

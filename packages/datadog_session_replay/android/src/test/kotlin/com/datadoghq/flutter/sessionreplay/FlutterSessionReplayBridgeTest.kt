@@ -6,6 +6,7 @@
 
 package com.datadoghq.flutter.sessionreplay
 
+import android.os.Looper
 import assertk.assertThat
 import assertk.assertions.isEqualTo
 import assertk.assertions.isNotNull
@@ -19,9 +20,14 @@ import fr.xgouchet.elmyr.annotation.StringForgery
 import fr.xgouchet.elmyr.junit5.ForgeExtension
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkStatic
+import io.mockk.unmockkStatic
 import io.mockk.verify
 import java.nio.ByteBuffer
 import kotlin.test.Test
+import org.junit.jupiter.api.AfterAll
+import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.extension.ExtendWith
 
 internal fun FlutterSessionReplayBridge.enableWithMock(
@@ -31,7 +37,20 @@ internal fun FlutterSessionReplayBridge.enableWithMock(
 }
 
 @ExtendWith(ForgeExtension::class)
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class FlutterSessionReplayBridgeTest {
+    @BeforeAll
+    fun beforeAll() {
+        val mockLooper = mockk<Looper>()
+        mockkStatic(Looper::class)
+        every { Looper.getMainLooper() }.returns(mockLooper)
+    }
+
+    @AfterAll
+    fun afterAll() {
+        unmockkStatic(Looper::class)
+    }
+
     @Test
     fun `M register the feature W enable`() {
         // Given
