@@ -114,6 +114,26 @@ abstract class DdRumPlatform extends PlatformInterface {
   Future<void> addFeatureFlagEvaluation(String name, Object value);
   Future<void> stopSession();
 
+  Future<void> startFeatureOperation(
+    DateTime timestamp,
+    String name,
+    String? operationKey,
+    Map<String, Object?> attributes,
+  );
+  Future<void> succeedFeatureOperation(
+    DateTime timestamp,
+    String name,
+    String? operationKey,
+    Map<String, Object?> attributes,
+  );
+  Future<void> failFeatureOperation(
+    DateTime timestamp,
+    String name,
+    String? operationKey,
+    RumFeatureOperationFailureReason failureReason,
+    Map<String, Object?> attributes,
+  );
+
   Future<void> reportLongTask(DateTime at, int durationMs);
   Future<void> updatePerformanceMetrics(
     List<double> buildTimes,

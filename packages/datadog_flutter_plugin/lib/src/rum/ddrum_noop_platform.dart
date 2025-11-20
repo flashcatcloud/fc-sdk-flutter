@@ -178,4 +178,26 @@ class DdNoOpRumPlatform extends DdRumPlatform {
   ) {
     return Future.value();
   }
+
+  @override
+  Future<void> failFeatureOperation(
+      DateTime timestamp,
+      String name,
+      String? operationKey,
+      RumFeatureOperationFailureReason failureReason,
+      Map<String, Object?> attributes) {
+    return Future.value();
+  }
+
+  @override
+  Future<void> startFeatureOperation(DateTime timestamp, String name,
+      String? operationKey, Map<String, Object?> attributes) {
+    return Future.value();
+  }
+
+  @override
+  Future<void> succeedFeatureOperation(DateTime timestamp, String name,
+      String? operationKey, Map<String, Object?> attributes) {
+    return Future.value();
+  }
 }

@@ -64,6 +64,18 @@ enum RumResourceType {
   native,
 }
 
+/// Represents the possible reasons for a failed feature operation.
+enum RumFeatureOperationFailureReason {
+  /// Represents a failure caused by an error during execution.
+  error,
+
+  /// Represents a failure caused by user or process abandonment.
+  abandoned,
+
+  /// Represents a failure due to other unspecified reasons.
+  other
+}
+
 RumResourceType resourceTypeFromContentType(ContentType? type) {
   if (type == null) {
     return RumResourceType.native;
@@ -149,10 +161,10 @@ class DatadogRum {
 
   @internal
   DatadogRum.fromExisting(DatadogSdk core, DatadogAttachConfiguration config)
-    : traceSampleRate = config.traceSampleRate,
-      _maxSampledTraceId = _getMaxTraceId(config.traceSampleRate),
-      traceContextInjection = config.traceContextInjection,
-      logger = core.internalLogger {
+      : traceSampleRate = config.traceSampleRate,
+        _maxSampledTraceId = _getMaxTraceId(config.traceSampleRate),
+        traceContextInjection = config.traceContextInjection,
+        logger = core.internalLogger {
     _init(
       core: core,
       detectLongTasks: config.detectLongTasks,
@@ -177,10 +189,10 @@ class DatadogRum {
   }
 
   DatadogRum._(DatadogSdk core, DatadogRumConfiguration configuration)
-    : traceSampleRate = configuration.traceSampleRate,
-      _maxSampledTraceId = _getMaxTraceId(configuration.traceSampleRate),
-      traceContextInjection = configuration.traceContextInjection,
-      logger = core.internalLogger {
+      : traceSampleRate = configuration.traceSampleRate,
+        _maxSampledTraceId = _getMaxTraceId(configuration.traceSampleRate),
+        traceContextInjection = configuration.traceContextInjection,
+        logger = core.internalLogger {
     _init(
       core: core,
       detectLongTasks: configuration.detectLongTasks,
@@ -195,9 +207,8 @@ class DatadogRum {
     required double longTaskThreshold,
     required bool reportFlutterPerformance,
   }) {
-    final isBackgroundIsolate = kIsWeb
-        ? false
-        : ServicesBinding.rootIsolateToken == null;
+    final isBackgroundIsolate =
+        kIsWeb ? false : ServicesBinding.rootIsolateToken == null;
     // Don't allow initialization of foreground stuff in background isolates
     if (!isBackgroundIsolate) {
       // Never use long task observer on web -- the Browser SDK should
@@ -560,6 +571,67 @@ class DatadogRum {
   void addFeatureFlagEvaluation(String name, Object value) {
     wrap('rum.addFeatureFlagEvaluation', logger, null, () {
       return _platform.addFeatureFlagEvaluation(name, value);
+    });
+  }
+
+  /// Starts a feature operation with the given [name].
+  ///
+  /// You can also provide an optional [operationKey], which allows you to track
+  /// multiple operations of the same [name]. For example, multiple network
+  /// requests for the same URL.
+  ///
+  /// Additional custom attributes can be attached to this feature operation
+  /// through [attributes].
+  void startFeatureOperation(
+    String name, {
+    String? operationKey,
+    Map<String, Object?> attributes = const {},
+  }) {
+    wrap('rum.startFeatureOperation', logger, attributes, () {
+      final currentTime = timeProvider.now();
+      return _platform.startFeatureOperation(
+          currentTime, name, operationKey, attributes);
+    });
+  }
+
+  /// Finishes a feature operation with the given [name] with a successful
+  /// status.
+  ///
+  /// If you provided an [operationKey] to [startFeatureOperation], the same
+  /// [operationKey] should be provided here.
+  ///
+  /// Additional custom attributes such as additional result data, can be
+  /// attached to this feature operation through [attributes].
+  void succeedFeatureOperation(
+    String name, {
+    String? operationKey,
+    Map<String, Object?> attributes = const {},
+  }) {
+    wrap('rum.succeedFeatureOperation', logger, attributes, () {
+      final currentTime = timeProvider.now();
+      return _platform.succeedFeatureOperation(
+          currentTime, name, operationKey, attributes);
+    });
+  }
+
+  /// Finishes a feature operation with the given [name] with a failure
+  /// status and the given [failureReason].
+  ///
+  /// If you provided an [operationKey] to [startFeatureOperation], the same
+  /// [operationKey] should be provided here.
+  ///
+  /// Additional custom attributes such as additional result data, can be
+  /// attached to this feature operation through [attributes].
+  void failFeatureOperation(
+    String name,
+    RumFeatureOperationFailureReason failureReason, {
+    String? operationKey,
+    Map<String, Object?> attributes = const {},
+  }) {
+    wrap('rum.failFeatureOperation', logger, attributes, () {
+      final currentTime = timeProvider.now();
+      return _platform.failFeatureOperation(
+          currentTime, name, operationKey, failureReason, attributes);
     });
   }
 

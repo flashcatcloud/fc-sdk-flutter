@@ -81,6 +81,11 @@ class RumSessionDecoder {
           final longTaskEvent = RumLongTaskEventDecoder(e.rumEvent);
           visit.longTaskEvents.add(longTaskEvent);
           break;
+        case 'vital':
+          final operationStepEvent =
+              RumVitalOperationStepEventDecoder(e.rumEvent);
+          visit.vitalStepEvents.add(operationStepEvent);
+          break;
       }
     }
 
@@ -103,6 +108,7 @@ class RumViewVisit {
   final List<RumResourceEventDecoder> resourceEvents = [];
   final List<RumErrorEventDecoder> errorEvents = [];
   final List<RumLongTaskEventDecoder> longTaskEvents = [];
+  final List<RumVitalOperationStepEventDecoder> vitalStepEvents = [];
 
   RumViewVisit(this.id, this.name, this.path);
 }
@@ -324,4 +330,17 @@ class RumViewInfoDecoder {
   String? get path => viewData?['url'] as String?;
 
   RumViewInfoDecoder(this.viewData);
+}
+
+class RumVitalOperationStepEventDecoder extends RumEventDecoder {
+  RumVitalOperationStepEventDecoder(super.rumEvent);
+
+  RumViewInfoDecoder get view => RumViewInfoDecoder(rumEvent['view']);
+
+  String get vitalName => rumEvent['vital']['name'] as String;
+  String? get vitalOperationKey =>
+      rumEvent['vital']['operation_key'] as String?;
+  String? get vitalFailureReason =>
+      rumEvent['vital']['failure_reason'] as String?;
+  String get stepType => rumEvent['vital']['step_type'] as String;
 }

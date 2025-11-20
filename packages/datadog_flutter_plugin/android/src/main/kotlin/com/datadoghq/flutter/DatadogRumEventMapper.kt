@@ -1,10 +1,12 @@
 package com.datadoghq.flutter
 
+import com.datadog.android.rum.ExperimentalRumApi
 import com.datadog.android.rum.RumConfiguration
 import com.datadog.android.rum.model.ActionEvent
 import com.datadog.android.rum.model.ErrorEvent
 import com.datadog.android.rum.model.LongTaskEvent
 import com.datadog.android.rum.model.ResourceEvent
+import com.datadog.android.rum.model.RumVitalOperationStepEvent
 import com.datadog.android.rum.model.ViewEvent
 import com.google.gson.JsonParser
 
@@ -14,6 +16,7 @@ import com.google.gson.JsonParser
  * This class is used as a static instance that can be assigned a Dart callback object through
  * a jnigen interface.
  */
+@OptIn(ExperimentalRumApi::class)
 @Suppress("StringLiteralDuplication")
 class DatadogRumEventMapper {
     // Even though mappers use "jnigen" and could bind / modify the RUM events
@@ -25,6 +28,7 @@ class DatadogRumEventMapper {
         fun mapResourceEvent(encodedEvent: String): String?
         fun mapErrorEvent(encodedEvent: String): String?
         fun mapLongTaskEvent(encodedEvent: String): String?
+        fun mapVitalOperationStepEvent(encodedEvent: String): String?
     }
 
     var eventMapper: EventMapper? = null
@@ -52,12 +56,18 @@ class DatadogRumEventMapper {
         if (optionIsSet("attachLongTaskEventMapper")) {
             configBuilder.setLongTaskEventMapper { event -> mapLongTaskEvent(event) }
         }
+        if (optionIsSet("attachVitalOperationStepEventMapper")) {
+            configBuilder.setVitalOperationStepEventMapper {
+                    event ->
+                mapVitalOperationStepEvent(event)
+            }
+        }
 
         return configBuilder
     }
 
     internal fun mapViewEvent(event: ViewEvent): ViewEvent {
-        var result: ViewEvent = event
+        val result: ViewEvent = event
 
         eventMapper?.let { mapper ->
             val encodedEvent = event.toJson().toString()
@@ -191,22 +201,27 @@ class DatadogRumEventMapper {
         return result
     }
 
-    @Suppress("UNCHECKED_CAST")
-    private fun normalizeExtraUserInfo(encodedEvent: Map<String, Any?>): Map<String, Any?> {
-        val reservedKeys = setOf("email", "id", "name")
-        // Pull out user information
-        val mutableEvent = encodedEvent.toMutableMap()
-        (mutableEvent["usr"] as? Map<String, Any?>)?.let { usr ->
-            val mutableUsr = usr.toMutableMap()
-            val extraUserInfo = mutableMapOf<String, Any?>()
-            usr.filter { !reservedKeys.contains(it.key) }.forEach {
-                extraUserInfo[it.key] = it.value
-                mutableUsr.remove(it.key)
+    internal fun mapVitalOperationStepEvent(
+        event: RumVitalOperationStepEvent
+    ): RumVitalOperationStepEvent? {
+        var result: RumVitalOperationStepEvent? = event
+
+        eventMapper?.let { mapper ->
+            val encodedEvent = event.toJson().toString()
+
+            val encodedResult = mapper.mapVitalOperationStepEvent(encodedEvent)
+            if (encodedResult != null) {
+                val jsonObject = JsonParser.parseString(encodedResult).asJsonObject
+                val jsonView = jsonObject.get("view").asJsonObject
+
+                result!!.view.name = jsonView.get("name")?.asString
+                result.view.referrer = jsonView.get("referrer")?.asString
+                result.view.url = jsonView.get("url").asString
+            } else {
+                result = null
             }
-            mutableUsr["usr_info"] = extraUserInfo
-            mutableEvent["usr"] = mutableUsr
         }
 
-        return mutableEvent
+        return result
     }
 }

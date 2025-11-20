@@ -56,6 +56,14 @@ typedef RumErrorEventMapper = RumErrorEvent? Function(RumErrorEvent event);
 typedef RumLongTaskEventMapper = RumLongTaskEvent? Function(
     RumLongTaskEvent event);
 
+/// A function that allows you to modify or drop specific [RumVitalOperationEvent]s before
+/// they are sent to Datadog.
+///
+/// The [RumVitalOperationEvent] can modify any mutable (non-final) properties in the
+/// [RumVitalOperationEvent]
+typedef RumVitalOperationEventMapper = RumVitalOperationStepEvent? Function(
+    RumVitalOperationStepEvent event);
+
 /// Configuration options for the Datadog Real User Monitoring (RUM) feature.
 class DatadogRumConfiguration {
   // Either a RUM Application Id. Obtained on the Datadog website.
@@ -209,6 +217,10 @@ class DatadogRumConfiguration {
   /// before they are sent to Datadog.
   RumLongTaskEventMapper? longTaskEventMapper;
 
+  /// A function that allows you to modify or drop specific
+  /// [RumVitalOperationEvent]s before they are sent to Datadog.
+  RumVitalOperationEventMapper? vitalOperationStepEventMapper;
+
   Map<String, Object?> additionalConfig;
 
   DatadogRumConfiguration({
@@ -233,6 +245,7 @@ class DatadogRumConfiguration {
     this.resourceEventMapper,
     this.errorEventMapper,
     this.longTaskEventMapper,
+    this.vitalOperationStepEventMapper,
     this.additionalConfig = const <String, Object>{},
   })  : sessionSamplingRate = max(0, min(sessionSamplingRate, 100)),
         traceSampleRate = max(0, min(traceSampleRate, 100)),
@@ -259,6 +272,8 @@ class DatadogRumConfiguration {
       'attachResourceEventMapper': resourceEventMapper != null,
       'attachErrorEventMapper': errorEventMapper != null,
       'attachLongTaskEventMapper': longTaskEventMapper != null,
+      'attachVitalOperationStepEventMapper':
+          vitalOperationStepEventMapper != null,
       'additionalConfig': additionalConfig,
     };
   }

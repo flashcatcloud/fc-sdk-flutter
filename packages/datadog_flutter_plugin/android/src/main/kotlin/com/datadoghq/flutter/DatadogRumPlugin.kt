@@ -13,6 +13,7 @@ import com.datadog.android.api.SdkCore
 import com.datadog.android.core.configuration.BatchSize
 import com.datadog.android.core.configuration.UploadFrequency
 import com.datadog.android.event.EventMapper
+import com.datadog.android.rum.ExperimentalRumApi
 import com.datadog.android.rum.GlobalRumMonitor
 import com.datadog.android.rum.Rum
 import com.datadog.android.rum.RumActionType
@@ -26,6 +27,7 @@ import com.datadog.android.rum.RumResourceMethod
 import com.datadog.android.rum.RumSessionListener
 import com.datadog.android.rum._RumInternalProxy
 import com.datadog.android.rum.configuration.VitalsUpdateFrequency
+import com.datadog.android.rum.featureoperations.FailureReason
 import com.datadog.android.rum.metric.networksettled.TimeBasedInitialResourceIdentifier
 import com.datadog.android.rum.tracking.ViewTrackingStrategy
 import com.datadog.android.telemetry.model.TelemetryConfigurationEvent
@@ -37,6 +39,7 @@ import java.lang.ClassCastException
 import java.util.concurrent.TimeUnit
 import kotlin.time.Duration.Companion.seconds
 
+@OptIn(ExperimentalRumApi::class)
 class DatadogRumPlugin : MethodChannel.MethodCallHandler, RumSessionListener {
     companion object {
         const val PARAM_AT = "at"
@@ -58,6 +61,8 @@ class DatadogRumPlugin : MethodChannel.MethodCallHandler, RumSessionListener {
         const val PARAM_BUILD_TIMES = "buildTimes"
         const val PARAM_RASTER_TIMES = "rasterTimes"
         const val PARAM_OVERWRITE = "overwrite"
+        const val PARAM_OPERATION_KEY = "operationKey"
+        const val PARAM_FAILURE_REASON = "failureReason"
 
         // See DatadogSdkPlugin's description of this same member
         private var previousConfiguration: Map<String, Any?>? = null
@@ -127,6 +132,9 @@ class DatadogRumPlugin : MethodChannel.MethodCallHandler, RumSessionListener {
                 "reportLongTask" -> reportLongTask(call, result)
                 "updatePerformanceMetrics" -> updatePerformanceMetrics(call, result)
                 "addFeatureFlagEvaluation" -> addFeatureFlagEvaluation(call, result)
+                "startFeatureOperation" -> startFeatureOperation(call, result)
+                "succeedFeatureOperation" -> succeedFeatureOperation(call, result)
+                "failFeatureOperation" -> failFeatureOperation(call, result)
                 "setInternalViewAttribute" -> setInternalViewAttribute(call, result)
                 "stopSession" -> stopSession(call, result)
                 else -> {
@@ -484,6 +492,44 @@ class DatadogRumPlugin : MethodChannel.MethodCallHandler, RumSessionListener {
         }
     }
 
+    private fun startFeatureOperation(call: MethodCall, result: Result) {
+        val name = call.argument<String>(PARAM_NAME)
+        val operationName = call.argument<String>(PARAM_OPERATION_KEY)
+        val attributes = call.argument<Map<String, Any?>>(PARAM_ATTRIBUTES)
+        if (name != null && attributes != null) {
+            rum?.startFeatureOperation(name, operationName, attributes)
+            result.success(null)
+        } else {
+            result.missingParameter(call.method)
+        }
+    }
+
+    private fun succeedFeatureOperation(call: MethodCall, result: Result) {
+        val name = call.argument<String>(PARAM_NAME)
+        val operationName = call.argument<String>(PARAM_OPERATION_KEY)
+        val attributes = call.argument<Map<String, Any?>>(PARAM_ATTRIBUTES)
+        if (name != null && attributes != null) {
+            rum?.succeedFeatureOperation(name, operationName, attributes)
+            result.success(null)
+        } else {
+            result.missingParameter(call.method)
+        }
+    }
+
+    private fun failFeatureOperation(call: MethodCall, result: Result) {
+        val name = call.argument<String>(PARAM_NAME)
+        val operationName = call.argument<String>(PARAM_OPERATION_KEY)
+        val failureReasonStr = call.argument<String>(PARAM_FAILURE_REASON)
+        val attributes = call.argument<Map<String, Any?>>(PARAM_ATTRIBUTES)
+        if (name != null && failureReasonStr != null && attributes != null) {
+            val failureReason = parseFailureReason(failureReasonStr)
+            rum?.failFeatureOperation(name, operationName, failureReason, attributes)
+            result.success(null)
+        } else {
+            result.missingParameter(call.method)
+        }
+    }
+
     private fun setInternalViewAttribute(call: MethodCall, result: Result) {
         val key = call.argument<String>(PARAM_KEY)
         var value = call.argument<Any>(PARAM_VALUE)
@@ -609,6 +655,15 @@ fun parseRumActionType(value: String): RumActionType {
         "RumActionType.swipe" -> RumActionType.SWIPE
         "RumActionType.custom" -> RumActionType.CUSTOM
         else -> RumActionType.CUSTOM
+    }
+}
+
+fun parseFailureReason(value: String): FailureReason {
+    return when (value) {
+        "RumFeatureOperationFailureReason.error" -> FailureReason.ERROR
+        "RumFeatureOperationFailureReason.abandoned" -> FailureReason.ABANDONED
+        "RumFeatureOperationFailureReason.other" -> FailureReason.OTHER
+        else -> FailureReason.OTHER
     }
 }
 

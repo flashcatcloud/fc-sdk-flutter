@@ -42,12 +42,12 @@ void main() {
     ambiguate(TestDefaultBinaryMessengerBinding.instance)
         ?.defaultBinaryMessenger
         .setMockMethodCallHandler(ddRumPlatform.methodChannel, (message) {
-          log.add(message);
-          if (message.method == 'getCurrentSessionId') {
-            return Future.value('fake-session-id');
-          }
-          return null;
-        });
+      log.add(message);
+      if (message.method == 'getCurrentSessionId') {
+        return Future.value('fake-session-id');
+      }
+      return null;
+    });
   });
 
   tearDown(() {
@@ -471,6 +471,77 @@ void main() {
     await ddRumPlatform.stopSession();
 
     expect(log, [isMethodCall('stopSession', arguments: <String, Object?>{})]);
+  });
+
+  test('startFeatureOperation calls to platform', () async {
+    final timestamp = randomTimestamp();
+    final name = randomString();
+    final operationKey = randomString();
+    await ddRumPlatform.startFeatureOperation(
+      timestamp,
+      name,
+      operationKey,
+      {'attribute_name': 'attribute_value'},
+    );
+
+    expect(log, [
+      isMethodCall('startFeatureOperation', arguments: {
+        'name': name,
+        'operationKey': operationKey,
+        'attributes': {
+          'attribute_name': 'attribute_value',
+          '_dd.timestamp': timestamp.millisecondsSinceEpoch,
+        },
+      })
+    ]);
+  });
+
+  test('succeedFeatureOperation calls to platform', () async {
+    final timestamp = randomTimestamp();
+    final name = randomString();
+    final operationKey = randomString();
+    await ddRumPlatform.succeedFeatureOperation(
+      timestamp,
+      name,
+      operationKey,
+      {'attribute_name': 'attribute_value'},
+    );
+
+    expect(log, [
+      isMethodCall('succeedFeatureOperation', arguments: {
+        'name': name,
+        'operationKey': operationKey,
+        'attributes': {
+          'attribute_name': 'attribute_value',
+          '_dd.timestamp': timestamp.millisecondsSinceEpoch,
+        },
+      })
+    ]);
+  });
+
+  test('failFeatureOperation calls to platform', () async {
+    final timestamp = randomTimestamp();
+    final name = randomString();
+    final operationKey = randomString();
+    await ddRumPlatform.failFeatureOperation(
+      timestamp,
+      name,
+      operationKey,
+      RumFeatureOperationFailureReason.abandoned,
+      {'attribute_name': 'attribute_value'},
+    );
+
+    expect(log, [
+      isMethodCall('failFeatureOperation', arguments: {
+        'name': name,
+        'operationKey': operationKey,
+        'failureReason': 'RumFeatureOperationFailureReason.abandoned',
+        'attributes': {
+          'attribute_name': 'attribute_value',
+          '_dd.timestamp': timestamp.millisecondsSinceEpoch,
+        },
+      })
+    ]);
   });
 
   test('reportLongTask calls to platform', () async {
