@@ -89,7 +89,8 @@ class DdRumWeb extends DdRumPlatform {
         plugins: plugins,
         variant: configuration.flavor,
         source: 'flutter',
-        sessionPersistence: configuration.sessionPersistence?.webValue(),
+        sessionPersistence:
+            configuration.sessionPersistence?.webValue() ?? 'cookie',
         sdkVersion: DatadogSdk.sdkVersion,
         usePartitionedCrossSiteSessionCookie:
             configuration.usePartitionedCrossSiteSessionCookie,

@@ -28,10 +28,13 @@ class DdLogsWeb extends DdLogsPlatform {
         proxy: configuration.loggingConfiguration?.customEndpoint,
         sdkVersion: DatadogSdk.sdkVersion,
         service: configuration.service,
-        sessionPersistence: configuration.sessionPersistence?.webValue(),
+        sessionPersistence:
+            configuration.sessionPersistence?.webValue() ?? 'cookie',
         site: siteStringForSite(configuration.site),
         source: 'flutter',
         storeContextsAcrossPages: configuration.storeContextAcrossPages,
+        trackAnonymousUser:
+            configuration.rumConfiguration?.trackAnonymousUser ?? true,
         trackSessionAcrossSubdomains:
             configuration.trackSessionsAcrossSubdomains,
         usePartitionedCrossSiteSessionCookie:
@@ -191,6 +194,7 @@ extension type _LogInitOptions._(JSObject _) implements JSObject {
     String site,
     String? source,
     bool? storeContextsAcrossPages,
+    bool? trackAnonymousUser,
     String? trackingConsent,
     bool? trackSessionAcrossSubdomains,
     bool? usePartitionedCrossSiteSessionCookie,
