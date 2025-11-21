@@ -139,11 +139,11 @@ void main() {
     expect(contentReadyTiming, greaterThanOrEqualTo(50 * 1000 * 1000));
     // TODO: Figure out why occasionally these have really high values
     // expect(contentReadyTiming, lessThan(200 * 1000 * 100));
-    // if (!kIsWeb) {
-    //   expect(viewLoadingTiming, isNotNull);
-    //   expect(viewLoadingTiming,
-    //       closeTo(contentReadyTiming!, 10000000)); // Within 10ms
-    // }
+    if (!kIsWeb) {
+      expect(viewLoadingTiming, isNotNull);
+      expect(viewLoadingTiming,
+          closeTo(contentReadyTiming!, 10000000)); // Within 10ms
+    }
     expect(firstInteractionTiming, isNotNull);
     expect(firstInteractionTiming, greaterThanOrEqualTo(contentReadyTiming!));
     // TODO: Figure out why occasionally these have really high values

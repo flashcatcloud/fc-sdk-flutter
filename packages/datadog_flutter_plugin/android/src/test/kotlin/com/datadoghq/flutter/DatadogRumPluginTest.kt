@@ -775,7 +775,7 @@ class DatadogRumPluginTest {
         val call = MethodCall("failFeatureOperation", mapOf(
             "name" to name,
             "operationKey" to operationKey,
-            "failureReason" to "FailureReason.abandoned",
+            "failureReason" to "RumFeatureOperationFailureReason.abandoned",
             "attributes" to mapOf(
                 attributeKey to attributeValue
             )

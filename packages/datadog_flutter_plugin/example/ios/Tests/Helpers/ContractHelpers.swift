@@ -63,7 +63,10 @@ func testContracts(contracts: [Contract], plugin: FlutterPlugin, additionalArgum
         switch result {
         case .called(let value):
             let error = value as? FlutterError
-            XCTAssertNotEqual(value as? NSObject, FlutterMethodNotImplemented, "\(contract.methodName) returned NotImplemented")
+            XCTAssertNotEqual(
+                value as? NSObject,
+                FlutterMethodNotImplemented, "\(contract.methodName) returned NotImplemented"
+            )
             XCTAssertNil(error, "\(contract.methodName) returned result \(String(describing: error)) on valid call")
 
         case .notCalled:
