@@ -91,10 +91,6 @@ class DatadogRumPlugin : MethodChannel.MethodCallHandler, RumSessionListener {
         channel.setMethodCallHandler(this)
 
         binding = flutterPluginBinding
-
-        if (GlobalRumMonitor.isRegistered()) {
-            rum = GlobalRumMonitor.get()
-        }
     }
 
     fun detachFromEngine() {
@@ -102,16 +98,17 @@ class DatadogRumPlugin : MethodChannel.MethodCallHandler, RumSessionListener {
     }
 
     override fun onMethodCall(call: MethodCall, result: Result) {
-        if (call.method != "enable" && rum == null) {
-            result.invalidOperation(
-                "Attempting to call ${call.method} on RUM when it has not been enabled"
-            )
+        if (call.method == "enable") {
+            enable(call, result)
+            return
+        }
+
+        if (!ensureRumEnabled(call, result)) {
             return
         }
 
         try {
             when (call.method) {
-                "enable" -> enable(call, result)
                 "deinitialize" -> deinitialize(call, result)
                 "getCurrentSessionId" -> getCurrentSessionId(call, result)
                 "startView" -> startView(call, result)
@@ -145,6 +142,22 @@ class DatadogRumPlugin : MethodChannel.MethodCallHandler, RumSessionListener {
                 )
             )
         }
+    }
+
+    private fun ensureRumEnabled(call: MethodCall, result: Result): Boolean {
+        // Because multiple Flutter Engines, Flutter Isolates, and Hybrid applications
+        // can initialize RUM in any order, we check to see if RUM already exists on every
+        // call and associate it properly if it does.
+        if (rum == null) {
+            if (GlobalRumMonitor.isRegistered()) {
+                rum = GlobalRumMonitor.get()
+            } else {
+                result.invalidOperation(
+                    "Attempting to call ${call.method} on RUM when it has not been enabled"
+                )
+            }
+        }
+        return rum != null
     }
 
     override fun onSessionStarted(sessionId: String, isDiscarded: Boolean) {
@@ -213,10 +226,6 @@ class DatadogRumPlugin : MethodChannel.MethodCallHandler, RumSessionListener {
                 result.success(sessionId)
             }
         }
-    }
-
-    fun attachToExistingSdk(monitor: RumMonitor) {
-        rum = monitor
     }
 
     private fun mapTelemetryConfiguration(

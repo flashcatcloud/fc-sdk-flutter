@@ -194,6 +194,47 @@ class DatadogSdk {
     _initialized = true;
   }
 
+  /// Attach an initialized Datadog Flutter SDK the currently active background isolate.
+  ///
+  /// Datadog must already be initialized in the root isolate for [attachToBackgroundIsolate]
+  /// to work properly.
+  Future<void> attachToBackgroundIsolate() async {
+    try {
+      final attachResponse = await platform.attachToIsolate();
+      if (attachResponse == null) {
+        internalLogger.warn(
+          'Could not attach to background isolate. Did not recieve a configuration from the main isolate.'
+          ' You are either trying to attach on a platform that does not support isolates, or trying to attach before Datadog initialization is complete.',
+        );
+      } else {
+        _setFirstPartyHosts(
+          attachResponse.capturedConfiguration.firstPartyHosts,
+        );
+        if (attachResponse.capturedConfiguration.loggingEnabled) {
+          _logs = DatadogLogging(this);
+        }
+
+        if (attachResponse.capturedConfiguration.rumEnabled) {
+          _rum = DatadogRum.forBackgroundIsolate(
+            this,
+            attachResponse.capturedConfiguration.traceSampleRate ?? 100.0,
+            attachResponse.capturedConfiguration.traceContextInjection ??
+                TraceContextInjection.sampled,
+          );
+        }
+      }
+    } catch (e, st) {
+      internalLogger.sendToDatadog(
+        'Failed to attach background isolate: $e',
+        st,
+        e.runtimeType.toString(),
+      );
+      internalLogger.warn(
+        'Encountered an error attempting to attach to a background isolate: $e',
+      );
+    }
+  }
+
   /// Attach the Datadog Flutter SDK to an already initialized Datadog Native
   /// (iOS or Android) SDK.  This is used for "app in app" embedding of Flutter.
   Future<void> attachToExisting(DatadogAttachConfiguration config) async {
@@ -205,7 +246,7 @@ class DatadogSdk {
       internalLogger,
       null,
       () async {
-        return await _platform.attachToExisting();
+        return await _platform.attachToExisting(config);
       },
     );
 

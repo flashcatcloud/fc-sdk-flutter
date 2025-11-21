@@ -98,7 +98,9 @@ void main() {
     () async {
       // The mock method channel is already set up to return null, so this should
       // just pass it through.
-      final response = await ddSdkPlatform.attachToExisting();
+      final response = await ddSdkPlatform.attachToExisting(
+        DatadogAttachConfiguration(),
+      );
 
       expect(response, isNull);
     },
@@ -118,7 +120,9 @@ void main() {
 
           return null;
         });
-    final response = await ddSdkPlatform.attachToExisting();
+    final response = await ddSdkPlatform.attachToExisting(
+      DatadogAttachConfiguration(),
+    );
 
     expect(response, isNotNull);
     if (response != null) {
@@ -137,7 +141,9 @@ void main() {
 
           return null;
         });
-    final response = await ddSdkPlatform.attachToExisting();
+    final response = await ddSdkPlatform.attachToExisting(
+      DatadogAttachConfiguration(),
+    );
 
     expect(response, isNull);
   });
