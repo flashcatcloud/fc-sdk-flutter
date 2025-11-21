@@ -7,7 +7,7 @@ import 'package:datadog_flutter_plugin/src/rum/ddrum.dart';
 import 'package:datadog_flutter_plugin/src/rum/inv_metric_provider.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-const defaultFirstBuildTime = const Duration(milliseconds: 38);
+const defaultFirstBuildTime = Duration(milliseconds: 38);
 
 void main() {
   final baseStartTime = DateTime.now();
