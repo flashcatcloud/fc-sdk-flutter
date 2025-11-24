@@ -69,7 +69,7 @@ public class ContextMessageReceiver: FeatureMessageReceiver {
             return false
         }
     }
-    
+
 }
 
 // swiftlint:disable:next type_body_length
@@ -143,7 +143,7 @@ public class DatadogSdkPlugin: NSObject, FlutterPlugin, DatadogFeature {
                             CrashReporting.enable()
                         }
                     }
-                    //swiftlint:disable:next force_try
+                    // swiftlint:disable:next force_try
                     try! core?.register(feature: self)
 
                 } else if let currentConfiguration = currentConfiguration {

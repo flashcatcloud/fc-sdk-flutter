@@ -18,6 +18,7 @@ abstract class RumMapperProxy {
   final RumResourceEventMapper? _resourceEventMapper;
   final RumErrorEventMapper? _errorEventMapper;
   final RumLongTaskEventMapper? _longTaskEventMapper;
+  final RumVitalOperationEventMapper? _vitalOperationEventMapper;
 
   RumMapperProxy({
     required RumViewEventMapper? viewEventMapper,
@@ -25,11 +26,13 @@ abstract class RumMapperProxy {
     required RumResourceEventMapper? resourceEventMapper,
     required RumErrorEventMapper? errorEventMapper,
     required RumLongTaskEventMapper? longTaskEventMapper,
-  }) : _viewEventMapper = viewEventMapper,
-       _actionEventMapper = actionEventMapper,
-       _resourceEventMapper = resourceEventMapper,
-       _errorEventMapper = errorEventMapper,
-       _longTaskEventMapper = longTaskEventMapper;
+    required RumVitalOperationEventMapper? vitalOperationEventMapper,
+  })  : _viewEventMapper = viewEventMapper,
+        _actionEventMapper = actionEventMapper,
+        _resourceEventMapper = resourceEventMapper,
+        _errorEventMapper = errorEventMapper,
+        _longTaskEventMapper = longTaskEventMapper,
+        _vitalOperationEventMapper = vitalOperationEventMapper;
 
   Map<String, dynamic> mapViewEvent(Map<String, dynamic> viewEventJson) {
     if (_viewEventMapper case final mapper?) {
@@ -85,6 +88,18 @@ abstract class RumMapperProxy {
     return longTaskEventJson;
   }
 
+  Map<String, dynamic>? mapVitalOperationEvent(
+    Map<String, dynamic> vitalOperationEventJson,
+  ) {
+    if (_vitalOperationEventMapper case final mapper?) {
+      final vitalOperationEvent =
+          RumVitalOperationStepEvent.fromJson(vitalOperationEventJson);
+      final mappedEvent = mapper(vitalOperationEvent);
+      return mappedEvent?.toJson();
+    }
+    return vitalOperationEventJson;
+  }
+
   static RumMapperProxy? fromConfiguration(
     DatadogRumConfiguration config,
     InternalLogger logger,
@@ -113,6 +128,7 @@ abstract class RumMethodChannelMapperProxy extends RumMapperProxy {
     super.resourceEventMapper,
     super.errorEventMapper,
     super.longTaskEventMapper,
+    super.vitalOperationEventMapper,
   }) : super();
 
   Future<dynamic> handleMethodCall(MethodCall methodCall);

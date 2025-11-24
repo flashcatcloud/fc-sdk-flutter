@@ -94,7 +94,8 @@ extension Array where Element == Data {
         while bytesWritten < totalSize {
             let bytesLeft = totalSize - bytesWritten
             var nextChunkSize: UInt64 = bytesLeft > Int.max ? UInt64(Int.max) : bytesLeft // prevents `Int` overflow
-            nextChunkSize = nextChunkSize > maxChunkSize ? maxChunkSize : nextChunkSize // caps the next chunk to its max size
+            // caps the next chunk to its max size
+            nextChunkSize = nextChunkSize > maxChunkSize ? maxChunkSize : nextChunkSize
             chunks.append(.mockRepeating(byte: 0x1, times: Int(nextChunkSize)))
             bytesWritten += UInt64(nextChunkSize)
         }

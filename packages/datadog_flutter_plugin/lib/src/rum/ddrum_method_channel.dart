@@ -322,6 +322,62 @@ class DdRumMethodChannel extends DdRumPlatform {
   }
 
   @override
+  Future<void> startFeatureOperation(
+    DateTime at,
+    String name,
+    String? operationKey,
+    Map<String, Object?> attributes,
+  ) {
+    final timestampMs = at.millisecondsSinceEpoch;
+    return methodChannel.invokeMethod('startFeatureOperation', {
+      'name': name,
+      'operationKey': operationKey,
+      'attributes': {
+        ...attributes,
+        DatadogPlatformAttributeKey.timestamp: timestampMs,
+      },
+    });
+  }
+
+  @override
+  Future<void> succeedFeatureOperation(
+    DateTime at,
+    String name,
+    String? operationKey,
+    Map<String, Object?> attributes,
+  ) {
+    final timestampMs = at.millisecondsSinceEpoch;
+    return methodChannel.invokeMethod('succeedFeatureOperation', {
+      'name': name,
+      'operationKey': operationKey,
+      'attributes': {
+        ...attributes,
+        DatadogPlatformAttributeKey.timestamp: timestampMs,
+      },
+    });
+  }
+
+  @override
+  Future<void> failFeatureOperation(
+    DateTime at,
+    String name,
+    String? operationKey,
+    RumFeatureOperationFailureReason failureReason,
+    Map<String, Object?> attributes,
+  ) {
+    final timestampMs = at.millisecondsSinceEpoch;
+    return methodChannel.invokeMethod('failFeatureOperation', {
+      'name': name,
+      'operationKey': operationKey,
+      'failureReason': failureReason.toString(),
+      'attributes': {
+        ...attributes,
+        DatadogPlatformAttributeKey.timestamp: timestampMs,
+      },
+    });
+  }
+
+  @override
   Future<void> updatePerformanceMetrics(
     List<double> buildTimes,
     List<double> rasterTimes,

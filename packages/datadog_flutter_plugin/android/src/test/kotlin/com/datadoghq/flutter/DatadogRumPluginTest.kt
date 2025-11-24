@@ -19,6 +19,7 @@ import com.datadog.android.rum.RumPerformanceMetric
 import com.datadog.android.rum.RumResourceKind
 import com.datadog.android.rum.RumResourceMethod
 import com.datadog.android.rum.configuration.VitalsUpdateFrequency
+import com.datadog.android.rum.featureoperations.FailureReason
 import com.datadog.android.rum.metric.networksettled.TimeBasedInitialResourceIdentifier
 import fr.xgouchet.elmyr.Forge
 import fr.xgouchet.elmyr.annotation.BoolForgery
@@ -59,7 +60,7 @@ class DatadogRumPluginTest {
     @AfterEach
     fun afterEach() {
         Datadog.stopInstance()
-        DatadogRumPlugin.resetConfig();
+        DatadogRumPlugin.resetConfig()
         unmockkStatic(Log::class)
         unmockkStatic(Rum::class)
         unmockkStatic(GlobalRumMonitor::class)
@@ -158,6 +159,19 @@ class DatadogRumPluginTest {
         assertThat(swipe).isEqualTo(RumActionType.SWIPE)
         assertThat(custom).isEqualTo(RumActionType.CUSTOM)
         assertThat(unknown).isEqualTo(RumActionType.CUSTOM)
+    }
+
+    @Test
+    fun `M convert all failure reasons W parseFailureReason`() {
+        val error = parseFailureReason("RumFeatureOperationFailureReason.error")
+        val abandoned = parseFailureReason("RumFeatureOperationFailureReason.abandoned")
+        val other = parseFailureReason("RumFeatureOperationFailureReason.other")
+        val unknown = parseFailureReason("unknown")
+
+        assertThat(error).isEqualTo(FailureReason.ERROR)
+        assertThat(abandoned).isEqualTo(FailureReason.ABANDONED)
+        assertThat(other).isEqualTo(FailureReason.OTHER)
+        assertThat(unknown).isEqualTo(FailureReason.OTHER)
     }
 
     @Suppress("LongParameterList")
@@ -269,7 +283,7 @@ class DatadogRumPluginTest {
         plugin.onMethodCall(methodCall, mockResult)
 
         // THEN
-        io.mockk.verify {
+        verify {
             // Would like to check the specific configuration, but there are too many
             // internal variables
             Rum.enable(any())
@@ -311,7 +325,7 @@ class DatadogRumPluginTest {
         plugin.onMethodCall(methodCallB, mockResultB)
 
         // THEN
-        io.mockk.verify(exactly = 0) {
+        verify(exactly = 0) {
             Log.println(any(), eq(DATADOG_FLUTTER_TAG), any())
         }
     }
@@ -356,7 +370,7 @@ class DatadogRumPluginTest {
         plugin.onMethodCall(methodCallB, mockResultB)
 
         // THEN
-        io.mockk.verify(exactly = 1) {
+        verify(exactly = 1) {
             Log.e(DATADOG_FLUTTER_TAG, MESSAGE_INVALID_RUM_REINITIALIZATION)
         }
     }
@@ -695,6 +709,91 @@ class DatadogRumPluginTest {
     }
 
     @Test
+    fun `M call monitor startFeatureOperation W startFeatureOperation is called`(
+        @StringForgery name: String,
+        @StringForgery operationKey: String,
+        @StringForgery attributeKey: String,
+        @StringForgery attributeValue: String
+    ){
+        // GIVEN
+        val call = MethodCall("startFeatureOperation", mapOf(
+            "name" to name,
+            "operationKey" to operationKey,
+            "attributes" to mapOf(
+                attributeKey to attributeValue
+            )
+        ))
+        val mockResult = mockk<MethodChannel.Result>()
+        every { mockResult.success(any())} returns Unit
+
+        // WHEN
+        plugin.onMethodCall(call, mockResult)
+
+        // THEN
+        verify { monitorProxy.mockMonitor.startFeatureOperation(name, operationKey, mapOf(
+            attributeKey to attributeValue
+        )) }
+        verify { mockResult.success(null) }
+    }
+
+    @Test
+    fun `M call monitor succeedFeatureOperation W succeedFeatureOperation is called`(
+        @StringForgery name: String,
+        @StringForgery operationKey: String,
+        @StringForgery attributeKey: String,
+        @StringForgery attributeValue: String
+    ){
+        // GIVEN
+        val call = MethodCall("succeedFeatureOperation", mapOf(
+            "name" to name,
+            "operationKey" to operationKey,
+            "attributes" to mapOf(
+                attributeKey to attributeValue
+            )
+        ))
+        val mockResult = mockk<MethodChannel.Result>()
+        every { mockResult.success(any())} returns Unit
+
+        // WHEN
+        plugin.onMethodCall(call, mockResult)
+
+        // THEN
+        verify { monitorProxy.mockMonitor.succeedFeatureOperation(name, operationKey, mapOf(
+            attributeKey to attributeValue
+        )) }
+        verify { mockResult.success(null) }
+    }
+
+    @Test
+    fun `M call monitor failFeatureOperation W failFeatureOperation is called`(
+        @StringForgery name: String,
+        @StringForgery operationKey: String,
+        @StringForgery attributeKey: String,
+        @StringForgery attributeValue: String
+    ){
+        // GIVEN
+        val call = MethodCall("failFeatureOperation", mapOf(
+            "name" to name,
+            "operationKey" to operationKey,
+            "failureReason" to "RumFeatureOperationFailureReason.abandoned",
+            "attributes" to mapOf(
+                attributeKey to attributeValue
+            )
+        ))
+        val mockResult = mockk<MethodChannel.Result>()
+        every { mockResult.success(any())} returns Unit
+
+        // WHEN
+        plugin.onMethodCall(call, mockResult)
+
+        // THEN
+        verify { monitorProxy.mockMonitor.failFeatureOperation(name, operationKey, FailureReason.ABANDONED, mapOf(
+            attributeKey to attributeValue
+        )) }
+        verify { mockResult.success(null) }
+    }
+
+    @Test
     fun `M call internal addLongTask W reportLongTask is called`(
         @LongForgery at: Long,
         @IntForgery duration: Int
@@ -859,6 +958,19 @@ class DatadogRumPluginTest {
         Contract("setInternalViewAttribute", mapOf(
             "key" to ContractParameter.Type(SupportedContractType.STRING),
             "value" to ContractParameter.Type(SupportedContractType.ANY),
+        )),
+        Contract("startFeatureOperation", mapOf(
+            "name" to ContractParameter.Type(SupportedContractType.STRING),
+            "attributes" to ContractParameter.Type(SupportedContractType.MAP)
+        )),
+        Contract("succeedFeatureOperation", mapOf(
+            "name" to ContractParameter.Type(SupportedContractType.STRING),
+            "attributes" to ContractParameter.Type(SupportedContractType.MAP)
+        )),
+        Contract("failFeatureOperation", mapOf(
+            "name" to ContractParameter.Type(SupportedContractType.STRING),
+            "failureReason" to ContractParameter.Type(SupportedContractType.STRING),
+            "attributes" to ContractParameter.Type(SupportedContractType.MAP)
         )),
         Contract("stopSession", mapOf())
     )

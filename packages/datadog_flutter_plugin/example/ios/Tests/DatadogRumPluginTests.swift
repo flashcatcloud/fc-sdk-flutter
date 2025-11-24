@@ -100,6 +100,18 @@ class DatadogRumPluginTests: XCTestCase {
         XCTAssertEqual(unknown, .custom)
     }
 
+    func testAllFailureReasons_AreParsedCorrectly() {
+        let error = RUMFeatureOperationFailureReason.parseFromFlutter("RumFeatureOperationFailureReason.error")
+        let abandoned = RUMFeatureOperationFailureReason.parseFromFlutter("RumFeatureOperationFailureReason.abandoned")
+        let other = RUMFeatureOperationFailureReason.parseFromFlutter("RumFeatureOperationFailureReason.other")
+        let unknown = RUMFeatureOperationFailureReason.parseFromFlutter("unknown")
+
+        XCTAssertEqual(error, .error)
+        XCTAssertEqual(abandoned, .abandoned)
+        XCTAssertEqual(other, .other)
+        XCTAssertEqual(unknown, .other)
+    }
+
     var mock: MockRUMMonitor!
     var plugin: DatadogRumPlugin!
 
@@ -164,6 +176,19 @@ class DatadogRumPluginTests: XCTestCase {
         Contract(methodName: "setInternalViewAttribute", requiredParameters: [
             "key": .string,
             "value": .string
+        ]),
+        Contract(methodName: "startFeatureOperation", requiredParameters: [
+            "name": .string,
+            "attributes": .map
+        ]),
+        Contract(methodName: "succeedFeatureOperation", requiredParameters: [
+            "name": .string,
+            "attributes": .map
+        ]),
+        Contract(methodName: "failFeatureOperation", requiredParameters: [
+            "name": .string,
+            "failureReason": .string,
+            "attributes": .map
         ]),
         Contract(methodName: "stopSession", requiredParameters: [:])
     ]
@@ -546,6 +571,78 @@ class DatadogRumPluginTests: XCTestCase {
         XCTAssertEqual(resultStatus, .called(value: nil))
     }
 
+    func testStartFeatureOperation_CallsRumMonitor() {
+        let call = FlutterMethodCall(methodName: "startFeatureOperation", arguments: [
+            "name": "operation_name",
+            "operationKey": "operation_key",
+            "attributes": [
+                "attribute_key": "attribute_value"
+            ]
+        ])
+
+        var resultStatus = ResultStatus.notCalled
+        plugin.handle(call) { result in
+            resultStatus = ResultStatus.called(value: result)
+        }
+
+        XCTAssertEqual(mock.callLog, [
+            .startFeatureOperation(name: "operation_name", operationKey: "operation_key", attributes: [
+                "attribute_key": "attribute_value"
+            ])
+        ])
+        XCTAssertEqual(resultStatus, .called(value: nil))
+    }
+
+    func testSucceedFeatureOperation_CallsRumMonitor() {
+        let call = FlutterMethodCall(methodName: "succeedFeatureOperation", arguments: [
+            "name": "operation_name",
+            "operationKey": "operation_key",
+            "attributes": [
+                "attribute_key": "attribute_value"
+            ]
+        ])
+
+        var resultStatus = ResultStatus.notCalled
+        plugin.handle(call) { result in
+            resultStatus = ResultStatus.called(value: result)
+        }
+
+        XCTAssertEqual(mock.callLog, [
+            .succeedFeatureOperation(name: "operation_name", operationKey: "operation_key", attributes: [
+                "attribute_key": "attribute_value"
+            ])
+        ])
+        XCTAssertEqual(resultStatus, .called(value: nil))
+    }
+
+    func testFailFeatureOperation_CallsRumMonitor() {
+        let call = FlutterMethodCall(methodName: "failFeatureOperation", arguments: [
+            "name": "operation_name",
+            "operationKey": "operation_key",
+            "failureReason": "RumFeatureOperationFailureReason.abandoned",
+            "attributes": [
+                "attribute_key": "attribute_value"
+            ]
+        ])
+
+        var resultStatus = ResultStatus.notCalled
+        plugin.handle(call) { result in
+            resultStatus = ResultStatus.called(value: result)
+        }
+
+        XCTAssertEqual(mock.callLog, [
+            .failFeatureOperation(
+                name: "operation_name",
+                operationKey: "operation_key",
+                failureReason: .abandoned,
+                attributes: [
+                    "attribute_key": "attribute_value"
+                ]
+            )
+        ])
+        XCTAssertEqual(resultStatus, .called(value: nil))
+    }
+
     func testRemoveAttribute_CallsRumMonitor() {
         let call = FlutterMethodCall(methodName: "removeAttribute", arguments: [
             "key": "remove_key"
@@ -679,6 +776,12 @@ class MockRUMMonitor: RUMMonitorProtocol, RUMCommandSubscriber {
         case addViewAttributes(attributes: [DatadogInternal.AttributeKey: any DatadogInternal.AttributeValue])
         case removeViewAttribute(key: DatadogInternal.AttributeKey)
         case removeViewAttributes(keys: [DatadogInternal.AttributeKey])
+        case addFeatureFlagEvaluation(name: String, value: Encodable)
+        case stopSession
+        case startFeatureOperation(name: String, operationKey: String?, attributes: [AttributeKey: AttributeValue])
+        case succeedFeatureOperation(name: String, operationKey: String?, attributes: [AttributeKey: AttributeValue])
+        case failFeatureOperation(name: String, operationKey: String?, failureReason: RUMFeatureOperationFailureReason,
+                                  attributes: [AttributeKey: AttributeValue])
     }
 
     var callLog: [MethodCall] = []
@@ -786,18 +889,18 @@ class MockRUMMonitor: RUMMonitorProtocol, RUMCommandSubscriber {
     }
 
     func stopSession() {
-
+        callLog.append(.stopSession)
     }
 
     func addFeatureFlagEvaluation(name: String, value: Encodable) {
-
+        callLog.append(.addFeatureFlagEvaluation(name: name, value: value))
     }
 
-    func addViewAttribute(forKey key: DatadogInternal.AttributeKey, value: any DatadogInternal.AttributeValue) {
+    func addViewAttribute(forKey key: AttributeKey, value: AttributeValue) {
         callLog.append(.addViewAttribute(key: key, value: value))
     }
 
-    func addViewAttributes(_ attributes: [DatadogInternal.AttributeKey: any DatadogInternal.AttributeValue]) {
+    func addViewAttributes(_ attributes: [AttributeKey: AttributeValue]) {
         callLog.append(.addViewAttributes(attributes: attributes))
     }
 
@@ -807,6 +910,21 @@ class MockRUMMonitor: RUMMonitorProtocol, RUMCommandSubscriber {
 
     func removeViewAttributes(forKeys keys: [DatadogInternal.AttributeKey]) {
         callLog.append(.removeViewAttributes(keys: keys))
+    }
+
+    func startFeatureOperation(name: String, operationKey: String?, attributes: [AttributeKey: AttributeValue]) {
+        callLog.append(.startFeatureOperation(name: name, operationKey: operationKey, attributes: attributes))
+    }
+
+    func succeedFeatureOperation(name: String, operationKey: String?, attributes: [AttributeKey: AttributeValue]) {
+        callLog.append(.succeedFeatureOperation(name: name, operationKey: operationKey, attributes: attributes))
+    }
+
+    func failFeatureOperation(name: String, operationKey: String?, reason: RUMFeatureOperationFailureReason,
+                              attributes: [AttributeKey: AttributeValue]) {
+        callLog.append(
+            .failFeatureOperation(name: name, operationKey: operationKey, failureReason: reason, attributes: attributes)
+        )
     }
 
     /// Processes the given RUM Command.

@@ -336,9 +336,16 @@ public class DatadogRumPlugin: NSObject, FlutterPlugin {
                     FlutterError.missingParameter(methodName: call.method)
                 )
             }
+        case "startFeatureOperation":
+            startFeatureOperation(call: call, arguments: arguments, result: result)
+        case "succeedFeatureOperation":
+            succeedFeatureOperation(call: call, arguments: arguments, result: result)
+        case "failFeatureOperation":
+            failFeatureOperation(call: call, arguments: arguments, result: result)
         case "stopSession":
             rum?.stopSession()
             result(nil)
+
         default:
             result(FlutterMethodNotImplemented)
         }
@@ -353,7 +360,6 @@ public class DatadogRumPlugin: NSObject, FlutterPlugin {
 
         return rum != nil
     }
-
 
     private func enable(arguments: [String: Any?], call: FlutterMethodCall) {
         let configArg = arguments["configuration"] as? [String: Any?]
@@ -410,6 +416,67 @@ public class DatadogRumPlugin: NSObject, FlutterPlugin {
             })
         } else {
             result(nil)
+        }
+    }
+
+    private func startFeatureOperation(
+        call: FlutterMethodCall,
+        arguments: [String: Any?],
+        result: @escaping FlutterResult
+    ) {
+        if let name = arguments["name"] as? String,
+           let attributes = arguments["attributes"] as? [String: Any?] {
+            let encodedAttributes = castFlutterAttributesToSwift(attributes)
+            let operationKey = arguments["operationKey"] as? String
+            rum?.startFeatureOperation(name: name, operationKey: operationKey, attributes: encodedAttributes)
+            result(nil)
+        } else {
+            result(
+                FlutterError.missingParameter(methodName: call.method)
+            )
+        }
+    }
+
+    private func succeedFeatureOperation(
+        call: FlutterMethodCall,
+        arguments: [String: Any?],
+        result: @escaping FlutterResult
+    ) {
+        if let name = arguments["name"] as? String,
+           let attributes = arguments["attributes"] as? [String: Any?] {
+            let encodedAttributes = castFlutterAttributesToSwift(attributes)
+            let operationKey = arguments["operationKey"] as? String
+            rum?.succeedFeatureOperation(name: name, operationKey: operationKey, attributes: encodedAttributes)
+            result(nil)
+        } else {
+            result(
+                FlutterError.missingParameter(methodName: call.method)
+            )
+        }
+    }
+
+    private func failFeatureOperation(
+        call: FlutterMethodCall,
+        arguments: [String: Any?],
+        result: @escaping FlutterResult
+    ) {
+        if let name = arguments["name"] as? String,
+           let failureReasonStr = arguments["failureReason"] as? String,
+           let attributes = arguments["attributes"] as? [String: Any?] {
+            let encodedAttributes = castFlutterAttributesToSwift(attributes)
+            let failureReason = RUMFeatureOperationFailureReason.parseFromFlutter(failureReasonStr)
+            let operationKey = arguments["operationKey"] as? String
+            rum?.failFeatureOperation(
+                name: name,
+                operationKey: operationKey,
+                reason: failureReason,
+                attributes: encodedAttributes
+            )
+            result(nil)
+        } else {
+            result(
+                FlutterError.missingParameter(methodName: call.method)
+            )
         }
     }
 
@@ -839,6 +906,17 @@ public extension RUM.Configuration.VitalsFrequency {
         case "VitalsFrequency.average": return .average
         case "VitalsFrequency.rare": return .rare
         default: return nil
+        }
+    }
+}
+
+public extension RUMFeatureOperationFailureReason {
+    static func parseFromFlutter(_ value: String) -> RUMFeatureOperationFailureReason {
+        switch value {
+        case "RumFeatureOperationFailureReason.error": return .error
+        case "RumFeatureOperationFailureReason.abandoned": return .abandoned
+        case "RumFeatureOperationFailureReason.other": return .other
+        default: return .other
         }
     }
 }

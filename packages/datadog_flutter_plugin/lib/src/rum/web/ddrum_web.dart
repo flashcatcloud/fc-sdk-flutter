@@ -81,7 +81,10 @@ class DdRumWeb extends DdRumPlatform {
         trackResources: trackResources,
         trackFrustrations: rumConfiguration.trackFrustrations,
         trackLongTasks: rumConfiguration.detectLongTasks,
-        enableExperimentalFeatures: ['feature_flags'.toJS].toJS,
+        enableExperimentalFeatures: [
+          'feature_flags'.toJS,
+          'feature_operation_vital'.toJS,
+        ].toJS,
         trackingConsent: trackingConsent.webValue(),
         // TODO(RUM-11211): Support and document web configuration options.
         compressIntakeRequests: false,
@@ -343,6 +346,50 @@ class DdRumWeb extends DdRumPlatform {
   }
 
   @override
+  Future<void> startFeatureOperation(DateTime timestamp, String name,
+      String? operationKey, Map<String, Object?> attributes) async {
+    final context = attributesToJs(attributes, 'attributes');
+    DD_RUM?.startFeatureOperation(
+      name,
+      _FeatureOperationOptions(
+        operationKey: operationKey,
+        context: context,
+      ),
+    );
+  }
+
+  @override
+  Future<void> succeedFeatureOperation(DateTime timestamp, String name,
+      String? operationKey, Map<String, Object?> attributes) async {
+    final context = attributesToJs(attributes, 'attributes');
+    DD_RUM?.succeedFeatureOperation(
+      name,
+      _FeatureOperationOptions(
+        operationKey: operationKey,
+        context: context,
+      ),
+    );
+  }
+
+  @override
+  Future<void> failFeatureOperation(
+      DateTime timestamp,
+      String name,
+      String? operationKey,
+      RumFeatureOperationFailureReason failureReason,
+      Map<String, Object?> attributes) async {
+    final context = attributesToJs(attributes, 'attributes');
+    DD_RUM?.failFeatureOperation(
+      name,
+      failureReason.webValue(),
+      _FeatureOperationOptions(
+        operationKey: operationKey,
+        context: context,
+      ),
+    );
+  }
+
+  @override
   Future<void> reportLongTask(DateTime at, int durationMs) async {
     // NOOP - The browser SDK will report this automatically
   }
@@ -380,6 +427,19 @@ String _contextInjectionString(TraceContextInjection contextInjection) {
       return 'all';
     case TraceContextInjection.sampled:
       return 'sampled';
+  }
+}
+
+extension on RumFeatureOperationFailureReason {
+  String webValue() {
+    switch (this) {
+      case RumFeatureOperationFailureReason.error:
+        return 'error';
+      case RumFeatureOperationFailureReason.abandoned:
+        return 'abandoned';
+      case RumFeatureOperationFailureReason.other:
+        return 'other';
+    }
   }
 }
 
@@ -465,6 +525,15 @@ extension type _RumInternalContext._(JSObject _) implements JSObject {
   external String? session_id;
 }
 
+extension type _FeatureOperationOptions._(JSObject _) implements JSObject {
+  external factory _FeatureOperationOptions({
+    String? operationKey,
+    JSObject? context,
+    // ignore: unused_element_parameter
+    String? description,
+  });
+}
+
 extension type _DdRum._(JSObject _) implements JSObject {
   external void init(_RumInitOptions configuration);
   external _RumInternalContext? getInternalContext();
@@ -483,6 +552,12 @@ extension type _DdRum._(JSObject _) implements JSObject {
   external void setAccountProperty(String key, JSAny? value);
   external void clearAccount();
   external void setTrackingConsent(String consent);
+  external void startFeatureOperation(
+      String name, _FeatureOperationOptions options);
+  external void succeedFeatureOperation(
+      String name, _FeatureOperationOptions options);
+  external void failFeatureOperation(
+      String name, String failureReason, _FeatureOperationOptions options);
 }
 
 @JS()
