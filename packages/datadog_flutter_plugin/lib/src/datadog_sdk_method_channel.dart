@@ -54,7 +54,7 @@ class DatadogSdkMethodChannel extends DatadogSdkPlatform {
     return null;
   }
 
-  // These are used to communicate the current configuraiton between isolates.
+  // These are used to communicate the current configuration between isolates.
   CapturedConfiguration? _capturedConfiguration;
   final ReceivePort _globalRecievePort = ReceivePort(
     'Datadog Isolate Communication Port',
