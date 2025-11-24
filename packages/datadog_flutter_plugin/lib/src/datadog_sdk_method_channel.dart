@@ -61,7 +61,9 @@ class DatadogSdkMethodChannel extends DatadogSdkPlatform {
   );
 
   DatadogSdkMethodChannel() {
-    _initIsolateCommunication();
+    if (!kIsWeb) {
+      _initIsolateCommunication();
+    }
   }
 
   @override
