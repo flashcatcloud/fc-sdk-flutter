@@ -16,7 +16,7 @@ enum VitalsFrequency {
   average,
 
   /// Collect mobile vitals every 1000ms.
-  rare
+  rare,
 }
 
 /// A function that allows you to modify specific [RumViewEvent]s before they
@@ -38,8 +38,8 @@ typedef RumActionEventMapper = RumActionEvent? Function(RumActionEvent event);
 ///
 /// The [RumResourceEventMapper] can modify any mutable (non-final) properties in the
 /// [RumResourceEvent]
-typedef RumResourceEventMapper = RumResourceEvent? Function(
-    RumResourceEvent event);
+typedef RumResourceEventMapper =
+    RumResourceEvent? Function(RumResourceEvent event);
 
 /// A function that allows you to modify or drop specific [RumErrorEvent]s before
 /// they are sent to Datadog.
@@ -53,8 +53,8 @@ typedef RumErrorEventMapper = RumErrorEvent? Function(RumErrorEvent event);
 ///
 /// The [RumLongTaskEvent] can modify any mutable (non-final) properties in the
 /// [RumLongTaskEvent]
-typedef RumLongTaskEventMapper = RumLongTaskEvent? Function(
-    RumLongTaskEvent event);
+typedef RumLongTaskEventMapper =
+    RumLongTaskEvent? Function(RumLongTaskEvent event);
 
 /// A function that allows you to modify or drop specific [RumVitalOperationEvent]s before
 /// they are sent to Datadog.
@@ -247,9 +247,9 @@ class DatadogRumConfiguration {
     this.longTaskEventMapper,
     this.vitalOperationStepEventMapper,
     this.additionalConfig = const <String, Object>{},
-  })  : sessionSamplingRate = max(0, min(sessionSamplingRate, 100)),
-        traceSampleRate = max(0, min(traceSampleRate, 100)),
-        longTaskThreshold = max(0.02, longTaskThreshold);
+  }) : sessionSamplingRate = max(0, min(sessionSamplingRate, 100)),
+       traceSampleRate = max(0, min(traceSampleRate, 100)),
+       longTaskThreshold = max(0.02, longTaskThreshold);
 
   Map<String, Object?> encode() {
     return {

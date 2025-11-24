@@ -16,7 +16,7 @@ enum BatchSize {
   medium,
 
   /// Prefer large sized data batches.
-  large
+  large,
 }
 
 /// Defines the frequency at which Datadog SDK will try to upload data batches.
@@ -28,7 +28,7 @@ enum UploadFrequency {
   average,
 
   /// Try to upload batched data rarely.
-  rare
+  rare,
 }
 
 /// Defines the maximum amount of batches processed sequentially without a delay
@@ -66,7 +66,7 @@ enum TrackingConsent {
   /// and will be pending there until [TrackingConsent.granted] or
   /// [TrackingConsent.notGranted] consent value is set. Based on the next
   /// consent value, intermediate data will be sent to Datadog or deleted.
-  pending
+  pending,
 }
 
 /// Determines the server for uploading RUM events.
@@ -110,6 +110,15 @@ enum TraceContextInjection {
   sampled,
 }
 
+/// Which storage strategy to use when persisting sessions on Web.
+enum WebSessionPersistence {
+  /// Use cookies to persist sessions.
+  cookie,
+
+  /// Use local storge to persist sessions.
+  localStorage,
+}
+
 class DatadogConfiguration {
   // Either a RUM client token (generated for the RUM Application) or a regular
   // client token for Logging and APM. Obtained on the Datadog website.
@@ -139,6 +148,35 @@ class DatadogConfiguration {
 
   /// Sets the level of batch processing
   BatchProcessingLevel? batchProcessingLevel;
+
+  /// [Web Only] Which storage strategy to use for persisting sessions.
+  ///
+  /// Defaults to [WebSessionPersistence.cookie].
+  WebSessionPersistence? sessionPersistence;
+
+  /// [Web Only] Store global context and user context in local storage to
+  /// preserve them along the user navigation.
+  ///
+  /// Defaults to false.
+  bool? storeContextAcrossPages;
+
+  /// [Web Only] Whether to preserve sessions across subdomains of the same site.
+  ///
+  /// Defaults to false.
+  bool? trackSessionsAcrossSubdomains;
+
+  /// [Web Only] Whether to use a secure session cookie. This disables RUM
+  /// events sent on insecure (non-HTTPS) connections.
+  ///
+  /// Defaults to false.
+  bool? useSecureSessionCookie;
+
+  /// [Web Only] Use a partitioned secure cross-site session cookie. This allows
+  /// the RUM Browser SDK to run when the site is loaded from another one
+  /// (iframe). Implies useSecureSessionCookie.
+  ///
+  /// Defaults to false.
+  bool? usePartitionedCrossSiteSessionCookie;
 
   /// Sets the current version number of the application.
   ///
@@ -192,7 +230,7 @@ class DatadogConfiguration {
     for (var entry in hosts) {
       firstPartyHostsWithTracingHeaders[entry] = {
         TracingHeaderType.datadog,
-        TracingHeaderType.tracecontext
+        TracingHeaderType.tracecontext,
       };
     }
   }
@@ -238,6 +276,10 @@ class DatadogConfiguration {
     this.batchProcessingLevel,
     this.version,
     this.flavor,
+    this.sessionPersistence,
+    this.trackSessionsAcrossSubdomains,
+    this.useSecureSessionCookie,
+    this.usePartitionedCrossSiteSessionCookie,
     List<String>? firstPartyHosts,
     this.firstPartyHostsWithTracingHeaders = const {},
     this.loggingConfiguration,
@@ -248,7 +290,8 @@ class DatadogConfiguration {
       // make map mutable in case it's the default
       firstPartyHostsWithTracingHeaders =
           Map<String, Set<TracingHeaderType>>.from(
-              firstPartyHostsWithTracingHeaders);
+            firstPartyHostsWithTracingHeaders,
+          );
 
       for (var entry in firstPartyHosts) {
         final headerTypes = firstPartyHostsWithTracingHeaders[entry];
@@ -352,7 +395,7 @@ class DatadogAttachConfiguration {
     for (var entry in hosts) {
       firstPartyHostsWithTracingHeaders[entry] = {
         TracingHeaderType.datadog,
-        TracingHeaderType.tracecontext
+        TracingHeaderType.tracecontext,
       };
     }
   }
@@ -402,14 +445,15 @@ class DatadogAttachConfiguration {
       // make map mutable
       firstPartyHostsWithTracingHeaders =
           Map<String, Set<TracingHeaderType>>.from(
-              firstPartyHostsWithTracingHeaders);
+            firstPartyHostsWithTracingHeaders,
+          );
 
       for (var entry in firstPartyHosts) {
         final headerTypes = firstPartyHostsWithTracingHeaders[entry];
         if (headerTypes == null) {
           firstPartyHostsWithTracingHeaders[entry] = {
             TracingHeaderType.datadog,
-            TracingHeaderType.tracecontext
+            TracingHeaderType.tracecontext,
           };
         } else {
           headerTypes.add(TracingHeaderType.datadog);
