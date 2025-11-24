@@ -55,21 +55,22 @@ public class ContextMessageReceiver: FeatureMessageReceiver {
     public func receive(message: DatadogInternal.FeatureMessage, from core: any DatadogInternal.DatadogCoreProtocol) -> Bool {
         switch message {
         case .context(let context):
-            // Pull out the context that Flutter cares about
-            let rumContext = context.additionalContext(ofType: RUMCoreContext.self)
-            var broadcastContext: [String: Any?] = [
-                "user.id": context.userInfo?.id,
-                "account.id": context.accountInfo?.id,
-                "rum.session.id": rumContext?.sessionID,
-                "rum.view.id": rumContext?.viewID
-            ]
-            channel.invokeMethod("onContextChanged", arguments: broadcastContext)
+            DispatchQueue.main.async { [weak self] in
+                // Pull out the context that Flutter cares about
+                let rumContext = context.additionalContext(ofType: RUMCoreContext.self)
+                let broadcastContext: [String: Any?] = [
+                    "user.id": context.userInfo?.id,
+                    "account.id": context.accountInfo?.id,
+                    "rum.session.id": rumContext?.sessionID,
+                    "rum.view.id": rumContext?.viewID
+                ]
+                self?.channel.invokeMethod("onContextChanged", arguments: broadcastContext)
+            }
             return true
         default:
             return false
         }
     }
-
 }
 
 // swiftlint:disable:next type_body_length
