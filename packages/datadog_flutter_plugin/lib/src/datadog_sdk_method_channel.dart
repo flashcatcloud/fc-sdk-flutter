@@ -54,9 +54,17 @@ class DatadogSdkMethodChannel extends DatadogSdkPlatform {
     return null;
   }
 
+  // These are used to communicate the current configuration between isolates.
+  CapturedConfiguration? _capturedConfiguration;
   final ReceivePort _globalRecievePort = ReceivePort(
     'Datadog Isolate Communication Port',
   );
+
+  DatadogSdkMethodChannel() {
+    if (!kIsWeb) {
+      _initIsolateCommunication();
+    }
+  }
 
   @override
   Future<IsolateAttachResponse?> attachToIsolate() {
@@ -184,15 +192,13 @@ class DatadogSdkMethodChannel extends DatadogSdkPlatform {
       'setLogCallback': logCallback != null,
     });
 
-    _initIsolateCommunication(
-      CapturedConfiguration(
-        loggingEnabled: configuration.loggingConfiguration != null,
-        rumEnabled: configuration.rumConfiguration != null,
-        traceSampleRate: configuration.rumConfiguration?.traceSampleRate,
-        traceContextInjection:
-            configuration.rumConfiguration?.traceContextInjection,
-        firstPartyHosts: configuration.firstPartyHostsWithTracingHeaders,
-      ),
+    _capturedConfiguration = CapturedConfiguration(
+      loggingEnabled: configuration.loggingConfiguration != null,
+      rumEnabled: configuration.rumConfiguration != null,
+      traceSampleRate: configuration.rumConfiguration?.traceSampleRate,
+      traceContextInjection:
+          configuration.rumConfiguration?.traceContextInjection,
+      firstPartyHosts: configuration.firstPartyHostsWithTracingHeaders,
     );
 
     return const PlatformInitializationResult(logs: true, rum: true);
@@ -212,14 +218,12 @@ class DatadogSdkMethodChannel extends DatadogSdkPlatform {
     if (channelResponse != null) {
       response = AttachResponse.decode(channelResponse);
       if (response != null) {
-        _initIsolateCommunication(
-          CapturedConfiguration(
-            loggingEnabled: response.loggingEnabled,
-            rumEnabled: response.rumEnabled,
-            traceSampleRate: attachConfig.traceSampleRate,
-            traceContextInjection: attachConfig.traceContextInjection,
-            firstPartyHosts: attachConfig.firstPartyHostsWithTracingHeaders,
-          ),
+        _capturedConfiguration = CapturedConfiguration(
+          loggingEnabled: response.loggingEnabled,
+          rumEnabled: response.rumEnabled,
+          traceSampleRate: attachConfig.traceSampleRate,
+          traceContextInjection: attachConfig.traceContextInjection,
+          firstPartyHosts: attachConfig.firstPartyHostsWithTracingHeaders,
         );
       }
     }
@@ -265,7 +269,7 @@ class DatadogSdkMethodChannel extends DatadogSdkPlatform {
     return methodChannel.invokeMethod('getInternalVar', {'name': name});
   }
 
-  void _initIsolateCommunication(CapturedConfiguration capturedConfiguration) {
+  void _initIsolateCommunication() {
     // If the RootIsolateToken is null, we were started on a background isolate... somehow
     final rootIsolateToken = RootIsolateToken.instance;
     if (rootIsolateToken == null) return;
@@ -276,12 +280,14 @@ class DatadogSdkMethodChannel extends DatadogSdkPlatform {
     );
     _globalRecievePort.listen((message) {
       if (message is _IsolateAttachRequest) {
-        message.sendPort.send(
-          IsolateAttachResponse(
-            rootIsolateToken: rootIsolateToken,
-            capturedConfiguration: capturedConfiguration,
-          ),
-        );
+        if (_capturedConfiguration case final capturedConfiguration?) {
+          message.sendPort.send(
+            IsolateAttachResponse(
+              rootIsolateToken: rootIsolateToken,
+              capturedConfiguration: capturedConfiguration,
+            ),
+          );
+        }
       }
     });
   }
