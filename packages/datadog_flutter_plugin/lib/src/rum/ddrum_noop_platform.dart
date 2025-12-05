@@ -13,7 +13,7 @@ class DdNoOpRumPlatform extends DdRumPlatform {
   Future<String?> getCurrentSessionId() => Future.value(null);
 
   @override
-  Future<void> addAttribute(String key, value) => Future.value();
+  Future<void> addAttribute(String key, Object value) => Future.value();
 
   @override
   Future<void> setInternalViewAttribute(String key, value) => Future.value();
@@ -79,6 +79,19 @@ class DdNoOpRumPlatform extends DdRumPlatform {
 
   @override
   Future<void> removeAttribute(String key) => Future.value();
+
+  @override
+  Future<void> addViewAttribute(String key, Object value) => Future.value();
+
+  @override
+  Future<void> removeViewAttribute(String key) => Future.value();
+
+  @override
+  Future<void> addViewAttributes(Map<String, Object?> attributes) =>
+      Future.value();
+
+  @override
+  Future<void> removeViewAttributes(List<String> key) => Future.value();
 
   @override
   Future<void> reportLongTask(DateTime at, int durationMs) {

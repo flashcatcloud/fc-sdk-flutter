@@ -300,6 +300,32 @@ class DdRumMethodChannel extends DdRumPlatform {
   }
 
   @override
+  Future<void> addViewAttribute(String key, Object value) {
+    return methodChannel.invokeMethod('addViewAttributes', {
+      'attributes': {key: value},
+    });
+  }
+
+  @override
+  Future<void> removeViewAttribute(String key) {
+    return methodChannel.invokeMethod('removeViewAttributes', {
+      'keys': [key]
+    });
+  }
+
+  @override
+  Future<void> addViewAttributes(Map<String, Object?> attributes) {
+    return methodChannel.invokeMethod('addViewAttributes', {
+      'attributes': attributes,
+    });
+  }
+
+  @override
+  Future<void> removeViewAttributes(List<String> keys) {
+    return methodChannel.invokeMethod('removeViewAttributes', {'keys': keys});
+  }
+
+  @override
   Future<void> addFeatureFlagEvaluation(String name, Object value) {
     return methodChannel.invokeMethod('addFeatureFlagEvaluation', {
       'name': name,

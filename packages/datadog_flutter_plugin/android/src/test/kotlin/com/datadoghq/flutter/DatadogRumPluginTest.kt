@@ -487,6 +487,85 @@ class DatadogRumPluginTest {
     }
 
     @Test
+    fun `M call monitor addAttribute W addAttribute is called`(
+        @StringForgery key: String,
+        @StringForgery value: String
+    ) {
+        // GIVEN
+        val call = MethodCall("addAttribute", mapOf(
+            "key" to key,
+            "value" to value
+        ))
+        val mockResult = mockk<MethodChannel.Result>()
+        every { mockResult.success(any()) } returns Unit
+
+        // WHEN
+        plugin.onMethodCall(call, mockResult)
+
+        // THEN
+        verify { monitorProxy.mockMonitor.addAttribute(key, value) }
+        verify { mockResult.success(null) }
+    }
+
+    @Test
+    fun `M call monitor removeAttribute W removeAttribute is called`(
+        @StringForgery key: String,
+    ) {
+        // GIVEN
+        val call = MethodCall("removeAttribute", mapOf(
+            "key" to key,
+        ))
+        val mockResult = mockk<MethodChannel.Result>()
+        every { mockResult.success(any()) } returns Unit
+
+        // WHEN
+        plugin.onMethodCall(call, mockResult)
+
+        // THEN
+        verify { monitorProxy.mockMonitor.removeAttribute(key) }
+        verify { mockResult.success(null) }
+    }
+
+    @Test
+    fun `M call monitor addViewAttributes W addViewAttributes is called`(
+        @StringForgery key: String,
+        @StringForgery value: String
+    ) {
+        // GIVEN
+        val call = MethodCall("addViewAttributes", mapOf(
+            "attributes" to mapOf(key to value)
+        ))
+        val mockResult = mockk<MethodChannel.Result>()
+        every { mockResult.success(any()) } returns Unit
+
+        // WHEN
+        plugin.onMethodCall(call, mockResult)
+
+        // THEN
+        verify { monitorProxy.mockMonitor.addViewAttributes(mapOf(key to value)) }
+        verify { mockResult.success(null) }
+    }
+
+    @Test
+    fun `M call monitor removeViewAttributes W removeViewAttributes is called`(
+        @StringForgery key: String,
+    ) {
+        // GIVEN
+        val call = MethodCall("removeViewAttributes", mapOf(
+            "keys" to listOf(key),
+        ))
+        val mockResult = mockk<MethodChannel.Result>()
+        every { mockResult.success(any()) } returns Unit
+
+        // WHEN
+        plugin.onMethodCall(call, mockResult)
+
+        // THEN
+        verify { monitorProxy.mockMonitor.removeViewAttributes(listOf(key)) }
+        verify { mockResult.success(null) }
+    }
+
+    @Test
     fun `M call monitor addViewLoadingTime W addViewLoadingTime is called`(
         @BoolForgery overwrite: Boolean
     ) {
@@ -937,6 +1016,12 @@ class DatadogRumPluginTest {
         )),
         Contract("removeAttribute", mapOf(
             "key" to ContractParameter.Type(SupportedContractType.STRING)
+        )),
+        Contract("addViewAttributes", mapOf(
+            "attributes" to ContractParameter.Type(SupportedContractType.MAP),
+        )),
+        Contract("removeViewAttributes", mapOf(
+            "keys" to ContractParameter.Type(SupportedContractType.LIST)
         )),
         // Make sure `reportLongTask` can use both Ints and Longs in both parameters.
         Contract("reportLongTask", mapOf(

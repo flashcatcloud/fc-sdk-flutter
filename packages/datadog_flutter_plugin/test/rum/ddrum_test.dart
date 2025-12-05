@@ -421,6 +421,79 @@ void main() {
     verifyNever(() => mockRumPlatform.addAttribute(any(), any()));
   });
 
+  test('addViewAttribute with null calls removeViewAttribute instead', () async {
+    // Given
+    DdRumPlatform.instance = mockRumPlatform;
+    when(
+      () => mockRumPlatform.enable(any(), any()),
+    ).thenAnswer((_) => Future.value());
+    when(
+      () => mockRumPlatform.removeViewAttribute(any()),
+    ).thenAnswer((_) => Future.value());
+    final rum = await DatadogRum.enable(
+      mockDatadogSdk,
+      DatadogRumConfiguration(
+        applicationId: 'applicationId',
+        detectLongTasks: false,
+      ),
+    );
+
+    // when
+    rum!.addViewAttribute('view-attribute-key', null);
+
+    // Then
+    verify(() => mockRumPlatform.removeViewAttribute('view-attribute-key'));
+    verifyNever(() => mockRumPlatform.addViewAttribute(any(), any()));
+  });
+
+  test('addViewAttribute calls platform with value', () async {
+    // Given
+    DdRumPlatform.instance = mockRumPlatform;
+    when(
+      () => mockRumPlatform.enable(any(), any()),
+    ).thenAnswer((_) => Future.value());
+    when(
+      () => mockRumPlatform.addViewAttribute(any(), any()),
+    ).thenAnswer((_) => Future.value());
+    final rum = await DatadogRum.enable(
+      mockDatadogSdk,
+      DatadogRumConfiguration(
+        applicationId: 'applicationId',
+        detectLongTasks: false,
+      ),
+    );
+
+    // when
+    rum!.addViewAttribute('view-attribute-key', 'view-attribute-value');
+
+    // Then
+    verify(() => mockRumPlatform.addViewAttribute('view-attribute-key', 'view-attribute-value'));
+  });
+
+  test('removeViewAttribute calls platform', () async {
+    // Given
+    DdRumPlatform.instance = mockRumPlatform;
+    when(
+      () => mockRumPlatform.enable(any(), any()),
+    ).thenAnswer((_) => Future.value());
+    when(
+      () => mockRumPlatform.removeViewAttribute(any()),
+    ).thenAnswer((_) => Future.value());
+    final rum = await DatadogRum.enable(
+      mockDatadogSdk,
+      DatadogRumConfiguration(
+        applicationId: 'applicationId',
+        detectLongTasks: false,
+      ),
+    );
+
+    // when
+    rum!.removeViewAttribute('view-attribute-key');
+
+    // Then
+    verify(() => mockRumPlatform.removeViewAttribute('view-attribute-key'));
+  });
+
   test(
     'addError does not forward to platform on MissingPluginException',
     () async {
