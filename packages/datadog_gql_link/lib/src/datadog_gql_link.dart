@@ -36,14 +36,6 @@ abstract interface class DatadogGqlListener {
 ///
 /// This link can be used on its own or with `datadog_tracking_http_client`.
 ///
-/// By default, this link will temporarily add a header (`x-datadog-graphql-resource-id`)
-/// to your http request that is removed by the `datadog_tracking_http_client`.
-///
-/// If you are not using `datadog_tracking_http_client`, or if you are using
-/// a connection method that normally bypasses the `datadog_tracking_http_client`,
-/// you should set [standAlone] to true. This will prevent the link from
-/// adding the temporary header.
-///
 /// This Link is not a terminating link.
 class DatadogGqlLink extends Link {
   final DatadogSdk datadogSdk;
