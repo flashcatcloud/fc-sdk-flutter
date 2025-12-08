@@ -9,6 +9,11 @@ import DatadogCrashReporting
 import DatadogInternal
 import DatadogRUM
 import DatadogLogs
+// This is a bit of a hack required for both SPM and Cocoapods to play nice
+// with the C header (SPM requires it in a separate module, while Cocoapods does not.)
+#if canImport(datadog_flutter_plugin_c)
+    import datadog_flutter_plugin_c
+#endif
 
 @_cdecl("flutterGetDatadogContext")
 func flutterGetDatadogContext() -> DatadogCContext {
