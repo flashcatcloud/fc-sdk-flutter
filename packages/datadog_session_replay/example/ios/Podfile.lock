@@ -10,21 +10,19 @@ PODS:
   - datadog_session_replay (0.0.1):
     - DatadogCore (~> 3)
     - Flutter
-  - DatadogCore (3.0.0):
-    - DatadogInternal (= 3.0.0)
-  - DatadogCrashReporting (3.0.0):
-    - DatadogInternal (= 3.0.0)
+  - DatadogCore (3.3.0):
+    - DatadogInternal (= 3.3.0)
+  - DatadogCrashReporting (3.3.0):
+    - DatadogInternal (= 3.3.0)
     - PLCrashReporter (~> 1.12.0)
-  - DatadogInternal (3.0.0)
-  - DatadogLogs (3.0.0):
-    - DatadogInternal (= 3.0.0)
-  - DatadogRUM (3.0.0):
-    - DatadogInternal (= 3.0.0)
+  - DatadogInternal (3.3.0)
+  - DatadogLogs (3.3.0):
+    - DatadogInternal (= 3.3.0)
+  - DatadogRUM (3.3.0):
+    - DatadogInternal (= 3.3.0)
   - DictionaryCoder (1.2.0)
   - Flutter (1.0.0)
   - integration_test (0.0.1):
-    - Flutter
-  - objective_c (0.0.1):
     - Flutter
   - PLCrashReporter (1.12.0)
 
@@ -38,7 +36,6 @@ DEPENDENCIES:
   - DatadogRUM (from `https://github.com/DataDog/dd-sdk-ios`, branch `develop`)
   - Flutter (from `Flutter`)
   - integration_test (from `.symlinks/plugins/integration_test/ios`)
-  - objective_c (from `.symlinks/plugins/objective_c/ios`)
 
 SPEC REPOS:
   trunk:
@@ -69,38 +66,35 @@ EXTERNAL SOURCES:
     :path: Flutter
   integration_test:
     :path: ".symlinks/plugins/integration_test/ios"
-  objective_c:
-    :path: ".symlinks/plugins/objective_c/ios"
 
 CHECKOUT OPTIONS:
   DatadogCore:
-    :commit: a409e0e5fd29bde900363f58c53094ccc6efae33
+    :commit: cdf94e93e69517a734a7532184ee95b6eb8ec3ff
     :git: https://github.com/DataDog/dd-sdk-ios
   DatadogCrashReporting:
-    :commit: a409e0e5fd29bde900363f58c53094ccc6efae33
+    :commit: cdf94e93e69517a734a7532184ee95b6eb8ec3ff
     :git: https://github.com/DataDog/dd-sdk-ios
   DatadogInternal:
-    :commit: a409e0e5fd29bde900363f58c53094ccc6efae33
+    :commit: cdf94e93e69517a734a7532184ee95b6eb8ec3ff
     :git: https://github.com/DataDog/dd-sdk-ios
   DatadogLogs:
-    :commit: a409e0e5fd29bde900363f58c53094ccc6efae33
+    :commit: cdf94e93e69517a734a7532184ee95b6eb8ec3ff
     :git: https://github.com/DataDog/dd-sdk-ios
   DatadogRUM:
-    :commit: a409e0e5fd29bde900363f58c53094ccc6efae33
+    :commit: cdf94e93e69517a734a7532184ee95b6eb8ec3ff
     :git: https://github.com/DataDog/dd-sdk-ios
 
 SPEC CHECKSUMS:
   datadog_flutter_plugin: 64adc7ef089a1328c78fd4fab24e49afa09d95a5
-  datadog_session_replay: b31fc79ffae5e4ea8edde896b208d91847df38fe
-  DatadogCore: 0c39ba4ef3dee02071f235f2fb56af7e29f4ceb0
-  DatadogCrashReporting: 604e65e524cb2fc22cda39fd9c9ea5fd3bddf24e
-  DatadogInternal: 442673a7fb5329299b489b91ed705aa2085380f7
-  DatadogLogs: 0146a0e3140ba62fd42729593c0910d692aea5fd
-  DatadogRUM: f97fbd0290ecec5bc952fb03a6a1ae068649243f
+  datadog_session_replay: 8e4f4a520f20feb2916c623c011a53ba63f8d77f
+  DatadogCore: 9b1256ac9c27a07087d6214c8546acf756e40be7
+  DatadogCrashReporting: 89a00886ef40808bffb8ccb4b6531e472f52e213
+  DatadogInternal: 21dac5a7db548da6368a096d0714bdbec66deb6c
+  DatadogLogs: 355a4ac6bce3f0cb8231819e475c03dbbdd7957c
+  DatadogRUM: 1b3a47a9b9a5a25890f7fb3aa1f2bd86009d1086
   DictionaryCoder: f7115fcd074c8301e91f2eb862da1ea7d0385e61
   Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
   integration_test: 252f60fa39af5e17c3aa9899d35d908a0721b573
-  objective_c: 77e887b5ba1827970907e10e832eec1683f3431d
   PLCrashReporter: db59ef96fa3d25f3650040d02ec2798cffee75f2
 
 PODFILE CHECKSUM: 357bc2de26f249c9e5dd52e99a556d5704fbd68b

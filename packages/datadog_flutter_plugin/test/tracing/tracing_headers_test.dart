@@ -235,12 +235,11 @@ void main() {
       () {
         // Given
         final datadogContext = DatadogContext(
+          sessionId: randomString(),
           accountId: randomString(),
           userId: randomString(),
         );
-        final sessionId = randomString();
-        when(() => mockPlatform.cachedContext).thenReturn(datadogContext);
-        when(() => mockRum.cachedSessionId).thenReturn(sessionId);
+        when(() => mockPlatform.getContext()).thenReturn(datadogContext);
 
         when(() => mockRum.shouldSampleTrace(any(), any())).thenReturn(true);
         final context = generateTracingContext(mockSdk, mockRum);
@@ -257,7 +256,8 @@ void main() {
         // Then
         final baggage = headers['baggage'];
         final baggageValues = baggage!.split(',');
-        expect(baggageValues, contains('session.id=$sessionId'));
+        expect(
+            baggageValues, contains('session.id=${datadogContext.sessionId}'));
         expect(baggageValues, contains('user.id=${datadogContext.userId}'));
         expect(
           baggageValues,
@@ -271,12 +271,11 @@ void main() {
       () {
         // Given
         final datadogContext = DatadogContext(
+          sessionId: randomString(),
           accountId: randomString(),
           userId: randomString(),
         );
-        final sessionId = randomString();
-        when(() => mockPlatform.cachedContext).thenReturn(datadogContext);
-        when(() => mockRum.cachedSessionId).thenReturn(sessionId);
+        when(() => mockPlatform.getContext()).thenReturn(datadogContext);
 
         when(() => mockRum.shouldSampleTrace(any(), any())).thenReturn(true);
         final context = generateTracingContext(mockSdk, mockRum);
@@ -293,7 +292,8 @@ void main() {
         // Then
         final baggage = headers['baggage'];
         final baggageValues = baggage!.split(',');
-        expect(baggageValues, contains('session.id=$sessionId'));
+        expect(
+            baggageValues, contains('session.id=${datadogContext.sessionId}'));
         expect(baggageValues, contains('user.id=${datadogContext.userId}'));
         expect(
           baggageValues,
@@ -360,12 +360,11 @@ void main() {
     () {
       // Given
       final datadogContext = DatadogContext(
+        sessionId: randomString(),
         accountId: randomString(),
         userId: randomString(),
       );
-      final sessionId = randomString();
-      when(() => mockPlatform.cachedContext).thenReturn(datadogContext);
-      when(() => mockRum.cachedSessionId).thenReturn(sessionId);
+      when(() => mockPlatform.getContext()).thenReturn(datadogContext);
       when(() => mockRum.shouldSampleTrace(any(), any())).thenReturn(false);
       final context = generateTracingContext(mockSdk, mockRum);
 
@@ -381,7 +380,7 @@ void main() {
       // Then
       final baggage = headers['baggage'];
       final baggageValues = baggage!.split(',');
-      expect(baggageValues, contains('session.id=$sessionId'));
+      expect(baggageValues, contains('session.id=${datadogContext.sessionId}'));
       expect(baggageValues, contains('user.id=${datadogContext.userId}'));
       expect(baggageValues, contains('account.id=${datadogContext.accountId}'));
     },
@@ -392,12 +391,11 @@ void main() {
     () {
       // Given
       final datadogContext = DatadogContext(
+        sessionId: randomString(),
         accountId: randomString(),
         userId: randomString(),
       );
-      final sessionId = randomString();
-      when(() => mockPlatform.cachedContext).thenReturn(datadogContext);
-      when(() => mockRum.cachedSessionId).thenReturn(sessionId);
+      when(() => mockPlatform.getContext()).thenReturn(datadogContext);
 
       when(() => mockRum.shouldSampleTrace(any(), any())).thenReturn(false);
       final context = generateTracingContext(mockSdk, mockRum);
@@ -422,12 +420,11 @@ void main() {
     () {
       // Given
       final datadogContext = DatadogContext(
+        sessionId: randomString(),
         accountId: randomString(),
         userId: randomString(),
       );
-      final sessionId = randomString();
-      when(() => mockPlatform.cachedContext).thenReturn(datadogContext);
-      when(() => mockRum.cachedSessionId).thenReturn(sessionId);
+      when(() => mockPlatform.getContext()).thenReturn(datadogContext);
 
       when(() => mockRum.shouldSampleTrace(any(), any())).thenReturn(false);
       final context = generateTracingContext(mockSdk, mockRum);
@@ -444,7 +441,7 @@ void main() {
       // Then
       final baggage = headers['baggage'];
       final baggageValues = baggage!.split(',');
-      expect(baggageValues, contains('session.id=$sessionId'));
+      expect(baggageValues, contains('session.id=${datadogContext.sessionId}'));
       expect(baggageValues, contains('user.id=${datadogContext.userId}'));
       expect(baggageValues, contains('account.id=${datadogContext.accountId}'));
     },
@@ -455,12 +452,11 @@ void main() {
     () {
       // Given
       final datadogContext = DatadogContext(
+        sessionId: randomString(),
         accountId: randomString(),
         userId: randomString(),
       );
-      final sessionId = randomString();
-      when(() => mockPlatform.cachedContext).thenReturn(datadogContext);
-      when(() => mockRum.cachedSessionId).thenReturn(sessionId);
+      when(() => mockPlatform.getContext()).thenReturn(datadogContext);
 
       when(() => mockRum.shouldSampleTrace(any(), any())).thenReturn(false);
       final context = generateTracingContext(mockSdk, mockRum);
@@ -623,12 +619,11 @@ void main() {
       // Given
       String? oldBaggage;
       final datadogContext = DatadogContext(
+        sessionId: randomString(),
         accountId: randomString(),
         userId: randomString(),
       );
-      final sessionId = randomString();
-      when(() => mockPlatform.cachedContext).thenReturn(datadogContext);
-      when(() => mockRum.cachedSessionId).thenReturn(sessionId);
+      when(() => mockPlatform.getContext()).thenReturn(datadogContext);
 
       when(() => mockRum.shouldSampleTrace(any(), any())).thenReturn(true);
       final context = generateTracingContext(mockSdk, mockRum);
@@ -638,7 +633,7 @@ void main() {
 
       // Then
       final baggageValues = newBaggage.split(',');
-      expect(baggageValues, contains('session.id=$sessionId'));
+      expect(baggageValues, contains('session.id=${datadogContext.sessionId}'));
       expect(baggageValues, contains('user.id=${datadogContext.userId}'));
       expect(baggageValues, contains('account.id=${datadogContext.accountId}'));
     });
@@ -647,12 +642,11 @@ void main() {
       // Given
       String oldBaggage = 'test_value_1=1,test_value_2=string';
       final datadogContext = DatadogContext(
+        sessionId: randomString(),
         accountId: randomString(),
         userId: randomString(),
       );
-      final sessionId = randomString();
-      when(() => mockPlatform.cachedContext).thenReturn(datadogContext);
-      when(() => mockRum.cachedSessionId).thenReturn(sessionId);
+      when(() => mockPlatform.getContext()).thenReturn(datadogContext);
 
       when(() => mockRum.shouldSampleTrace(any(), any())).thenReturn(true);
       final context = generateTracingContext(mockSdk, mockRum);
@@ -666,7 +660,7 @@ void main() {
       expect(baggageValues, contains('test_value_1=1'));
       expect(baggageValues, contains('test_value_2=string'));
 
-      expect(baggageValues, contains('session.id=$sessionId'));
+      expect(baggageValues, contains('session.id=${datadogContext.sessionId}'));
       expect(baggageValues, contains('user.id=${datadogContext.userId}'));
       expect(baggageValues, contains('account.id=${datadogContext.accountId}'));
     });
@@ -675,12 +669,11 @@ void main() {
       // Given
       String oldBaggage = 'session.id=old_value,test_value_2=string';
       final datadogContext = DatadogContext(
+        sessionId: randomString(),
         accountId: randomString(),
         userId: randomString(),
       );
-      final sessionId = randomString();
-      when(() => mockPlatform.cachedContext).thenReturn(datadogContext);
-      when(() => mockRum.cachedSessionId).thenReturn(sessionId);
+      when(() => mockPlatform.getContext()).thenReturn(datadogContext);
 
       when(() => mockRum.shouldSampleTrace(any(), any())).thenReturn(true);
       final context = generateTracingContext(mockSdk, mockRum);
@@ -694,7 +687,7 @@ void main() {
       expect(baggageValues, contains('test_value_2=string'));
 
       // Session.id is overwritten
-      expect(baggageValues, contains('session.id=$sessionId'));
+      expect(baggageValues, contains('session.id=${datadogContext.sessionId}'));
     });
 
     test('baggage header merge deals with complicated baggage', () {
@@ -702,12 +695,11 @@ void main() {
       String oldBaggage =
           ' toto=1,car= Dacia Sandero ,session.id = 2,testProp=1; testProp2=4;prop3 ';
       final datadogContext = DatadogContext(
+        sessionId: randomString(),
         accountId: randomString(),
         userId: randomString(),
       );
-      final sessionId = randomString();
-      when(() => mockPlatform.cachedContext).thenReturn(datadogContext);
-      when(() => mockRum.cachedSessionId).thenReturn(sessionId);
+      when(() => mockPlatform.getContext()).thenReturn(datadogContext);
 
       when(() => mockRum.shouldSampleTrace(any(), any())).thenReturn(true);
       final context = generateTracingContext(mockSdk, mockRum);
@@ -723,7 +715,7 @@ void main() {
       expect(baggageValues, contains('testProp=1; testProp2=4;prop3'));
 
       // New values are appended or overwritten
-      expect(baggageValues, contains('session.id=$sessionId'));
+      expect(baggageValues, contains('session.id=${datadogContext.sessionId}'));
       expect(baggageValues, contains('user.id=${datadogContext.userId}'));
       expect(baggageValues, contains('account.id=${datadogContext.accountId}'));
     });
@@ -735,11 +727,11 @@ void main() {
         String oldBaggage =
             ' toto=1,session.id = 2,testProp=1; testProp2=4;prop3 ';
         final datadogContext = DatadogContext(
+          sessionId: '😅',
           accountId: 'account,2\\3',
           userId: 'Amélie',
         );
-        when(() => mockPlatform.cachedContext).thenReturn(datadogContext);
-        when(() => mockRum.cachedSessionId).thenReturn('😅');
+        when(() => mockPlatform.getContext()).thenReturn(datadogContext);
 
         when(() => mockRum.shouldSampleTrace(any(), any())).thenReturn(true);
         final context = generateTracingContext(mockSdk, mockRum);
@@ -765,11 +757,11 @@ void main() {
       String oldBaggage =
           ' toto=1,session.id = 2,testProp=1; testProp2=4;prop3 ';
       final datadogContext = DatadogContext(
+        sessionId: '😅',
         accountId: 'accountId%id',
         userId: 'Dacia%20Sandero',
       );
-      when(() => mockPlatform.cachedContext).thenReturn(datadogContext);
-      when(() => mockRum.cachedSessionId).thenReturn('😅');
+      when(() => mockPlatform.getContext()).thenReturn(datadogContext);
 
       when(() => mockRum.shouldSampleTrace(any(), any())).thenReturn(true);
       final context = generateTracingContext(mockSdk, mockRum);
