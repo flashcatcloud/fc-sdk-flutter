@@ -29,7 +29,7 @@ func flutterGetDatadogContext() -> DatadogCContext {
     return DatadogCContext(
         sessionId: cSessionID,
         accountId: cAccountId,
-        userId: cUserId,
+        userId: cUserId
     )
 }
 
@@ -94,7 +94,7 @@ public class ContextMessageReceiver: FeatureMessageReceiver {
             cachedContext = Context(
                 sessionId: rumContext?.sessionID,
                 accountId: context.accountInfo?.id,
-                userId: context.userInfo?.id,
+                userId: context.userInfo?.id
             )
             return true
         default:

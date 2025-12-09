@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'clients/dio_client.dart';
 import 'clients/http_package_client.dart';
 import 'clients/io_client.dart';
+import 'screens/background_isolate_screen.dart';
 import 'screens/instrumentation_scenario.dart';
 
 class ScenarioSelectScreen extends StatelessWidget {
@@ -38,6 +39,14 @@ class ScenarioSelectScreen extends StatelessWidget {
     ));
   }
 
+  void _onSelectBackgroundIsolate(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+          settings: const RouteSettings(name: 'rum_io_background_isolate'),
+          builder: (context) => const BackgroundIsolateScreen()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -59,6 +68,10 @@ class ScenarioSelectScreen extends StatelessWidget {
               title: const Text('Dio Usage'),
               onTap: () => _onSelectDio(context),
             ),
+            ListTile(
+              title: const Text('Background Isolate Fetch'),
+              onTap: () => _onSelectBackgroundIsolate(context),
+            )
           ],
         ),
       ),
