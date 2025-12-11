@@ -201,6 +201,9 @@ class _RumManualInstrumentation2State extends State<RumManualInstrumentation2>
   void didPush() {
     DatadogSdk.instance.rum?.startView(_viewKey, _viewName);
 
+    DatadogSdk.instance.rum
+        ?.addViewAttribute('view_attribute', 'view_attribute_value');
+
     _simulateResourceDownload();
 
     DatadogSdk.instance.rum?.addFeatureFlagEvaluation('mock_flag_a', false);

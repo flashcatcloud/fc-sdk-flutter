@@ -542,7 +542,7 @@ class DatadogRum {
   /// by the RUM monitor. Note that [value] must be supported by
   /// [StandardMessageCodec]. Passing a [value] of null is the same as calling
   /// [removeAttribute]
-  void addAttribute(String key, dynamic value) {
+  void addAttribute(String key, Object? value) {
     if (value == null) {
       removeAttribute(key);
       return;
@@ -557,6 +557,43 @@ class DatadogRum {
   void removeAttribute(String key) {
     wrap('rum.removeAttribute', logger, null, () {
       return _platform.removeAttribute(key);
+    });
+  }
+
+  /// Adds a custom attribute with [key] and [value] to the current view. Note
+  /// that [value] must be supported by [StandardMessageCodec]. Passing a
+  /// [value] of null is the same as calling [removeViewAttribute]
+  void addViewAttribute(String key, Object? value) {
+    if (value == null) {
+      removeViewAttribute(key);
+      return;
+    }
+    wrap('rum.addViewAttribute', logger, {'value': value}, () {
+      return _platform.addViewAttribute(key, value);
+    });
+  }
+
+  /// Removes the custom attribute [key] from the current view. Events created
+  /// prior to this call will not lose this attribute.
+  void removeViewAttribute(String key) {
+    wrap('rum.removeViewAttribute', logger, null, () {
+      return _platform.removeViewAttribute(key);
+    });
+  }
+
+  /// Adds a collection of custom [attributes] to the current view. Note that
+  /// values in this map must be supported by [StandardMessageCodec].
+  void addViewAttributes(Map<String, Object?> attributes) {
+    wrap('rum.addViewAttribute', logger, {'attributes': attributes}, () {
+      return _platform.addViewAttributes(attributes);
+    });
+  }
+
+  /// Removes all custom attributes with the supplied [keys] from the current
+  /// view. Events created prior to this call will not lose this attribute.
+  void removeViewAttributes(List<String> keys) {
+    wrap('rum.removeViewAttribute', logger, null, () {
+      return _platform.removeViewAttributes(keys);
     });
   }
 

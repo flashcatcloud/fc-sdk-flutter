@@ -240,6 +240,31 @@ class DdRumWeb extends DdRumPlatform {
   }
 
   @override
+  Future<void> addViewAttribute(String key, Object value) async {
+    DD_RUM?.setViewContextProperty(key, valueToJs(value, 'value'));
+  }
+
+  @override
+  Future<void> removeViewAttribute(String key) async {
+    DD_RUM?.removeViewContextProperty(key);
+  }
+
+  @override
+  Future<void> addViewAttributes(Map<String, Object?> attributes) async {
+    for (final attr in attributes.entries) {
+      DD_RUM?.setViewContextProperty(
+          attr.key, valueToJs(attr.value, 'attribute[${attr.key}]'));
+    }
+  }
+
+  @override
+  Future<void> removeViewAttributes(List<String> keys) async {
+    for (final key in keys) {
+      DD_RUM?.removeViewContextProperty(key);
+    }
+  }
+
+  @override
   Future<void> startResource(
     DateTime timestamp,
     String key,
@@ -523,6 +548,8 @@ extension type _DdRum._(JSObject _) implements JSObject {
   external void startView(String name);
   external void setGlobalContextProperty(String property, JSAny? context);
   external void removeGlobalContextProperty(String property);
+  external void setViewContextProperty(String property, JSAny? context);
+  external void removeViewContextProperty(String property);
   external void addTiming(String name);
   external void addError(JSObject error, JSAny? context);
   external void addAction(String action, JSAny? context);
