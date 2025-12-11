@@ -15,6 +15,8 @@ import DatadogLogs
     import datadog_flutter_plugin_c
 #endif
 
+// Get the cached Datadog Context in a C structure. The members of `DatadogCContext` are
+// owned by the caller, and must be freed to prevent a memory leak.
 @_cdecl("flutterGetDatadogContext")
 func flutterGetDatadogContext() -> DatadogCContext {
     let context = ContextMessageReceiver.shared.cachedContext
@@ -81,6 +83,7 @@ public class ContextMessageReceiver: FeatureMessageReceiver {
         return instance
     }()
 
+    @ReadWriteLock
     public var cachedContext: Context?
 
     public func receive(
