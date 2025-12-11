@@ -280,6 +280,25 @@ public class DatadogRumPlugin: NSObject, FlutterPlugin {
                     FlutterError.missingParameter(methodName: call.method)
                 )
             }
+        case "addViewAttributes":
+            if let attributes = arguments["attributes"] as? [String: Any?] {
+                let encodedAttributes = castFlutterAttributesToSwift(attributes)
+                rum?.addViewAttributes(encodedAttributes)
+                result(nil)
+            } else {
+                result(
+                    FlutterError.missingParameter(methodName: call.method)
+                )
+            }
+        case "removeViewAttributes":
+            if let keys = arguments["keys"] as? [String] {
+                rum?.removeViewAttributes(forKeys: keys)
+                result(nil)
+            } else {
+                result(
+                    FlutterError.missingParameter(methodName: call.method)
+                )
+            }
         case "addFeatureFlagEvaluation":
             if let name = arguments["name"] as? String,
                let value = arguments["value"] {

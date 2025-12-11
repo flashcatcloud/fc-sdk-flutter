@@ -45,6 +45,7 @@ class DatadogRumPlugin : MethodChannel.MethodCallHandler, RumSessionListener {
         const val PARAM_AT = "at"
         const val PARAM_DURATION = "duration"
         const val PARAM_KEY = "key"
+        const val PARAM_KEYS = "keys"
         const val PARAM_VALUE = "value"
         const val PARAM_NAME = "name"
         const val PARAM_ATTRIBUTES = "attributes"
@@ -129,6 +130,8 @@ class DatadogRumPlugin : MethodChannel.MethodCallHandler, RumSessionListener {
                 "stopAction" -> stopAction(call, result)
                 "addAttribute" -> addAttribute(call, result)
                 "removeAttribute" -> removeAttribute(call, result)
+                "addViewAttributes" -> addViewAttributes(call, result)
+                "removeViewAttributes" -> removeViewAttributes(call, result)
                 "reportLongTask" -> reportLongTask(call, result)
                 "updatePerformanceMetrics" -> updatePerformanceMetrics(call, result)
                 "addFeatureFlagEvaluation" -> addFeatureFlagEvaluation(call, result)
@@ -440,6 +443,26 @@ class DatadogRumPlugin : MethodChannel.MethodCallHandler, RumSessionListener {
         val key = call.argument<String>(PARAM_KEY)
         if (key != null) {
             rum?.removeAttribute(key)
+            result.success(null)
+        } else {
+            result.missingParameter(call.method)
+        }
+    }
+
+    private fun addViewAttributes(call: MethodCall, result: Result) {
+        val attributes = call.argument<Map<String, Any?>>(PARAM_ATTRIBUTES)
+        if (attributes != null) {
+            rum?.addViewAttributes(attributes)
+            result.success(null)
+        } else {
+            result.missingParameter(call.method)
+        }
+    }
+
+    private fun removeViewAttributes(call: MethodCall, result: Result) {
+        val keys = call.argument<List<String>>(PARAM_KEYS)
+        if (keys != null) {
+            rum?.removeViewAttributes(keys)
             result.success(null)
         } else {
             result.missingParameter(call.method)

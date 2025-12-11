@@ -221,6 +221,13 @@ void main() {
     expect(
         view2.viewEvents.last.view.resourceCount, view2.resourceEvents.length);
 
+    // All view events in view2 should have the view attribute supplied (web may miss
+    // the first update).
+    for (int i = 1; i < view2.viewEvents.length; ++i) {
+      final viewEvent = view2.viewEvents[i];
+      expect(viewEvent.context!['view_attribute'], 'view_attribute_value');
+    }
+
     if (!kIsWeb) {
       // The removal of this key happens at a weird point for web, so
       // let's not check it for now.
@@ -260,6 +267,8 @@ void main() {
     expect(view2.errorEvents[0].source, 'source');
     expect(view2.errorEvents[0].context![contextKey], expectedContextValue);
     expect(view2.errorEvents[0].context!['custom_attribute'], 'my_attribute');
+    expect(view2.errorEvents[0].context!['view_attribute'],
+        'view_attribute_value');
     expect(view2.errorEvents[0].fingerprint, 'custom-fingerprint');
 
     // Check all long tasks are over 100 ms (the default) and that one is greater
@@ -317,6 +326,11 @@ void main() {
       expect(view3.path, startsWith('http://localhost'));
     } else {
       expect(view3.path, 'screen3-widget');
+    }
+
+    // All view3 should not have the view attribute supplied
+    for (final viewEvent in view3.viewEvents) {
+      expect(viewEvent.context?['view_attribute'], isNull);
     }
 
     // There seems to be a weird race condition around when this context

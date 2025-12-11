@@ -161,6 +161,12 @@ class DatadogRumPluginTests: XCTestCase {
         Contract(methodName: "removeAttribute", requiredParameters: [
             "key": .string
         ]),
+        Contract(methodName: "addViewAttributes", requiredParameters: [
+            "attributes": .map
+        ]),
+        Contract(methodName: "removeViewAttributes", requiredParameters: [
+            "keys": .list
+        ]),
         Contract(methodName: "reportLongTask", requiredParameters: [
             "at": .int64,
             "duration": .int
@@ -571,6 +577,54 @@ class DatadogRumPluginTests: XCTestCase {
         XCTAssertEqual(resultStatus, .called(value: nil))
     }
 
+    func testRemoveAttribute_CallsRumMonitor() {
+        let call = FlutterMethodCall(methodName: "removeAttribute", arguments: [
+            "key": "remove_key"
+        ])
+
+        var resultStatus = ResultStatus.notCalled
+        plugin.handle(call) { result in
+            resultStatus = ResultStatus.called(value: result)
+        }
+
+        XCTAssertEqual(mock.callLog, [
+            .removeAttribute(forKey: "remove_key")
+        ])
+        XCTAssertEqual(resultStatus, .called(value: nil))
+    }
+
+    func testAddViewAttributes_CallsRumMonitor() {
+        let call = FlutterMethodCall(methodName: "addViewAttributes", arguments: [
+            "attributes": ["My key": "My value"]
+        ])
+
+        var resultStatus = ResultStatus.notCalled
+        plugin.handle(call) { result in
+            resultStatus = ResultStatus.called(value: result)
+        }
+
+        XCTAssertEqual(mock.callLog, [
+            .addViewAttributes(attributes: ["My key": "My value"])
+        ])
+        XCTAssertEqual(resultStatus, .called(value: nil))
+    }
+
+    func testRemoveViewAttributes_CallsRumMonitor() {
+        let call = FlutterMethodCall(methodName: "removeViewAttributes", arguments: [
+            "keys": ["My key"]
+        ])
+
+        var resultStatus = ResultStatus.notCalled
+        plugin.handle(call) { result in
+            resultStatus = ResultStatus.called(value: result)
+        }
+
+        XCTAssertEqual(mock.callLog, [
+            .removeViewAttributes(keys: ["My key"])
+        ])
+        XCTAssertEqual(resultStatus, .called(value: nil))
+    }
+
     func testStartFeatureOperation_CallsRumMonitor() {
         let call = FlutterMethodCall(methodName: "startFeatureOperation", arguments: [
             "name": "operation_name",
@@ -639,22 +693,6 @@ class DatadogRumPluginTests: XCTestCase {
                     "attribute_key": "attribute_value"
                 ]
             )
-        ])
-        XCTAssertEqual(resultStatus, .called(value: nil))
-    }
-
-    func testRemoveAttribute_CallsRumMonitor() {
-        let call = FlutterMethodCall(methodName: "removeAttribute", arguments: [
-            "key": "remove_key"
-        ])
-
-        var resultStatus = ResultStatus.notCalled
-        plugin.handle(call) { result in
-            resultStatus = ResultStatus.called(value: result)
-        }
-
-        XCTAssertEqual(mock.callLog, [
-            .removeAttribute(forKey: "remove_key")
         ])
         XCTAssertEqual(resultStatus, .called(value: nil))
     }
