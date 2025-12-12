@@ -82,10 +82,12 @@ class PlatformInitializationResult {
 
 @immutable
 class DatadogContext {
+  final String? sessionId;
   final String? userId;
   final String? accountId;
 
-  const DatadogContext({required this.userId, required this.accountId});
+  const DatadogContext(
+      {required this.sessionId, required this.userId, required this.accountId});
 }
 
 abstract class DatadogSdkPlatform extends PlatformInterface {
@@ -102,8 +104,9 @@ abstract class DatadogSdkPlatform extends PlatformInterface {
     _instance = instance;
   }
 
-  DatadogContext? get cachedContext;
   Future<IsolateAttachResponse?> attachToIsolate();
+
+  DatadogContext? getContext();
 
   Future<void> setSdkVerbosity(CoreLoggerLevel verbosity);
   Future<void> setTrackingConsent(TrackingConsent trackingConsent);

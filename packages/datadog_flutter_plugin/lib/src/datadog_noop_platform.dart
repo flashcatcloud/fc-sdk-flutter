@@ -7,7 +7,7 @@ import '../datadog_internal.dart';
 
 class DatadogSdkNoOpPlatform extends DatadogSdkPlatform {
   @override
-  DatadogContext? get cachedContext => null;
+  DatadogContext? getContext() => null;
 
   @override
   Future<void> addUserExtraInfo(Map<String, Object?> extraInfo) {

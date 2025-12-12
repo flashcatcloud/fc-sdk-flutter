@@ -211,14 +211,13 @@ final Random _traceRandom = Random();
 TracingContext generateTracingContext(DatadogSdk sdk, DatadogRum rum) {
   final traceId = TracingId.traceId();
   final spanId = TracingId.spanId();
-  final sessionId = rum.cachedSessionId;
-  bool sampled = rum.shouldSampleTrace(sessionId, traceId);
-  final context = sdk.platform.cachedContext;
+  final context = sdk.platform.getContext();
+  bool sampled = rum.shouldSampleTrace(context?.sessionId, traceId);
   return TracingContext(
     traceId,
     spanId,
     null,
-    sessionId,
+    context?.sessionId,
     context?.userId,
     context?.accountId,
     sampled,
@@ -234,10 +233,10 @@ Map<String, Object?> generateDatadogAttributes(
   if (context != null) {
     attributes[DatadogRumPlatformAttributeKey.rulePsr] = samplingRate / 100.0;
     if (context.sampled) {
-      attributes[DatadogRumPlatformAttributeKey.traceID] = context.traceId
-          .asString(TracingIdRepresentation.hex32Chars);
-      attributes[DatadogRumPlatformAttributeKey.spanID] = context.spanId
-          .asString(TracingIdRepresentation.decimal);
+      attributes[DatadogRumPlatformAttributeKey.traceID] =
+          context.traceId.asString(TracingIdRepresentation.hex32Chars);
+      attributes[DatadogRumPlatformAttributeKey.spanID] =
+          context.spanId.asString(TracingIdRepresentation.decimal);
     }
   }
 

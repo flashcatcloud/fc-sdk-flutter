@@ -1,0 +1,4 @@
+module datadog_flutter_plugin_c {
+    header "flutter_c_bridge.h"
+    export *
+}

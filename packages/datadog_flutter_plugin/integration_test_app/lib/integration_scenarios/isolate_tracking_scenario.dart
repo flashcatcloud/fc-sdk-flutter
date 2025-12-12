@@ -25,8 +25,6 @@ class _IsolateTrackingScenarioState extends State<IsolateTrackingScenario>
 
   String _statusText = 'Creating An Isolate';
 
-  final _receivePort = ReceivePort();
-
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -55,14 +53,15 @@ class _IsolateTrackingScenarioState extends State<IsolateTrackingScenario>
   }
 
   Future<void> _spawnIsolate() async {
-    _receivePort.listen((message) {
+    final receivePort = ReceivePort();
+    receivePort.listen((message) {
       if (message is String) {
         setState(() {
           _statusText = message;
         });
       }
     });
-    await Isolate.spawn(_backgroundWork, _receivePort.sendPort);
+    await Isolate.spawn(_backgroundWork, receivePort.sendPort);
   }
 
   @override

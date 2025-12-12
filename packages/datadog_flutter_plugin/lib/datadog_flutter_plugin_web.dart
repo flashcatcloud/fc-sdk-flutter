@@ -45,7 +45,7 @@ class DatadogSdkWeb extends DatadogSdkPlatform {
   }
 
   @override
-  DatadogContext? get cachedContext => null;
+  DatadogContext? getContext() => null;
 
   @override
   Future<void> setSdkVerbosity(CoreLoggerLevel verbosity) async {}

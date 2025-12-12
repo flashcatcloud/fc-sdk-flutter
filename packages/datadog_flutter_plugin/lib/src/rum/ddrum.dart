@@ -141,11 +141,6 @@ class DatadogRum {
 
   final InvMetricProvider _invMetricProvider = InvMetricProvider();
 
-  /// For internal use only. If you want an accurate sessionId,
-  /// use [getCurrentSessionId].
-  @internal
-  String? get cachedSessionId => _platform.cachedSessionId;
-
   static Future<DatadogRum?> enable(
     DatadogSdk core,
     DatadogRumConfiguration configuration,

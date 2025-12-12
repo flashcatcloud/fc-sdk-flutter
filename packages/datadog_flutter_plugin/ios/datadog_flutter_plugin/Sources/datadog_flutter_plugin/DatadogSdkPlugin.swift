@@ -9,6 +9,31 @@ import DatadogCrashReporting
 import DatadogInternal
 import DatadogRUM
 import DatadogLogs
+// This is a bit of a hack required for both SPM and Cocoapods to play nice
+// with the C header (SPM requires it in a separate module, while Cocoapods does not.)
+#if canImport(datadog_flutter_plugin_c)
+    import datadog_flutter_plugin_c
+#endif
+
+// Get the cached Datadog Context in a C structure. The members of `DatadogCContext` are
+// owned by the caller, and must be freed to prevent a memory leak.
+@_cdecl("flutterGetDatadogContext")
+func flutterGetDatadogContext() -> DatadogCContext {
+    let context = ContextMessageReceiver.shared.cachedContext
+    guard let context = context else {
+        return DatadogCContext(sessionId: nil, accountId: nil, userId: nil)
+    }
+
+    let cSessionID = context.sessionId?.withCString { strdup($0) }
+    let cAccountId = context.accountId?.withCString { strdup($0) }
+    let cUserId = context.userId?.withCString { strdup($0) }
+
+    return DatadogCContext(
+        sessionId: cSessionID,
+        accountId: cAccountId,
+        userId: cUserId
+    )
+}
 
 extension Datadog.Configuration {
     init?(fromEncoded encoded: [String: Any?]) {
@@ -46,26 +71,34 @@ extension Datadog.Configuration {
 }
 
 public class ContextMessageReceiver: FeatureMessageReceiver {
-    let channel: FlutterMethodChannel
+    public struct Context {
+        public let sessionId: String?
+        public let accountId: String?
+        public let userId: String?
 
-    init(channel: FlutterMethodChannel) {
-        self.channel = channel
     }
 
-    public func receive(message: DatadogInternal.FeatureMessage, from core: any DatadogInternal.DatadogCoreProtocol) -> Bool {
+    static let shared: ContextMessageReceiver = {
+        let instance = ContextMessageReceiver()
+        return instance
+    }()
+
+    @ReadWriteLock
+    public var cachedContext: Context?
+
+    public func receive(
+        message: DatadogInternal.FeatureMessage,
+        from core: any DatadogInternal.DatadogCoreProtocol
+    ) -> Bool {
         switch message {
         case .context(let context):
-            DispatchQueue.main.async { [weak self] in
-                // Pull out the context that Flutter cares about
-                let rumContext = context.additionalContext(ofType: RUMCoreContext.self)
-                let broadcastContext: [String: Any?] = [
-                    "user.id": context.userInfo?.id,
-                    "account.id": context.accountInfo?.id,
-                    "rum.session.id": rumContext?.sessionID,
-                    "rum.view.id": rumContext?.viewID
-                ]
-                self?.channel.invokeMethod("onContextChanged", arguments: broadcastContext)
-            }
+            // Pull out the context that Flutter cares about
+            let rumContext = context.additionalContext(ofType: RUMCoreContext.self)
+            cachedContext = Context(
+                sessionId: rumContext?.sessionID,
+                accountId: context.accountInfo?.id,
+                userId: context.userInfo?.id
+            )
             return true
         default:
             return false
@@ -77,9 +110,7 @@ public class ContextMessageReceiver: FeatureMessageReceiver {
 public class DatadogSdkPlugin: NSObject, FlutterPlugin, DatadogFeature {
     public static var name: String = "flutter_plugin"
 
-    public var messageReceiver: FeatureMessageReceiver { contextReciever }
-
-    let contextReciever: ContextMessageReceiver
+    public var messageReceiver: FeatureMessageReceiver { ContextMessageReceiver.shared }
 
     let channel: FlutterMethodChannel
 
@@ -89,7 +120,6 @@ public class DatadogSdkPlugin: NSObject, FlutterPlugin, DatadogFeature {
 
     public init(channel: FlutterMethodChannel) {
         self.channel = channel
-        self.contextReciever = ContextMessageReceiver(channel: channel)
         super.init()
     }
 

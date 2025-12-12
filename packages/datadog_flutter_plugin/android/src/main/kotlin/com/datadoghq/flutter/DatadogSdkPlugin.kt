@@ -10,6 +10,7 @@ import com.datadog.android.Datadog
 import com.datadog.android.DatadogSite
 import com.datadog.android._InternalProxy
 import com.datadog.android.api.context.DatadogContext
+import com.datadog.android.api.feature.Feature
 import com.datadog.android.core.InternalSdkCore
 import com.datadog.android.core.configuration.BatchProcessingLevel
 import com.datadog.android.core.configuration.Configuration
@@ -43,7 +44,7 @@ class DatadogSdkPlugin : FlutterPlugin, MethodCallHandler {
 
         fun getCoreContext(): DatadogContext? {
             val sdkCore = Datadog.getInstance() as? InternalSdkCore
-            return sdkCore?.getDatadogContext()
+            return sdkCore?.getDatadogContext(setOf(Feature.RUM_FEATURE_NAME))
         }
     }
 

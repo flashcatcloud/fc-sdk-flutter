@@ -15,6 +15,8 @@ import 'android/android_plugin_stub.dart'
     if (dart.library.io) 'android/android_plugin_ffi.dart';
 import 'datadog_sdk_platform_interface.dart';
 import 'internal_logger.dart';
+import 'ios/ios_platform_bridge_stub.dart'
+    if (dart.library.io) 'ios/ios_platform_bridge.dart';
 
 @immutable
 class _IsolateAttachRequest {
@@ -29,7 +31,7 @@ class DatadogCommunicationError extends Error {
 
   @override
   String toString() {
-    return 'Uknown object sent in internal communicaiton: $unknownMessage';
+    return 'Unknown object sent in internal communicaiton: $unknownMessage';
   }
 }
 
@@ -42,12 +44,10 @@ class DatadogSdkMethodChannel extends DatadogSdkPlatform {
 
   LogCallback? _logCallback;
 
-  // Used by iOS, not by Andoid at the moment
-  DatadogContext? _cachedContext;
   @override
-  DatadogContext? get cachedContext {
+  DatadogContext? getContext() {
     if (Platform.isIOS) {
-      return _cachedContext;
+      return IosPlatformBridge.getContext();
     } else if (Platform.isAndroid) {
       return AndroidDatadogFlutterPlugin.getContext();
     }
@@ -114,10 +114,6 @@ class DatadogSdkMethodChannel extends DatadogSdkPlatform {
     String? email,
     Map<String, Object?> extraInfo,
   ) {
-    _cachedContext = DatadogContext(
-      userId: id,
-      accountId: _cachedContext?.accountId,
-    );
     return methodChannel.invokeMethod('setUserInfo', {
       'id': id,
       'name': name,
@@ -135,10 +131,6 @@ class DatadogSdkMethodChannel extends DatadogSdkPlatform {
 
   @override
   Future<void> clearUserInfo() {
-    _cachedContext = DatadogContext(
-      userId: null,
-      accountId: _cachedContext?.accountId,
-    );
     return methodChannel.invokeMethod('clearUserInfo', {});
   }
 
@@ -148,10 +140,6 @@ class DatadogSdkMethodChannel extends DatadogSdkPlatform {
     String? name,
     Map<String, Object?> extraInfo,
   ) {
-    _cachedContext = DatadogContext(
-      userId: _cachedContext?.userId,
-      accountId: id,
-    );
     return methodChannel.invokeMethod('setAccountInfo', {
       'id': id,
       'name': name,
@@ -168,10 +156,6 @@ class DatadogSdkMethodChannel extends DatadogSdkPlatform {
 
   @override
   Future<void> clearAccountInfo() {
-    _cachedContext = DatadogContext(
-      userId: _cachedContext?.userId,
-      accountId: null,
-    );
     return methodChannel.invokeMethod('clearAccountInfo', {});
   }
 
@@ -208,11 +192,11 @@ class DatadogSdkMethodChannel extends DatadogSdkPlatform {
   Future<AttachResponse?> attachToExisting(
     DatadogAttachConfiguration attachConfig,
   ) async {
-    final channelResponse = await methodChannel
-        .invokeMapMethod<String, Object?>(
-          'attachToExisting',
-          <String, Object?>{},
-        );
+    final channelResponse =
+        await methodChannel.invokeMapMethod<String, Object?>(
+      'attachToExisting',
+      <String, Object?>{},
+    );
 
     AttachResponse? response;
     if (channelResponse != null) {
@@ -296,14 +280,6 @@ class DatadogSdkMethodChannel extends DatadogSdkPlatform {
     switch (call.method) {
       case 'logCallback':
         _logCallback?.call(call.arguments as String);
-        return null;
-      case 'onContextChanged':
-        if (call.arguments case final Map<dynamic, dynamic> args) {
-          _cachedContext = DatadogContext(
-            userId: args['user.id'],
-            accountId: args['account.id'],
-          );
-        }
         return null;
     }
   }
