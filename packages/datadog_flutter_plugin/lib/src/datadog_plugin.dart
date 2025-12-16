@@ -13,7 +13,7 @@ abstract class DatadogPluginConfiguration {
   /// isolates when [DatadogSdk.attachToBackgroundIsolate] is called. Plugins
   /// that have this set to `true` will have
   /// [DatadogPlugin.initializeFromBackgroundIsolate] called when background
-  /// isolate is attached, which by default calls [DatadogPlugin.initialize]
+  /// isolate is attached, which by default calls [DatadogPlugin.initialize].
   ///
   /// Any subclass that has this flag set to `true` must also be marked as
   /// [immutable] so that the configuration can be sent to the background isolate.
