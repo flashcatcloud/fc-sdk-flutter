@@ -38,8 +38,8 @@ typedef RumActionEventMapper = RumActionEvent? Function(RumActionEvent event);
 ///
 /// The [RumResourceEventMapper] can modify any mutable (non-final) properties in the
 /// [RumResourceEvent]
-typedef RumResourceEventMapper =
-    RumResourceEvent? Function(RumResourceEvent event);
+typedef RumResourceEventMapper = RumResourceEvent? Function(
+    RumResourceEvent event);
 
 /// A function that allows you to modify or drop specific [RumErrorEvent]s before
 /// they are sent to Datadog.
@@ -53,8 +53,8 @@ typedef RumErrorEventMapper = RumErrorEvent? Function(RumErrorEvent event);
 ///
 /// The [RumLongTaskEvent] can modify any mutable (non-final) properties in the
 /// [RumLongTaskEvent]
-typedef RumLongTaskEventMapper =
-    RumLongTaskEvent? Function(RumLongTaskEvent event);
+typedef RumLongTaskEventMapper = RumLongTaskEvent? Function(
+    RumLongTaskEvent event);
 
 /// A function that allows you to modify or drop specific [RumVitalOperationEvent]s before
 /// they are sent to Datadog.
@@ -84,7 +84,7 @@ class DatadogRumConfiguration {
   /// `0.0` means no resources will include APM tracing, `100.0` resource will
   /// include APM tracing
   ///
-  /// Defaults to `20.0`.
+  /// Defaults to `100.0`.
   double traceSampleRate;
 
   /// The strategy for injecting trace context into requests. See [TraceContextInjection].
@@ -226,7 +226,7 @@ class DatadogRumConfiguration {
   DatadogRumConfiguration({
     required this.applicationId,
     double sessionSamplingRate = 100.0,
-    double traceSampleRate = 20.0,
+    double traceSampleRate = 100.0,
     this.traceContextInjection = TraceContextInjection.sampled,
     this.detectLongTasks = true,
     double longTaskThreshold = 0.1,
@@ -247,9 +247,9 @@ class DatadogRumConfiguration {
     this.longTaskEventMapper,
     this.vitalOperationStepEventMapper,
     this.additionalConfig = const <String, Object>{},
-  }) : sessionSamplingRate = max(0, min(sessionSamplingRate, 100)),
-       traceSampleRate = max(0, min(traceSampleRate, 100)),
-       longTaskThreshold = max(0.02, longTaskThreshold);
+  })  : sessionSamplingRate = max(0, min(sessionSamplingRate, 100)),
+        traceSampleRate = max(0, min(traceSampleRate, 100)),
+        longTaskThreshold = max(0.02, longTaskThreshold);
 
   Map<String, Object?> encode() {
     return {

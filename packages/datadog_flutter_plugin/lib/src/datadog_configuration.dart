@@ -290,8 +290,8 @@ class DatadogConfiguration {
       // make map mutable in case it's the default
       firstPartyHostsWithTracingHeaders =
           Map<String, Set<TracingHeaderType>>.from(
-            firstPartyHostsWithTracingHeaders,
-          );
+        firstPartyHostsWithTracingHeaders,
+      );
 
       for (var entry in firstPartyHosts) {
         final headerTypes = firstPartyHostsWithTracingHeaders[entry];
@@ -419,7 +419,7 @@ class DatadogAttachConfiguration {
   /// This property only affects network requests made from Flutter, and it is
   /// not shared or populated from the existing SDK.
   ///
-  /// Defaults to `20.0`.
+  /// Defaults to `100.0`.
   double traceSampleRate;
 
   /// The strategy for injecting trace context into requests. See [TraceContextInjection].
@@ -434,7 +434,7 @@ class DatadogAttachConfiguration {
   DatadogAttachConfiguration({
     this.detectLongTasks = true,
     this.longTaskThreshold = 0.1,
-    this.traceSampleRate = 20.0,
+    this.traceSampleRate = 100.0,
     this.reportFlutterPerformance = false,
     List<String>? firstPartyHosts,
     this.firstPartyHostsWithTracingHeaders = const {},
@@ -445,8 +445,8 @@ class DatadogAttachConfiguration {
       // make map mutable
       firstPartyHostsWithTracingHeaders =
           Map<String, Set<TracingHeaderType>>.from(
-            firstPartyHostsWithTracingHeaders,
-          );
+        firstPartyHostsWithTracingHeaders,
+      );
 
       for (var entry in firstPartyHosts) {
         final headerTypes = firstPartyHostsWithTracingHeaders[entry];

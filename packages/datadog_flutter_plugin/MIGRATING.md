@@ -23,6 +23,8 @@ Clients using Flutter Web should update to using the Datadog Browser SDK v6.  Ch
 
 An ID is no longer optional in `setUserInfo`. If you need to clear user info, use `clearUserInfo` instead.
 
+The default trace sampling rate (`DatadogRumConfiguration.traceSampleRate` and `DatadogAttachConfiguration.traceSampleRate`) has changed from 20% to 100%.
+
 # Migration from 1.x to 2.0
 
 This document describes the main changes introduced in SDK `2.0` compared to `1.x`.
