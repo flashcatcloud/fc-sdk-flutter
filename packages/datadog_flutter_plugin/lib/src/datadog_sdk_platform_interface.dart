@@ -48,6 +48,7 @@ class CapturedConfiguration {
   final double? traceSampleRate;
   final TraceContextInjection? traceContextInjection;
   final Map<String, Set<TracingHeaderType>> firstPartyHosts;
+  final List<DatadogPluginConfiguration> configuredPlugins;
 
   const CapturedConfiguration({
     required this.loggingEnabled,
@@ -55,6 +56,7 @@ class CapturedConfiguration {
     required this.traceSampleRate,
     required this.traceContextInjection,
     required this.firstPartyHosts,
+    required this.configuredPlugins,
   });
 }
 
