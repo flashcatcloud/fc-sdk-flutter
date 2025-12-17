@@ -5,9 +5,8 @@
 import 'dart:isolate';
 
 import 'package:datadog_flutter_plugin/datadog_flutter_plugin.dart';
-import 'package:datadog_tracking_http_client/datadog_tracking_http_client.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart';
+import 'package:http/http.dart' as http;
 
 import '../scenario_config.dart';
 
@@ -86,14 +85,12 @@ void _backgroundWork(SendPort port) async {
 
 Future<void> _performBackgroundFetch(
     RumAutoInstrumentationScenarioConfig config, SendPort port) async {
-  final client =
-      DatadogClient(datadogSdk: DatadogSdk.instance, innerClient: Client());
   port.send('Get First Party');
-  await client.get(Uri.parse(config.firstPartyGetUrl));
+  await http.get(Uri.parse(config.firstPartyGetUrl));
 
   if (config.firstPartyPostUrl != null) {
     port.send('Post First Party');
-    await client.post(Uri.parse(config.firstPartyPostUrl!));
+    await http.post(Uri.parse(config.firstPartyPostUrl!));
   }
 
   port.send('Done');

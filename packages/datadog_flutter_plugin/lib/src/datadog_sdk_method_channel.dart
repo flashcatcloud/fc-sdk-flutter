@@ -176,6 +176,10 @@ class DatadogSdkMethodChannel extends DatadogSdkPlatform {
       'setLogCallback': logCallback != null,
     });
 
+    final backgroundPlugins = configuration.additionalPlugins
+        .where((e) => e.supportsBackgroundIsolates)
+        .toList();
+
     _capturedConfiguration = CapturedConfiguration(
       loggingEnabled: configuration.loggingConfiguration != null,
       rumEnabled: configuration.rumConfiguration != null,
@@ -183,6 +187,7 @@ class DatadogSdkMethodChannel extends DatadogSdkPlatform {
       traceContextInjection:
           configuration.rumConfiguration?.traceContextInjection,
       firstPartyHosts: configuration.firstPartyHostsWithTracingHeaders,
+      configuredPlugins: backgroundPlugins,
     );
 
     return const PlatformInitializationResult(logs: true, rum: true);
@@ -202,12 +207,16 @@ class DatadogSdkMethodChannel extends DatadogSdkPlatform {
     if (channelResponse != null) {
       response = AttachResponse.decode(channelResponse);
       if (response != null) {
+        final backgroundPlugins = attachConfig.additionalPlugins
+            .where((e) => e.supportsBackgroundIsolates)
+            .toList();
         _capturedConfiguration = CapturedConfiguration(
           loggingEnabled: response.loggingEnabled,
           rumEnabled: response.rumEnabled,
           traceSampleRate: attachConfig.traceSampleRate,
           traceContextInjection: attachConfig.traceContextInjection,
           firstPartyHosts: attachConfig.firstPartyHostsWithTracingHeaders,
+          configuredPlugins: backgroundPlugins,
         );
       }
     }

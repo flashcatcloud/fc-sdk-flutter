@@ -222,6 +222,19 @@ class DatadogSdk {
                 TraceContextInjection.sampled,
           );
         }
+
+        for (final pluginConfig
+            in attachResponse.capturedConfiguration.configuredPlugins) {
+          var plugin = pluginConfig.create(this);
+          if (_plugins.containsKey(plugin.runtimeType)) {
+            internalLogger.error(
+              'Attempting to setup two plugins of the same type: ${plugin.runtimeType}. The second plugin will be ignored.',
+            );
+          } else {
+            plugin.initializeFromBackgroundIsolate();
+            _plugins[plugin.runtimeType] = plugin;
+          }
+        }
       }
     } catch (e, st) {
       internalLogger.sendToDatadog(

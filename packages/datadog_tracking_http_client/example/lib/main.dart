@@ -20,6 +20,29 @@ import 'scenario_select_screen.dart';
 // auto-instrumentation added to an existing app gives us the expected results.
 TestingConfiguration? testingConfiguration;
 
+class ClientListener extends DatadogTrackingHttpClientListener {
+  @override
+  void requestStarted(
+      {required Object resourceKey,
+      required HttpClientRequest request,
+      required Map<String, Object?> userAttributes}) {
+    if (kDebugMode) {
+      print('($resourceKey) Request started');
+    }
+  }
+
+  @override
+  void responseFinished(
+      {required Object resourceKey,
+      required HttpClientResponse response,
+      required Map<String, Object?> userAttributes,
+      Object? error}) {
+    if (kDebugMode) {
+      print('($resourceKey) Request finished');
+    }
+  }
+}
+
 Future<void> main() async {
   final merge = kIsWeb ? <String, String>{} : Platform.environment;
   await dotenv.load(mergeWith: merge);
@@ -73,7 +96,9 @@ Future<void> main() async {
   }
 
   if (RumAutoInstrumentationScenarioConfig.instance.enableIoHttpTracking) {
-    configuration.enableHttpTracking();
+    configuration.enableHttpTracking(
+      clientListener: ClientListener(),
+    );
   }
 
   await DatadogSdk.runApp(configuration, TrackingConsent.granted, () async {
