@@ -88,7 +88,7 @@ void main() {
     final configuration = DatadogRumConfiguration(applicationId: 'fake-app-id');
 
     expect(configuration.sessionSamplingRate, 100.0);
-    expect(configuration.traceSampleRate, 20.0);
+    expect(configuration.traceSampleRate, 100.0);
     expect(configuration.traceContextInjection, TraceContextInjection.sampled);
     expect(configuration.detectLongTasks, true);
     expect(configuration.longTaskThreshold, 0.1);
@@ -421,7 +421,8 @@ void main() {
     verifyNever(() => mockRumPlatform.addAttribute(any(), any()));
   });
 
-  test('addViewAttribute with null calls removeViewAttribute instead', () async {
+  test('addViewAttribute with null calls removeViewAttribute instead',
+      () async {
     // Given
     DdRumPlatform.instance = mockRumPlatform;
     when(
@@ -467,7 +468,8 @@ void main() {
     rum!.addViewAttribute('view-attribute-key', 'view-attribute-value');
 
     // Then
-    verify(() => mockRumPlatform.addViewAttribute('view-attribute-key', 'view-attribute-value'));
+    verify(() => mockRumPlatform.addViewAttribute(
+        'view-attribute-key', 'view-attribute-value'));
   });
 
   test('removeViewAttribute calls platform', () async {
