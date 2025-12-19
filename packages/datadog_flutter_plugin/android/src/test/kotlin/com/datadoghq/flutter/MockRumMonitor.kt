@@ -99,6 +99,11 @@ class MockRumMonitor : RumMonitor {
         mockMonitor.removeViewAttributes(attributes)
     }
 
+    @ExperimentalRumApi
+    override fun reportAppFullyDisplayed() {
+        mockMonitor.reportAppFullyDisplayed()
+    }
+
     override fun startAction(type: RumActionType, name: String, attributes: Map<String, Any?>) {
         mockMonitor.startAction(type, name, attributes)
     }
