@@ -57,10 +57,12 @@ class DatadogRumEventMapper {
             configBuilder.setLongTaskEventMapper { event -> mapLongTaskEvent(event) }
         }
         if (optionIsSet("attachVitalOperationStepEventMapper")) {
-            configBuilder.setVitalOperationStepEventMapper {
-                    event ->
-                mapVitalOperationStepEvent(event)
-            }
+            configBuilder.setVitalEventMapper(
+                vitalOperationStepEventMapper = {
+                        event ->
+                    mapVitalOperationStepEvent(event)
+                }
+            )
         }
 
         return configBuilder
