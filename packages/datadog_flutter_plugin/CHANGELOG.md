@@ -2,7 +2,7 @@
 
 ## 2.16.1
 
-* Pin DictionaryCoder to exact version 1.2.0 for iOS 12 compatibility.
+* Pin `DictionaryCoder` to exact version 1.2.0 for iOS 12 compatibility.
 
 ## 2.16.0
 
