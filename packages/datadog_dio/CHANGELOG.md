@@ -1,3 +1,8 @@
+## 2.0.0
+
+* Expose `DatadogDioInterceptor`. See [#906](https://github.com/DataDog/dd-sdk-flutter/issues/906)
+* Update dio package for v3.
+
 ## 1.1.1
 
 * Expose `DatadogDioInterceptor`. See [#906](https://github.com/DataDog/dd-sdk-flutter/issues/906)

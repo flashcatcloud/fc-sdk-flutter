@@ -283,8 +283,7 @@ extension LaunchInfo: AnyMockable, RandomMockable {
         return .init(
             launchReason: .mockAny(),
             processLaunchDate: .mockAny(),
-            runtimeLoadDate: .mockAny(),
-            runtimePreMainDate: .mockAny(),
+            timeToDidBecomeActive: .mockAny(),
             raw: .mockAny()
         )
     }
@@ -292,19 +291,13 @@ extension LaunchInfo: AnyMockable, RandomMockable {
     public static func mockWith(
         launchReason: LaunchReason = .mockAny(),
         processLaunchDate: Date = Date(),
-        runtimeLoadDate: Date = Date(),
-        runtimePreMainDate: Date = Date(),
-        didFinishLaunchingDate: Date? = nil,
-        didBecomeActiveDate: Date? = nil,
+        timeToDidBecomeActive: TimeInterval? = 1,
         raw: LaunchInfo.Raw = .mockAny()
     ) -> LaunchInfo {
         return .init(
             launchReason: launchReason,
             processLaunchDate: processLaunchDate,
-            runtimeLoadDate: runtimeLoadDate,
-            runtimePreMainDate: runtimePreMainDate,
-            didFinishLaunchingDate: didFinishLaunchingDate,
-            didBecomeActiveDate: didBecomeActiveDate,
+            timeToDidBecomeActive: timeToDidBecomeActive,
             raw: raw
         )
     }
@@ -313,10 +306,7 @@ extension LaunchInfo: AnyMockable, RandomMockable {
         return .init(
             launchReason: .mockRandom(),
             processLaunchDate: .mockRandom(),
-            runtimeLoadDate: .mockRandom(),
-            runtimePreMainDate: .mockRandom(),
-            didFinishLaunchingDate: .mockRandom(),
-            didBecomeActiveDate: .mockRandom(),
+            timeToDidBecomeActive: .mockRandom(),
             raw: .mockRandom()
         )
     }
