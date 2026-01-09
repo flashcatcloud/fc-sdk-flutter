@@ -330,6 +330,7 @@ nightly-beta-test:
   script:
     - !reference [.pre, script]
     - !reference [.pre-ios, script]
+    - !reference [.pre-web, script]
     - brew tap leoafarias/fvm
     - brew install fvm
     - fvm destroy
