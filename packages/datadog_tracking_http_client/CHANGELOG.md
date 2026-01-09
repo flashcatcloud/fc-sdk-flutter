@@ -6,7 +6,7 @@
 * Support RUM context in trace headers.
 * Support consistent sampling based on session ID.
 * Update Kotlin version to 2.1.0.
-* [Android] Fix compileSdk to be 35 on main package.
+* [Android] Fix `compileSdk` to be 35 on main package.
 * Upgrade Android min versions for v3.
 * [Web] Fix conversion of `List` to `JSArray` for Flutter Web.
 * Support manual resource tracking on web.

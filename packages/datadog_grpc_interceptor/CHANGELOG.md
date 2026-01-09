@@ -3,8 +3,8 @@
 ## 2.0.0
 
 * Support RUM context in trace headers.
-* Support consistent sampling based on session id.
-* [Web] Fix conversion of List to JSArray for Flutter Web.
+* Support consistent sampling based on session ID.
+* [Web] Fix conversion of `List` to `JSArray` for Flutter Web.
 * Support deterministic sampling decisions on distributed traces.
 
 ## 1.2.0
