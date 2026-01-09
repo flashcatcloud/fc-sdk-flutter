@@ -5,7 +5,6 @@
 import 'package:datadog_common_test/datadog_common_test.dart';
 import 'package:datadog_common_test/uri_matchers.dart';
 import 'package:datadog_dio/datadog_dio.dart';
-import 'package:datadog_dio/src/datadog_dio_interceptor.dart';
 import 'package:datadog_flutter_plugin/datadog_flutter_plugin.dart';
 import 'package:datadog_flutter_plugin/datadog_internal.dart';
 import 'package:dio/dio.dart';
