@@ -60,7 +60,7 @@ stages:
     - xcode-select -p
     - xcodebuild -runFirstLaunch
     - xcodebuild -downloadPlatform iOS
-    - cd tools/ci && dart pub get && dart run ci_helpers start_sim --platform ios --sdk $IOS_SDK --device $IOS_SIMULATOR
+    - pushd tools/ci && dart pub get && dart run ci_helpers start_sim --platform ios --sdk $IOS_SDK --device $IOS_SIMULATOR && popd
 
 .pre-android:
   script:
@@ -330,7 +330,6 @@ nightly-beta-test:
   script:
     - !reference [.pre, script]
     - !reference [.pre-ios, script]
-    - !reference [.pre-web, script]
     - brew tap leoafarias/fvm
     - brew install fvm
     - fvm destroy
@@ -339,6 +338,13 @@ nightly-beta-test:
     - fvm flutter upgrade
     - fvm exec dart pub global activate melos
     - pod repo update
+    - pushd tools/ci && dart pub get && dart run ci_helpers chrome_driver --extract && popd
+    - ./tools/ci/.tmp/chromedriver-mac-arm64/chromedriver --version    
+    - export CHROME_EXECUTABLE="${CI_PROJECT_DIR}/tools/ci/.tmp/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing"
+    - $CHROME_EXECUTABLE --version
+    - export PATH="$PATH:${CI_PROJECT_DIR}/tools/ci/.tmp/chrome-mac-arm64/"
+    - echo $CHROME_EXECUTABLE
+    - flutter doctor
     - fvm exec melos pub:get
     - fvm exec melos pod_update --no-select
     - fvm exec melos run analyze
