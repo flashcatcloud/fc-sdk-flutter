@@ -343,7 +343,7 @@ nightly-beta-test:
     - fvm exec melos pod_update --no-select
     - fvm exec melos run analyze
     - fvm exec melos run build
-    - fvm exec melos run unit_test:futter
+    - fvm exec melos run unit_test:flutter
     - fvm exec melos run unit_test:android
     - fvm exec melos run unit_test:ios
   artifacts:
