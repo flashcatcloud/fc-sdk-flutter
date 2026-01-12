@@ -14,7 +14,7 @@ Add both the `datadog_inappwebview_tracking` package and the `flutter_inappwebvi
 ```yaml
 dependencies:
   flutter_inappwebview: ^6.1.5
-  datadog_flutter_plugin: ^2.8.0
+  datadog_flutter_plugin: ^3.0.0
   datadog_inappwebview_tracking: ^1.0.0
 ```
 
