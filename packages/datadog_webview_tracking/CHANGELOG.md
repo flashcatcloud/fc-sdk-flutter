@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.0.1
+
+* Properly depend on Datadog 3.0.0.
+
 ## 3.0.0
 
 * Update Kotlin version to 2.1.0.
