@@ -363,18 +363,14 @@ nightly-beta-test-web:
   script:
     - !reference [.pre, script]
     - !reference [.pre-web, script]
-    - brew tap leoafarias/fvm
-    - brew install fvm
-    - fvm destroy
-    - fvm install beta
-    - fvm use beta
-    - fvm flutter upgrade
-    - fvm exec dart pub global activate melos
+    - flutter channel beta
+    - flutter upgrade
+    - dart pub global activate melos
     - flutter doctor
-    - fvm exec melos pub:get
-    - fvm exec melos run analyze:dart
-    - fvm exec melos run build:web
-    - fvm exec melos run unit_test:web    
+    - melos pub:get
+    - melos run analyze:dart
+    - melos run build:web
+    - melos run unit_test:web    
   artifacts:
     when: always
     expire_in: "30 days"
