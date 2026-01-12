@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.0.1
+
+* Properly depend on Datadog 3.0.
+
 ## 3.0.0
 
 * Support automatic `dart:io` network tracking from background isolates.
