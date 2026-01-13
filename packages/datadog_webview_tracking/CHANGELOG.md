@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.0.2
+
+* Fix crash with iOS Webview tracking in Flutter 3.38+.
+
 ## 3.0.1
 
 * Properly depend on Datadog 3.0.0.
