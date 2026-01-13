@@ -3,9 +3,8 @@ disabled_rules:
 
 included:
   - ios
-  - example/ios
 
 excluded:
-  - example/ios/Pods
-  - example/ios/.symlinks
-  - example/ios/Flutter
+  - ios/Pods
+  - ios/.symlinks
+  - ios/Flutter
