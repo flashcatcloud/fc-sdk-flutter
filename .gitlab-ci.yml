@@ -336,6 +336,7 @@ nightly-beta-test:
     - fvm install beta
     - fvm use beta
     - fvm flutter upgrade
+    - fvm flutter precache --ios
     - fvm exec dart pub global activate melos
     - pod repo update    
     - flutter doctor
