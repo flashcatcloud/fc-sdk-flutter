@@ -191,7 +191,9 @@ extension DeviceInfo: AnyMockable, RandomMockable {
         isSimulator: Bool = true,
         vendorId: String? = "xyz",
         isDebugging: Bool = false,
-        systemBootTime: TimeInterval = Date.timeIntervalSinceReferenceDate
+        systemBootTime: TimeInterval = Date.timeIntervalSinceReferenceDate,
+        logicalCpuCount: Double? = nil,
+        totalRam: Double? = nil
     ) -> DeviceInfo {
         return .init(
             name: name,
@@ -201,7 +203,9 @@ extension DeviceInfo: AnyMockable, RandomMockable {
             isSimulator: isSimulator,
             vendorId: vendorId,
             isDebugging: isDebugging,
-            systemBootTime: systemBootTime
+            systemBootTime: systemBootTime,
+            logicalCpuCount: logicalCpuCount,
+            totalRam: totalRam
         )
     }
 
@@ -214,7 +218,9 @@ extension DeviceInfo: AnyMockable, RandomMockable {
             isSimulator: .mockRandom(),
             vendorId: .mockRandom(),
             isDebugging: .mockRandom(),
-            systemBootTime: .mockRandom()
+            systemBootTime: .mockRandom(),
+            logicalCpuCount: .mockRandom(),
+            totalRam: .mockRandom()
         )
     }
 }
