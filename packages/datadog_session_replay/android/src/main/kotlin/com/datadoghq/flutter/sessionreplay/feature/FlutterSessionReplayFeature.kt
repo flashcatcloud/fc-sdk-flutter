@@ -54,7 +54,7 @@ internal class DefaultFlutterSessionReplayFeature(
         )
     }
 
-    override val resourceResolver = DefaultResourceResolver(
+    override val resourceResolver: ResourceResolver = DefaultResourceResolver(
         sdkCore.internalLogger,
         DefaultResourceWriter(sdkCore)
     )

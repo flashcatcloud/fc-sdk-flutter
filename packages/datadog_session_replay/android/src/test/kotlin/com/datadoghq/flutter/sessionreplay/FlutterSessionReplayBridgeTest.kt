@@ -11,7 +11,7 @@ import assertk.assertThat
 import assertk.assertions.isEqualTo
 import assertk.assertions.isNotNull
 import com.datadog.android.api.feature.FeatureSdkCore
-import com.datadoghq.flutter.sessionreplay.feature.FlutterSessionReplayFeature
+import com.datadoghq.flutter.sessionreplay.feature.DefaultFlutterSessionReplayFeature
 import com.datadoghq.flutter.sessionreplay.resource.ResourceResolver
 import fr.xgouchet.elmyr.Forge
 import fr.xgouchet.elmyr.annotation.BoolForgery
@@ -31,7 +31,7 @@ import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.extension.ExtendWith
 
 internal fun FlutterSessionReplayBridge.enableWithMock(
-    mockFeature: FlutterSessionReplayFeature
+    mockFeature: DefaultFlutterSessionReplayFeature
 ) {
     this.feature = mockFeature
 }
@@ -75,7 +75,7 @@ class FlutterSessionReplayBridgeTest {
         @BoolForgery hasReplay: Boolean
     ) {
         // Given
-        val mockFeature = mockk<FlutterSessionReplayFeature>(relaxed = true)
+        val mockFeature = mockk<DefaultFlutterSessionReplayFeature>(relaxed = true)
         val bridge = FlutterSessionReplayBridge()
         bridge.enableWithMock(mockFeature)
 
@@ -92,7 +92,7 @@ class FlutterSessionReplayBridgeTest {
         @IntForgery recordCount: Int
     ) {
         // Given
-        val mockFeature = mockk<FlutterSessionReplayFeature>(relaxed = true)
+        val mockFeature = mockk<DefaultFlutterSessionReplayFeature>(relaxed = true)
         val bridge = FlutterSessionReplayBridge()
         bridge.enableWithMock(mockFeature)
 
@@ -108,7 +108,7 @@ class FlutterSessionReplayBridgeTest {
         @StringForgery segment: String
     ) {
         // Given
-        val mockFeature = mockk<FlutterSessionReplayFeature>(relaxed = true)
+        val mockFeature = mockk<DefaultFlutterSessionReplayFeature>(relaxed = true)
         val bridge = FlutterSessionReplayBridge()
         bridge.enableWithMock(mockFeature)
 
@@ -127,7 +127,7 @@ class FlutterSessionReplayBridgeTest {
         @IntForgery height: Int
     ) {
         // Given
-        val mockFeature = mockk<FlutterSessionReplayFeature>(relaxed = true)
+        val mockFeature = mockk<DefaultFlutterSessionReplayFeature>(relaxed = true)
         val mockResourceResolver = mockk<ResourceResolver>(relaxed = true)
         every { mockFeature.resourceResolver } returns mockResourceResolver
 
@@ -148,7 +148,7 @@ class FlutterSessionReplayBridgeTest {
         @StringForgery resolvedKey: String
     ) {
         // Given
-        val mockFeature = mockk<FlutterSessionReplayFeature>(relaxed = true)
+        val mockFeature = mockk<DefaultFlutterSessionReplayFeature>(relaxed = true)
         val mockResourceResolver = mockk<ResourceResolver>(relaxed = true)
         every { mockFeature.resourceResolver } returns mockResourceResolver
         every { mockResourceResolver.resolveResource(key) } returns resolvedKey

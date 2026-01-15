@@ -3,6 +3,7 @@
 // Copyright 2022-Present Datadog, Inc.
 
 import 'package:datadog_flutter_plugin/datadog_flutter_plugin.dart';
+import 'package:datadog_session_replay/datadog_session_replay.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
@@ -12,10 +13,17 @@ import 'screens/crash_screen.dart';
 import 'screens/graph_ql_screen.dart';
 import 'screens/network_screen.dart';
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   final GraphQLClient graphQLClient;
 
-  MyApp({super.key, required this.graphQLClient});
+  const MyApp({super.key, required this.graphQLClient});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  var captureKey = GlobalKey();
 
   final router = GoRouter(
     observers: [DatadogNavigationObserver(datadogSdk: DatadogSdk.instance)],
@@ -56,9 +64,11 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GraphQLProvider(
-      client: ValueNotifier<GraphQLClient>(graphQLClient),
-      child: RumUserActionDetector(
-        rum: DatadogSdk.instance.rum,
+      client: ValueNotifier<GraphQLClient>(widget.graphQLClient),
+      child: SessionReplayCapture(
+        key: captureKey,
+        rum: DatadogSdk.instance.rum!,
+        sessionReplay: DatadogSessionReplay.instance!,
         child: MaterialApp.router(
           title: 'Flutter Demo',
           theme: ThemeData.from(
