@@ -43,6 +43,10 @@ apply plugin: "com.android.library"
 apply plugin: "kotlin-android"
 
 android {
+     defaultConfig {
+        consumerProguardFiles 'consumer-rules.pro'
+    }
+    
     namespace "com.datadoghq.flutter"
     compileSdk 36
 
