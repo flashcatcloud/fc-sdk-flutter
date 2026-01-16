@@ -16,7 +16,7 @@ class DatadogSessionReplayPlatformAndroid extends DatadogSessionReplayPlatform {
   late FlutterSessionReplayBridge _bridge;
 
   DatadogSessionReplayPlatformAndroid() {
-    _bridge = FlutterSessionReplayBridge.getInstance();
+    _bridge = FlutterSessionReplayBridge.INSTANCE;
   }
 
   DatadogSessionReplayPlatformAndroid.fromJObject(JObject ref)

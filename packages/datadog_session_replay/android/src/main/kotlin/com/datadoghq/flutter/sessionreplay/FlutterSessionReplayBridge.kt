@@ -11,16 +11,7 @@ import com.datadog.android.api.feature.FeatureSdkCore
 import com.datadoghq.flutter.sessionreplay.feature.DefaultFlutterSessionReplayFeature
 import java.nio.ByteBuffer
 
-internal class FlutterSessionReplayBridge {
-    companion object {
-        private var instance: FlutterSessionReplayBridge = FlutterSessionReplayBridge()
-
-        @JvmStatic
-        fun getInstance(): FlutterSessionReplayBridge {
-            return instance
-        }
-    }
-
+internal object FlutterSessionReplayBridge {
     data class RumContext(
         val applicationId: String?,
         val sessionId: String?,
@@ -61,14 +52,20 @@ internal class FlutterSessionReplayBridge {
         }
 
         val featureSdkCore = core ?: Datadog.getInstance() as FeatureSdkCore
-        val feature = DefaultFlutterSessionReplayFeature(
+        val newFeature = DefaultFlutterSessionReplayFeature(
             featureSdkCore,
             { context -> contextListener?.onContextChanged(RumContext(context)) },
             configuration.customEndpointUrl
         )
-        featureSdkCore.registerFeature(feature)
-        this.feature = feature
-        return feature
+        featureSdkCore.registerFeature(newFeature)
+        feature = newFeature
+        return newFeature
+    }
+
+    // Only used in testing
+    internal fun shutdown() {
+        feature = null
+        contextListener = null
     }
 
     fun setHasReplay(viewId: String, hasReplay: Boolean) {

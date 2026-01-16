@@ -24,6 +24,7 @@ import io.mockk.mockkStatic
 import io.mockk.unmockkStatic
 import io.mockk.verify
 import java.nio.ByteBuffer
+import kotlin.test.AfterTest
 import kotlin.test.Test
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
@@ -51,22 +52,26 @@ class FlutterSessionReplayBridgeTest {
         unmockkStatic(Looper::class)
     }
 
+    @AfterTest
+    fun afterEach() {
+        FlutterSessionReplayBridge.shutdown()
+    }
+
     @Test
     fun `M register the feature W enable`() {
         // Given
         var mockCore: FeatureSdkCore = mockk(relaxed = true)
-        val bridge = FlutterSessionReplayBridge()
         val configuration = FlutterSessionReplayBridge.Configuration(
             customEndpointUrl = null,
             onContextChanged = mockk(relaxed = true)
         )
 
         // When
-        bridge.enable(configuration, core = mockCore)
+        FlutterSessionReplayBridge.enable(configuration, core = mockCore)
 
         // Then
-        assertThat(bridge.feature).isNotNull()
-        verify { mockCore.registerFeature(bridge.feature!!) }
+        assertThat(FlutterSessionReplayBridge.feature).isNotNull()
+        verify { mockCore.registerFeature(FlutterSessionReplayBridge.feature!!) }
     }
 
     @Test
@@ -76,11 +81,10 @@ class FlutterSessionReplayBridgeTest {
     ) {
         // Given
         val mockFeature = mockk<DefaultFlutterSessionReplayFeature>(relaxed = true)
-        val bridge = FlutterSessionReplayBridge()
-        bridge.enableWithMock(mockFeature)
+        FlutterSessionReplayBridge.enableWithMock(mockFeature)
 
         // When
-        bridge.setHasReplay(viewId, hasReplay)
+        FlutterSessionReplayBridge.setHasReplay(viewId, hasReplay)
 
         // Then
         verify { mockFeature.setHasReplay(viewId, hasReplay) }
@@ -93,11 +97,10 @@ class FlutterSessionReplayBridgeTest {
     ) {
         // Given
         val mockFeature = mockk<DefaultFlutterSessionReplayFeature>(relaxed = true)
-        val bridge = FlutterSessionReplayBridge()
-        bridge.enableWithMock(mockFeature)
+        FlutterSessionReplayBridge.enableWithMock(mockFeature)
 
         // When
-        bridge.setRecordCount(viewId, recordCount)
+        FlutterSessionReplayBridge.setRecordCount(viewId, recordCount)
 
         // Then
         verify { mockFeature.setRecordCount(viewId, recordCount) }
@@ -109,11 +112,10 @@ class FlutterSessionReplayBridgeTest {
     ) {
         // Given
         val mockFeature = mockk<DefaultFlutterSessionReplayFeature>(relaxed = true)
-        val bridge = FlutterSessionReplayBridge()
-        bridge.enableWithMock(mockFeature)
+        FlutterSessionReplayBridge.enableWithMock(mockFeature)
 
         // When
-        bridge.writeSegment(segment)
+        FlutterSessionReplayBridge.writeSegment(segment)
 
         // Then
         verify { mockFeature.writeSegment(segment) }
@@ -131,12 +133,11 @@ class FlutterSessionReplayBridgeTest {
         val mockResourceResolver = mockk<ResourceResolver>(relaxed = true)
         every { mockFeature.resourceResolver } returns mockResourceResolver
 
-        val bridge = FlutterSessionReplayBridge()
-        bridge.enableWithMock(mockFeature)
+        FlutterSessionReplayBridge.enableWithMock(mockFeature)
 
         // When
         val data = ByteBuffer.allocate(forge.anInt(1, 100))
-        bridge.saveImageForProcessing(key, data, width, height)
+        FlutterSessionReplayBridge.saveImageForProcessing(key, data, width, height)
 
         // Then
         verify { mockResourceResolver.addResource(key, width, height, data) }
@@ -153,11 +154,10 @@ class FlutterSessionReplayBridgeTest {
         every { mockFeature.resourceResolver } returns mockResourceResolver
         every { mockResourceResolver.resolveResource(key) } returns resolvedKey
 
-        val bridge = FlutterSessionReplayBridge()
-        bridge.enableWithMock(mockFeature)
+        FlutterSessionReplayBridge.enableWithMock(mockFeature)
 
         // When
-        val result = bridge.resourceIdForKey(key)
+        val result = FlutterSessionReplayBridge.resourceIdForKey(key)
 
         // Then
         verify { mockResourceResolver.resolveResource(key) }
