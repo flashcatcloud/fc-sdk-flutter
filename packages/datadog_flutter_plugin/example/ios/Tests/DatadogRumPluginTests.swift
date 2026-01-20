@@ -820,7 +820,6 @@ class MockRUMMonitor: RUMMonitorProtocol, RUMCommandSubscriber {
         case succeedFeatureOperation(name: String, operationKey: String?, attributes: [AttributeKey: AttributeValue])
         case failFeatureOperation(name: String, operationKey: String?, failureReason: RUMFeatureOperationFailureReason,
                                   attributes: [AttributeKey: AttributeValue])
-        case reportAppFullyDisplayed
     }
 
     var callLog: [MethodCall] = []
@@ -964,10 +963,6 @@ class MockRUMMonitor: RUMMonitorProtocol, RUMCommandSubscriber {
         callLog.append(
             .failFeatureOperation(name: name, operationKey: operationKey, failureReason: reason, attributes: attributes)
         )
-    }
-
-    func reportAppFullyDisplayed() {
-        callLog.append(.reportAppFullyDisplayed)
     }
 
     /// Processes the given RUM Command.
