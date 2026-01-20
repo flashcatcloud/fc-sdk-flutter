@@ -4,6 +4,7 @@
 
 import 'package:datadog_flutter_plugin/datadog_flutter_plugin.dart';
 import 'package:datadog_gql_link/datadog_gql_link.dart';
+import 'package:datadog_session_replay/datadog_session_replay.dart';
 import 'package:datadog_tracking_http_client/datadog_tracking_http_client.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -33,13 +34,16 @@ void main() async {
       applicationId: dotenv.get('DD_APPLICATION_ID', fallback: ''),
       traceSampleRate: 100.0,
     ),
-  )..enableHttpTracking(
+  )
+    ..enableHttpTracking(
       // Using ignoreUrlPatterns is needed if you want to combine HttpClient
       // tracking and GraphQL tracking through datadog_gql_link
       ignoreUrlPatterns: [
         RegExp('localhost'),
       ],
-    );
+    )
+    ..enableSessionReplay(
+        DatadogSessionReplayConfiguration(replaySampleRate: 100));
 
   // runUsingRunApp(datadogConfig);
   runUsingAlternativeInit(

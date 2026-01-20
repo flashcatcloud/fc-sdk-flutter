@@ -9,10 +9,9 @@ package com.datadoghq.flutter.sessionreplay
 import com.datadog.android.Datadog
 import com.datadog.android.api.feature.FeatureSdkCore
 import com.datadoghq.flutter.sessionreplay.feature.DefaultFlutterSessionReplayFeature
-import com.datadoghq.flutter.sessionreplay.feature.FlutterSessionReplayFeature
 import java.nio.ByteBuffer
 
-internal class FlutterSessionReplayBridge {
+internal object FlutterSessionReplayBridge {
     data class RumContext(
         val applicationId: String?,
         val sessionId: String?,
@@ -36,21 +35,37 @@ internal class FlutterSessionReplayBridge {
         val onContextChanged: ContextListener
     )
 
-    var feature: FlutterSessionReplayFeature? = null
+    var contextListener: ContextListener? = null
+    var feature: DefaultFlutterSessionReplayFeature? = null
 
     fun enable(
         configuration: Configuration,
         core: FeatureSdkCore? = null
     ): DefaultFlutterSessionReplayFeature {
+        // Always replace the context listener. This is to prevent a crash in the case of a
+        // Hot Restart, where the previously created context listener has been destroyed.
+        contextListener = configuration.onContextChanged
+        // If this is already initialized, just return the existing feature (don't recreate and
+        // and replace it on the core).
+        feature?.let {
+            return it
+        }
+
         val featureSdkCore = core ?: Datadog.getInstance() as FeatureSdkCore
-        val feature = DefaultFlutterSessionReplayFeature(
+        val newFeature = DefaultFlutterSessionReplayFeature(
             featureSdkCore,
-            { context -> configuration.onContextChanged.onContextChanged(RumContext(context)) },
+            { context -> contextListener?.onContextChanged(RumContext(context)) },
             configuration.customEndpointUrl
         )
-        featureSdkCore.registerFeature(feature)
-        this.feature = feature
-        return feature
+        featureSdkCore.registerFeature(newFeature)
+        feature = newFeature
+        return newFeature
+    }
+
+    // Only used in testing
+    internal fun shutdown() {
+        feature = null
+        contextListener = null
     }
 
     fun setHasReplay(viewId: String, hasReplay: Boolean) {
