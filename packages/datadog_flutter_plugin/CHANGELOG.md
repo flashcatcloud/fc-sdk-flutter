@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.0.1
+
+* Add missing Proguard rules for Android. See [#932](https://github.com/DataDog/dd-sdk-flutter/issues/932)
+
 ## 3.0.0
 
 * Switch to merged vital event mapper in Android.

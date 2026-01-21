@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.0-preview.9
+
+* Switch to using a Singleton bridge for SessionReplay on Android to prevent crashes on Hot Restart. See [#932](https://github.com/DataDog/dd-sdk-flutter/issues/932)
+* Add missing Proguard rules for Android. See [#932](https://github.com/DataDog/dd-sdk-flutter/issues/932)
+
 ## 1.0.0-preview.8
 
 * Support getting context from background isolates.
