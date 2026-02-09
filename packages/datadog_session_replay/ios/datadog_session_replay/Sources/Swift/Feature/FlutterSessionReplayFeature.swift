@@ -43,6 +43,8 @@ class DefaultFlutterSessionReplayFeature: FlutterSessionReplayFeature, DatadogRe
     private var core: DatadogCoreProtocol?
     private var featureScope: FeatureScope?
 
+    let performanceOverride: DatadogInternal.PerformancePresetOverride?
+
     let requestBuilder: DatadogInternal.FeatureRequestBuilder
     let messageReceiver: DatadogInternal.FeatureMessageReceiver
 
@@ -54,7 +56,8 @@ class DefaultFlutterSessionReplayFeature: FlutterSessionReplayFeature, DatadogRe
     init(
         core: DatadogCoreProtocol,
         configuration: Configuration,
-        resourceResolver: ResourceResolver?
+        resourceResolver: ResourceResolver?,
+        performanceOverride: PerformancePresetOverride? = nil
     ) throws {
         self.core = core
         self.featureScope = core.scope(for: DefaultFlutterSessionReplayFeature.self)
@@ -78,6 +81,8 @@ class DefaultFlutterSessionReplayFeature: FlutterSessionReplayFeature, DatadogRe
         self.resourceResolver = resourceResolver ?? DefaultResourceResolver(
             writer: ResourcesWriter(scope: core.scope(for: ResourcesFeature.self))
         )
+        
+        self.performanceOverride = performanceOverride
     }
 
     func setHasReplay(_ hasReplay: Bool) {
