@@ -146,11 +146,15 @@ class DatadogClient extends http.BaseClient {
       try {
         // Copy the response so we can spy on the stream.
         final spyStream = StreamController<List<int>>();
-
         Object? firstError;
+        int? bytesReceived;
 
         response.stream.listen(
-          spyStream.sink.add,
+          (List<int> data) {
+            bytesReceived ??= 0;
+            bytesReceived = bytesReceived! + data.length;
+            spyStream.sink.add(data);
+          },
           onError: (Object e, StackTrace? st) {
             if (firstError == null) {
               firstError = e;
@@ -169,7 +173,8 @@ class DatadogClient extends http.BaseClient {
             if (rumKey != null) {
               final attributes =
                   attributesProvider?.call(request, response, null) ?? {};
-              _onFinish(rum, rumKey, response, attributes, firstError);
+              final size = response.contentLength ?? bytesReceived;
+              _onFinish(rum, rumKey, response, attributes, firstError, size);
             }
             spyStream.close();
           },
@@ -208,7 +213,7 @@ class DatadogClient extends http.BaseClient {
   }
 
   void _onFinish(DatadogRum rum, String rumKey, http.StreamedResponse response,
-      Map<String, Object?> attributes, Object? error) {
+      Map<String, Object?> attributes, Object? error, int? size) {
     try {
       // If we saw an error, this resource has already been stopped
       if (error == null) {
@@ -222,7 +227,7 @@ class DatadogClient extends http.BaseClient {
           rumKey,
           response.statusCode,
           resourceType,
-          response.contentLength,
+          size,
           attributes,
         );
       }
