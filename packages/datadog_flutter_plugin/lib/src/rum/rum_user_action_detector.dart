@@ -39,9 +39,18 @@ class _ElementDescription {
       return true;
     }
 
-    // Literally anything is better than GestureDetector...
+    // GestureDetector and InkWell are both generic tappable containers.
+    // A GestureDetector with its own annotation (different from the parent
+    // InkWell's annotation) should take precedence, indicating the user
+    // intentionally created a separate tappable area. However, if they share
+    // the same annotation, prefer InkWell as the GestureDetector is likely
+    // internal or unintentional.
     if (element.widget is GestureDetector) {
-      // ... except another GestureDetector
+      if (other.element.widget is InkWell &&
+          elementDescription != other.elementDescription) {
+        return true;
+      }
+      // Otherwise, GestureDetector only replaces another GestureDetector
       return other.element.widget is GestureDetector;
     }
 
