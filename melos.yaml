@@ -162,7 +162,9 @@ scripts:
       | tojunit "--output" "$MELOS_ROOT_PATH/.build/test-results/\$MELOS_PACKAGE_NAME_ios_integration.xml"'
     packageFilters:
       dirExists:  'example/integration_test'
-      ignore: 'datadog_flutter_plugin'
+      ignore: 
+        - 'datadog_flutter_plugin'
+        - 'datadog_webview_tracking'
 
   # Because the main package (datadog_flutter_plugin) is set up weird for integration tests,
   # have a separate target just for it that is called by `integration_test:ios``
