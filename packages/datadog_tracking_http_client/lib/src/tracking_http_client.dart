@@ -509,6 +509,7 @@ class _DatadogTrackingHttpResponse extends Stream<List<int>>
   final TracingContext? tracingContext;
   final Map<String, Object?> userAttributes;
   Object? lastError;
+  int? bytesReceived;
 
   _DatadogTrackingHttpResponse(
     this.client,
@@ -522,7 +523,14 @@ class _DatadogTrackingHttpResponse extends Stream<List<int>>
   StreamSubscription<List<int>> listen(void Function(List<int> event)? onData,
       {Function? onError, void Function()? onDone, bool? cancelOnError}) {
     return innerResponse.listen(
-      onData,
+      (List<int> data) {
+        bytesReceived ??= 0;
+        bytesReceived = bytesReceived! + data.length;
+        if (onData == null) {
+          return;
+        }
+        onData.call(data);
+      },
       cancelOnError: cancelOnError,
       onError: (Object e, StackTrace st) {
         _onError(e, st);
@@ -580,7 +588,7 @@ class _DatadogTrackingHttpResponse extends Stream<List<int>>
           var resourceType = resourceTypeFromContentType(headers.contentType);
           var size = innerResponse.contentLength > 0
               ? innerResponse.contentLength
-              : null;
+              : bytesReceived;
           var attributes =
               generateDatadogAttributes(tracingContext, rum.traceSampleRate);
           client.configuration.clientListener?.responseFinished(

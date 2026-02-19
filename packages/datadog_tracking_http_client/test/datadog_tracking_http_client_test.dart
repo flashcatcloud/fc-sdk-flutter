@@ -310,6 +310,34 @@ void main() {
           capturedKey, 200, RumResourceType.media, 88888, any()));
     });
 
+    test('reports streamed response size when contentLength is unknown (chunked)',
+        () async {
+      var url = Uri.parse('https://test_url/path');
+      final completer = setupMockRequest(url);
+
+      var request = await client.openUrl('get', url);
+
+      verify(() => mockClient.openUrl('get', url));
+      var capturedKey = verify(
+        () => mockRum.startResource(
+            captureAny(), RumHttpMethod.get, url.toString(), any()),
+      ).captured[0] as String;
+
+      // contentLength -1 = unknown (e.g. chunked transfer encoding)
+      final mockResponse = setupMockClientResponse(200, size: -1,
+          mimeType: 'application/octet-stream');
+      completer.complete(mockResponse);
+      var response = await request.done;
+
+      response.listen((event) {});
+      mockResponse.streamController.sink.add([1, 2, 3]);
+      mockResponse.streamController.sink.add([4, 5]);
+      await mockResponse.streamController.close();
+
+      verify(() => mockRum.stopResource(
+          capturedKey, 200, RumResourceType.native, 5, any()));
+    });
+
     test('calls stop resource with error connection error', () async {
       var url = Uri.parse('https://test_url/path');
       final completer = setupMockRequest(url);

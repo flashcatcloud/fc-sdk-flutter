@@ -4,6 +4,7 @@
 
 // ignore_for_file: invalid_use_of_internal_member
 
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:datadog_flutter_plugin/datadog_flutter_plugin.dart';
@@ -92,6 +93,20 @@ class DatadogDioInterceptor extends Interceptor {
     super.onError(err, handler);
   }
 
+  /// Returns byte length of response body when already in memory (e.g. chunked response).
+  static int? _responseDataByteLength(dynamic data) {
+    if (data is List<int>) {
+      return data.length;
+    }
+    if (data is Uint8List) {
+      return data.length;
+    }
+    if (data is String) {
+      return utf8.encode(data).length;
+    }
+    return null;
+  }
+
   void _stopWithResponse(
       DatadogRum rum, String rumKey, Response<dynamic> response) {
     final contentTypeHeader =
@@ -105,6 +120,10 @@ class DatadogDioInterceptor extends Interceptor {
         response.headers[Headers.contentLengthHeader]?.firstOrNull;
     if (contentLengthHeader != null) {
       contentLength = int.tryParse(contentLengthHeader);
+    }
+    // Chunked/streamed responses may omit Content-Length; use response body size when available
+    if (contentLength == null && response.data != null) {
+      contentLength = _responseDataByteLength(response.data);
     }
     final attributes = attributesProvider?.onResponse(response) ?? {};
     rum.stopResource(

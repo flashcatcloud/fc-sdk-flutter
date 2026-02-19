@@ -164,6 +164,30 @@ void main() {
           mockRum.stopResource(key, 200, RumResourceType.image, 88888, any()));
     });
 
+    test('reports streamed response size when contentLength is null (chunked)',
+        () async {
+      final client =
+          DatadogClient(datadogSdk: mockDatadog, innerClient: mockClient);
+      final testUri = Uri.parse('https://test_url/test');
+
+      when(() => mockResponse.contentLength).thenReturn(null);
+      when(() => mockResponse.headers).thenReturn({
+        HttpHeaders.contentTypeHeader: ContentType('image', 'png').toString()
+      });
+      final chunkedStream =
+          http.ByteStream(Stream.fromIterable([[1, 2, 3], [4, 5]]));
+      when(() => mockResponse.stream).thenAnswer((_) => chunkedStream);
+
+      await client.get(testUri, headers: {'x-datadog-header': 'header'});
+
+      final key = verify(() => mockRum.startResource(
+              captureAny(), RumHttpMethod.get, testUri.toString(), any()))
+          .captured[0] as String;
+
+      verify(() =>
+          mockRum.stopResource(key, 200, RumResourceType.image, 5, any()));
+    });
+
     test('calls stopResource with provided attributes', () async {
       http.BaseRequest? providedRequest;
       http.StreamedResponse? providedResponse;

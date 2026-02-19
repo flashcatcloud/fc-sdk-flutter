@@ -375,6 +375,29 @@ void main() {
           .stopResource(rumKey, 202, any(), any(), {'my_attribute': 100}));
     });
 
+    test('reports resource size from response body when Content-Length is missing (chunked)',
+        () {
+      // Given: chunked response with no content-length header but body in memory
+      final interceptor = DatadogDioInterceptor(datadogSdk: mockDatadog);
+      final requestOptions =
+          RequestOptions(path: 'https://test_uri', method: 'GET', headers: {});
+      final rumKey = randomString();
+      requestOptions.extra[DatadogDioInterceptor.datadogRumExtraKey] = rumKey;
+      final response = Response(
+        requestOptions: requestOptions,
+        statusCode: 200,
+        data: [1, 2, 3, 4, 5],
+        headers: Headers(),
+      );
+
+      // When
+      final handler = ResponseInterceptionHandlerMock();
+      interceptor.onResponse(response, handler);
+
+      // Then
+      verify(() => mockRum.stopResource(rumKey, 200, any(), 5, any()));
+    });
+
     test('the interceptor stops resource with error on error', () {
       // Given
       final interceptor = DatadogDioInterceptor(datadogSdk: mockDatadog);
