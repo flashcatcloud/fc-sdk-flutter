@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.1.0
+
+* Add RUM resource size tracking for chunked / streamed responses.
+
 ## 3.0.1
 
 * Properly depend on Datadog 3.0.
