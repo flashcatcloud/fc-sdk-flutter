@@ -33,7 +33,7 @@ stages:
   script:
     - ulimit -S -n 2048
     - export PATH=$PATH:$HOME/.pub-cache/bin
-    - flutter upgrade
+    - flutter upgrade --force
     - flutter --version
     - flutter doctor
     # SPM is the exception, make sure its disabled before starting the build
@@ -335,7 +335,7 @@ nightly-beta-test:
     - fvm destroy
     - fvm install beta
     - fvm use beta
-    - fvm flutter upgrade
+    - fvm flutter upgrade --force
     - fvm flutter precache --ios
     - fvm exec dart pub global activate melos
     - pod repo update    
@@ -365,7 +365,7 @@ nightly-beta-test-web:
     - !reference [.pre, script]
     - !reference [.pre-web, script]
     - flutter channel beta
-    - flutter upgrade
+    - flutter upgrade --force
     - dart pub global activate melos
     - flutter doctor
     - melos pub:get
