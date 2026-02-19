@@ -259,6 +259,125 @@ void main() {
     verifyNoMoreInteractions(mockRum);
   });
 
+  testWidgets(
+      'nested GestureDetector inside InkWell uses inner GestureDetector',
+      (tester) async {
+    final mockRum = MockDdRum();
+
+    final parentAnnotation = randomString();
+    final childAnnotation = randomString();
+    final childText = randomString();
+
+    await tester.pumpWidget(_buildSimpleApp(
+      mockRum,
+      RumUserActionAnnotation(
+        description: parentAnnotation,
+        child: InkWell(
+          onTap: () {},
+          child: Column(children: [
+            const Text('Parent text'),
+            RumUserActionAnnotation(
+              description: childAnnotation,
+              child: GestureDetector(
+                onTap: () {},
+                child: Text(childText),
+              ),
+            ),
+          ]),
+        ),
+      ),
+    ));
+
+    final text = find
+        .byWidgetPredicate((widget) => widget is Text && widget.data == childText);
+    await tester.tap(text);
+
+    verify(() => mockRum.addAction(
+        RumActionType.tap, 'GestureDetector($childAnnotation)'));
+    verifyNoMoreInteractions(mockRum);
+  });
+
+  testWidgets(
+      'nested GestureDetector inside InkWell without annotation uses InkWell',
+      (tester) async {
+    // When a GestureDetector is nested inside InkWell but has NO annotation,
+    // the InkWell should take precedence (the GestureDetector is likely
+    // internal or unintentional).
+    final mockRum = MockDdRum();
+
+    final parentAnnotation = randomString();
+    final childText = randomString();
+
+    await tester.pumpWidget(_buildSimpleApp(
+      mockRum,
+      RumUserActionAnnotation(
+        description: parentAnnotation,
+        child: InkWell(
+          onTap: () {},
+          child: Column(children: [
+            const Text('Parent text'),
+            // No RumUserActionAnnotation wrapping the GestureDetector
+            GestureDetector(
+              onTap: () {},
+              child: Text(childText),
+            ),
+          ]),
+        ),
+      ),
+    ));
+
+    final text = find
+        .byWidgetPredicate((widget) => widget is Text && widget.data == childText);
+    await tester.tap(text);
+
+    // Should report InkWell since the nested GestureDetector has no annotation
+    verify(() =>
+        mockRum.addAction(RumActionType.tap, 'InkWell($parentAnnotation)'));
+    verifyNoMoreInteractions(mockRum);
+  });
+
+  testWidgets(
+      'nested GestureDetector inside InkWell reports correct attributes',
+      (tester) async {
+    // Verify that attributes from the inner annotation are correctly reported
+    final mockRum = MockDdRum();
+
+    final parentAnnotation = randomString();
+    final childAnnotation = randomString();
+    final childText = randomString();
+    final childAttributes = {'placement': 'child', 'test_id': 12345};
+
+    await tester.pumpWidget(_buildSimpleApp(
+      mockRum,
+      RumUserActionAnnotation(
+        description: parentAnnotation,
+        attributes: {'placement': 'parent'},
+        child: InkWell(
+          onTap: () {},
+          child: Column(children: [
+            const Text('Parent text'),
+            RumUserActionAnnotation(
+              description: childAnnotation,
+              attributes: childAttributes,
+              child: GestureDetector(
+                onTap: () {},
+                child: Text(childText),
+              ),
+            ),
+          ]),
+        ),
+      ),
+    ));
+
+    final text = find
+        .byWidgetPredicate((widget) => widget is Text && widget.data == childText);
+    await tester.tap(text);
+
+    verify(() => mockRum.addAction(
+        RumActionType.tap, 'GestureDetector($childAnnotation)', childAttributes));
+    verifyNoMoreInteractions(mockRum);
+  });
+
   testWidgets('tap button with annotation reports annotation over text',
       (tester) async {
     final mockRum = MockDdRum();
