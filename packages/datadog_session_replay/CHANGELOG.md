@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.0-preview.10
+
+* Update required minimum version of `datadog_flutter_plugin` to 3.1.0 to support changes in iOS core libraries.
+
 ## 1.0.0-preview.9
 
 * Switch to using a Singleton bridge for SessionReplay on Android to prevent crashes on Hot Restart. See [#932](https://github.com/DataDog/dd-sdk-flutter/issues/932)
