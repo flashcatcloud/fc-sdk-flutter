@@ -364,6 +364,7 @@ nightly-beta-test-web:
   script:
     - !reference [.pre, script]
     - !reference [.pre-web, script]
+    - git -C "$(dirname $(dirname $(which flutter)))" reset --hards
     - flutter channel beta
     - flutter upgrade --force
     - dart pub global activate melos
