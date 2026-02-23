@@ -1,3 +1,7 @@
+## 2.1.0
+
+* Add RUM resource size tracking for chunked / streamed responses.
+
 ## 2.0.0
 
 * Expose `DatadogDioInterceptor`. See [#906](https://github.com/DataDog/dd-sdk-flutter/issues/906)

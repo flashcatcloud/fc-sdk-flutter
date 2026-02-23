@@ -1,5 +1,20 @@
 # Changelog
 
+## 3.1.0
+
+* Improve precedence handling for nested `GestureDetector` and `InkWell`.
+* Update iOS SDK to 3.7.0. For a full list of changes, see the [iOS Changelog](https://github.com/DataDog/dd-sdk-ios/blob/develop/CHANGELOG.md).
+  * Report time to initial display (TTID).
+  * Add public API to report time to full display (TTFD)
+  * Remove application_start action from ApplicationLaunch.
+  * Track Slow Frames (view hitches) by default.
+  * Replace PLCrashReporter by KSCrash as `DatadogCrashReporting plugin.
+  * Prevent crashes related to swapping the __cxa_throw function. 
+  * Skip malformed Logs attributes individually instead of dropping the entire event, and log clear error messages.
+  * Propagate feature flags to RUM error and view events for crashes, fatal app hangs, and watchdog terminations
+* Update Android SDK to 3.6.0. For a full list of changes see the [Android Changelog](https://github.com/DataDog/dd-sdk-android/blob/develop/CHANGELOG.md).
+  * Mark fatal ANR as processed before RUM events are written.
+
 ## 3.0.1
 
 * Add missing Proguard rules for Android. See [#932](https://github.com/DataDog/dd-sdk-flutter/issues/932)
