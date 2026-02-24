@@ -14,6 +14,7 @@ class RumScreen extends StatefulWidget {
 
 class _RumScreenState extends State<RumScreen> {
   var viewStarted = false;
+  var actionStarted = false;
   var resourceStarted = false;
   final TextEditingController _viewNameController =
       TextEditingController(text: 'RUM Test View');
@@ -86,6 +87,38 @@ class _RumScreenState extends State<RumScreen> {
     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
       content: Text('Sent Action $name'),
     ));
+  }
+
+  static const actionName = 'Test Timed Action';
+
+  void _startAction() {
+    setState(() {
+      actionStarted = true;
+    });
+
+    var rum = DatadogSdk.instance.rum;
+    if (rum != null) {
+      rum.startAction(RumActionType.custom, actionName);
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+      content: Text('Action $actionName Started'),
+    ));
+  }
+
+  void _stopAction() {
+    var rum = DatadogSdk.instance.rum;
+    if (rum != null) {
+      rum.stopAction(RumActionType.custom, actionName);
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+      content: Text('Action $actionName Stopped'),
+    ));
+
+    setState(() {
+      actionStarted = false;
+    });
   }
 
   static const resourceKey = 'ResourceKey';
@@ -172,7 +205,29 @@ class _RumScreenState extends State<RumScreen> {
                       child: const Text('Start View'),
                     ),
                     Row(
-                      //mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: (viewStarted && !actionStarted)
+                                ? _startAction
+                                : null,
+                            child: const Text('Start Action'),
+                          ),
+                        ),
+                        const SizedBox(
+                          width: 6,
+                        ),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: (viewStarted && actionStarted)
+                                ? _stopAction
+                                : null,
+                            child: const Text('Stop Action'),
+                          ),
+                        ),
+                      ],
+                    ),
+                    Row(
                       children: [
                         Expanded(
                           child: ElevatedButton(

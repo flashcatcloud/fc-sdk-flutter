@@ -86,6 +86,7 @@ class DdRumWeb extends DdRumPlatform {
         enableExperimentalFeatures: [
           'feature_flags'.toJS,
           'feature_operation_vital'.toJS,
+          'start_stop_action'.toJS,
         ].toJS,
         trackingConsent: trackingConsent.webValue(),
         compressIntakeRequests: false,
@@ -288,7 +289,14 @@ class DdRumWeb extends DdRumPlatform {
     String name,
     Map<String, dynamic> attributes,
   ) async {
-    // NOOP
+    final context = attributesToJs(attributes, 'attributes');
+    DD_RUM?.startAction(
+      name,
+      _ActionOptions(
+        type: actionTypeToJs(type),
+        context: context,
+      ),
+    );
   }
 
   @override
@@ -354,7 +362,14 @@ class DdRumWeb extends DdRumPlatform {
     String name,
     Map<String, dynamic> attributes,
   ) async {
-    // NOOP
+    final context = attributesToJs(attributes, 'attributes');
+    DD_RUM?.stopAction(
+      name,
+      _ActionOptions(
+        type: actionTypeToJs(type),
+        context: context,
+      ),
+    );
   }
 
   @override
@@ -542,6 +557,16 @@ extension type _FeatureOperationOptions._(JSObject _) implements JSObject {
   });
 }
 
+@anonymous
+extension type _ActionOptions._(JSObject _) implements JSObject {
+  external factory _ActionOptions({
+    String? type,
+    JSObject? context,
+    // ignore: unused_element_parameter
+    String? actionKey,
+  });
+}
+
 extension type _DdRum._(JSObject _) implements JSObject {
   external void init(_RumInitOptions configuration);
   external _RumInternalContext? getInternalContext();
@@ -568,6 +593,8 @@ extension type _DdRum._(JSObject _) implements JSObject {
       String name, _FeatureOperationOptions options);
   external void failFeatureOperation(
       String name, String failureReason, _FeatureOperationOptions options);
+  external void startAction(String name, _ActionOptions? options);
+  external void stopAction(String name, _ActionOptions? options);
 }
 
 @JS()
