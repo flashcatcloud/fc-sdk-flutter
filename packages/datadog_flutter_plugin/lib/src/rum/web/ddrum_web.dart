@@ -13,13 +13,12 @@ import '../../../datadog_internal.dart';
 import '../../web_helpers.dart';
 import '../ddrum_platform_interface.dart';
 import 'raw_events.dart';
-import 'resource_tracker.dart';
 import 'rum_web_plugin.dart';
 
 class DdRumWeb extends DdRumPlatform {
   final Uuid _uuid = Uuid();
   RumWebPluginImpl? _webPlugin;
-  ResourceTracker? _resourceTracker;
+  final Map<String, _ResourceStartInfo> _startedResources = {};
 
   @override
   // Can return this directly, don't need to use a cached version
@@ -44,8 +43,6 @@ class DdRumWeb extends DdRumPlatform {
     final plugins = [
       createJSInteropWrapper<RumWebPluginImpl>(_webPlugin!),
     ].toJS;
-
-    _resourceTracker = ResourceTracker(_webPlugin!);
 
     DD_RUM?.init(
       _RumInitOptions(
@@ -87,6 +84,7 @@ class DdRumWeb extends DdRumPlatform {
           'feature_flags'.toJS,
           'feature_operation_vital'.toJS,
           'start_stop_action'.toJS,
+          'start_stop_resource'.toJS,
         ].toJS,
         trackingConsent: trackingConsent.webValue(),
         compressIntakeRequests: false,
@@ -273,12 +271,17 @@ class DdRumWeb extends DdRumPlatform {
     String url,
     Map<String, dynamic> attributes,
   ) async {
-    _resourceTracker?.startResource(
-      timestamp,
-      key,
-      httpMethod,
+    final method = httpMethod.name.toUpperCase();
+    _startedResources[key] = _ResourceStartInfo(url, method);
+    final context = attributesToJs(attributes, 'attributes');
+    DD_RUM?.startResource(
       url,
-      attributes,
+      _ResourceStartOptions(
+        type: 'other',
+        method: method,
+        context: context,
+        resourceKey: key,
+      ),
     );
   }
 
@@ -318,13 +321,15 @@ class DdRumWeb extends DdRumPlatform {
     int? size,
     Map<String, dynamic> attributes,
   ) async {
-    _resourceTracker?.stopResource(
-      timestamp,
+    _startedResources.remove(key);
+    final context = attributesToJs(attributes, 'attributes');
+    DD_RUM?.stopResource(
       key,
-      statusCode,
-      kind,
-      size,
-      attributes,
+      _ResourceStopOptions(
+        statusCode: statusCode,
+        context: context,
+        resourceKey: key,
+      ),
     );
   }
 
@@ -335,7 +340,13 @@ class DdRumWeb extends DdRumPlatform {
     Exception error,
     Map<String, dynamic> attributes,
   ) async {
-    _resourceTracker?.stopResourceWithError(timestamp, key, error, attributes);
+    await stopResourceWithErrorInfo(
+      timestamp,
+      key,
+      error.toString(),
+      error.runtimeType.toString(),
+      attributes,
+    );
   }
 
   @override
@@ -346,12 +357,40 @@ class DdRumWeb extends DdRumPlatform {
     String type,
     Map<String, dynamic> attributes,
   ) async {
-    _resourceTracker?.stopResourceWithErrorInfo(
-      timestamp,
+    final startInfo = _startedResources.remove(key);
+    final context = attributesToJs(attributes, 'attributes');
+
+    DD_RUM?.stopResource(
       key,
-      message,
-      type,
-      attributes,
+      _ResourceStopOptions(
+        context: context,
+        resourceKey: key,
+      ),
+    );
+
+    final epochTime = timestamp.millisecondsSinceEpoch;
+    final eventTime = _toRelativeTime(timestamp);
+    final id = _uuid.v4();
+    _webPlugin?.addEvent(
+      eventTime,
+      RumWebRawErrorEvent(
+        date: epochTime.toJS,
+        context: context,
+        error: RumWebRawErrorData(
+          id: id.toString(),
+          message: message,
+          source: 'network',
+          type: type,
+          resource: startInfo != null
+              ? RumWebRawErrorResource(
+                  method: startInfo.method,
+                  status_code: 0,
+                  url: startInfo.url,
+                )
+              : null,
+        ),
+      ),
+      RumWebErrorEventDomainContext(),
     );
   }
 
@@ -452,6 +491,12 @@ class DdRumWeb extends DdRumPlatform {
     return _webPlugin?.getEventRelativeTime(time) ??
         time.microsecondsSinceEpoch.toJS;
   }
+}
+
+class _ResourceStartInfo {
+  final String url;
+  final String method;
+  _ResourceStartInfo(this.url, this.method);
 }
 
 JSString _headerTypeToPropagatorType(TracingHeaderType type) {
@@ -567,6 +612,25 @@ extension type _ActionOptions._(JSObject _) implements JSObject {
   });
 }
 
+@anonymous
+extension type _ResourceStartOptions._(JSObject _) implements JSObject {
+  external factory _ResourceStartOptions({
+    String? type,
+    String? method,
+    JSObject? context,
+    String? resourceKey,
+  });
+}
+
+@anonymous
+extension type _ResourceStopOptions._(JSObject _) implements JSObject {
+  external factory _ResourceStopOptions({
+    int? statusCode,
+    JSObject? context,
+    String? resourceKey,
+  });
+}
+
 extension type _DdRum._(JSObject _) implements JSObject {
   external void init(_RumInitOptions configuration);
   external _RumInternalContext? getInternalContext();
@@ -595,6 +659,8 @@ extension type _DdRum._(JSObject _) implements JSObject {
       String name, String failureReason, _FeatureOperationOptions options);
   external void startAction(String name, _ActionOptions? options);
   external void stopAction(String name, _ActionOptions? options);
+  external void startResource(String url, _ResourceStartOptions? options);
+  external void stopResource(String url, _ResourceStopOptions? options);
 }
 
 @JS()
