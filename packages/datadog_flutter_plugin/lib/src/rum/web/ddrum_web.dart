@@ -358,6 +358,8 @@ class DdRumWeb extends DdRumPlatform {
     Map<String, dynamic> attributes,
   ) async {
     final startInfo = _startedResources.remove(key);
+    if (startInfo == null) return;
+
     final context = attributesToJs(attributes, 'attributes');
 
     DD_RUM?.stopResource(
@@ -381,13 +383,11 @@ class DdRumWeb extends DdRumPlatform {
           message: message,
           source: 'network',
           type: type,
-          resource: startInfo != null
-              ? RumWebRawErrorResource(
-                  method: startInfo.method,
-                  status_code: 0,
-                  url: startInfo.url,
-                )
-              : null,
+          resource: RumWebRawErrorResource(
+            method: startInfo.method,
+            status_code: 0,
+            url: startInfo.url,
+          ),
         ),
       ),
       RumWebErrorEventDomainContext(),
