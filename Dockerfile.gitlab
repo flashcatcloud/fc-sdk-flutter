@@ -64,12 +64,6 @@ RUN python3 --version
 RUN set -x \
  && pip install awscli
 
-RUN set -x \
- && curl -OL https://s3.amazonaws.com/dd-package-public/dd-package.deb && dpkg -i dd-package.deb && rm dd-package.deb \
- && apt-get update \
- && apt-get -y clean \
- && rm -rf /var/lib/apt/lists/*
-
 # Gradle
 RUN \
     cd /usr/local && \
