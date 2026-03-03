@@ -155,10 +155,7 @@ void main() {
           .toList();
       expect(manualResourceEvents.length, 1);
       expect(manualResourceEvents[0].statusCode, 200);
-      // TODO FIX ON BROWSER: Browser SDK only accepts resource type at start,
-      if (!kIsWeb) {
-        expect(manualResourceEvents[0].resourceType, 'image');
-      }
+      expect(manualResourceEvents[0].resourceType, 'image');
       final resourceDuration = manualResourceEvents[0].duration;
       expect(resourceDuration,
           greaterThan(const Duration(milliseconds: 90).inNanoseconds - 1));
@@ -218,7 +215,7 @@ void main() {
       expect(view2.path, 'RumManualInstrumentation2');
     }
     expect(view2.viewEvents.last.view.errorCount, 1);
-    expect(view2.viewEvents.last.view.actionCount, kIsWeb ? 1 : 2);
+    expect(view2.viewEvents.last.view.actionCount, 2);
     // We can have multiple long tasks
     expect(view2.viewEvents.last.view.longTaskCount, greaterThanOrEqualTo(1));
     expect(
@@ -249,10 +246,7 @@ void main() {
       final resourceStart = manualResourceEvents[0].date;
       expect(manualResourceEvents[0].url, 'https://fake_url/tns-resource/1');
       expect(manualResourceEvents[0].statusCode, 200);
-      // TODO FIX ON BROWSER: Browser SDK only accepts resource type at start,
-      if (!kIsWeb) {
-        expect(manualResourceEvents[0].resourceType, 'image');
-      }
+      expect(manualResourceEvents[0].resourceType, 'image');
       final resourceDuration = manualResourceEvents[0].duration;
       expect(resourceDuration,
           greaterThan(const Duration(milliseconds: 90).inNanoseconds - 1));
@@ -297,22 +291,18 @@ void main() {
     }
     expect(over200, greaterThanOrEqualTo(1));
 
-    // Web doesn't support start/stopAction
-    RumActionEventDecoder tapAction;
-    if (!kIsWeb) {
-      expect(view2.actionEvents[0].actionType, 'scroll');
-      expect(view2.actionEvents[0].actionName, 'User Scrolling');
+    expect(view2.actionEvents[0].actionType, 'scroll');
+    expect(view2.actionEvents[0].actionName, 'User Scrolling');
 
+    if (!kIsWeb) {
       expect(view2.actionEvents[0].loadingTime,
           greaterThan(1800 * 1000 * 1000)); // 1.8s
       // TODO: Figure out why occasionally these have really high values
       // expect(view1.actionEvents[0].loadingTime,
       //     lessThan(3 * 1000 * 1000 * 1000)); // 3s
       expect(view2.actionEvents[0].context![contextKey], expectedContextValue);
-      tapAction = view2.actionEvents[1];
-    } else {
-      tapAction = view2.actionEvents[0];
     }
+    final tapAction = view2.actionEvents[1];
 
     expect(tapAction.actionName, 'Next Screen');
     expect(tapAction.context![contextKey], expectedContextValue);
