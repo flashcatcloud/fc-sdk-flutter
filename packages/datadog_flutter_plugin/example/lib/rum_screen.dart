@@ -92,37 +92,29 @@ class _RumScreenState extends State<RumScreen> {
   }
 
   void _startAction() {
-    var rum = DatadogSdk.instance.rum;
-    if (rum != null) {
-      rum.startAction(RumActionType.custom, actionName, {
-        'cart_id': 'cart_${DateTime.now().millisecondsSinceEpoch}',
-      });
+    DatadogSdk.instance.rum?.startAction(RumActionType.custom, actionName, {});
 
-      setState(() {
-        actionStarted = true;
-      });
+    setState(() {
+      actionStarted = true;
+    });
 
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text('Action $actionName Started'),
-      ));
-    }
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+      content: Text('Action $actionName Started'),
+    ));
   }
 
   void _stopAction() {
-    var rum = DatadogSdk.instance.rum;
-    if (rum != null) {
-      rum.stopAction(RumActionType.custom, actionName, {
-        'completed': true,
-      });
+    DatadogSdk.instance.rum?.stopAction(RumActionType.custom, actionName, {
+      'completed': true,
+    });
 
-      setState(() {
-        actionStarted = false;
-      });
+    setState(() {
+      actionStarted = false;
+    });
 
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text('Action $actionName Stopped'),
-      ));
-    }
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+      content: Text('Action $actionName Stopped'),
+    ));
   }
 
   static const resourceKey = 'ResourceKey';

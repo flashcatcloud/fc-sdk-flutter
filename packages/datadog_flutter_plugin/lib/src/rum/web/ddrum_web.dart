@@ -327,7 +327,7 @@ class DdRumWeb extends DdRumPlatform {
       key,
       _ResourceStopOptions(
         statusCode: statusCode,
-        type: _resourceTypeToJs(kind),
+        type: kind.webValue(),
         context: context,
         resourceKey: key,
       ),
@@ -500,29 +500,31 @@ class _ResourceStartInfo {
   _ResourceStartInfo(this.url, this.method);
 }
 
-String _resourceTypeToJs(RumResourceType kind) {
-  switch (kind) {
-    case RumResourceType.document:
-      return 'document';
-    case RumResourceType.image:
-      return 'image';
-    case RumResourceType.xhr:
-      return 'xhr';
-    case RumResourceType.beacon:
-      return 'beacon';
-    case RumResourceType.css:
-      return 'css';
-    case RumResourceType.fetch:
-      return 'fetch';
-    case RumResourceType.font:
-      return 'font';
-    case RumResourceType.js:
-      return 'js';
-    case RumResourceType.media:
-      return 'media';
-    case RumResourceType.native:
-    case RumResourceType.other:
-      return 'other';
+extension RumResourceTypeWebValue on RumResourceType {
+  String webValue() {
+    switch (this) {
+      case RumResourceType.document:
+        return 'document';
+      case RumResourceType.image:
+        return 'image';
+      case RumResourceType.xhr:
+        return 'xhr';
+      case RumResourceType.beacon:
+        return 'beacon';
+      case RumResourceType.css:
+        return 'css';
+      case RumResourceType.fetch:
+        return 'fetch';
+      case RumResourceType.font:
+        return 'font';
+      case RumResourceType.js:
+        return 'js';
+      case RumResourceType.media:
+        return 'media';
+      case RumResourceType.native:
+      case RumResourceType.other:
+        return 'other';
+    }
   }
 }
 
