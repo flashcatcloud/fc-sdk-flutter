@@ -294,14 +294,13 @@ void main() {
     expect(view2.actionEvents[0].actionType, 'scroll');
     expect(view2.actionEvents[0].actionName, 'User Scrolling');
 
-    if (!kIsWeb) {
-      expect(view2.actionEvents[0].loadingTime,
-          greaterThan(1800 * 1000 * 1000)); // 1.8s
-      // TODO: Figure out why occasionally these have really high values
-      // expect(view1.actionEvents[0].loadingTime,
-      //     lessThan(3 * 1000 * 1000 * 1000)); // 3s
-      expect(view2.actionEvents[0].context![contextKey], expectedContextValue);
-    }
+    // start/stop action is supported on web via the start_stop_action experimental feature
+    expect(view2.actionEvents[0].loadingTime,
+        greaterThan(1800 * 1000 * 1000)); // 1.8s
+    // TODO: Figure out why occasionally these have really high values
+    // expect(view1.actionEvents[0].loadingTime,
+    //     lessThan(3 * 1000 * 1000 * 1000)); // 3s
+    expect(view2.actionEvents[0].context![contextKey], expectedContextValue);
     final tapAction = view2.actionEvents[1];
 
     expect(tapAction.actionName, 'Next Screen');
