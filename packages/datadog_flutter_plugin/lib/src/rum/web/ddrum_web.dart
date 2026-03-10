@@ -328,6 +328,7 @@ class DdRumWeb extends DdRumPlatform {
       _ResourceStopOptions(
         statusCode: statusCode,
         type: kind.webValue(),
+        size: size,
         context: context,
         resourceKey: key,
       ),
@@ -656,6 +657,7 @@ extension type _ResourceStopOptions._(JSObject _) implements JSObject {
   external factory _ResourceStopOptions({
     int? statusCode,
     String? type,
+    int? size,
     JSObject? context,
     String? resourceKey,
   });

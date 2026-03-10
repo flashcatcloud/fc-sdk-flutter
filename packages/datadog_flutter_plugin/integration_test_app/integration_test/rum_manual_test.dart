@@ -161,6 +161,7 @@ void main() {
           greaterThan(const Duration(milliseconds: 90).inNanoseconds - 1));
       expect(resourceDuration,
           lessThan(const Duration(seconds: 10).inNanoseconds));
+      expect(manualResourceEvents[0].size, 2048);
     }
 
     expect(view1.errorEvents.length, 1);

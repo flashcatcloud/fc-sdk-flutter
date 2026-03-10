@@ -138,7 +138,7 @@ class _RumScreenState extends State<RumScreen> {
   void _stopResource() {
     var rum = DatadogSdk.instance.rum;
     if (rum != null) {
-      rum.stopResource(resourceKey, 200, RumResourceType.image);
+      rum.stopResource(resourceKey, 200, RumResourceType.image, 1024);
     }
 
     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
