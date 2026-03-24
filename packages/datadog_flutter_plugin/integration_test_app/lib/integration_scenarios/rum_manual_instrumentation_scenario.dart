@@ -129,7 +129,7 @@ class _RumManualInstrumentationScenarioState
         '$fakeRootUrl$simulatedResourceKey2');
 
     await Future<void>.delayed(const Duration(milliseconds: 100));
-    rum?.stopResource(simulatedResourceKey1, 200, RumResourceType.image);
+    rum?.stopResource(simulatedResourceKey1, 200, RumResourceType.image, 2048);
     rum?.stopResourceWithErrorInfo(
         simulatedResourceKey2, 'Status code 400', 'ErrorLoading');
 

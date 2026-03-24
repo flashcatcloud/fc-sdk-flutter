@@ -14,10 +14,13 @@ class RumScreen extends StatefulWidget {
 
 class _RumScreenState extends State<RumScreen> {
   var viewStarted = false;
+  var actionStarted = false;
   var resourceStarted = false;
   final TextEditingController _viewNameController =
       TextEditingController(text: 'RUM Test View');
   String? _currentSessionId;
+
+  static const actionName = 'checkout-flow';
 
   @override
   void initState() {
@@ -88,6 +91,32 @@ class _RumScreenState extends State<RumScreen> {
     ));
   }
 
+  void _startAction() {
+    DatadogSdk.instance.rum?.startAction(RumActionType.custom, actionName, {});
+
+    setState(() {
+      actionStarted = true;
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+      content: Text('Action $actionName Started'),
+    ));
+  }
+
+  void _stopAction() {
+    DatadogSdk.instance.rum?.stopAction(RumActionType.custom, actionName, {
+      'completed': true,
+    });
+
+    setState(() {
+      actionStarted = false;
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+      content: Text('Action $actionName Stopped'),
+    ));
+  }
+
   static const resourceKey = 'ResourceKey';
   static const resource = '/testing/url';
 
@@ -109,11 +138,30 @@ class _RumScreenState extends State<RumScreen> {
   void _stopResource() {
     var rum = DatadogSdk.instance.rum;
     if (rum != null) {
-      rum.stopResource(resourceKey, 200, RumResourceType.image);
+      rum.stopResource(resourceKey, 200, RumResourceType.image, 1024);
     }
 
     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
       content: Text('Resource $resource Stopped'),
+    ));
+
+    setState(() {
+      resourceStarted = false;
+    });
+  }
+
+  void _stopResourceWithError() {
+    var rum = DatadogSdk.instance.rum;
+    if (rum != null) {
+      rum.stopResourceWithErrorInfo(
+        resourceKey,
+        'Simulated network failure',
+        'NetworkError',
+      );
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+      content: Text('Resource $resource Stopped With Error'),
     ));
 
     setState(() {
@@ -171,8 +219,58 @@ class _RumScreenState extends State<RumScreen> {
                       onPressed: viewStarted ? null : _startView,
                       child: const Text('Start View'),
                     ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Start/Stop Action (tracks errors, resources, long tasks)',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                    ),
                     Row(
-                      //mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: (viewStarted && !actionStarted)
+                                ? _startAction
+                                : null,
+                            child: const Text('▶ Start Action'),
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: (viewStarted && actionStarted)
+                                ? _stopAction
+                                : null,
+                            child: const Text('◼ Stop Action'),
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (actionStarted)
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        margin: const EdgeInsets.symmetric(vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.green.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: const Text(
+                          '✓ Action "checkout-flow" is active\nErrors, resources, and long tasks will be attributed to this action',
+                          style: TextStyle(fontSize: 12),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Resource Tracking',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                    ),
+                    Row(
                       children: [
                         Expanded(
                           child: ElevatedButton(
@@ -182,15 +280,25 @@ class _RumScreenState extends State<RumScreen> {
                             child: const Text('Start Resource'),
                           ),
                         ),
-                        const SizedBox(
-                          width: 6,
-                        ),
+                        const SizedBox(width: 6),
                         Expanded(
                           child: ElevatedButton(
                             onPressed: (viewStarted && resourceStarted)
                                 ? _stopResource
                                 : null,
-                            child: const Text('Stop Resource'),
+                            child: const Text('Stop (200)'),
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.red.shade100,
+                            ),
+                            onPressed: (viewStarted && resourceStarted)
+                                ? _stopResourceWithError
+                                : null,
+                            child: const Text('Stop (Error)'),
                           ),
                         ),
                       ],

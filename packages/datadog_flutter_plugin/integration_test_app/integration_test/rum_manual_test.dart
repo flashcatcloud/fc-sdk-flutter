@@ -161,6 +161,7 @@ void main() {
           greaterThan(const Duration(milliseconds: 90).inNanoseconds - 1));
       expect(resourceDuration,
           lessThan(const Duration(seconds: 10).inNanoseconds));
+      expect(manualResourceEvents[0].size, 2048);
     }
 
     expect(view1.errorEvents.length, 1);
@@ -215,7 +216,7 @@ void main() {
       expect(view2.path, 'RumManualInstrumentation2');
     }
     expect(view2.viewEvents.last.view.errorCount, 1);
-    expect(view2.viewEvents.last.view.actionCount, kIsWeb ? 1 : 2);
+    expect(view2.viewEvents.last.view.actionCount, 2);
     // We can have multiple long tasks
     expect(view2.viewEvents.last.view.longTaskCount, greaterThanOrEqualTo(1));
     expect(
@@ -291,22 +292,17 @@ void main() {
     }
     expect(over200, greaterThanOrEqualTo(1));
 
-    // Web doesn't support start/stopAction
-    RumActionEventDecoder tapAction;
-    if (!kIsWeb) {
-      expect(view2.actionEvents[0].actionType, 'scroll');
-      expect(view2.actionEvents[0].actionName, 'User Scrolling');
+    expect(view2.actionEvents[0].actionType, 'scroll');
+    expect(view2.actionEvents[0].actionName, 'User Scrolling');
 
-      expect(view2.actionEvents[0].loadingTime,
-          greaterThan(1800 * 1000 * 1000)); // 1.8s
-      // TODO: Figure out why occasionally these have really high values
-      // expect(view1.actionEvents[0].loadingTime,
-      //     lessThan(3 * 1000 * 1000 * 1000)); // 3s
-      expect(view2.actionEvents[0].context![contextKey], expectedContextValue);
-      tapAction = view2.actionEvents[1];
-    } else {
-      tapAction = view2.actionEvents[0];
-    }
+    // start/stop action is supported on web via the start_stop_action experimental feature
+    expect(view2.actionEvents[0].loadingTime,
+        greaterThan(1800 * 1000 * 1000)); // 1.8s
+    // TODO: Figure out why occasionally these have really high values
+    // expect(view1.actionEvents[0].loadingTime,
+    //     lessThan(3 * 1000 * 1000 * 1000)); // 3s
+    expect(view2.actionEvents[0].context![contextKey], expectedContextValue);
+    final tapAction = view2.actionEvents[1];
 
     expect(tapAction.actionName, 'Next Screen');
     expect(tapAction.context![contextKey], expectedContextValue);

@@ -276,6 +276,7 @@ class RumResourceEventDecoder extends RumEventDecoder {
   String? get resourceType => rumEvent['resource']['type'];
   int? get duration => rumEvent['resource']['duration'];
   String? get method => rumEvent['resource']['method'];
+  int? get size => rumEvent['resource']['size'];
 }
 
 class RumErrorEventDecoder extends RumEventDecoder {
