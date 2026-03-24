@@ -62,6 +62,10 @@ internal object FlutterSessionReplayBridge {
         return newFeature
     }
 
+    fun detachFromEngine() {
+        contextListener = null
+    }
+
     // Only used in testing
     internal fun shutdown() {
         feature = null

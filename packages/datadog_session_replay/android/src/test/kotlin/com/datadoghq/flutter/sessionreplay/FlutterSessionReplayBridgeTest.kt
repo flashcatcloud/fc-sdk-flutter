@@ -10,6 +10,7 @@ import android.os.Looper
 import assertk.assertThat
 import assertk.assertions.isEqualTo
 import assertk.assertions.isNotNull
+import assertk.assertions.isNull
 import com.datadog.android.api.feature.FeatureSdkCore
 import com.datadoghq.flutter.sessionreplay.feature.DefaultFlutterSessionReplayFeature
 import com.datadoghq.flutter.sessionreplay.resource.ResourceResolver
@@ -162,5 +163,23 @@ class FlutterSessionReplayBridgeTest {
         // Then
         verify { mockResourceResolver.resolveResource(key) }
         assertThat(result).isEqualTo(resolvedKey)
+    }
+
+    @Test
+    fun `M null contextListener only W detachFromEngine`() {
+        // Given
+        val mockCore: FeatureSdkCore = mockk(relaxed = true)
+        val configuration = FlutterSessionReplayBridge.Configuration(
+            customEndpointUrl = null,
+            onContextChanged = mockk(relaxed = true)
+        )
+        FlutterSessionReplayBridge.enable(configuration, core = mockCore)
+
+        // When
+        FlutterSessionReplayBridge.detachFromEngine()
+
+        // Then
+        assertThat(FlutterSessionReplayBridge.contextListener).isNull()
+        assertThat(FlutterSessionReplayBridge.feature).isNotNull()
     }
 }
