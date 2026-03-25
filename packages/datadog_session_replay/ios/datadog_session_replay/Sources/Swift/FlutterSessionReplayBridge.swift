@@ -44,11 +44,23 @@ public func __datadog_session_replay_keep_symbols() {
 }
 
 @objc(FlutterSessionReplay) public class FlutterSessionReplay: NSObject {
-    internal var feature: FlutterSessionReplayFeature?
+    // Static properties so the callback and feature survive engine detach/re-attach cycles,
+    // mirroring the Android FlutterSessionReplayBridge singleton pattern.
+    internal static var contextCallback: ((FlutterRUMCoreContext?) -> Void)?
+    internal static var feature: FlutterSessionReplayFeature?
+
+    // Ownership token for multi-engine support: only the engine that called enable()
+    // is allowed to null out the callback on detach. Set by claimOwnership(messenger:)
+    // after the Dart-side method channel message is delivered.
+    internal static var listenerOwner: AnyObject?
+
+    static func claimOwnership(messenger: AnyObject) {
+        listenerOwner = messenger
+    }
 
     @objc public func enable(with configuration: FlutterSessionReplayConfiguration) {
         do {
-            feature = try enableOrThrow(with: configuration, in: CoreRegistry.default)
+            try enableOrThrow(with: configuration, in: CoreRegistry.default)
         } catch let error {
             consolePrint("\(error)", .error)
         }
@@ -57,24 +69,41 @@ public func __datadog_session_replay_keep_symbols() {
     internal func enableOrThrow(
         with configuration: FlutterSessionReplayConfiguration,
         in core: DatadogCoreProtocol
-    ) throws -> FlutterSessionReplayFeature {
+    ) throws {
         guard !(core is NOPDatadogCore) else {
             throw ProgrammerError(
                 description: "Datadog SDK must be initialized before calling `SessionReplay.enable(with:)`."
             )
         }
 
+        // Always replace the context callback to prevent a crash on Hot Restart / engine
+        // re-attach, where the previously created FFI callback has been destroyed.
+        FlutterSessionReplay.contextCallback = configuration.onContextChanged
+        // Clear any stale ownership. claimOwnership(messenger:) will re-establish it for
+        // the correct engine once the Dart-side 'claimOwnership' method channel message
+        // is delivered. There is a brief gap between enable() and claimOwnership() during
+        // which listenerOwner is nil; this is intentional and acceptable — see the comment
+        // in DatadogSessionReplayPlugin.register(with:) for the full explanation.
+        FlutterSessionReplay.listenerOwner = nil
+
+        // If already initialized, reuse the existing feature (don't re-register with core).
+        if FlutterSessionReplay.feature != nil {
+            return
+        }
+
         let mappedConfiguration = DefaultFlutterSessionReplayFeature.Configuration(
             customEndpoint: configuration.customEndpoint,
             onContextChanged: { context in
+                // Read contextCallback at call time so that nullifying it on engine detach
+                // makes this a no-op, preventing calls into a destroyed Dart isolate.
                 if let context = context {
-                    configuration.onContextChanged?(FlutterRUMCoreContext(
+                    FlutterSessionReplay.contextCallback?(FlutterRUMCoreContext(
                         sessionID: context.sessionID,
                         viewID: context.viewID,
                         applicationID: context.applicationID
                     ))
                 } else {
-                    configuration.onContextChanged?(nil)
+                    FlutterSessionReplay.contextCallback?(nil)
                 }
             }
         )
@@ -85,20 +114,35 @@ public func __datadog_session_replay_keep_symbols() {
             resourceResolver: nil   // Use the default resource resolver
         )
         try core.register(feature: sessionReplay)
+        FlutterSessionReplay.feature = sessionReplay
+    }
 
-        return sessionReplay
+    /// Nullifies the context callback if the detaching engine is the one that registered it.
+    /// This prevents a secondary engine's detach from clearing a live engine's callback.
+    static func detachFromEngine(messenger: AnyObject) {
+        if listenerOwner === messenger {
+            contextCallback = nil
+            listenerOwner = nil
+        }
+    }
+
+    // Only used in testing
+    internal static func shutdown() {
+        feature = nil
+        contextCallback = nil
+        listenerOwner = nil
     }
 
     @objc public func setHasReplay(hasReplay: Bool) {
-        feature?.setHasReplay(hasReplay)
+        FlutterSessionReplay.feature?.setHasReplay(hasReplay)
     }
 
     @objc public func setRecordCount(for viewId: String, count: Int) {
-        feature?.setRecordCount(for: viewId, count: Int64(count))
+        FlutterSessionReplay.feature?.setRecordCount(for: viewId, count: Int64(count))
     }
 
     @objc public func writeSegment(segment segmentJson: String) {
-        feature?.writeSegment(segment: segmentJson)
+        FlutterSessionReplay.feature?.writeSegment(segment: segmentJson)
     }
 
     @objc public func postTelemetryDebug(id: String, message: String) {
@@ -111,10 +155,10 @@ public func __datadog_session_replay_keep_symbols() {
     }
 
     @objc public func saveImageForProcessing(resourceKey: Int, width: Int, height: Int, data: Data) {
-        feature?.resourceResolver.addResource(withKey: resourceKey, width: width, height: height, data: data)
+        FlutterSessionReplay.feature?.resourceResolver.addResource(withKey: resourceKey, width: width, height: height, data: data)
     }
 
     @objc public func resourceId(forKey key: Int) -> String? {
-        return feature?.resourceResolver.resolveResource(withKey: key)
+        return FlutterSessionReplay.feature?.resourceResolver.resolveResource(withKey: key)
     }
 }

@@ -9,12 +9,15 @@ import DatadogInternal
 
 extension FlutterSessionReplay {
     func enable(withMock mock: FlutterSessionReplayFeatureMock) {
-        feature = mock
+        FlutterSessionReplay.feature = mock
     }
 }
 
 @Suite(.serialized)
 class FlutterSessionReplayBridgeTests {
+    init() { FlutterSessionReplay.shutdown() }
+    deinit { FlutterSessionReplay.shutdown() }
+
     @Test
     func enableRegistersToCore() throws {
         // Given
@@ -31,6 +34,35 @@ class FlutterSessionReplayBridgeTests {
         // Then
         let feature = mockCore.get(feature: DefaultFlutterSessionReplayFeature.self)
         #expect(feature != nil)
+    }
+
+    @Test
+    func enable_clearsListenerOwner() {
+        // Given — pre-seed a stale owner
+        let staleMessenger = NSObject()
+        FlutterSessionReplay.claimOwnership(messenger: staleMessenger)
+
+        let mockCore = PassthroughCoreMock()
+        CoreRegistry.unregisterDefault()
+        CoreRegistry.register(default: mockCore)
+
+        // When
+        FlutterSessionReplay().enable(with: .init())
+
+        // Then — listenerOwner cleared; claimOwnership(messenger:) will re-establish it
+        #expect(FlutterSessionReplay.listenerOwner == nil)
+    }
+
+    @Test
+    func claimOwnership_setsListenerOwner() {
+        // Given
+        let messenger = NSObject()
+
+        // When
+        FlutterSessionReplay.claimOwnership(messenger: messenger)
+
+        // Then
+        #expect(FlutterSessionReplay.listenerOwner === messenger)
     }
 
     @Test
@@ -157,5 +189,56 @@ class FlutterSessionReplayBridgeTests {
 
         // Then
         #expect(id == resourceId)
+    }
+
+    // MARK: - Multi-engine / detach ownership tests
+
+    @Test
+    func detachFromEngine_withOwningMessenger_nullsCallback() {
+        // Given
+        let messenger = NSObject()
+        FlutterSessionReplay.contextCallback = { _ in }
+        FlutterSessionReplay.claimOwnership(messenger: messenger)
+
+        // When
+        FlutterSessionReplay.detachFromEngine(messenger: messenger)
+
+        // Then
+        #expect(FlutterSessionReplay.contextCallback == nil)
+        #expect(FlutterSessionReplay.listenerOwner == nil)
+    }
+
+    @Test
+    func detachFromEngine_withNonOwningMessenger_preservesCallback() {
+        // Given
+        let owningMessenger = NSObject()
+        let otherMessenger = NSObject()
+        FlutterSessionReplay.contextCallback = { _ in }
+        FlutterSessionReplay.claimOwnership(messenger: owningMessenger)
+
+        // When
+        FlutterSessionReplay.detachFromEngine(messenger: otherMessenger)
+
+        // Then
+        #expect(FlutterSessionReplay.contextCallback != nil)
+        #expect(FlutterSessionReplay.listenerOwner === owningMessenger)
+    }
+
+    @Test
+    func enable_whenFeatureExists_reusesFeatureWithoutReregistering() throws {
+        // Given — seed an existing feature
+        let existingFeature = FlutterSessionReplayFeatureMock()
+        FlutterSessionReplay.feature = existingFeature
+
+        let mockCore = PassthroughCoreMock()
+        CoreRegistry.unregisterDefault()
+        CoreRegistry.register(default: mockCore)
+
+        // When
+        FlutterSessionReplay().enable(with: .init())
+
+        // Then — feature is reused, not re-registered
+        #expect(FlutterSessionReplay.feature as AnyObject === existingFeature)
+        #expect(mockCore.get(feature: DefaultFlutterSessionReplayFeature.self) == nil)
     }
 }

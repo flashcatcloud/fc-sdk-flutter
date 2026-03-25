@@ -7,16 +7,37 @@
 package com.datadoghq.flutter.sessionreplay
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin
+import io.flutter.plugin.common.MethodChannel
 
 class DatadogSessionReplayPlugin : FlutterPlugin {
+    private var channel: MethodChannel? = null
+
     override fun onAttachedToEngine(binding: FlutterPlugin.FlutterPluginBinding) {
-        // No-op: the context listener is set up when Dart calls enable() on the new engine.
+        // FFI plugins do not receive engine lifecycle events, so we cannot determine
+        // which engine called enable() from within the FFI call itself. Instead, after
+        // calling enable() via FFI, Dart fires a non-awaited 'claimOwnership' message
+        // through this method channel. Because method channels route to the plugin
+        // instance for their specific engine, we can reliably associate the enable()
+        // call with this engine's messenger and set listenerOwner correctly.
+        // See: https://github.com/flutter/flutter/issues/184124
+        channel = MethodChannel(binding.binaryMessenger, "datadog_session_replay/engine")
+        channel?.setMethodCallHandler { call, result ->
+            if (call.method == "claimOwnership") {
+                FlutterSessionReplayBridge.claimOwnership(binding.binaryMessenger)
+                result.success(null)
+            } else {
+                result.notImplemented()
+            }
+        }
     }
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
+        channel?.setMethodCallHandler(null)
+        channel = null
         // Null out the context listener so context updates don't attempt to invoke a
         // callback into the now-destroyed Dart isolate, which would cause a SIGABRT.
-        // The listener will be restored when the new engine calls enable().
-        FlutterSessionReplayBridge.detachFromEngine()
+        // The ownership check ensures a secondary engine detaching doesn't clear the
+        // listener registered by a still-live engine.
+        FlutterSessionReplayBridge.detachFromEngine(binding.binaryMessenger)
     }
 }

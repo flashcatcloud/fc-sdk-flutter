@@ -337,6 +337,15 @@ SWIFT_CLASS_NAMED("FlutterSessionReplayConfiguration")
 + (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
 @end
 
+@protocol FlutterPlugin, FlutterPluginRegistrar;
+
+SWIFT_CLASS("_TtC22datadog_session_replay26DatadogSessionReplayPlugin")
+@interface DatadogSessionReplayPlugin : NSObject <FlutterPlugin>
++ (void)registerWithRegistrar:(id <FlutterPluginRegistrar> _Nonnull)registrar;
+- (nonnull instancetype)init SWIFT_UNAVAILABLE;
++ (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
+@end
+
 #endif
 #if __has_attribute(external_source_symbol)
 # pragma clang attribute pop

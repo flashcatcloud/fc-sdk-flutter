@@ -43,6 +43,7 @@ flutter:
         ffiPlugin: true
       ios:
         ffiPlugin: true
+        pluginClass: DatadogSessionReplayPlugin
       web:
         pluginClass: DatadogSessionReplayWeb
         fileName: src/datadog_session_replay_web.dart

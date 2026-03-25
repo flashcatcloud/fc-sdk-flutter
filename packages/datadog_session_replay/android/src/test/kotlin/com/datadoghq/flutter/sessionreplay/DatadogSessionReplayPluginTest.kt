@@ -8,10 +8,12 @@ package com.datadoghq.flutter.sessionreplay
 
 import android.os.Looper
 import assertk.assertThat
+import assertk.assertions.isNotNull
 import assertk.assertions.isNull
-
 import com.datadog.android.api.feature.FeatureSdkCore
 import io.flutter.embedding.engine.plugins.FlutterPlugin
+import io.flutter.plugin.common.BinaryMessenger
+import io.flutter.plugin.common.MethodChannel
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
@@ -41,23 +43,56 @@ class DatadogSessionReplayPluginTest {
         FlutterSessionReplayBridge.shutdown()
     }
 
+    private fun makeBinding(messenger: BinaryMessenger): FlutterPlugin.FlutterPluginBinding {
+        val binding = mockk<FlutterPlugin.FlutterPluginBinding>(relaxed = true)
+        every { binding.binaryMessenger } returns messenger
+        return binding
+    }
+
     @Test
-    fun `M null contextListener W onDetachedFromEngine`() {
+    fun `M null contextListener W onDetachedFromEngine with owning engine`() {
         // Given
+        val mockMessenger = mockk<BinaryMessenger>(relaxed = true)
         val mockCore: FeatureSdkCore = mockk(relaxed = true)
         val configuration = FlutterSessionReplayBridge.Configuration(
             customEndpointUrl = null,
             onContextChanged = mockk(relaxed = true)
         )
-        FlutterSessionReplayBridge.enable(configuration, core = mockCore)
-
         val plugin = DatadogSessionReplayPlugin()
-        val mockBinding = mockk<FlutterPlugin.FlutterPluginBinding>(relaxed = true)
+        plugin.onAttachedToEngine(makeBinding(mockMessenger))
+        FlutterSessionReplayBridge.enable(configuration, core = mockCore)
+        // Simulate claimOwnership arriving from the Dart method channel
+        FlutterSessionReplayBridge.claimOwnership(mockMessenger)
 
         // When
-        plugin.onDetachedFromEngine(mockBinding)
+        plugin.onDetachedFromEngine(makeBinding(mockMessenger))
 
         // Then
         assertThat(FlutterSessionReplayBridge.contextListener).isNull()
+    }
+
+    @Test
+    fun `M not null contextListener W onDetachedFromEngine with non-owning engine`() {
+        // Given
+        val owningMessenger = mockk<BinaryMessenger>(relaxed = true)
+        val otherMessenger = mockk<BinaryMessenger>(relaxed = true)
+        val mockCore: FeatureSdkCore = mockk(relaxed = true)
+        val configuration = FlutterSessionReplayBridge.Configuration(
+            customEndpointUrl = null,
+            onContextChanged = mockk(relaxed = true)
+        )
+        val owningPlugin = DatadogSessionReplayPlugin()
+        owningPlugin.onAttachedToEngine(makeBinding(owningMessenger))
+        FlutterSessionReplayBridge.enable(configuration, core = mockCore)
+        FlutterSessionReplayBridge.claimOwnership(owningMessenger)
+
+        val otherPlugin = DatadogSessionReplayPlugin()
+        otherPlugin.onAttachedToEngine(makeBinding(otherMessenger))
+
+        // When — other engine detaches before the owning engine
+        otherPlugin.onDetachedFromEngine(makeBinding(otherMessenger))
+
+        // Then — owning engine's listener is preserved
+        assertThat(FlutterSessionReplayBridge.contextListener).isNotNull()
     }
 }

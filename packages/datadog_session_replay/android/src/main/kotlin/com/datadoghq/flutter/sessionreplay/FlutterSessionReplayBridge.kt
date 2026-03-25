@@ -9,6 +9,7 @@ package com.datadoghq.flutter.sessionreplay
 import com.datadog.android.Datadog
 import com.datadog.android.api.feature.FeatureSdkCore
 import com.datadoghq.flutter.sessionreplay.feature.DefaultFlutterSessionReplayFeature
+import io.flutter.plugin.common.BinaryMessenger
 import java.nio.ByteBuffer
 
 internal object FlutterSessionReplayBridge {
@@ -37,6 +38,11 @@ internal object FlutterSessionReplayBridge {
 
     var contextListener: ContextListener? = null
     var feature: DefaultFlutterSessionReplayFeature? = null
+    internal var listenerOwner: BinaryMessenger? = null
+
+    fun claimOwnership(messenger: BinaryMessenger) {
+        listenerOwner = messenger
+    }
 
     fun enable(
         configuration: Configuration,
@@ -45,6 +51,12 @@ internal object FlutterSessionReplayBridge {
         // Always replace the context listener. This is to prevent a crash in the case of a
         // Hot Restart, where the previously created context listener has been destroyed.
         contextListener = configuration.onContextChanged
+        // Clear any stale ownership. claimOwnership() will re-establish it for the correct
+        // engine once the Dart-side 'claimOwnership' method channel message is delivered.
+        // There is a brief gap between enable() and claimOwnership() during which
+        // listenerOwner is null; this is intentional and acceptable — see the comment in
+        // DatadogSessionReplayPlugin.onAttachedToEngine for the full explanation.
+        listenerOwner = null
         // If this is already initialized, just return the existing feature (don't recreate and
         // and replace it on the core).
         feature?.let {
@@ -62,14 +74,20 @@ internal object FlutterSessionReplayBridge {
         return newFeature
     }
 
-    fun detachFromEngine() {
-        contextListener = null
+    fun detachFromEngine(messenger: BinaryMessenger) {
+        // Only null the listener if the detaching engine is the one that registered it.
+        // This prevents a detaching secondary engine from clearing a live engine's callback.
+        if (listenerOwner === messenger) {
+            contextListener = null
+            listenerOwner = null
+        }
     }
 
     // Only used in testing
     internal fun shutdown() {
         feature = null
         contextListener = null
+        listenerOwner = null
     }
 
     fun setHasReplay(viewId: String, hasReplay: Boolean) {
