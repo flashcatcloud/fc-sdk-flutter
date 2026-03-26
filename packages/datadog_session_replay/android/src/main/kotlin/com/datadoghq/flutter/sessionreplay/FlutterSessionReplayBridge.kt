@@ -37,7 +37,9 @@ internal object FlutterSessionReplayBridge {
         val onContextChanged: ContextListener
     )
 
+    @Volatile
     var contextListener: ContextListener? = null
+
     var feature: DefaultFlutterSessionReplayFeature? = null
     internal var listenerOwner: BinaryMessenger? = null
 
