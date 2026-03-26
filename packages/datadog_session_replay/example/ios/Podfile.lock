@@ -85,19 +85,19 @@ EXTERNAL SOURCES:
 
 CHECKOUT OPTIONS:
   DatadogCore:
-    :commit: e038a4a6a9dd2cc0c9423fdb77c429d6da02475a
+    :commit: 471e6eb74e9f687e4d5fcfe44150a3aac3c43eb0
     :git: https://github.com/DataDog/dd-sdk-ios
   DatadogCrashReporting:
-    :commit: e038a4a6a9dd2cc0c9423fdb77c429d6da02475a
+    :commit: 471e6eb74e9f687e4d5fcfe44150a3aac3c43eb0
     :git: https://github.com/DataDog/dd-sdk-ios
   DatadogInternal:
-    :commit: e038a4a6a9dd2cc0c9423fdb77c429d6da02475a
+    :commit: 471e6eb74e9f687e4d5fcfe44150a3aac3c43eb0
     :git: https://github.com/DataDog/dd-sdk-ios
   DatadogLogs:
-    :commit: e038a4a6a9dd2cc0c9423fdb77c429d6da02475a
+    :commit: 471e6eb74e9f687e4d5fcfe44150a3aac3c43eb0
     :git: https://github.com/DataDog/dd-sdk-ios
   DatadogRUM:
-    :commit: e038a4a6a9dd2cc0c9423fdb77c429d6da02475a
+    :commit: 471e6eb74e9f687e4d5fcfe44150a3aac3c43eb0
     :git: https://github.com/DataDog/dd-sdk-ios
 
 SPEC CHECKSUMS:

@@ -13,7 +13,6 @@ import assertk.assertions.isNull
 import com.datadog.android.api.feature.FeatureSdkCore
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.BinaryMessenger
-import io.flutter.plugin.common.MethodChannel
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic

@@ -12,6 +12,7 @@ import com.datadoghq.flutter.sessionreplay.feature.DefaultFlutterSessionReplayFe
 import io.flutter.plugin.common.BinaryMessenger
 import java.nio.ByteBuffer
 
+@Suppress("TooManyFunctions")
 internal object FlutterSessionReplayBridge {
     data class RumContext(
         val applicationId: String?,
