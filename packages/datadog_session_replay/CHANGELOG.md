@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.0-preview.11
+
+* Fix lifecycle issue with Android calling a dead callback on activity destruction.
+
 ## 1.0.0-preview.10
 
 * Update required minimum version of `datadog_flutter_plugin` to 3.1.0 to support changes in iOS core libraries.
