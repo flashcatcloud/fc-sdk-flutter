@@ -12,16 +12,12 @@ import FlutterPluginRegistrant
 
 class FlutterExcludingRumViewsPredicate: UIKitRUMViewsPredicate {
     let defaultViewsPredicate = DefaultUIKitRUMViewsPredicate()
-    
+
     func rumView(for viewController: UIViewController) -> RUMView? {
-        if (viewController is FlutterViewController) {
-            if #available(iOS 13, *) {
-                return nil
-            } else {
-                return .init(name: "FLutterViewController", isUntrackedModal: true)
-            }
+        if viewController is FlutterViewController {
+            return nil
         }
-        
+
         return defaultViewsPredicate.rumView(for: viewController)
     }
 }
@@ -30,12 +26,12 @@ class FlutterExcludingRumViewsPredicate: UIKitRUMViewsPredicate {
 class AppDelegate: UIResponder, UIApplicationDelegate {
     lazy var flutterEngine = FlutterEngine(name: "my flutter engine")
     var dismissMethodChannel: FlutterMethodChannel!
-    
+
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        
+
         var clientToken = ""
         var rumApplicationId = ""
-        
+
         if let configFile = Bundle.main.path(forResource: "ddog_config", ofType: "plist"),
            let dataodogKeys = NSDictionary(contentsOfFile: configFile) {
             clientToken = dataodogKeys["client_token"] as? String ?? ""
@@ -70,19 +66,19 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
         // Once Datadog is fully initialized, you can run `flutterEngine.run()`.
         // This calls Flutter's `main` method, which will look for an existing Datadog instance to attach to.
-        flutterEngine.run();
-        GeneratedPluginRegistrant.register(with: self.flutterEngine);
-        
+        flutterEngine.run()
+        GeneratedPluginRegistrant.register(with: self.flutterEngine)
+
         return true
     }
-    
+
     // MARK: UISceneSession Lifecycle
-    
+
     func application(_ application: UIApplication, configurationForConnecting connectingSceneSession: UISceneSession, options: UIScene.ConnectionOptions) -> UISceneConfiguration {
         return UISceneConfiguration(name: "Default Configuration", sessionRole: connectingSceneSession.role)
     }
-    
+
     func application(_ application: UIApplication, didDiscardSceneSessions sceneSessions: Set<UISceneSession>) {
-        
+
     }
 }
