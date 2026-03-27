@@ -6,12 +6,18 @@ import 'dart:async';
 import 'dart:ffi' as ffi;
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:objective_c/objective_c.dart';
 
 import '../../datadog_session_replay.dart';
 import '../datadog_session_replay_platform_interface.dart';
 import '../rum_context.dart';
 import 'datadog_session_replay_bridge_ios.dart';
+
+// See comment in DatadogSessionReplayPlugin.register(with:) for why we use a
+// method channel to claim engine ownership after the FFI enable() call.
+// Flutter issue: https://github.com/flutter/flutter/issues/184124
+const _engineChannel = MethodChannel('datadog_session_replay/engine');
 
 class DatadogSessionReplayPlatformIos extends DatadogSessionReplayPlatform {
   late FlutterSessionReplay _iosBridge;
@@ -67,6 +73,10 @@ class DatadogSessionReplayPlatformIos extends DatadogSessionReplayPlatform {
         onContextChanged: contextChangedListener,
       );
     _iosBridge.enableWith(iOsConfiguration);
+    // Non-awaited: routes through the method channel to the correct engine's plugin
+    // instance, which calls claimOwnership(messenger:) with that engine's messenger.
+    // ignore: unawaited_futures
+    _engineChannel.invokeMethod<void>('claimOwnership');
 
     return true;
   }

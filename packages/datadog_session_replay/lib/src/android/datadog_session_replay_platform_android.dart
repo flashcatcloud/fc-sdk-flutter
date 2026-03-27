@@ -5,12 +5,18 @@
 import 'dart:async';
 import 'dart:typed_data';
 
+import 'package:flutter/services.dart';
 import 'package:jni/jni.dart';
 
 import '../../datadog_session_replay.dart';
 import '../datadog_session_replay_platform_interface.dart';
 import '../rum_context.dart';
 import 'datadog_session_replay_bridge_android.dart';
+
+// See comment in DatadogSessionReplayPlugin.onAttachedToEngine for why we use a
+// method channel to claim engine ownership after the FFI enable() call.
+// Flutter issue: https://github.com/flutter/flutter/issues/184124
+const _engineChannel = MethodChannel('datadog_session_replay/engine');
 
 class DatadogSessionReplayPlatformAndroid extends DatadogSessionReplayPlatform {
   late FlutterSessionReplayBridge _bridge;
@@ -52,6 +58,10 @@ class DatadogSessionReplayPlatformAndroid extends DatadogSessionReplayPlatform {
     );
 
     _bridge.enable(mappedConfig, null);
+    // Non-awaited: routes through the method channel to the correct engine's plugin
+    // instance, which calls claimOwnership() with that engine's BinaryMessenger.
+    // ignore: unawaited_futures
+    _engineChannel.invokeMethod<void>('claimOwnership');
 
     return true;
   }

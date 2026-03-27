@@ -10,17 +10,17 @@ PODS:
   - datadog_session_replay (0.0.1):
     - DatadogCore (~> 3)
     - Flutter
-  - DatadogCore (3.6.1):
-    - DatadogInternal (= 3.6.1)
-  - DatadogCrashReporting (3.6.1):
-    - DatadogInternal (= 3.6.1)
+  - DatadogCore (3.8.2):
+    - DatadogInternal (= 3.8.2)
+  - DatadogCrashReporting (3.8.2):
+    - DatadogInternal (= 3.8.2)
     - KSCrash/Filters (= 2.5.0)
     - KSCrash/Recording (= 2.5.0)
-  - DatadogInternal (3.6.1)
-  - DatadogLogs (3.6.1):
-    - DatadogInternal (= 3.6.1)
-  - DatadogRUM (3.6.1):
-    - DatadogInternal (= 3.6.1)
+  - DatadogInternal (3.8.2)
+  - DatadogLogs (3.8.2):
+    - DatadogInternal (= 3.8.2)
+  - DatadogRUM (3.8.2):
+    - DatadogInternal (= 3.8.2)
   - DictionaryCoder (1.2.0)
   - Flutter (1.0.0)
   - integration_test (0.0.1):
@@ -85,29 +85,29 @@ EXTERNAL SOURCES:
 
 CHECKOUT OPTIONS:
   DatadogCore:
-    :commit: 826576bbfdf91f40e57fa1eddbfb615cc4cb44bc
+    :commit: 471e6eb74e9f687e4d5fcfe44150a3aac3c43eb0
     :git: https://github.com/DataDog/dd-sdk-ios
   DatadogCrashReporting:
-    :commit: 826576bbfdf91f40e57fa1eddbfb615cc4cb44bc
+    :commit: 471e6eb74e9f687e4d5fcfe44150a3aac3c43eb0
     :git: https://github.com/DataDog/dd-sdk-ios
   DatadogInternal:
-    :commit: 826576bbfdf91f40e57fa1eddbfb615cc4cb44bc
+    :commit: 471e6eb74e9f687e4d5fcfe44150a3aac3c43eb0
     :git: https://github.com/DataDog/dd-sdk-ios
   DatadogLogs:
-    :commit: 826576bbfdf91f40e57fa1eddbfb615cc4cb44bc
+    :commit: 471e6eb74e9f687e4d5fcfe44150a3aac3c43eb0
     :git: https://github.com/DataDog/dd-sdk-ios
   DatadogRUM:
-    :commit: 826576bbfdf91f40e57fa1eddbfb615cc4cb44bc
+    :commit: 471e6eb74e9f687e4d5fcfe44150a3aac3c43eb0
     :git: https://github.com/DataDog/dd-sdk-ios
 
 SPEC CHECKSUMS:
   datadog_flutter_plugin: 64adc7ef089a1328c78fd4fab24e49afa09d95a5
   datadog_session_replay: 8e4f4a520f20feb2916c623c011a53ba63f8d77f
-  DatadogCore: 6a06e0ebe2ddbb6da25b8cfdc3069e9d808aa645
-  DatadogCrashReporting: 03f23e6ad3a449f4d066531164fd8e4cec9651c2
-  DatadogInternal: 3c909dcfb157d420686e62af2eb7cb88af406248
-  DatadogLogs: 5dcb68859d43c4b5a43ef61a5ff1360e24da87d2
-  DatadogRUM: b8c1b0ea81da5a2379e874be065d41ac1d9bc4f1
+  DatadogCore: 4375353a93311e99153ab3bc2fba10fefb295749
+  DatadogCrashReporting: 4eedb27058432691a7e5f1bdcf3f72d8cc7c1a67
+  DatadogInternal: a4640f67e249c9b4608e806cf1c8c10b17f66626
+  DatadogLogs: 55e2c1c403e92f952f8ce451854c81f476b04d89
+  DatadogRUM: 738b6b448df9af58ba0455451e628ac81040be04
   DictionaryCoder: f7115fcd074c8301e91f2eb862da1ea7d0385e61
   Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
   integration_test: 252f60fa39af5e17c3aa9899d35d908a0721b573

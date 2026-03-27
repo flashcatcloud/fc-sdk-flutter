@@ -105,11 +105,24 @@ extension DatadogContext: AnyMockable, RandomMockable {
     }
 }
 
+extension DeterministicSampler {
+    /// Returns a sampler that always samples (100% rate, seed=0).
+    public static func mockKeepAll() -> DeterministicSampler {
+        return .init(seed: 0, samplingRate: 100)
+    }
+
+    /// Returns a sampler that never samples (0% rate, seed=0).
+    public static func mockRejectAll() -> DeterministicSampler {
+        return .init(seed: 0, samplingRate: 0)
+    }
+}
+
 extension RUMCoreContext: RandomMockable {
     public static func mockRandom() -> Self {
         return RUMCoreContext.init(
             applicationID: .mockRandom(),
             sessionID: .mockRandom(),
+            sessionSampler: .mockKeepAll(),
             viewID: .mockRandom(),
             viewServerTimeOffset: nil
         )
@@ -118,12 +131,14 @@ extension RUMCoreContext: RandomMockable {
     public static func mockWith(
         applicationID: String = .mockAny(),
         sessionID: String = .mockAny(),
+        sessionSampler: DeterministicSampler = .mockKeepAll(),
         viewID: String? = .mockAny(),
         viewServerTimeOffset: TimeInterval? = nil
     ) -> Self {
         return RUMCoreContext(
             applicationID: applicationID,
             sessionID: sessionID,
+            sessionSampler: sessionSampler,
             viewID: viewID,
             viewServerTimeOffset: viewServerTimeOffset
         )
