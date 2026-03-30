@@ -1,5 +1,18 @@
 # Changelog
 
+## 3.2.0
+
+* [Web] Add support for long custom actions (`startAction` / `stopAction`).
+* [Web] Correctly correlate Actions with Resources, Errors, and Long Tasks
+* Upgrade iOS SDK to 3.8.3. For a full list of changes, see the [iOS Changelog](https://github.com/DataDog/dd-sdk-ios/blob/develop/CHANGELOG.md).
+  * Fix crash context C-string conversion in KSCrash injection.
+* Upgrade Android SDK to 3.8.0. For a full list of changes see the [Android Changelog](https://github.com/DataDog/dd-sdk-android/blob/develop/CHANGELOG.md).
+  * Support interstitial Activities case for TTID reporting.
+  * Fix memory corruption in NDK module.
+  * Propagate trace and session replay sample rates to RUM `ViewEvent`s.
+  * Reduce .so file size.
+  * Downgrade androidx-core to 1.15.0 in order to preserve Android compileSdk 35 compatibility.
+
 ## 3.1.1
 
 * [iOS] Fix stripped C symbol for getting context. See [#979](https://github.com/DataDog/dd-sdk-flutter/issues/979).
