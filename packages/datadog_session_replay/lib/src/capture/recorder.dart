@@ -19,6 +19,7 @@ import 'element_recorders/editable_text_recorder.dart';
 import 'element_recorders/image_recorder.dart';
 import 'element_recorders/privacy_recorder.dart';
 import 'element_recorders/text_recorder.dart';
+import 'element_recorders/material_widgets/checkbox_recorder.dart';
 import 'pointer_capture.dart';
 import 'view_tree_snapshot.dart';
 
@@ -149,6 +150,7 @@ class SessionReplayRecorder {
       ImageRecorder(keyGenerator),
       CustomPaintRecorder(keyGenerator),
       PrivacyRecorder(keyGenerator),
+      CheckboxRecorder(keyGenerator),
     ]);
   }
 
