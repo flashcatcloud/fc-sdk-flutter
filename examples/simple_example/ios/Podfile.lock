@@ -94,7 +94,7 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   connectivity_plus: 18382e7311ba19efcaee94442b23b32507b20695
-  datadog_flutter_plugin: 3ef4aeb0d64b1da82d7ff775001f5aadf27e1a87
+  datadog_flutter_plugin: 64adc7ef089a1328c78fd4fab24e49afa09d95a5
   datadog_session_replay: 8e4f4a520f20feb2916c623c011a53ba63f8d77f
   datadog_webview_tracking: 58ffca1b06ba88e0bd6dc0d0d1dada0e60e6d3d5
   DatadogCore: a8a035bad54c65721d220f3f61e7f3c70edb38d4
