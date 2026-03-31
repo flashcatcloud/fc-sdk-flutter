@@ -36,3 +36,5 @@ packages/datadog_flutter_plugin/example/ios/Podfile.lock
 tools/ci/.tmp
 .fvmrc
 .plans
+.prompts/
+
