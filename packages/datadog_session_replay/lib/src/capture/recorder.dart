@@ -150,7 +150,7 @@ class SessionReplayRecorder {
       ImageRecorder(keyGenerator),
       CustomPaintRecorder(keyGenerator),
       PrivacyRecorder(keyGenerator),
-      CheckboxRecorder(keyGenerator),
+      CheckboxRecorder(keyGenerator),                     // Support for rendering properly checkbox widget on SR
     ]);
   }
 

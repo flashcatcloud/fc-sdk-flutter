@@ -17,8 +17,11 @@ const String dash = '\u2014';
 // Scale for the text size within the box
 const double textScale = 0.7;
 
-// Radius for the box. (Could be custom)
+// Corner radius for the box.
 const double checkboxRadius = 2.0;
+
+// Default checkbox size
+const double _checkboxVisualSize = 18.0;
 
 /// Detects `CheckBox` widgets and places a check box
 /// in SessionReplay.
@@ -43,16 +46,19 @@ class CheckboxRecorder implements ElementRecorder {
     final isEnabled = widget.onChanged != null;       // checkbox mutability state
     final value = widget.value;                       // true = checked, false = unchecked, null = tristate (undeterminate)
 
-    // Resolves for checkbox theme, typography is irrelevant
+    // Resolve checkbox theme for colors and border
     final theme = Theme.of(element);
     final checkboxTheme = theme.checkboxTheme;
 
-
+    // Build the widget state set to drive theme resolution.                                                              
+    // TODO: include WidgetState.focused and WidgetState.hovered for richer theme resolution.
     final states = <WidgetState> {
       if (!isEnabled) WidgetState.disabled,
       if (value == true) WidgetState.selected
     };
 
+    // Resolve fill color: checked and tristate (value != false) use the active color,
+    // unchecked uses transparent since the border conveys the unchecked state instead.
     Color fillColor =
       widget.fillColor?.resolve(states) ??
       ((value != false)
@@ -78,6 +84,22 @@ class CheckboxRecorder implements ElementRecorder {
              );
     }
 
+    final density = widget.visualDensity ?? theme.visualDensity;                                                                
+    final visualSizeWidth = _checkboxVisualSize + density.baseSizeAdjustment.dx;
+    final visualSizeHeight = _checkboxVisualSize + density.baseSizeAdjustment.dy;
+
+    final center = attributes.paintBounds.center;                                                                               
+    final adjustedBounds = Rect.fromCenter(                                                                                     
+      center: center,                                                                                                           
+      width: visualSizeWidth * attributes.scaleX,                                                                           
+      height: visualSizeHeight * attributes.scaleY,                                                                          
+    );                                                                                                                          
+    attributes = CapturedViewAttributes(                                                                                        
+      paintBounds: adjustedBounds,                                                                                              
+      scaleX: attributes.scaleX,                                                                                                
+      scaleY: attributes.scaleY,                                                                                                
+    );
+
     final wireframeKey = keyGenerator.keyForElement(element);                                                             
 
     final node = CheckboxNode(
@@ -90,13 +112,15 @@ class CheckboxRecorder implements ElementRecorder {
         );
 
     return SpecificElement(
-      subtreeStrategy: CaptureNodeSubtreeStrategy.ignore,       // Checkbox Widget does not have child attribute
+      subtreeStrategy: CaptureNodeSubtreeStrategy.ignore,       // Ignore subtree to prevent CustomPaintRecorder from capturing the inner CustomPaint
       nodes: [node],
     );
   }
 }
 
-
+/// Holds the resolved visual properties of a [Checkbox] widget and builds                                            
+/// the corresponding [SRTextWireframe], using the text field to render the                                           
+/// checkmark symbol and the shape style for the box background and border.
 @immutable
 class CheckboxNode extends CaptureNode {
 
@@ -116,6 +140,8 @@ class CheckboxNode extends CaptureNode {
     }
   );
 
+  // Renders the checkbox as a single SRTextWireframe: the box shape is drawn                                           
+  // via shapeStyle/border, and the checkmark symbol is centered as text.
   @override
   List<SRWireframe> buildWireframes() {
 
@@ -145,7 +171,7 @@ class CheckboxNode extends CaptureNode {
           ),
         ),  
         border : 
-          side != null ? SRShapeBorder(color: side!.color.toHexString(), width: side!.width.toInt()) : null,
+          side != null ? SRShapeBorder(color: side!.color.toHexString(), width: side!.width.round()) : null,
         shapeStyle: SRShapeStyle(
             backgroundColor: fillColor.toHexString(),
             cornerRadius: checkboxRadius,
