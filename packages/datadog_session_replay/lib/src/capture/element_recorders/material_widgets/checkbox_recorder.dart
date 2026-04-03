@@ -71,7 +71,8 @@ class CheckboxRecorder implements ElementRecorder {
         ?? checkboxTheme.checkColor?.resolve(states)
         ?? theme.colorScheme.onPrimary;
 
-    // Resolve for checkbox border
+    // Resolve for checkbox border just in case the checkbox value is false (all borders are the same)
+    // If checkbox value is true or null, there is a fill color and the border is redundant
     BorderSide? borderSide;
     if (value == false) {
       borderSide = widget.side 
