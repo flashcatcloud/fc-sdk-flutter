@@ -4,8 +4,8 @@
 
 import 'dart:isolate';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 
 import '../capture/recorder.dart';
 import '../datadog_session_replay_init_stub.dart'
@@ -16,12 +16,14 @@ import 'processor_worker.dart';
 /// Spawns a background isolate to process session replay snapshots before
 /// sending them to the native platform for serialization and distribution to
 /// intake
-class SessionReplayProcessor {
+class SessionReplayProcessor with WidgetsBindingObserver {
   final ReceivePort _mainReceivePort = ReceivePort('sr-replay-port');
   SendPort? _mainSendPort;
+  Isolate? _processorIsolate;
 
   Future<void> start() async {
-    await Isolate.spawn(
+    WidgetsBinding.instance.addObserver(this);
+    _processorIsolate = await Isolate.spawn(
       _captureProcessor,
       _ProcessorArgs(
         RootIsolateToken.instance!,
@@ -35,6 +37,14 @@ class SessionReplayProcessor {
 
   void process(CaptureResult captureResult) {
     _mainSendPort?.send(captureResult);
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.detached) {
+      _mainSendPort?.send(null);
+      _processorIsolate?.kill(priority: Isolate.immediate);
+    }
   }
 
   static Future<void> _captureProcessor(_ProcessorArgs args) async {
@@ -54,6 +64,7 @@ class SessionReplayProcessor {
       }
     }
 
+    commandPort.close();
     Isolate.exit();
   }
 }
