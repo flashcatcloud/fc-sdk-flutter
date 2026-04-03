@@ -4,6 +4,7 @@
 
 import 'package:flutter/material.dart';
 
+import '../../../../datadog_session_replay.dart';
 import '../../../extensions.dart';
 import '../../../sr_data_models.dart';
 import '../../capture_node.dart';
@@ -13,6 +14,7 @@ import '../../view_tree_snapshot.dart';
 // Characters to represent the checkbox states
 const String checkmark = '\u2713';
 const String dash = '\u2014';
+const String maskedSymbol = 'x';
 
 // Scale for the text size within the box
 const double textScale = 0.7;
@@ -42,6 +44,10 @@ class CheckboxRecorder implements ElementRecorder {
     final widget = element.widget;
     if (widget is! Checkbox) return null;
 
+    Color fillColor;
+    Color symbolColor;
+    BorderSide? borderSide;
+
     // Resolves for checkbox state, either checked and enabled
     final isEnabled = widget.onChanged != null;       // checkbox mutability state
     final value = widget.value;                       // true = checked, false = unchecked, null = tristate (undeterminate)
@@ -57,32 +63,50 @@ class CheckboxRecorder implements ElementRecorder {
       if (value == true) WidgetState.selected
     };
 
-    // Resolve fill color: checked and tristate (value != false) use the active color,
-    // unchecked uses transparent since the border conveys the unchecked state instead.
-    Color fillColor =
-      widget.fillColor?.resolve(states) ??
-      ((value != false)
-          ? (widget.activeColor ?? theme.colorScheme.primary)
-          : Colors.transparent);
-    if (!isEnabled && value != false) fillColor = fillColor.withValues(alpha: 0.38);
+    // Resolves for privacy settings
+    final bool isMasked =                                                                                                      
+      capturePrivacy.textAndInputPrivacyLevel == TextAndInputPrivacyLevel.maskAllInputs ||
+      capturePrivacy.textAndInputPrivacyLevel == TextAndInputPrivacyLevel.maskAll;
 
-    // Resolve for checkmark color
-    Color symbolColor = widget.checkColor 
-        ?? checkboxTheme.checkColor?.resolve(states)
-        ?? theme.colorScheme.onPrimary;
+    if (!isMasked) {
 
-    // Resolve for checkbox border just in case the checkbox value is false (all borders are the same)
-    // If checkbox value is true or null, there is a fill color and the border is redundant
-    BorderSide? borderSide;
-    if (value == false) {
-      borderSide = widget.side 
-             ?? checkboxTheme.side
-             ?? BorderSide(
-              color: isEnabled                                                                                            
-                ? theme.colorScheme.onSurface.withValues(alpha: 0.6)
-                : theme.colorScheme.onSurface.withValues(alpha: 0.38),                                                  
-              width: 2.0,
-             );
+      // Resolve fill color: checked and tristate (value != false) use the active color,
+      // unchecked uses transparent since the border conveys the unchecked state instead.
+      fillColor = widget.fillColor?.resolve(states) ??
+          ((value != false)
+            ? (widget.activeColor ?? theme.colorScheme.primary)
+            : Colors.transparent);
+      if (!isEnabled && value != false) fillColor = fillColor.withValues(alpha: 0.38);
+
+      // Resolve for checkmark color
+      symbolColor = widget.checkColor 
+          ?? checkboxTheme.checkColor?.resolve(states)
+          ?? theme.colorScheme.onPrimary;
+
+      // Resolve for checkbox border just in case the checkbox value is false (all borders are the same)
+      // If checkbox value is true or null, there is a fill color and the border is redundant
+      if (value == false) {
+        borderSide = widget.side
+              ?? checkboxTheme.side
+              ?? BorderSide(
+                color: isEnabled                                                                                            
+                  ? theme.colorScheme.onSurface.withValues(alpha: 0.6)
+                  : theme.colorScheme.onSurface.withValues(alpha: 0.38),                                                  
+                width: 2.0,
+              );
+      }
+    } else {
+
+      borderSide = widget.side
+          ?? checkboxTheme.side
+          ?? BorderSide(
+            color: isEnabled                                                                                            
+              ? theme.colorScheme.onSurface.withValues(alpha: 0.6)
+              : theme.colorScheme.onSurface.withValues(alpha: 0.38),                                                  
+            width: 2.0,
+          );
+      fillColor = Colors.transparent;
+      symbolColor = borderSide.color;
     }
 
     final density = widget.visualDensity ?? theme.visualDensity;                                                                
@@ -110,6 +134,7 @@ class CheckboxRecorder implements ElementRecorder {
           fillColor: fillColor,
           symbolColor: symbolColor,
           side: borderSide,
+          isMasked: isMasked,
         );
 
     return SpecificElement(
@@ -130,6 +155,7 @@ class CheckboxNode extends CaptureNode {
   final Color fillColor;
   final Color symbolColor;
   final BorderSide? side;
+  final bool isMasked;
   
   const CheckboxNode(
     super.attributes, {
@@ -138,6 +164,7 @@ class CheckboxNode extends CaptureNode {
       required this.symbolColor,
       required this.fillColor,
       required this.side,
+      required this.isMasked,
     }
   );
 
@@ -146,7 +173,7 @@ class CheckboxNode extends CaptureNode {
   @override
   List<SRWireframe> buildWireframes() {
 
-    final symbol = switch (value) {
+    final symbol = isMasked ? maskedSymbol : switch (value) {
       true => checkmark,
       false => '',
       null => dash

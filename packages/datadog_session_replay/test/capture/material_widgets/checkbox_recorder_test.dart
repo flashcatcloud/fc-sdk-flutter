@@ -66,7 +66,7 @@ void main() {
     testWidgets('checked checkbox has checkmark symbol', (tester) async {
       // Given
       final tree = captureCheckbox(
-        recorder, 
+        recorder,
         Checkbox(value: true, onChanged: (_) {})
       );
       await tester.pumpWidget(tree);
@@ -89,7 +89,7 @@ void main() {
     testWidgets('unchecked checkbox has empty text', (tester) async {
       // Given
       final tree = captureCheckbox(
-        recorder, 
+        recorder,
         Checkbox(value: false, onChanged: (_) {})
       );
       await tester.pumpWidget(tree);
@@ -111,7 +111,7 @@ void main() {
     testWidgets('tristate checkbox has dash symbol', (tester) async {
       // Given
       final tree = captureCheckbox(
-        recorder, 
+        recorder,
         Checkbox(value: null, tristate: true, onChanged: (_) {})
       );
       await tester.pumpWidget(tree);
@@ -137,7 +137,7 @@ void main() {
     testWidgets('checked checkbox has non-transparent fill', (tester) async {
       // Given
       final tree = captureCheckbox(
-        recorder, 
+        recorder,
         Checkbox(value: true, onChanged: (_) {})
       );
       await tester.pumpWidget(tree);
@@ -150,7 +150,7 @@ void main() {
       final treeCapture = capture!.viewTreeSnapshot;
       final checkboxNode = treeCapture.nodes.first;
       final wireframes = checkboxNode.buildWireframes();
-      final checkboxWireframe = wireframes.first as SRTextWireframe;                                                            
+      final checkboxWireframe = wireframes.first as SRTextWireframe;
       expect(checkboxWireframe.shapeStyle!.backgroundColor, isNot('#00000000'));
 
     });
@@ -158,7 +158,7 @@ void main() {
     testWidgets('checked checkbox has a specific fill color', (tester) async {
       // Given
       final tree = captureCheckbox(
-        recorder, 
+        recorder,
         Checkbox(value: true, onChanged: (_) {}, activeColor: Colors.blue)
       );
       await tester.pumpWidget(tree);
@@ -181,7 +181,7 @@ void main() {
 
       // Given
       final tree = captureCheckbox(
-        recorder, 
+        recorder,
         Checkbox(value: false, onChanged: (_) {})
       );
       await tester.pumpWidget(tree);
@@ -194,49 +194,49 @@ void main() {
       final treeCapture = capture!.viewTreeSnapshot;
       final checkboxNode = treeCapture.nodes.first;
       final wireframes = checkboxNode.buildWireframes();
-      final checkboxWireframe = wireframes.first as SRTextWireframe;                                                            
+      final checkboxWireframe = wireframes.first as SRTextWireframe;
       expect(checkboxWireframe.shapeStyle!.backgroundColor, '#00000000');
 
     });
 
-    testWidgets('tristate checkbox has non-transparent fill', (tester) async {                                          
+    testWidgets('tristate checkbox has non-transparent fill', (tester) async {
       // Given
-      final tree = captureCheckbox(                                                                                     
-        recorder, 
+      final tree = captureCheckbox(
+        recorder,
         Checkbox(value: null, tristate: true, onChanged: (_) {}),
       );
       await tester.pumpWidget(tree);
-                                                                                                                        
-      // When
-      final capture = await recorder.performCapture();                                                                  
-                  
-      // Then
-      expect(capture, isNotNull);
-      final treeCapture = capture!.viewTreeSnapshot;
-      final checkboxNode = treeCapture.nodes.first;
-      final wireframes = checkboxNode.buildWireframes();
-      final checkboxWireframe = wireframes.first as SRTextWireframe;                                                            
-      expect(checkboxWireframe.shapeStyle!.backgroundColor, isNot('#00000000'));
-    });
 
-    testWidgets('disabled checked checkbox has fill with reduced alpha', (tester) async {                                          
-      // Given
-      final tree = captureCheckbox(                                                                                     
-        recorder, 
-        Checkbox(value: true, onChanged: null, activeColor: Colors.blue),
-      );
-      await tester.pumpWidget(tree);
-                                                                                                                        
       // When
-      final capture = await recorder.performCapture();                                                                  
-                  
+      final capture = await recorder.performCapture();
+
       // Then
       expect(capture, isNotNull);
       final treeCapture = capture!.viewTreeSnapshot;
       final checkboxNode = treeCapture.nodes.first;
       final wireframes = checkboxNode.buildWireframes();
       final checkboxWireframe = wireframes.first as SRTextWireframe;
-      // Colors.blue (#ff2196f3) with alpha 0.38 --> round(0.38 * 255) = 97 = 0x61                                                      
+      expect(checkboxWireframe.shapeStyle!.backgroundColor, isNot('#00000000'));
+    });
+
+    testWidgets('disabled checked checkbox has fill with reduced alpha', (tester) async {
+      // Given
+      final tree = captureCheckbox(
+        recorder,
+        Checkbox(value: true, onChanged: null, activeColor: Colors.blue),
+      );
+      await tester.pumpWidget(tree);
+
+      // When
+      final capture = await recorder.performCapture();
+
+      // Then
+      expect(capture, isNotNull);
+      final treeCapture = capture!.viewTreeSnapshot;
+      final checkboxNode = treeCapture.nodes.first;
+      final wireframes = checkboxNode.buildWireframes();
+      final checkboxWireframe = wireframes.first as SRTextWireframe;
+      // Colors.blue (#ff2196f3) with alpha 0.38 --> round(0.38 * 255) = 97 = 0x61
       expect(checkboxWireframe.shapeStyle!.backgroundColor, '#2196f361');
     });
   });
@@ -245,14 +245,14 @@ void main() {
 
     testWidgets('unchecked checkbox has a border', (tester) async {
 
-      // Given                                                                                                          
+      // Given
       final tree = captureCheckbox(
         recorder,
         Checkbox(value: false, onChanged: (_) {}),
-      );                                                                                                                
+      );
       await tester.pumpWidget(tree);
 
-      // When     
+      // When
       final capture = await recorder.performCapture();
 
       // Then
@@ -260,7 +260,7 @@ void main() {
       final treeCapture = capture!.viewTreeSnapshot;
       final checkboxNode = treeCapture.nodes.first;
       final wireframes = checkboxNode.buildWireframes();
-      final checkboxWireframe = wireframes.first as SRTextWireframe;                                                                 
+      final checkboxWireframe = wireframes.first as SRTextWireframe;
       expect(checkboxWireframe.border, isNotNull);
       expect(checkboxWireframe.border!.width, 2);
     });
@@ -268,9 +268,9 @@ void main() {
     testWidgets('checked checkbox has no border', (tester) async {
       // Given
       final tree = captureCheckbox(
-        recorder,                                                                                                       
+        recorder,
         Checkbox(value: true, onChanged: (_) {}),
-      );                                                                                                                
+      );
       await tester.pumpWidget(tree);
 
       // When
@@ -281,16 +281,16 @@ void main() {
       final treeCapture = capture!.viewTreeSnapshot;
       final checkboxNode = treeCapture.nodes.first;
       final wireframes = checkboxNode.buildWireframes();
-      final checkboxWireframe = wireframes.first as SRTextWireframe;   
-      expect(checkboxWireframe.border, isNull);                                                                                 
+      final checkboxWireframe = wireframes.first as SRTextWireframe;
+      expect(checkboxWireframe.border, isNull);
     });
 
     testWidgets('tristate checkbox has no border', (tester) async {
       // Given
       final tree = captureCheckbox(
-        recorder,                                                                                                       
+        recorder,
         Checkbox(value: null, tristate: true, onChanged: (_) {}),
-      );                                                                                                                
+      );
       await tester.pumpWidget(tree);
 
       // When
@@ -301,14 +301,14 @@ void main() {
       final treeCapture = capture!.viewTreeSnapshot;
       final checkboxNode = treeCapture.nodes.first;
       final wireframes = checkboxNode.buildWireframes();
-      final checkboxWireframe = wireframes.first as SRTextWireframe;   
-      expect(checkboxWireframe.border, isNull);                                                                                 
+      final checkboxWireframe = wireframes.first as SRTextWireframe;
+      expect(checkboxWireframe.border, isNull);
     });
 
-    testWidgets('unchecked checkbox uses custom side color and width', (tester) async {                                 
-      // Given    
-      final tree = captureCheckbox(                                                                                     
-        recorder, 
+    testWidgets('unchecked checkbox uses custom side color and width', (tester) async {
+      // Given
+      final tree = captureCheckbox(
+        recorder,
         Checkbox(
           value: false,
           onChanged: (_) {},
@@ -316,19 +316,19 @@ void main() {
         ),
       );
       await tester.pumpWidget(tree);
-                                                                                                                        
+
       // When
-      final capture = await recorder.performCapture();                                                                  
-                  
+      final capture = await recorder.performCapture();
+
       // Then
       expect(capture, isNotNull);
       final treeCapture = capture!.viewTreeSnapshot;
       final checkboxNode = treeCapture.nodes.first;
       final wireframes = checkboxNode.buildWireframes();
-      final checkboxWireframe = wireframes.first as SRTextWireframe; 
-      // Colors.red (#fff44336) with full alpha --> #f44336ff                                                            
+      final checkboxWireframe = wireframes.first as SRTextWireframe;
+      // Colors.red (#fff44336) with full alpha --> #f44336ff
       expect(checkboxWireframe.border!.color, '#f44336ff');
-      expect(checkboxWireframe.border!.width, 3);                                                                               
+      expect(checkboxWireframe.border!.width, 3);
     });
   });
 
@@ -336,13 +336,13 @@ void main() {
 
     testWidgets('checkbox produces a single wireframe node', (tester) async {
       // Given
-      final tree = captureCheckbox(                                                                                     
-        recorder,                                                                                                       
-        Checkbox(value: true, onChanged: (_) {}),                                                                       
-      );                                                                                                                
+      final tree = captureCheckbox(
+        recorder,
+        Checkbox(value: true, onChanged: (_) {}),
+      );
       await tester.pumpWidget(tree);
-                                                                                                                        
-      // When     
+
+      // When
       final capture = await recorder.performCapture();
 
       // Then
@@ -350,41 +350,14 @@ void main() {
       expect(capture!.viewTreeSnapshot.nodes.length, 1);
     });
 
-    testWidgets('checkbox has default size of 18x18', (tester) async {                                                  
-      // Given    
+    testWidgets('checkbox has default size of 18x18', (tester) async {
+      // Given
       final tree = captureCheckbox(
         recorder,
         Checkbox(value: true, onChanged: (_) {}),
-      );                                                                                                                
-      await tester.pumpWidget(tree);
-                                                                                                                        
-      // When     
-      final capture = await recorder.performCapture();
-
-      // Then
-      expect(capture, isNotNull);
-      final treeCapture = capture!.viewTreeSnapshot;
-      final checkboxNode = treeCapture.nodes.first;
-      final wireframes = checkboxNode.buildWireframes();
-      final checkboxWireframe = wireframes.first as SRTextWireframe;                                                                   
-      expect(checkboxWireframe.width, 18);
-      expect(checkboxWireframe.height, 18);                                                                                     
-    });
-
-    testWidgets('checkbox respects visual density', (tester) async {                                                    
-      // Given    
-      // VisualDensity.baseSizeAdjustment = Offset(horizontal * 4, vertical * 4)
-      // horizontal: 2, vertical: 2 --> adjustment = Offset(8, 8) --> size = 18 + 8 = 26                                    
-      final tree = captureCheckbox(                                                                                     
-        recorder,                                                                                                       
-        Checkbox(                                                                                                       
-          value: true,
-          onChanged: (_) {},
-          visualDensity: VisualDensity(horizontal: 2, vertical: 2),
-        ),                                                                                                              
       );
-      await tester.pumpWidget(tree);                                                                                    
-                  
+      await tester.pumpWidget(tree);
+
       // When
       final capture = await recorder.performCapture();
 
@@ -393,23 +366,50 @@ void main() {
       final treeCapture = capture!.viewTreeSnapshot;
       final checkboxNode = treeCapture.nodes.first;
       final wireframes = checkboxNode.buildWireframes();
-      final checkboxWireframe = wireframes.first as SRTextWireframe;                                                                 
+      final checkboxWireframe = wireframes.first as SRTextWireframe;
+      expect(checkboxWireframe.width, 18);
+      expect(checkboxWireframe.height, 18);
+    });
+
+    testWidgets('checkbox respects visual density', (tester) async {
+      // Given
+      // VisualDensity.baseSizeAdjustment = Offset(horizontal * 4, vertical * 4)
+      // horizontal: 2, vertical: 2 --> adjustment = Offset(8, 8) --> size = 18 + 8 = 26
+      final tree = captureCheckbox(
+        recorder,
+        Checkbox(
+          value: true,
+          onChanged: (_) {},
+          visualDensity: VisualDensity(horizontal: 2, vertical: 2),
+        ),
+      );
+      await tester.pumpWidget(tree);
+
+      // When
+      final capture = await recorder.performCapture();
+
+      // Then
+      expect(capture, isNotNull);
+      final treeCapture = capture!.viewTreeSnapshot;
+      final checkboxNode = treeCapture.nodes.first;
+      final wireframes = checkboxNode.buildWireframes();
+      final checkboxWireframe = wireframes.first as SRTextWireframe;
       expect(checkboxWireframe.width, 26);
-      expect(checkboxWireframe.height, 26);                                                                                     
+      expect(checkboxWireframe.height, 26);
     });
 
     testWidgets('scaled checkbox has scaled size', (tester) async {
       // Given
-      final tree = captureCheckbox(                                                                                     
+      final tree = captureCheckbox(
         recorder,
-        Transform.scale(                                                                                                
+        Transform.scale(
           scale: 0.5,
           child: Checkbox(value: true, onChanged: (_) {}),
         ),
       );
-      await tester.pumpWidget(tree);                                                                                    
-  
-      // When                                                                                                           
+      await tester.pumpWidget(tree);
+
+      // When
       final capture = await recorder.performCapture();
 
       // Then
@@ -418,8 +418,8 @@ void main() {
       final treeCapture = capture!.viewTreeSnapshot;
       final checkboxNode = treeCapture.nodes.first;
       final wireframes = checkboxNode.buildWireframes();
-      final checkboxWireframe = wireframes.first as SRTextWireframe;     
-      expect(checkboxWireframe.width, 9);                                                                                       
+      final checkboxWireframe = wireframes.first as SRTextWireframe;
+      expect(checkboxWireframe.width, 9);
       expect(checkboxWireframe.height, 9);
     });
   });
@@ -428,15 +428,15 @@ void main() {
 
     testWidgets('symbol color comes from checkColor', (tester) async {
       // Given
-      final tree = captureCheckbox(                                                                                     
+      final tree = captureCheckbox(
         recorder,
-        Checkbox(value: true, onChanged: (_) {}, checkColor: Colors.red),                                               
-      );          
+        Checkbox(value: true, onChanged: (_) {}, checkColor: Colors.red),
+      );
       await tester.pumpWidget(tree);
-                                                                                                                        
+
       // When
-      final capture = await recorder.performCapture();                                                                  
-                  
+      final capture = await recorder.performCapture();
+
       // Then
       expect(capture, isNotNull);
       final treeCapture = capture!.viewTreeSnapshot;
@@ -444,15 +444,15 @@ void main() {
       final wireframes = checkboxNode.buildWireframes();
       final checkboxWireframe = wireframes.first as SRTextWireframe;
       // Colors.red (#f44336) with full alpha --> #f44336ff
-      expect(checkboxWireframe.textStyle.color, '#f44336ff');                                                                   
+      expect(checkboxWireframe.textStyle.color, '#f44336ff');
     });
 
     testWidgets('symbol size is 70% of the checkbox height', (tester) async {
       // Given
       final tree = captureCheckbox(
-        recorder,                                                                                                       
+        recorder,
         Checkbox(value: true, onChanged: (_) {}),
-      );                                                                                                                
+      );
       await tester.pumpWidget(tree);
 
       // When
@@ -465,18 +465,18 @@ void main() {
       final checkboxNode = treeCapture.nodes.first;
       final wireframes = checkboxNode.buildWireframes();
       final checkboxWireframe = wireframes.first as SRTextWireframe;
-      expect(checkboxWireframe.textStyle.size, (checkboxWireframe.height * 0.7).round());                                               
+      expect(checkboxWireframe.textStyle.size, (checkboxWireframe.height * 0.7).round());
     });
 
-    testWidgets('symbol is center aligned horizontally and vertically', (tester) async {                                
+    testWidgets('symbol is center aligned horizontally and vertically', (tester) async {
       // Given
-      final tree = captureCheckbox(                                                                                     
-        recorder, 
+      final tree = captureCheckbox(
+        recorder,
         Checkbox(value: true, onChanged: (_) {}),
-      );                                                                                                                
+      );
       await tester.pumpWidget(tree);
-                                                                                                                        
-      // When     
+
+      // When
       final capture = await recorder.performCapture();
 
       // Then
@@ -485,8 +485,111 @@ void main() {
       final checkboxNode = treeCapture.nodes.first;
       final wireframes = checkboxNode.buildWireframes();
       final checkboxWireframe = wireframes.first as SRTextWireframe;
-      expect(checkboxWireframe.textPosition?.alignment?.horizontal, SRHorizontalAlignment.center);                              
+      expect(checkboxWireframe.textPosition?.alignment?.horizontal, SRHorizontalAlignment.center);
       expect(checkboxWireframe.textPosition?.alignment?.vertical, SRVerticalAlignment.center);
+    });
+  });
+
+  group('privacy', () {
+
+    testWidgets('maskAllInputs masks checked checkbox with x symbol', (tester) async {
+      // Given
+      recorder.defaultTreeCapturePrivacy = TreeCapturePrivacy(
+        textAndInputPrivacyLevel: TextAndInputPrivacyLevel.maskAllInputs,
+        imagePrivacyLevel: ImagePrivacyLevel.maskNonAssetsOnly,
+      );
+      final tree = captureCheckbox(
+        recorder,
+        Checkbox(value: true, onChanged: (_) {}),
+      );
+      await tester.pumpWidget(tree);
+
+      // When
+      final capture = await recorder.performCapture();
+
+      // Then
+      expect(capture, isNotNull);
+      final treeCapture = capture!.viewTreeSnapshot;
+      final checkboxNode = treeCapture.nodes.first;
+      final wireframes = checkboxNode.buildWireframes();
+      final checkboxWireframe = wireframes.first as SRTextWireframe;
+      expect(checkboxWireframe.text, 'x');
+      expect(checkboxWireframe.shapeStyle!.backgroundColor, '#00000000');
+      expect(checkboxWireframe.border, isNotNull);
+    });
+
+    testWidgets('maskAll masks checked checkbox with x symbol', (tester) async {
+      // Given
+      recorder.defaultTreeCapturePrivacy = TreeCapturePrivacy(
+        textAndInputPrivacyLevel: TextAndInputPrivacyLevel.maskAll,
+        imagePrivacyLevel: ImagePrivacyLevel.maskNonAssetsOnly,
+      );
+      final tree = captureCheckbox(
+        recorder,
+        Checkbox(value: true, onChanged: (_) {}),
+      );
+      await tester.pumpWidget(tree);
+
+      // When
+      final capture = await recorder.performCapture();
+
+      // Then
+      expect(capture, isNotNull);
+      final treeCapture = capture!.viewTreeSnapshot;
+      final checkboxNode = treeCapture.nodes.first;
+      final wireframes = checkboxNode.buildWireframes();
+      final checkboxWireframe = wireframes.first as SRTextWireframe;
+      expect(checkboxWireframe.text, 'x');
+      expect(checkboxWireframe.shapeStyle!.backgroundColor, '#00000000');
+      expect(checkboxWireframe.border, isNotNull);
+    });
+
+    testWidgets('maskAllInputs masks unchecked checkbox with x symbol', (tester) async {
+      // Given — verifies state is hidden regardless of original value
+      recorder.defaultTreeCapturePrivacy = TreeCapturePrivacy(
+        textAndInputPrivacyLevel: TextAndInputPrivacyLevel.maskAllInputs,
+        imagePrivacyLevel: ImagePrivacyLevel.maskNonAssetsOnly,
+      );
+      final tree = captureCheckbox(
+        recorder,
+        Checkbox(value: false, onChanged: (_) {}),
+      );
+      await tester.pumpWidget(tree);
+
+      // When
+      final capture = await recorder.performCapture();
+
+      // Then
+      expect(capture, isNotNull);
+      final treeCapture = capture!.viewTreeSnapshot;
+      final checkboxNode = treeCapture.nodes.first;
+      final wireframes = checkboxNode.buildWireframes();
+      final checkboxWireframe = wireframes.first as SRTextWireframe;
+      expect(checkboxWireframe.text, 'x');
+    });
+
+    testWidgets('maskSensitiveInputs does not mask checkbox', (tester) async {
+      // Given — maskSensitiveInputs only masks obscureText fields, not checkboxes
+      recorder.defaultTreeCapturePrivacy = TreeCapturePrivacy(
+        textAndInputPrivacyLevel: TextAndInputPrivacyLevel.maskSensitiveInputs,
+        imagePrivacyLevel: ImagePrivacyLevel.maskNonAssetsOnly,
+      );
+      final tree = captureCheckbox(
+        recorder,
+        Checkbox(value: true, onChanged: (_) {}),
+      );
+      await tester.pumpWidget(tree);
+
+      // When
+      final capture = await recorder.performCapture();
+
+      // Then
+      expect(capture, isNotNull);
+      final treeCapture = capture!.viewTreeSnapshot;
+      final checkboxNode = treeCapture.nodes.first;
+      final wireframes = checkboxNode.buildWireframes();
+      final checkboxWireframe = wireframes.first as SRTextWireframe;
+      expect(checkboxWireframe.text, '\u2713');
     });
   });
 }

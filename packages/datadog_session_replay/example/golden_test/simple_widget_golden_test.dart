@@ -283,4 +283,25 @@ void main() {
     );
     await snapshotTest(tester, recorder, fixture);
   });
+
+  testWidgets('checkboxes', (tester) async {
+    final fixture = MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(title: const Text('Checkboxes')),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Checkbox(value: true, onChanged: (_) {}),
+              Checkbox(value: false, onChanged: (_) {}),
+              Checkbox(value: null, tristate: true, onChanged: (_) {}),
+              Checkbox(value: true, onChanged: null),
+              Checkbox(value: false, onChanged: null),
+            ],
+          ),
+        ),
+      ),
+    );
+    await snapshotTest(tester, recorder, fixture);
+  });
 }
