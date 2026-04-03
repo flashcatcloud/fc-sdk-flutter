@@ -34,3 +34,7 @@ examples/native-hybrid-app/ios/Podfile.lock
 packages/datadog_flutter_plugin/example/ios/Podfile.lock
 .build
 tools/ci/.tmp
+.fvmrc
+.plans
+.prompts/
+

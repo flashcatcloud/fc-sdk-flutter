@@ -38,9 +38,12 @@ flutter:
   plugin:
     platforms:
       android:
+        package: com.datadoghq.flutter.sessionreplay
+        pluginClass: DatadogSessionReplayPlugin
         ffiPlugin: true
       ios:
         ffiPlugin: true
+        pluginClass: DatadogSessionReplayPlugin
       web:
         pluginClass: DatadogSessionReplayWeb
         fileName: src/datadog_session_replay_web.dart

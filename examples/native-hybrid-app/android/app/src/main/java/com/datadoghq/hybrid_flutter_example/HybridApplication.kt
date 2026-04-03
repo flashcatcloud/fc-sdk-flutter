@@ -16,8 +16,6 @@ import com.datadog.android.rum.RumConfiguration
 import com.datadog.android.rum.tracking.AcceptAllActivities
 import com.datadog.android.rum.tracking.ActivityViewTrackingStrategy
 import com.datadog.android.rum.tracking.ComponentPredicate
-import com.datadog.android.trace.Trace
-import com.datadog.android.trace.TraceConfiguration
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.embedding.engine.FlutterEngineCache
@@ -28,7 +26,7 @@ import org.json.JSONObject
  * This [ComponentPredicate] excludes all [FlutterActivity]s from being tracked by RUM, so that
  * the Flutter SDK can handle them instead.
  */
-class FlutterExcludingComponentPredicate: ComponentPredicate<Activity> {
+class FlutterExcludingComponentPredicate : ComponentPredicate<Activity> {
     val innerPredicate = AcceptAllActivities()
 
     override fun accept(component: Activity): Boolean {
@@ -64,7 +62,7 @@ class HybridApplication : Application() {
             Log.e(
                 TAG,
                 "Failed to find client token and application id in raw/dd_config.json." +
-                        " Did you run './generate_env'?",
+                    " Did you run './generate_env'?",
                 e
             )
         }
@@ -103,10 +101,12 @@ class HybridApplication : Application() {
         val rumConfiguration = RumConfiguration.Builder(applicationId)
             .trackLongTasks()
             .trackUserInteractions()
-            .useViewTrackingStrategy(ActivityViewTrackingStrategy(
-                trackExtras = false,
-                componentPredicate = FlutterExcludingComponentPredicate()
-            ))
+            .useViewTrackingStrategy(
+                ActivityViewTrackingStrategy(
+                    trackExtras = false,
+                    componentPredicate = FlutterExcludingComponentPredicate()
+                )
+            )
         Rum.enable(rumConfiguration.build())
 
         // ... and NDK crash reporting (this is optional. See documentation for more details).

@@ -10,6 +10,7 @@ import android.os.Looper
 import assertk.assertThat
 import assertk.assertions.isEqualTo
 import assertk.assertions.isNotNull
+import assertk.assertions.isNull
 import com.datadog.android.api.feature.FeatureSdkCore
 import com.datadoghq.flutter.sessionreplay.feature.DefaultFlutterSessionReplayFeature
 import com.datadoghq.flutter.sessionreplay.resource.ResourceResolver
@@ -18,6 +19,7 @@ import fr.xgouchet.elmyr.annotation.BoolForgery
 import fr.xgouchet.elmyr.annotation.IntForgery
 import fr.xgouchet.elmyr.annotation.StringForgery
 import fr.xgouchet.elmyr.junit5.ForgeExtension
+import io.flutter.plugin.common.BinaryMessenger
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
@@ -72,6 +74,36 @@ class FlutterSessionReplayBridgeTest {
         // Then
         assertThat(FlutterSessionReplayBridge.feature).isNotNull()
         verify { mockCore.registerFeature(FlutterSessionReplayBridge.feature!!) }
+    }
+
+    @Test
+    fun `M clear listenerOwner W enable`() {
+        // Given — pre-seed a stale owner
+        val staleMessenger = mockk<BinaryMessenger>()
+        FlutterSessionReplayBridge.claimOwnership(staleMessenger)
+        val mockCore: FeatureSdkCore = mockk(relaxed = true)
+        val configuration = FlutterSessionReplayBridge.Configuration(
+            customEndpointUrl = null,
+            onContextChanged = mockk(relaxed = true)
+        )
+
+        // When
+        FlutterSessionReplayBridge.enable(configuration, core = mockCore)
+
+        // Then — listenerOwner is cleared; claimOwnership() will re-establish it
+        assertThat(FlutterSessionReplayBridge.listenerOwner).isNull()
+    }
+
+    @Test
+    fun `M set listenerOwner W claimOwnership`() {
+        // Given
+        val mockMessenger = mockk<BinaryMessenger>()
+
+        // When
+        FlutterSessionReplayBridge.claimOwnership(mockMessenger)
+
+        // Then
+        assertThat(FlutterSessionReplayBridge.listenerOwner).isEqualTo(mockMessenger)
     }
 
     @Test
@@ -162,5 +194,46 @@ class FlutterSessionReplayBridgeTest {
         // Then
         verify { mockResourceResolver.resolveResource(key) }
         assertThat(result).isEqualTo(resolvedKey)
+    }
+
+    @Test
+    fun `M null contextListener only W detachFromEngine with owning messenger`() {
+        // Given
+        val mockMessenger = mockk<BinaryMessenger>()
+        val mockCore: FeatureSdkCore = mockk(relaxed = true)
+        val configuration = FlutterSessionReplayBridge.Configuration(
+            customEndpointUrl = null,
+            onContextChanged = mockk(relaxed = true)
+        )
+        FlutterSessionReplayBridge.enable(configuration, core = mockCore)
+        FlutterSessionReplayBridge.claimOwnership(mockMessenger)
+
+        // When
+        FlutterSessionReplayBridge.detachFromEngine(mockMessenger)
+
+        // Then
+        assertThat(FlutterSessionReplayBridge.contextListener).isNull()
+        assertThat(FlutterSessionReplayBridge.feature).isNotNull()
+    }
+
+    @Test
+    fun `M not null contextListener W detachFromEngine with non-owning messenger`() {
+        // Given
+        val owningMessenger = mockk<BinaryMessenger>()
+        val otherMessenger = mockk<BinaryMessenger>()
+        val mockCore: FeatureSdkCore = mockk(relaxed = true)
+        val configuration = FlutterSessionReplayBridge.Configuration(
+            customEndpointUrl = null,
+            onContextChanged = mockk(relaxed = true)
+        )
+        FlutterSessionReplayBridge.enable(configuration, core = mockCore)
+        FlutterSessionReplayBridge.claimOwnership(owningMessenger)
+
+        // When — a different engine detaches
+        FlutterSessionReplayBridge.detachFromEngine(otherMessenger)
+
+        // Then — listener is preserved
+        assertThat(FlutterSessionReplayBridge.contextListener).isNotNull()
+        assertThat(FlutterSessionReplayBridge.feature).isNotNull()
     }
 }

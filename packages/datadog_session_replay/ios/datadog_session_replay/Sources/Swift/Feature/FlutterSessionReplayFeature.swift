@@ -81,7 +81,7 @@ class DefaultFlutterSessionReplayFeature: FlutterSessionReplayFeature, DatadogRe
         self.resourceResolver = resourceResolver ?? DefaultResourceResolver(
             writer: ResourcesWriter(scope: core.scope(for: ResourcesFeature.self))
         )
-        
+
         self.performanceOverride = performanceOverride
     }
 
