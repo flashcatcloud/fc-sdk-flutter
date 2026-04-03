@@ -4,6 +4,7 @@
 
 // Note: to properly test recorders, we need to supply a full widget tree, as Element
 // is too difficult to mock effectively.
+import 'package:flutter/cupertino.dart';
 import 'package:datadog_common_test/datadog_common_test.dart';
 import 'package:datadog_session_replay/datadog_session_replay.dart';
 import 'package:datadog_session_replay/src/capture/capture_node.dart';
@@ -590,6 +591,98 @@ void main() {
       final wireframes = checkboxNode.buildWireframes();
       final checkboxWireframe = wireframes.first as SRTextWireframe;
       expect(checkboxWireframe.text, '\u2713');
+    });
+  });
+
+  group('cupertino checkbox', () {
+    testWidgets('checked cupertino checkbox has checkmark symbol', (tester) async {
+      // Given
+      final tree = captureCheckbox(
+        recorder,
+        CupertinoCheckbox(value: true, onChanged: (_) {}),
+      );
+      await tester.pumpWidget(tree);
+
+      // When
+      final capture = await recorder.performCapture();
+
+      // Then
+      expect(capture, isNotNull);
+      final treeCapture = capture!.viewTreeSnapshot;
+      expect(treeCapture.nodes.length, 1);        // It should be just one node, the checkbox node
+      final checkboxNode = treeCapture.nodes.first;
+
+      final wireframes = checkboxNode.buildWireframes();
+      expect(wireframes.length, 1);
+      final checkboxcWireframe = wireframes.first as SRTextWireframe;
+      expect(checkboxcWireframe.text, '\u2713');
+    });
+
+    testWidgets('unchecked cupertino checkbox has empty text', (tester) async {
+      // Given
+      final tree = captureCheckbox(
+        recorder,
+        CupertinoCheckbox(value: false, onChanged: (_) {}),
+      );
+      await tester.pumpWidget(tree);
+
+      // When
+      final capture = await recorder.performCapture();
+
+      // Then
+      expect(capture, isNotNull);
+      final treeCapture = capture!.viewTreeSnapshot;
+      final checkboxNode = treeCapture.nodes.first;
+      final wireframes = checkboxNode.buildWireframes();
+      final checkboxcWireframe = wireframes.first as SRTextWireframe;
+      expect(checkboxcWireframe.text, '');
+      expect(checkboxcWireframe.border, isNotNull);
+    });
+
+    testWidgets('tristate cupertino checkbox has dash symbol', (tester) async {
+      // Given
+      final tree = captureCheckbox(
+        recorder,
+        CupertinoCheckbox(value: null, tristate: true, onChanged: (_) {}),
+      );
+      await tester.pumpWidget(tree);
+
+      // When
+      final capture = await recorder.performCapture();
+
+      // Then
+      expect(capture, isNotNull);
+      final treeCapture = capture!.viewTreeSnapshot;
+      final checkboxNode = treeCapture.nodes.first;
+      final wireframes = checkboxNode.buildWireframes();
+      final checkboxcWireframe = wireframes.first as SRTextWireframe;
+      expect(checkboxcWireframe.text, '\u2014');
+    });
+
+    testWidgets('maskAllInputs masks cupertino checkbox', (tester) async {
+      // Given
+      recorder.defaultTreeCapturePrivacy = TreeCapturePrivacy(
+        textAndInputPrivacyLevel: TextAndInputPrivacyLevel.maskAllInputs,
+        imagePrivacyLevel: ImagePrivacyLevel.maskNonAssetsOnly,
+      );
+      final tree = captureCheckbox(
+        recorder,
+        CupertinoCheckbox(value: true, onChanged: (_) {}),
+      );
+      await tester.pumpWidget(tree);
+
+      // When
+      final capture = await recorder.performCapture();
+
+      // Then
+      expect(capture, isNotNull);
+      final treeCapture = capture!.viewTreeSnapshot;
+      final checkboxNode = treeCapture.nodes.first;
+      final wireframes = checkboxNode.buildWireframes();
+      final checkboxcWireframe = wireframes.first as SRTextWireframe;
+      expect(checkboxcWireframe.text, 'x');
+      expect(checkboxcWireframe.shapeStyle!.backgroundColor, '#00000000');
+      expect(checkboxcWireframe.border, isNotNull);
     });
   });
 }
