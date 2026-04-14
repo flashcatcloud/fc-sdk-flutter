@@ -30,8 +30,10 @@ subprojects {
 subprojects {
     project.evaluationDependsOn(':app')
 
-    apply from: "${project.rootDir}/buildscripts/ktlint.gradle"
-    apply from: "${project.rootDir}/buildscripts/detekt.gradle"
+    if (project.projectDir.canonicalPath.startsWith(rootProject.projectDir.canonicalPath)) {
+        apply from: "${project.rootDir}/buildscripts/ktlint.gradle"
+        apply from: "${project.rootDir}/buildscripts/detekt.gradle"
+    }
 }
 
 tasks.register("clean", Delete) {
