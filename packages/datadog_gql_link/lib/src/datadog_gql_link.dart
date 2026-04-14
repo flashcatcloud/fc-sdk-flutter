@@ -63,16 +63,25 @@ class DatadogGqlLink extends Link {
     }
 
     final tracingHeaderTypes = datadogSdk.headerTypesForHost(uri);
+    final internalAttributes = _getInternalAttributes(request);
+
     TracingContext? tracingContext;
-    if (tracingHeaderTypes.isNotEmpty) {
-      tracingContext = generateTracingContext(datadogSdk, rum);
+    try {
+      if (tracingHeaderTypes.isNotEmpty) {
+        tracingContext = generateTracingContext(datadogSdk, rum);
+      }
+
+      request = _injectTracingHeaders(request);
+    } catch (e, st) {
+      datadogSdk.internalLogger.sendToDatadog(
+        '$DatadogGqlLink encountered an error attempting to create a tracing context; $e',
+        st,
+        e.runtimeType.toString(),
+      );
     }
 
-    final internalAttributes = _getInternalAttributes(request);
     Map<String, Object?> userAttributes = {};
     listener?.requestStarted(request, userAttributes);
-    request = _injectTracingHeaders(request);
-
     final resourceId = _startRumResource(
         request, internalAttributes, tracingContext, userAttributes);
 
