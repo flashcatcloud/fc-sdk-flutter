@@ -20,7 +20,7 @@ class _GraphQLAttributes {
   static const operationType = '_dd.graphql.operation_type';
   static const operationName = '_dd.graphql.operation_name';
   static const variables = '_dd.graphql.variables';
-  static const errors = 'errors';
+  static const errors = '_dd.graphql.errors';
 }
 
 abstract interface class DatadogGqlListener {
@@ -100,7 +100,16 @@ class DatadogGqlLink extends Link {
           }
         }
 
-        final errorMap = _serializeResponseErrors(data);
+        Map<String, Object?>? errorMap;
+        try {
+          errorMap = _serializeResponseErrors(data);
+        } catch (e, st) {
+          datadogSdk.internalLogger.sendToDatadog(
+            '$DatadogGqlLink encountered an error serializing errors; $e',
+            st,
+            e.runtimeType.toString(),
+          );
+        }
 
         datadogSdk.rum?.stopResource(
           resourceId,
@@ -245,11 +254,7 @@ class DatadogGqlLink extends Link {
       };
     }).toList();
     return {
-      '_dd': {
-        'graphql': {
-          _GraphQLAttributes.errors: serializedErrors,
-        }
-      }
+      _GraphQLAttributes.errors: serializedErrors,
     };
   }
 }

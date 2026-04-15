@@ -668,7 +668,7 @@ query UserInfo($id: ID!) {
           any(), any(), RumResourceType.native, any(), captureAny()));
       final capturedAttrs = captured.captured[0] as Map<String, dynamic>;
       expect(findInvalidAttribute(capturedAttrs), null);
-      expect(capturedAttrs['_dd']['graphql']['errors'], [
+      expect(capturedAttrs['_dd.graphql.errors'], [
         {
           'message': 'GraphQL Error Message',
           'locations': [
