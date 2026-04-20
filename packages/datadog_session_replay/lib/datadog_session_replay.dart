@@ -4,6 +4,8 @@
 
 import 'package:datadog_flutter_plugin/datadog_flutter_plugin.dart';
 
+import 'src/capture/element_recorders/image_recorder.dart'
+    show defaultMaxImagePixelBudget;
 import 'src/datadog_session_replay_plugin.dart';
 
 export 'src/datadog_session_replay.dart' show DatadogSessionReplay;
@@ -106,6 +108,20 @@ class FontFamilyTransformConfig {
   });
 }
 
+/// Controls Dart-side downscaling of captured images before they are sent to
+/// the native resource pipeline.
+enum ImageDownscaling {
+  /// Legacy behavior: images larger than the pixel budget are replaced by
+  /// a "Large Image" placeholder wireframe.
+  disabled,
+
+  /// Downscale images on the raster thread when needed so they fit both the
+  /// on-screen rendered size (logical bounds × device pixel ratio) and the
+  /// pixel budget. If raster downscale fails for an oversized image, a
+  /// "Failed Downscale" placeholder is shown instead.
+  enabled,
+}
+
 /// Configuration options for Session Replay, including
 /// default privacy levels.
 class DatadogSessionReplayConfiguration {
@@ -146,6 +162,24 @@ class DatadogSessionReplayConfiguration {
   /// use [FontFamilyStrategy.smart] for web-friendly normalization.
   FontFamilyTransformConfig fontFamilyTransform;
 
+  /// When [ImageDownscaling.enabled], images are downscaled in Dart when they
+  /// exceed the on-screen rendered size or [maxImagePixelBudget] so they can
+  /// still be uploaded. If downscale fails for an oversized image, a
+  /// "Failed Downscale" placeholder is shown.
+  ///
+  /// When [ImageDownscaling.disabled] (default), images above
+  /// [maxImagePixelBudget] use the legacy placeholder behavior.
+  ImageDownscaling imageDownscaling;
+
+  /// Maximum total pixel count (width × height) for captured images.
+  ///
+  /// Images exceeding this budget are either replaced by a placeholder
+  /// ([ImageDownscaling.disabled]) or downscaled to fit
+  /// ([ImageDownscaling.enabled]).
+  ///
+  /// Defaults to 640 000 (~800×800).
+  int maxImagePixelBudget;
+
   DatadogSessionReplayConfiguration({
     required this.replaySampleRate,
     this.textAndInputPrivacyLevel = TextAndInputPrivacyLevel.maskAll,
@@ -153,6 +187,8 @@ class DatadogSessionReplayConfiguration {
     this.touchPrivacyLevel = TouchPrivacyLevel.hide,
     this.customEndpoint,
     this.fontFamilyTransform = const FontFamilyTransformConfig(),
+    this.imageDownscaling = ImageDownscaling.disabled,
+    this.maxImagePixelBudget = defaultMaxImagePixelBudget,
   });
 }
 

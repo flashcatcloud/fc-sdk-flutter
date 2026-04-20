@@ -2,9 +2,11 @@
 // This product includes software developed at Datadog (https://www.datadoghq.com/).
 // Copyright 2025-Present Datadog, Inc.
 
-import 'dart:typed_data';
-import 'dart:ui';
+import 'dart:math' as math;
+import 'dart:ui' as ui;
 
+import 'package:datadog_flutter_plugin/datadog_flutter_plugin.dart';
+import 'package:datadog_flutter_plugin/datadog_internal.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../../datadog_session_replay.dart';
@@ -18,15 +20,21 @@ import '../view_tree_snapshot.dart';
 // overlapping other content in the replay.
 const int _labelMinWidth = 125;
 
-// Largest size of image we can process - larger than this and we
-// start to hit concerns around memory usage and processing time.
-// This is essentially an 800x800 image, with a raw size of 2meg
-const int maxImageSize = 640000;
+// Default pixel budget (~800×800, raw RGBA ≈ 2 MB).
+const int defaultMaxImagePixelBudget = 640000;
 
 class ImageRecorder implements ElementRecorder {
   final KeyGenerator keyGenerator;
+  final ImageDownscaling imageDownscaling;
+  final int maxImagePixelBudget;
+  final InternalLogger? internalLogger;
 
-  const ImageRecorder(this.keyGenerator);
+  ImageRecorder(
+    this.keyGenerator, {
+    this.imageDownscaling = ImageDownscaling.disabled,
+    this.maxImagePixelBudget = defaultMaxImagePixelBudget,
+    this.internalLogger,
+  });
 
   @override
   bool accepts(Widget widget) => widget is RawImage || widget is Image;
@@ -88,7 +96,8 @@ class ImageRecorder implements ElementRecorder {
     }
 
     final totalPixelSize = uiImage.width * uiImage.height;
-    if (totalPixelSize > maxImageSize) {
+    if (totalPixelSize > maxImagePixelBudget &&
+        imageDownscaling == ImageDownscaling.disabled) {
       return SpecificElement(
         subtreeStrategy: CaptureNodeSubtreeStrategy.ignore,
         nodes: [
@@ -130,18 +139,71 @@ class ImageRecorder implements ElementRecorder {
     RawImage widget,
   ) async {
     final List<CaptureNode> nodes = [];
-    if (widget.image case final image?) {
+    final image = widget.image;
+    if (image == null) {
+      return _emptyOrErrorImage(elementId, attributes);
+    }
+
+    final sourceWidth = image.width;
+    final sourceHeight = image.height;
+    final totalPixels = sourceWidth * sourceHeight;
+
+    final (destWidth, destHeight) = _targetCaptureDimensions(
+      sourceWidth,
+      sourceHeight,
+      attributes,
+      element,
+      maxImagePixelBudget,
+    );
+
+    final needsRasterDownscale = imageDownscaling == ImageDownscaling.enabled &&
+        (destWidth != sourceWidth || destHeight != sourceHeight);
+
+    var encodingImage = image;
+    ui.Image? scaledDisposable;
+
+    if (needsRasterDownscale) {
+      final stopwatch = Stopwatch()..start();
+      final scaled = await _downscaleImage(image, destWidth, destHeight);
+      stopwatch.stop();
+      internalLogger?.log(
+        CoreLoggerLevel.debug,
+        'Session Replay image downscale: '
+        '${sourceWidth}x$sourceHeight (${totalPixels}px) -> '
+        '${destWidth}x$destHeight '
+        '(${destWidth * destHeight}px), '
+        'viewBounds=${attributes.width.toStringAsFixed(1)}x'
+        '${attributes.height.toStringAsFixed(1)}, '
+        'oversized=${totalPixels > maxImagePixelBudget}, '
+        'success=${scaled != null}, '
+        'took ${stopwatch.elapsedMilliseconds}ms',
+      );
+      if (scaled != null) {
+        encodingImage = scaled;
+        if (!identical(scaled, image)) {
+          scaledDisposable = scaled;
+        }
+      } else if (totalPixels > maxImagePixelBudget) {
+        return _failedDownscalePlaceholder(elementId, attributes);
+      }
+    }
+
+    if (identical(encodingImage, image) && totalPixels > maxImagePixelBudget) {
+      return _failedDownscalePlaceholder(elementId, attributes);
+    }
+
+    try {
       // Prevent conversion of the image data to speed things up, we're going to
       // be hashing / compressing in the processor anyway
-      ByteData? byteData = await image.toByteData(
-        format: ImageByteFormat.rawRgba,
+      final byteData = await encodingImage.toByteData(
+        format: ui.ImageByteFormat.rawRgba,
       );
       if (byteData != null) {
         final resourceKey = keyGenerator.keyForImage(image);
         await DatadogSessionReplayPlatform.instance.saveImageForProcessing(
           resourceKey,
-          image.width,
-          image.height,
+          encodingImage.width,
+          encodingImage.height,
           byteData,
         );
         nodes.add(
@@ -152,23 +214,161 @@ class ImageRecorder implements ElementRecorder {
           ),
         );
       }
+    } finally {
+      scaledDisposable?.dispose();
     }
 
     if (nodes.isEmpty) {
-      nodes.add(
-        PlaceholderNode(
-          attributes,
-          wireframeId: elementId,
-          caption: 'Empty Image',
-          minWidth: _labelMinWidth,
-        ),
-      );
+      return _emptyOrErrorImage(elementId, attributes);
     }
 
     return SpecificElement(
       subtreeStrategy: CaptureNodeSubtreeStrategy.ignore,
       nodes: nodes,
     );
+  }
+
+  static SpecificElement _failedDownscalePlaceholder(
+    int elementId,
+    CapturedViewAttributes attributes,
+  ) {
+    return SpecificElement(
+      subtreeStrategy: CaptureNodeSubtreeStrategy.ignore,
+      nodes: [
+        PlaceholderNode(
+          attributes,
+          wireframeId: elementId,
+          caption: 'Failed Downscale',
+          minWidth: _labelMinWidth,
+        ),
+      ],
+    );
+  }
+
+  static SpecificElement _emptyOrErrorImage(
+    int elementId,
+    CapturedViewAttributes attributes,
+  ) {
+    return SpecificElement(
+      subtreeStrategy: CaptureNodeSubtreeStrategy.ignore,
+      nodes: [
+        PlaceholderNode(
+          attributes,
+          wireframeId: elementId,
+          caption: 'Empty Image',
+          minWidth: _labelMinWidth,
+        ),
+      ],
+    );
+  }
+
+  /// Target width/height in physical pixels: fit inside on-screen bounds × DPR,
+  /// then clamp total pixels to the pixel budget.
+  @visibleForTesting
+  static (int, int) targetCaptureDimensionsForTest(
+    int sourceWidth,
+    int sourceHeight,
+    CapturedViewAttributes attributes,
+    double devicePixelRatio, {
+    int pixelBudget = defaultMaxImagePixelBudget,
+  }) =>
+      _targetCaptureDimensionsForDpr(
+        sourceWidth,
+        sourceHeight,
+        attributes,
+        devicePixelRatio,
+        pixelBudget,
+      );
+
+  static (int, int) _targetCaptureDimensions(
+    int sourceWidth,
+    int sourceHeight,
+    CapturedViewAttributes attributes,
+    Element element,
+    int pixelBudget,
+  ) {
+    final dpr = _devicePixelRatio(element);
+    return _targetCaptureDimensionsForDpr(
+      sourceWidth,
+      sourceHeight,
+      attributes,
+      dpr,
+      pixelBudget,
+    );
+  }
+
+  static (int, int) _targetCaptureDimensionsForDpr(
+    int sourceWidth,
+    int sourceHeight,
+    CapturedViewAttributes attributes,
+    double devicePixelRatio,
+    int pixelBudget,
+  ) {
+    final renderedPhysicalWidth =
+        math.max(1, (attributes.width * devicePixelRatio).ceil());
+    final renderedPhysicalHeight =
+        math.max(1, (attributes.height * devicePixelRatio).ceil());
+
+    final fitScale = math.min(
+      math.min(renderedPhysicalWidth / sourceWidth,
+          renderedPhysicalHeight / sourceHeight),
+      1.0,
+    );
+    var width = math.max(1, (sourceWidth * fitScale).round());
+    var height = math.max(1, (sourceHeight * fitScale).round());
+
+    // If total pixels still exceeds the budget, scale both dimensions
+    // uniformly. Because pixels = w × h, scaling each by √(budget/pixels)
+    // yields the target area: (w×s) × (h×s) = w×h×s² = budget.
+    final pixels = width * height;
+    if (pixels > pixelBudget) {
+      final budgetScale = math.sqrt(pixelBudget / pixels);
+      width = math.max(1, (width * budgetScale).floor());
+      height = math.max(1, (height * budgetScale).floor());
+    }
+    return (width, height);
+  }
+
+  static double _devicePixelRatio(Element element) {
+    final view = View.maybeOf(element);
+    if (view != null) {
+      return view.devicePixelRatio;
+    }
+    final views = WidgetsBinding.instance.platformDispatcher.views;
+    if (views.isNotEmpty) {
+      return views.first.devicePixelRatio;
+    }
+    return 1.0;
+  }
+
+  static Future<ui.Image?> _downscaleImage(
+    ui.Image source,
+    int destWidth,
+    int destHeight,
+  ) async {
+    if (destWidth < 1 || destHeight < 1) {
+      return null;
+    }
+    if (destWidth == source.width && destHeight == source.height) {
+      return null;
+    }
+    final recorder = ui.PictureRecorder();
+    final canvas = ui.Canvas(recorder);
+    final paint = ui.Paint()..filterQuality = ui.FilterQuality.medium;
+    canvas.drawImageRect(
+      source,
+      ui.Rect.fromLTWH(0, 0, source.width.toDouble(), source.height.toDouble()),
+      ui.Rect.fromLTWH(0, 0, destWidth.toDouble(), destHeight.toDouble()),
+      paint,
+    );
+    final picture = recorder.endRecording();
+    try {
+      return await picture.toImage(destWidth, destHeight);
+    } catch (_) {
+      return null;
+    } finally {
+      picture.dispose();
+    }
   }
 
   AssetBundleImageProvider? _extractAssetImage(Image widget) {
