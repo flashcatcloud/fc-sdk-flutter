@@ -80,7 +80,9 @@ class DatadogSessionReplay {
     });
 
     if (success) {
-      await _processor.start();
+      await _processor.start(
+        fontFamilyTransform: _configuration.fontFamilyTransform,
+      );
 
       _startPeriodicCapture();
       WidgetsBinding.instance.addPostFrameCallback((_) {

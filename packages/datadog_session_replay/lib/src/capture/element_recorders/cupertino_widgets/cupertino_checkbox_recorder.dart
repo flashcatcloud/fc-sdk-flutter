@@ -4,10 +4,10 @@
 
 import 'package:flutter/cupertino.dart';
 
-import '../material_widgets/checkbox_recorder.dart';
 import '../../capture_node.dart';
 import '../../recorder.dart';
 import '../../view_tree_snapshot.dart';
+import '../material_widgets/checkbox_recorder.dart';
 import '../recording_extensions.dart';
 import 'cupertino_recording_extensions.dart';
 
