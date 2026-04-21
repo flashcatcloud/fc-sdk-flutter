@@ -238,7 +238,7 @@ class DatadogGqlLink extends Link {
     return request;
   }
 
-  Map<String, Object?>? _serializeResponseErrors(Response response) {
+  Map<String, Object>? _serializeResponseErrors(Response response) {
     if (response.errors?.isEmpty ?? true) return null;
 
     final serializedErrors = response.errors!.map((e) {
@@ -254,7 +254,7 @@ class DatadogGqlLink extends Link {
       };
     }).toList();
     return {
-      _GraphQLAttributes.errors: serializedErrors,
+      _GraphQLAttributes.errors: json.encode(serializedErrors),
     };
   }
 }
