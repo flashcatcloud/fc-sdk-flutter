@@ -48,7 +48,7 @@ dart run jnigen --config jnigen.ysml
 
 ## Golden Tests
 
-Flutter Sesssion Replay uses "golden testing" to try to ensure that the SR wireframes remain consistent and are a reasonable representation of the widgets we capture. Each golden test captures a widget tree as SR wireframes, then renders the resulting wireframes using a Flutter `CustomPainter` called `WireframeCustomPainter`. The resulting render is captured and compared known good, "golden" image held in `example/golden_test/goldens`.  This also allows us to look at the results of simple widget captures without needing to send them to Datadog intake for verification.
+Flutter Session Replay uses "golden testing" to try to ensure that the SR wireframes remain consistent and are a reasonable representation of the widgets we capture. Each golden test captures a widget tree as SR wireframes, then renders the resulting wireframes using a Flutter `CustomPainter` called `WireframeCustomPainter`. The resulting render is captured and compared known good, "golden" image held in `example/golden_test/goldens`. This also allows us to look at the results of simple widget captures without needing to send them to Datadog intake for verification.
 
 To write a new Golden test, follow the examples in `example/golden_test/simple_widget_golden_test.dart`.
 
@@ -59,7 +59,7 @@ If you are making changes and need to test that you have not broken anything in 
 flutter test golden_test
 ```
 
-If you have made changes that require updated the golden images, run:
+If you have made changes that require updating the golden images, run:
 
 ```bash
 # from ./example
