@@ -1,14 +1,19 @@
 # Datadog Session Replay
 
-```
-⚠️ This package is currently in preview! Portions of the public API for this package may break without a major version update.
-```
+> [!WARNING]
+> This package is currently in preview! Portions of the public API for this package may break without a major version update.
 
 A package for integrating [Datadog Session Replay](https://www.datadoghq.com/product/real-user-monitoring/session-replay/) into Flutter applications.
 
 ## Getting started
 
 Session Replay for Flutter requires using the [Datadog Flutter Plugin](https://pub.dev/packages/datadog_flutter_plugin) in conjunction with Datadog RUM. For more information on how to set up RUM, check the [official documentation](https://docs.datadoghq.com/real_user_monitoring/mobile_and_tv_monitoring/flutter/setup/?tab=rum).
+
+> [!IMPORTANT]
+> Flutter Session Replay relies on FFI, and iOS requires a build change that the package cannot change automatically.
+> To ensure the required FFI symbols are not stripped during Archiving or IPA creation, you must set `Strip Style` in your Xcode project to `Non-Global Symbols`.
+>
+> For more information, see [this issue](https://github.com/flutter/flutter/issues/62666) in the Flutter repo.
 
 To use Datadog Session Replay for Flutter, first add the package to your `pubspec.yaml`:
 
