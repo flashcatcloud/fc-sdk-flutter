@@ -7,6 +7,7 @@ import 'dart:ui' as ui;
 import 'package:datadog_flutter_plugin/datadog_internal.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:collection/collection.dart';
 
 import '../../datadog_session_replay.dart';
 import '../datadog_session_replay_platform_interface.dart';
@@ -20,6 +21,9 @@ import 'element_recorders/image_recorder.dart';
 import 'element_recorders/privacy_recorder.dart';
 import 'element_recorders/text_recorder.dart';
 import 'element_recorders/material_widgets/checkbox_recorder.dart';
+import 'element_recorders/cupertino_widgets/cupertino_checkbox_recorder.dart';
+import 'element_recorders/material_widgets/radio_recorder.dart';
+import 'element_recorders/cupertino_widgets/cupertino_radio_recorder.dart';
 import 'pointer_capture.dart';
 import 'view_tree_snapshot.dart';
 
@@ -59,6 +63,10 @@ abstract interface class ElementRecorder {
   );
 }
 
+abstract interface class GenericElementRecorder implements ElementRecorder {
+  bool accepts(Widget widget);
+}
+
 class KeyGenerator {
   // This is close to JavaScript's MAX_SAFE_INT (53-bit)
   static const int maxKey = 0x20000000000000;
@@ -68,20 +76,25 @@ class KeyGenerator {
   var _nextElementKey = 0;
   var _nextResourceKey = startingResourceKey;
 
-  final Expando<int> _nodeIdExpando = Expando('sr-key');
+  final Expando<List<int>> _nodeIdExpando = Expando('sr-key');
   final Expando<int> _resourceIdExpando = Expando('sr-resource-key');
 
-  int keyForElement(Element e) {
-    var value = _nodeIdExpando[e];
-    if (value != null) return value;
+  int keyForElement(Element e, {int wireFrame = 0}) {
+    var wireFrames = _nodeIdExpando[e];
+    if (wireFrames == null) {
+      wireFrames = [];
+      _nodeIdExpando[e] = wireFrames;
+    }
 
-    value = _nextElementKey;
-    _nextElementKey = _nextElementKey + 1;
-    if (_nextElementKey >= maxKey) _nextElementKey = 0;
+    if (wireFrame < wireFrames.length) return wireFrames[wireFrame];
 
-    _nodeIdExpando[e] = value;
-
-    return value;
+    while (wireFrames.length <= wireFrame) {
+      final value = _nextElementKey;
+      _nextElementKey = _nextElementKey + 1;
+      if (_nextElementKey >= maxKey) _nextElementKey = 0;
+      wireFrames.add(value);
+    }
+    return wireFrames[wireFrame];
   }
 
   bool hasImageKey(ui.Image e) => _resourceIdExpando[e] != null;
@@ -92,10 +105,14 @@ class KeyGenerator {
 
     value = _nextResourceKey;
     _nextResourceKey = _nextResourceKey + 1;
-    if (_nextResourceKey >= maxKey) _nextResourceKey = startingResourceKey;
+    if ( _nextResourceKey >= maxKey ) _nextResourceKey = startingResourceKey;
 
     _resourceIdExpando[e] = value;
     return value;
+  }
+
+  int nextWireFrame(Element e) {
+    return _nodeIdExpando[e]?.length ?? 0;
   }
 }
 
@@ -110,6 +127,7 @@ class CaptureResult {
 class SessionReplayRecorder {
   final DatadogTimeProvider _timeProvider;
   final Map<Type, ElementRecorder> _elementRecordersByType = {};
+  final List<GenericElementRecorder> _genericElementRecorder = [];
 
   final Map<Key, Element> _elements = {};
   RUMContext? _currentContext;
@@ -150,7 +168,10 @@ class SessionReplayRecorder {
       ImageRecorder(keyGenerator),
       CustomPaintRecorder(keyGenerator),
       PrivacyRecorder(keyGenerator),
-      CheckboxRecorder(keyGenerator),                     // Support for rendering properly checkbox widget on SR
+      CheckboxRecorder(keyGenerator),
+      CupertinoCheckboxRecorder(keyGenerator),
+      RadioRecorder(keyGenerator),
+      CupertinoRadioRecorder(keyGenerator),
     ]);
   }
 
@@ -276,6 +297,10 @@ class SessionReplayRecorder {
 
   void _populateElementRecorderMap(List<ElementRecorder> recorders) {
     for (final recorder in recorders) {
+      if (recorder is GenericElementRecorder) {                                       // Broad match recorder for widgets with generic parameters
+        _genericElementRecorder.add(recorder);                                                                                       
+        continue;
+      }
       for (final type in recorder.handlesTypes) {
         _elementRecordersByType[type] = recorder;
       }
@@ -337,7 +362,8 @@ class SessionReplayRecorder {
       }
 
       final widget = e.widget;
-      final recorder = _elementRecordersByType[widget.runtimeType];
+      final recorder = _elementRecordersByType[widget.runtimeType] 
+        ?? _genericElementRecorder.firstWhereOrNull((r) => r.accepts(widget));
       var subtreeStrategy = CaptureNodeSubtreeStrategy.record;
       if (recorder != null) {
         final transformMatrix = renderObject.getTransformTo(

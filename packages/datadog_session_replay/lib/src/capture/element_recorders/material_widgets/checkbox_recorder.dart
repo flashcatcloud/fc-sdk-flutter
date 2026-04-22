@@ -5,28 +5,31 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-import '../../../../datadog_session_replay.dart';
 import '../../../extensions.dart';
 import '../../../sr_data_models.dart';
 import '../../capture_node.dart';
 import '../../recorder.dart';
 import '../../view_tree_snapshot.dart';
+import '../recording_extensions.dart';
 
 // Characters to represent the checkbox states
-const String checkmark = '\u2713';
-const String dash = '\u2014';
-const String maskedSymbol = 'x';
+const String _checkmark = '✓';
+const String _dash = '—';
+const String _maskedSymbol = 'x';
 
 // Scale for the text size within the box
-const double textScale = 0.7;
-
-// Corner radius for the box.
-const double checkboxRadius = 2.0;
+const double _textScale = 0.7;
 
 // Default checkbox size
-const double _checkboxVisualSize = 18.0;
+const double _kEdgeSize = Checkbox.width; // 18 px
+const double _kStrokeWidth = 2.0;
+const double _opacityDisabled = 0.38;
 
-/// Detects `CheckBox` widgets and places a check box
+// Transparent border
+const _transparentBorder =
+    BorderSide(width: _kStrokeWidth, color: Colors.transparent);
+
+/// Detects 'Checkbox' widgets and places a check box
 /// in SessionReplay.
 class CheckboxRecorder implements ElementRecorder {
   final KeyGenerator keyGenerator;
@@ -34,7 +37,7 @@ class CheckboxRecorder implements ElementRecorder {
   const CheckboxRecorder(this.keyGenerator);
 
   @override
-  List<Type> get handlesTypes => [Checkbox, CupertinoCheckbox];
+  List<Type> get handlesTypes => [Checkbox];
 
   @override
   CaptureNodeSemantics? captureSemantics(
@@ -42,118 +45,50 @@ class CheckboxRecorder implements ElementRecorder {
     CapturedViewAttributes attributes,
     TreeCapturePrivacy capturePrivacy,
   ) {
-    final widget = element.widget;
-    if ( (widget is! Checkbox) && (widget is! CupertinoCheckbox) ) return null;
-
-    final bool? value;
-    final bool isEnabled;
-    final Color? checkColor;
-    final Color? activeColor;
-    final WidgetStateProperty<Color?>? fillColor;
-    final BorderSide? widgetSide;
-    final VisualDensity? visualDensity;
-
-    Color backgroundColor;
-    Color symbolColor;
-    BorderSide? borderSide;
-
-
-    if (widget is Checkbox) {
-
-      // Resolves for checkbox state, either checked and enabled
-      isEnabled = widget.onChanged != null;       // checkbox mutability state
-      value = widget.value;                       // true = checked, false = unchecked, null = tristate (undeterminate)
-
-      checkColor = widget.checkColor;
-      activeColor = widget.activeColor;
-      fillColor = widget.fillColor;
-      widgetSide = widget.side;
-      visualDensity = widget.visualDensity;
-
-    } else if (widget is CupertinoCheckbox) {
-
-      // Resolves for checkbox state, either checked and enabled
-      isEnabled = widget.onChanged != null;        // checkbox mutability state
-      value = widget.value;                        // true = checked, false = unchecked, null = tristate (undeterminate)
-
-      checkColor = widget.checkColor;
-      activeColor = widget.activeColor;
-      fillColor = widget.fillColor;
-      widgetSide = widget.side;
-      visualDensity = null;                         // CupertinoCheckbox does not has visualDensity property
-
-    } else {
-      // It must be never be reached
-      throw UnsupportedError('Unsupported widget type: ${widget.runtimeType}');
+    // Check for cupertino checkbox style
+    {
+      bool isCupertinoAdaptive = false;
+      element.visitChildElements((child) {
+        if (child.widget is CupertinoCheckbox) isCupertinoAdaptive = true;
+      });
+      if (isCupertinoAdaptive) return null;
     }
 
-    // Resolve checkbox theme for colors and border
-    final theme = Theme.of(element);
-    final checkboxTheme = theme.checkboxTheme;
-
-    // Build the widget state set to drive theme resolution.
-    // TODO: include WidgetState.focused and WidgetState.hovered for richer theme resolution.
-    final states = <WidgetState> {
-      if (!isEnabled) WidgetState.disabled,
-      if (value == true) WidgetState.selected
-    };
+    final widget = element.widget;
+    if (widget is! Checkbox) return null;
 
     // Resolves for privacy settings
-    final bool isMasked =
-      capturePrivacy.textAndInputPrivacyLevel == TextAndInputPrivacyLevel.maskAllInputs ||
-      capturePrivacy.textAndInputPrivacyLevel == TextAndInputPrivacyLevel.maskAll;
+    final bool isMasked = capturePrivacy.isMasked;
 
-    if (!isMasked) {
+    // Resolve checkbox theme for colors
+    final ThemeData theme = Theme.of(element);
 
-      // Resolve fill color: checked and tristate (value != false) use the active color,
-      // unchecked uses transparent since the border conveys the unchecked state instead.
-      backgroundColor = fillColor?.resolve(states) ??
-          ((value != false)
-            ? (activeColor ?? theme.colorScheme.primary)
-            : Colors.transparent);
-      if (!isEnabled && value != false) backgroundColor = backgroundColor.withValues(alpha: 0.38);
+    final bool? value = (!isMasked) ? widget.value : false;
 
-      // Resolve for checkmark color
-      symbolColor = checkColor
-          ?? checkboxTheme.checkColor?.resolve(states)
-          ?? theme.colorScheme.onPrimary;
+    final states = <WidgetState>{
+      if (widget.onChanged == null) WidgetState.disabled,
+      if (value != false) WidgetState.selected,
+      if (widget.isError) WidgetState.error,
+    };
 
-      // Resolve for checkbox border just in case the checkbox value is false (all borders are the same)
-      // If checkbox value is true or null, there is a fill color and the border is redundant
-      if (value == false) {
-        borderSide = widgetSide
-              ?? (widget is Checkbox ? checkboxTheme.side : null)
-              ?? BorderSide(
-                color: isEnabled
-                  ? theme.colorScheme.onSurface.withValues(alpha: 0.6)
-                  : theme.colorScheme.onSurface.withValues(alpha: 0.38),
-                width: 2.0,
-              );
-      }
-    } else {
+    final Color backgroundColor =
+        _getBackgroundColor(widget: widget, states: states, theme: theme);
+    final Color symbolColor =
+        _getSymbolColor(widget: widget, states: states, theme: theme);
+    final BorderSide borderSide =
+        _getBorderSide(widget: widget, states: states, theme: theme);
+    final double cornerRadius =
+        _getCornerRadius(widget: widget, theme: theme) * attributes.scaleX;
 
-      borderSide = widgetSide
-          ?? (widget is Checkbox ? checkboxTheme.side : null)
-          ?? BorderSide(
-            color: isEnabled
-              ? theme.colorScheme.onSurface.withValues(alpha: 0.6)
-              : theme.colorScheme.onSurface.withValues(alpha: 0.38),
-            width: 2.0,
-          );
-      backgroundColor = Colors.transparent;
-      symbolColor = borderSide.color;
-    }
+    final double checkboxVisualSize =
+        _kEdgeSize + borderSide.width * (borderSide.strokeAlign + 1.0);
 
-    final density = visualDensity ?? theme.visualDensity;
-    final visualSizeWidth = _checkboxVisualSize + density.baseSizeAdjustment.dx;
-    final visualSizeHeight = _checkboxVisualSize + density.baseSizeAdjustment.dy;
-
-    final center = attributes.paintBounds.center;
     final adjustedBounds = Rect.fromCenter(
-      center: center,
-      width: visualSizeWidth * attributes.scaleX,
-      height: visualSizeHeight * attributes.scaleY,
+      center: attributes.paintBounds.center,
+      width: checkboxVisualSize * attributes.scaleX,
+      height: checkboxVisualSize * attributes.scaleX,
     );
+
     attributes = CapturedViewAttributes(
       paintBounds: adjustedBounds,
       scaleX: attributes.scaleX,
@@ -163,58 +98,193 @@ class CheckboxRecorder implements ElementRecorder {
     final wireframeKey = keyGenerator.keyForElement(element);
 
     final node = CheckboxNode(
-          attributes,
-          wireframeId: wireframeKey,
-          value: value,
-          fillColor: backgroundColor,
-          symbolColor: symbolColor,
-          side: borderSide,
-          isMasked: isMasked,
-        );
+      attributes,
+      wireframeId: wireframeKey,
+      value: value,
+      backgroundColor: backgroundColor,
+      symbolColor: symbolColor,
+      side: borderSide,
+      cornerRadius: cornerRadius,
+      isMasked: isMasked,
+    );
 
     return SpecificElement(
-      subtreeStrategy: CaptureNodeSubtreeStrategy.ignore,       // Ignore subtree to prevent CustomPaintRecorder from capturing the inner CustomPaint
+      subtreeStrategy: CaptureNodeSubtreeStrategy
+          .ignore, // Ignore subtree to prevent CustomPaintRecorder from capturing the inner CustomPaint
       nodes: [node],
     );
   }
+
+  Color _getBackgroundColor({
+    required Checkbox widget,
+    required Set<WidgetState> states,
+    required ThemeData theme,
+  }) {
+    return widget.fillColor?.resolve(states) ??
+        (states.contains(WidgetState.disabled)
+            ? null
+            : (states.contains(WidgetState.selected)
+                ? widget.activeColor
+                : null)) ??
+        theme.checkboxTheme.fillColor?.resolve(states) ??
+        _defaultFillColor(states: states, theme: theme);
+  }
+
+  Color _defaultFillColor({
+    required Set<WidgetState> states,
+    required ThemeData theme,
+  }) {
+    if (states.contains(WidgetState.disabled)) {
+      return states.contains(WidgetState.selected)
+          ? (theme.useMaterial3
+              ? theme.colorScheme.onSurface.withValues(alpha: _opacityDisabled)
+              : theme.disabledColor)
+          : Colors.transparent;
+    }
+    if (states.contains(WidgetState.selected)) {
+      if (theme.useMaterial3) {
+        return states.contains(WidgetState.error)
+            ? theme.colorScheme.error
+            : theme.colorScheme.primary;
+      }
+      return theme.colorScheme.secondary;
+    }
+    return Colors.transparent;
+  }
+
+  Color _getSymbolColor({
+    required Checkbox widget,
+    required Set<WidgetState> states,
+    required ThemeData theme,
+  }) {
+    return widget.checkColor ??
+        theme.checkboxTheme.checkColor?.resolve(states) ??
+        _defaultCheckColor(states: states, theme: theme);
+  }
+
+  Color _defaultCheckColor({
+    required Set<WidgetState> states,
+    required ThemeData theme,
+  }) {
+    if (theme.useMaterial3) {
+      if (states.contains(WidgetState.disabled)) {
+        if (states.contains(WidgetState.selected)) {
+          return theme.colorScheme.surface;
+        }
+        return Colors
+            .transparent; // No icons available when the checkbox is unselected.
+      }
+
+      if (states.contains(WidgetState.selected)) {
+        if (states.contains(WidgetState.error)) {
+          return theme.colorScheme.onError;
+        }
+        return theme.colorScheme.onPrimary;
+      }
+      return Colors
+          .transparent; // No icons available when the checkbox is unselected.
+    }
+
+    return Color(0xFFFFFFFF);
+  }
+
+  BorderSide _getBorderSide({
+    required Checkbox widget,
+    required Set<WidgetState> states,
+    required ThemeData theme,
+  }) {
+    return widget.side.resolveSide(states) ??
+        theme.checkboxTheme.side.resolveSide(states) ??
+        _defaultSide(theme: theme, states: states);
+  }
+
+  BorderSide _defaultSide({
+    required ThemeData theme,
+    required Set<WidgetState> states,
+  }) {
+    if (states.contains(WidgetState.disabled)) {
+      if (states.contains(WidgetState.selected)) {
+        return _transparentBorder;
+      }
+      return BorderSide(
+          width: _kStrokeWidth,
+          color: (theme.useMaterial3
+              ? theme.colorScheme.onSurface.withValues(alpha: _opacityDisabled)
+              : theme.disabledColor));
+    }
+    if (states.contains(WidgetState.selected)) {
+      return _transparentBorder;
+    }
+    if (theme.useMaterial3) {
+      if (states.contains(WidgetState.error)) {
+        return BorderSide(width: _kStrokeWidth, color: theme.colorScheme.error);
+      }
+      return BorderSide(
+        width: _kStrokeWidth,
+        color: theme.colorScheme.onSurfaceVariant,
+      );
+    }
+
+    return BorderSide(
+      width: _kStrokeWidth,
+      color: theme.unselectedWidgetColor,
+    );
+  }
+
+  double _getCornerRadius({
+    required Checkbox widget,
+    required ThemeData theme,
+  }) {
+    final OutlinedBorder shape = widget.shape ??
+        theme.checkboxTheme.shape ??
+        RoundedRectangleBorder(
+          borderRadius:
+              BorderRadius.all(Radius.circular(theme.useMaterial3 ? 2.0 : 1.0)),
+        );
+
+    return shape is RoundedRectangleBorder
+        ? shape.borderRadius.resolve(TextDirection.ltr).topLeft.x
+        : (theme.useMaterial3 ? 2.0 : 1.0);
+  }
 }
 
-/// Holds the resolved visual properties of a [Checkbox] widget and builds
-/// the corresponding [SRTextWireframe], using the text field to render the
-/// checkmark symbol and the shape style for the box background and border.
+/// Holds the resolved visual properties of a [Checkbox, CupertinoCheckbox]
+/// widget and builds the corresponding [SRTextWireframe], using the text
+/// field to render the checkmark symbol and the shape style for the box
+/// background and border.
 @immutable
 class CheckboxNode extends CaptureNode {
-
   final int wireframeId;
   final bool? value;
-  final Color fillColor;
+  final Color backgroundColor;
   final Color symbolColor;
-  final BorderSide? side;
+  final BorderSide side;
+  final double cornerRadius;
   final bool isMasked;
 
   const CheckboxNode(
     super.attributes, {
-      required this.value,
-      required this.wireframeId,
-      required this.symbolColor,
-      required this.fillColor,
-      required this.side,
-      required this.isMasked,
-    }
-  );
+    required this.value,
+    required this.wireframeId,
+    required this.symbolColor,
+    required this.backgroundColor,
+    required this.side,
+    required this.cornerRadius,
+    required this.isMasked,
+  });
 
   // Renders the checkbox as a single SRTextWireframe: the box shape is drawn
   // via shapeStyle/border, and the checkmark symbol is centered as text.
   @override
   List<SRWireframe> buildWireframes() {
-
-    final symbol = isMasked ? maskedSymbol : switch (value) {
-      true => checkmark,
-      false => '',
-      null => dash
+    final symbol = switch ((isMasked, value)) {
+      (true, _) => _maskedSymbol,
+      (_, true) => _checkmark,
+      (_, false) => '',
+      (_, null) => _dash
     };
 
-    return[
+    return [
       SRTextWireframe(
         id: wireframeId,
         x: attributes.x,
@@ -225,7 +295,7 @@ class CheckboxNode extends CaptureNode {
         textStyle: SRTextStyle(
           color: symbolColor.toHexString(),
           family: 'sans-serif',
-          size: (attributes.height * textScale).round(),
+          size: (attributes.height * _textScale).round(),
         ),
         textPosition: SRTextPosition(
           alignment: SRAlignment(
@@ -233,13 +303,13 @@ class CheckboxNode extends CaptureNode {
             vertical: SRVerticalAlignment.center,
           ),
         ),
-        border :
-          side != null ? SRShapeBorder(color: side!.color.toHexString(), width: side!.width.round()) : null,
+        border: SRShapeBorder(
+            color: side.color.toHexString(), width: side.width.round()),
         shapeStyle: SRShapeStyle(
-            backgroundColor: fillColor.toHexString(),
-            cornerRadius: checkboxRadius,
-          ),
-        )
+          backgroundColor: backgroundColor.toHexString(),
+          cornerRadius: cornerRadius,
+        ),
+      )
     ];
   }
 }

@@ -2,9 +2,11 @@
 // This product includes software developed at Datadog (https://www.datadoghq.com/).
 // Copyright 2025-Present Datadog, Inc.
 
-import 'package:flutter/widgets.dart';
+import 'package:flutter/cupertino.dart';
 
 import '../../sr_data_models.dart';
+import '../recorder.dart';
+import '../../../datadog_session_replay.dart';
 
 extension SRTextAlignment on TextAlign {
   SRHorizontalAlignment getSrHorizontalAlignment(TextDirection? textDirection) {
@@ -25,5 +27,30 @@ extension SRTextAlignment on TextAlign {
       case TextAlign.center:
         return SRHorizontalAlignment.center;
     }
+  }
+}
+
+extension TreeCapturePrivacyExtension on TreeCapturePrivacy {
+  bool get isMasked => 
+    textAndInputPrivacyLevel == TextAndInputPrivacyLevel.maskAllInputs ||
+    textAndInputPrivacyLevel == TextAndInputPrivacyLevel.maskAll;
+}
+
+extension CupertinoColorResolver on Color {
+  Color resolveColor(Element element) {
+    final resolved = CupertinoDynamicColor.resolve(this, element);
+    return Color.from(alpha: resolved.a, red: resolved.r, green: resolved.g, blue: resolved.b);
+  }
+}
+
+extension BorderSideStateResolver on BorderSide? {
+  BorderSide? resolveSide(Set<WidgetState> states) {
+    if (this is WidgetStateProperty) {
+      return WidgetStateProperty.resolveAs<BorderSide?>(this, states);
+    }
+    if (!states.contains(WidgetState.selected)) {
+      return this;
+    }
+    return null;
   }
 }
