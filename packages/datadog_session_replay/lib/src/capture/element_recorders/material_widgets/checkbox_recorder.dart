@@ -21,13 +21,13 @@ const String _maskedSymbol = 'x';
 const double _textScale = 0.7;
 
 // Default checkbox size
-const double _kEdgeSize = Checkbox.width; // 18 px
-const double _kStrokeWidth = 2.0;
+const double _edgeSize = Checkbox.width; // 18 px
+const double _strokeWidth = 2.0;
 const double _opacityDisabled = 0.38;
 
 // Transparent border
 const _transparentBorder =
-    BorderSide(width: _kStrokeWidth, color: Colors.transparent);
+    BorderSide(width: _strokeWidth, color: Colors.transparent);
 
 /// Detects 'Checkbox' widgets and places a check box
 /// in SessionReplay.
@@ -58,7 +58,7 @@ class CheckboxRecorder implements ElementRecorder {
     if (widget is! Checkbox) return null;
 
     // Resolves for privacy settings
-    final bool isMasked = capturePrivacy.isMasked;
+    final bool isMasked = capturePrivacy.shouldMaskInputs;
 
     // Resolve checkbox theme for colors
     final ThemeData theme = Theme.of(element);
@@ -81,7 +81,7 @@ class CheckboxRecorder implements ElementRecorder {
         _getCornerRadius(widget: widget, theme: theme) * attributes.scaleX;
 
     final double checkboxVisualSize =
-        _kEdgeSize + borderSide.width * (borderSide.strokeAlign + 1.0);
+        _edgeSize + borderSide.width * (borderSide.strokeAlign + 1.0);
 
     final adjustedBounds = Rect.fromCenter(
       center: attributes.paintBounds.center,
@@ -207,7 +207,7 @@ class CheckboxRecorder implements ElementRecorder {
         return _transparentBorder;
       }
       return BorderSide(
-          width: _kStrokeWidth,
+          width: _strokeWidth,
           color: (theme.useMaterial3
               ? theme.colorScheme.onSurface.withValues(alpha: _opacityDisabled)
               : theme.disabledColor));
@@ -217,16 +217,16 @@ class CheckboxRecorder implements ElementRecorder {
     }
     if (theme.useMaterial3) {
       if (states.contains(WidgetState.error)) {
-        return BorderSide(width: _kStrokeWidth, color: theme.colorScheme.error);
+        return BorderSide(width: _strokeWidth, color: theme.colorScheme.error);
       }
       return BorderSide(
-        width: _kStrokeWidth,
+        width: _strokeWidth,
         color: theme.colorScheme.onSurfaceVariant,
       );
     }
 
     return BorderSide(
-      width: _kStrokeWidth,
+      width: _strokeWidth,
       color: theme.unselectedWidgetColor,
     );
   }

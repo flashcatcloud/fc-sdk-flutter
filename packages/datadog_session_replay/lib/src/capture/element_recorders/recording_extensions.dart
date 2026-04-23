@@ -2,7 +2,7 @@
 // This product includes software developed at Datadog (https://www.datadoghq.com/).
 // Copyright 2025-Present Datadog, Inc.
 
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/widgets.dart';
 
 import '../../sr_data_models.dart';
 import '../recorder.dart';
@@ -31,16 +31,9 @@ extension SRTextAlignment on TextAlign {
 }
 
 extension TreeCapturePrivacyExtension on TreeCapturePrivacy {
-  bool get isMasked => 
+  bool get shouldMaskInputs => 
     textAndInputPrivacyLevel == TextAndInputPrivacyLevel.maskAllInputs ||
     textAndInputPrivacyLevel == TextAndInputPrivacyLevel.maskAll;
-}
-
-extension CupertinoColorResolver on Color {
-  Color resolveColor(Element element) {
-    final resolved = CupertinoDynamicColor.resolve(this, element);
-    return Color.from(alpha: resolved.a, red: resolved.r, green: resolved.g, blue: resolved.b);
-  }
 }
 
 extension BorderSideStateResolver on BorderSide? {

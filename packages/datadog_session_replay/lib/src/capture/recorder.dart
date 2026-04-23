@@ -7,7 +7,6 @@ import 'dart:ui' as ui;
 import 'package:datadog_flutter_plugin/datadog_internal.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:collection/collection.dart';
 
 import '../../datadog_session_replay.dart';
 import '../datadog_session_replay_platform_interface.dart';
@@ -63,6 +62,15 @@ abstract interface class ElementRecorder {
   );
 }
 
+extension<T> on List<T> {
+  T? firstWhereOrNull(bool Function(T) test) {
+    for (final e in this) {
+      if (test(e)) return e;
+    }
+    return null;
+  }
+}
+
 abstract interface class GenericElementRecorder implements ElementRecorder {
   bool accepts(Widget widget);
 }
@@ -76,25 +84,24 @@ class KeyGenerator {
   var _nextElementKey = 0;
   var _nextResourceKey = startingResourceKey;
 
-  final Expando<List<int>> _nodeIdExpando = Expando('sr-key');
+  final Expando<Map<int, int>> _nodeIdExpando = Expando('sr-key');
   final Expando<int> _resourceIdExpando = Expando('sr-resource-key');
 
-  int keyForElement(Element e, {int wireFrame = 0}) {
+  int keyForElement(Element e, {int wireframeId = 0}) {
     var wireFrames = _nodeIdExpando[e];
     if (wireFrames == null) {
-      wireFrames = [];
+      wireFrames = {};
       _nodeIdExpando[e] = wireFrames;
     }
 
-    if (wireFrame < wireFrames.length) return wireFrames[wireFrame];
+    final existing = wireFrames[wireframeId];
+    if (existing != null) return existing;
 
-    while (wireFrames.length <= wireFrame) {
-      final value = _nextElementKey;
-      _nextElementKey = _nextElementKey + 1;
-      if (_nextElementKey >= maxKey) _nextElementKey = 0;
-      wireFrames.add(value);
-    }
-    return wireFrames[wireFrame];
+    final value = _nextElementKey;
+    _nextElementKey = _nextElementKey + 1;
+    if (_nextElementKey >= maxKey) _nextElementKey = 0;
+    wireFrames[wireframeId] = value;
+    return value;
   }
 
   bool hasImageKey(ui.Image e) => _resourceIdExpando[e] != null;
@@ -105,7 +112,7 @@ class KeyGenerator {
 
     value = _nextResourceKey;
     _nextResourceKey = _nextResourceKey + 1;
-    if ( _nextResourceKey >= maxKey ) _nextResourceKey = startingResourceKey;
+    if (_nextResourceKey >= maxKey) _nextResourceKey = startingResourceKey;
 
     _resourceIdExpando[e] = value;
     return value;

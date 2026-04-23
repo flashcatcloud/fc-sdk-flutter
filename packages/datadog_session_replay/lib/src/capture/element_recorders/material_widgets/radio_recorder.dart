@@ -12,8 +12,8 @@ import '../../recorder.dart';
 import '../../view_tree_snapshot.dart';
 import '../recording_extensions.dart';
 
-const double _kOuterRadius = 8.0;
-const double _kInnerRadius = 4.5;
+const double _outerRadius = 8.0;
+const double _innerRadius = 4.5;
 const double _defaultBorderThickness = 2.0;
 
 /// Detects 'Radio' widgets and places a Radio icon
@@ -48,7 +48,7 @@ class RadioRecorder implements GenericElementRecorder {
     if (widget is! Radio) return null;
 
     // Resolves for privacy settings
-    final bool isMasked = capturePrivacy.isMasked;
+    final bool isMasked = capturePrivacy.shouldMaskInputs;
 
     // Resolve radio theme for colors
     final ThemeData theme = Theme.of(element);
@@ -65,10 +65,10 @@ class RadioRecorder implements GenericElementRecorder {
         widget: widget, states: states, theme: theme, fillColor: fillColor);
     final double innerRadius =
         _getInnerRadius(widget: widget, states: states, theme: theme)
-            .clamp(0.0, _kOuterRadius);
+            .clamp(0.0, _outerRadius);
 
     final double outerRadioVisualSize =
-        _kOuterRadius + borderSide.width * (borderSide.strokeAlign + 1.0) / 2.0;
+        _outerRadius + borderSide.width * (borderSide.strokeAlign + 1.0) / 2.0;
 
     final adjustedBounds = Rect.fromCenter(
       center: attributes.paintBounds.center,
@@ -87,9 +87,9 @@ class RadioRecorder implements GenericElementRecorder {
 
     // WireFrame keys
     final backgroundWireframeKey =
-        keyGenerator.keyForElement(element, wireFrame: 0);
+        keyGenerator.keyForElement(element, wireframeId: 0);
     final foregroundWireframeKey =
-        keyGenerator.keyForElement(element, wireFrame: 1);
+        keyGenerator.keyForElement(element, wireframeId: 1);
 
     final node = RadioNode(
       attributes,
@@ -213,7 +213,7 @@ class RadioRecorder implements GenericElementRecorder {
   }) {
     return widget.innerRadius?.resolve(states) ??
         theme.radioTheme.innerRadius?.resolve(states) ??
-        _kInnerRadius;
+        _innerRadius;
   }
 
   static double getRadius({

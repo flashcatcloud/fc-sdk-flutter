@@ -9,32 +9,33 @@ import '../../capture_node.dart';
 import '../../recorder.dart';
 import '../../view_tree_snapshot.dart';
 import '../recording_extensions.dart';
+import 'cupertino_recording_extensions.dart';
 
-const double _kOuterRadius = 7.0;
-const double _kInnerRadius = 2.975;
-const double _kBorderOutlineStrokeWidth = 1; // Should be 0.3
+const double _outerRadius = 7.0;
+const double _innerRadius = 2.975;
+const double _borderOutlineStrokeWidth = 1; // Should be 0.3
 
-final Color _kDisabledOuterColor =
+final Color _disabledOuterColor =
     CupertinoColors.white.withValues(alpha: 0.50);
-const Color _kDisabledInnerColor = CupertinoDynamicColor.withBrightness(
+const Color _disabledInnerColor = CupertinoDynamicColor.withBrightness(
   color: Color.fromARGB(64, 0, 0, 0),
   darkColor: Color.fromARGB(64, 255, 255, 255),
 );
-const Color _kDisabledBorderColor = CupertinoDynamicColor.withBrightness(
+const Color _disabledBorderColor = CupertinoDynamicColor.withBrightness(
   color: Color.fromARGB(64, 0, 0, 0),
   darkColor: Color.fromARGB(64, 0, 0, 0),
 );
-const CupertinoDynamicColor _kDefaultBorderColor =
+const CupertinoDynamicColor _defaultBorderColor =
     CupertinoDynamicColor.withBrightness(
   color: Color.fromARGB(255, 209, 209, 214),
   darkColor: Color.fromARGB(64, 0, 0, 0),
 );
-const CupertinoDynamicColor _kDefaultInnerColor =
+const CupertinoDynamicColor _defaultInnerColor =
     CupertinoDynamicColor.withBrightness(
   color: CupertinoColors.white,
   darkColor: Color.fromARGB(255, 222, 232, 248),
 );
-const CupertinoDynamicColor _kDefaultOuterColor =
+const CupertinoDynamicColor _defaultOuterColor =
     CupertinoDynamicColor.withBrightness(
   color: CupertinoColors.activeBlue,
   darkColor: Color.fromARGB(255, 50, 100, 215),
@@ -63,7 +64,7 @@ class CupertinoRadioRecorder implements GenericElementRecorder {
     if (widget is! CupertinoRadio) return null;
 
     // Resolves for privacy settings
-    final bool isMasked = capturePrivacy.isMasked;
+    final bool isMasked = capturePrivacy.shouldMaskInputs;
 
     final Set<WidgetState> states = RadioRecorder.getState(
         element: element, widget: widget, isMasked: isMasked);
@@ -78,8 +79,8 @@ class CupertinoRadioRecorder implements GenericElementRecorder {
 
     final adjustedBounds = Rect.fromCenter(
       center: attributes.paintBounds.center,
-      width: _kOuterRadius * 2.0 * attributes.scaleX,
-      height: _kOuterRadius * 2.0 * attributes.scaleX,
+      width: _outerRadius * 2.0 * attributes.scaleX,
+      height: _outerRadius * 2.0 * attributes.scaleX,
     );
 
     attributes = CapturedViewAttributes(
@@ -89,13 +90,13 @@ class CupertinoRadioRecorder implements GenericElementRecorder {
     );
 
     final double dotRadius = RadioRecorder.getRadius(
-        attributes: attributes, radius: _kInnerRadius * attributes.scaleX);
+        attributes: attributes, radius: _innerRadius * attributes.scaleX);
 
     // WireFrame keys
     final backgroundWireframeKey =
-        keyGenerator.keyForElement(element, wireFrame: 0);
+        keyGenerator.keyForElement(element, wireframeId: 0);
     final foregroundWireframeKey =
-        keyGenerator.keyForElement(element, wireFrame: 1);
+        keyGenerator.keyForElement(element, wireframeId: 1);
 
     final node = RadioNode(
       attributes,
@@ -120,11 +121,13 @@ class CupertinoRadioRecorder implements GenericElementRecorder {
     required CupertinoRadio<dynamic> widget,
     required Set<WidgetState> states,
   }) {
-    return states.contains(WidgetState.disabled)
-        ? _kDisabledOuterColor.resolveColor(element)
-        : states.contains(WidgetState.selected)
-            ? (widget.activeColor ?? _kDefaultOuterColor.resolveColor(element))
-            : (widget.inactiveColor ?? CupertinoColors.white);
+    if (states.contains(WidgetState.disabled)) {
+      return _disabledOuterColor.resolveColor(element);
+    }
+    if (states.contains(WidgetState.selected)) {
+      return widget.activeColor ?? _defaultOuterColor.resolveColor(element);
+    }
+    return widget.inactiveColor ?? CupertinoColors.white;
   }
 
   Color _getFillColor({
@@ -132,32 +135,34 @@ class CupertinoRadioRecorder implements GenericElementRecorder {
     required CupertinoRadio<dynamic> widget,
     required Set<WidgetState> states,
   }) {
-    return (states.contains(WidgetState.disabled) &&
-            states.contains(WidgetState.selected))
-        ? widget.fillColor ?? _kDisabledInnerColor.resolveColor(element)
-        : states.contains(WidgetState.selected)
-            ? widget.fillColor ?? _kDefaultInnerColor.resolveColor(element)
-            : CupertinoColors.white;
+    if (states.contains(WidgetState.disabled) && states.contains(WidgetState.selected)) {
+      widget.fillColor ?? _disabledInnerColor.resolveColor(element);
+    }
+    if (states.contains(WidgetState.selected)) {
+      return widget.fillColor ?? _defaultInnerColor.resolveColor(element);
+    }
+    return CupertinoColors.white;
   }
 
   BorderSide _getBorderSide({
     required Element element,
     required Set<WidgetState> states,
   }) {
-    return (states.contains(WidgetState.selected) &&
-            !states.contains(WidgetState.disabled))
-        ? BorderSide(
-            color: CupertinoColors.transparent,
-            width: _kBorderOutlineStrokeWidth,
-          )
-        : states.contains(WidgetState.disabled)
-            ? BorderSide(
-                color: _kDisabledBorderColor.resolveColor(element),
-                width: _kBorderOutlineStrokeWidth,
-              )
-            : BorderSide(
-                color: _kDefaultBorderColor.resolveColor(element),
-                width: _kBorderOutlineStrokeWidth,
-              );
+    if (states.contains(WidgetState.selected) && !states.contains(WidgetState.disabled)) {
+      return BorderSide(
+        color: CupertinoColors.transparent,
+        width: _borderOutlineStrokeWidth,
+      );
+    }
+    if (states.contains(WidgetState.disabled)) {
+      return BorderSide(
+        color: _disabledBorderColor.resolveColor(element),
+        width: _borderOutlineStrokeWidth,
+      );
+    }
+    return BorderSide(
+      color: _defaultBorderColor.resolveColor(element),
+      width: _borderOutlineStrokeWidth,
+    );
   }
 }
