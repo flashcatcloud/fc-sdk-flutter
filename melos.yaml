@@ -38,6 +38,12 @@ scripts:
     packageFilters:
       dirExists: example/web
 
+  dartfmt_check:
+    exec: dart format --output=none --set-exit-if-changed .
+  
+  dartfmt:
+    exec: dart format .
+
   lint_fix:
     run: melos lint_fix:ios && melos lint_fix:android
 

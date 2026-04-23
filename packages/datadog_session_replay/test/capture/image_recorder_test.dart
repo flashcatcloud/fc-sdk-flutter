@@ -194,16 +194,14 @@ void main() {
 
     final capturedImageNode =
         capture!.viewTreeSnapshot.nodes.last as ResourceImageNode;
-    final resourceKey =
-        verify(
-              () => platform.saveImageForProcessing(
-                captureAny(),
-                testImage.width,
-                testImage.height,
-                any(),
-              ),
-            ).captured.first
-            as int;
+    final resourceKey = verify(
+      () => platform.saveImageForProcessing(
+        captureAny(),
+        testImage.width,
+        testImage.height,
+        any(),
+      ),
+    ).captured.first as int;
     expect(capturedImageNode.resourceKey, resourceKey);
   });
 
@@ -253,16 +251,14 @@ void main() {
 
     final capturedImageNode =
         capture!.viewTreeSnapshot.nodes.last as ResourceImageNode;
-    final resourceKey =
-        verify(
-              () => platform.saveImageForProcessing(
-                captureAny(),
-                testImage.width,
-                testImage.height,
-                any(),
-              ),
-            ).captured.first
-            as int;
+    final resourceKey = verify(
+      () => platform.saveImageForProcessing(
+        captureAny(),
+        testImage.width,
+        testImage.height,
+        any(),
+      ),
+    ).captured.first as int;
 
     final builtWireframes = capturedImageNode.buildWireframes();
     expect(builtWireframes.length, 1);

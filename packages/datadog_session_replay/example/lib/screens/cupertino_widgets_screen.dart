@@ -75,30 +75,27 @@ class _CupertinoWidgetsScreenState extends State<CupertinoWidgetsScreen> {
             children: [
               _WidgetDisplay(
                 name: 'Button',
-                builder:
-                    (_) => CupertinoButton.filled(
-                      child: Text('Button'),
-                      onPressed: () {},
-                    ),
+                builder: (_) => CupertinoButton.filled(
+                  child: Text('Button'),
+                  onPressed: () {},
+                ),
               ),
               _WidgetDisplay(
                 name: 'Switch',
-                builder:
-                    (_) => CupertinoSwitch(
-                      value: _switchOn,
-                      onChanged: _onSwitchChanged,
-                    ),
+                builder: (_) => CupertinoSwitch(
+                  value: _switchOn,
+                  onChanged: _onSwitchChanged,
+                ),
               ),
               _WidgetDisplay(
                 name: 'Slider',
-                builder:
-                    (_) => CupertinoSlider(
-                      min: 0,
-                      max: 100,
-                      divisions: 100,
-                      value: _sliderValue,
-                      onChanged: _onSliderChanged,
-                    ),
+                builder: (_) => CupertinoSlider(
+                  min: 0,
+                  max: 100,
+                  divisions: 100,
+                  value: _sliderValue,
+                  onChanged: _onSliderChanged,
+                ),
               ),
               _WidgetDisplay(
                 name: 'Sliding Segment Control',

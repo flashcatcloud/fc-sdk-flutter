@@ -375,7 +375,8 @@ void main() {
           .stopResource(rumKey, 202, any(), any(), {'my_attribute': 100}));
     });
 
-    test('reports resource size from response body when Content-Length is missing (chunked)',
+    test(
+        'reports resource size from response body when Content-Length is missing (chunked)',
         () {
       // Given: chunked response with no content-length header but body in memory
       final interceptor = DatadogDioInterceptor(datadogSdk: mockDatadog);

@@ -288,8 +288,8 @@ void main() {
       ),
     ));
 
-    final text = find
-        .byWidgetPredicate((widget) => widget is Text && widget.data == childText);
+    final text = find.byWidgetPredicate(
+        (widget) => widget is Text && widget.data == childText);
     await tester.tap(text);
 
     verify(() => mockRum.addAction(
@@ -326,8 +326,8 @@ void main() {
       ),
     ));
 
-    final text = find
-        .byWidgetPredicate((widget) => widget is Text && widget.data == childText);
+    final text = find.byWidgetPredicate(
+        (widget) => widget is Text && widget.data == childText);
     await tester.tap(text);
 
     // Should report InkWell since the nested GestureDetector has no annotation
@@ -369,12 +369,12 @@ void main() {
       ),
     ));
 
-    final text = find
-        .byWidgetPredicate((widget) => widget is Text && widget.data == childText);
+    final text = find.byWidgetPredicate(
+        (widget) => widget is Text && widget.data == childText);
     await tester.tap(text);
 
-    verify(() => mockRum.addAction(
-        RumActionType.tap, 'GestureDetector($childAnnotation)', childAttributes));
+    verify(() => mockRum.addAction(RumActionType.tap,
+        'GestureDetector($childAnnotation)', childAttributes));
     verifyNoMoreInteractions(mockRum);
   });
 
@@ -513,7 +513,7 @@ void main() {
         groupValue: 0,
         onChanged: (value) {},
         value: 1,
-      ),      
+      ),
     ));
 
     final text = find.byType(Radio<int>);
@@ -534,7 +534,7 @@ void main() {
         child: Radio(
           groupValue: 0,
           onChanged: (value) {},
-          value: 1,          
+          value: 1,
         ),
       ),
     ));

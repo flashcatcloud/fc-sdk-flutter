@@ -47,26 +47,23 @@ void _renderShape(
   SRShapeBorder? border,
   SRShapeStyle? shapeStyle,
 ) {
-  final cornerRadius =
-      shapeStyle != null
-          ? Radius.circular(shapeStyle.cornerRadius)
-          : Radius.zero;
+  final cornerRadius = shapeStyle != null
+      ? Radius.circular(shapeStyle.cornerRadius)
+      : Radius.zero;
   if (border case final border?) {
-    final paint =
-        Paint()
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = border.width.toDouble()
-          ..color = _colorFromHexString(border.color);
+    final paint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = border.width.toDouble()
+      ..color = _colorFromHexString(border.color);
     canvas.drawRRect(RRect.fromRectAndRadius(rect, cornerRadius), paint);
   }
 
   if (shapeStyle case final style?) {
     if (style.backgroundColor != srTransparentColorString) {
       final color = _colorFromHexString(style.backgroundColor);
-      final paint =
-          Paint()
-            ..style = PaintingStyle.fill
-            ..color = color;
+      final paint = Paint()
+        ..style = PaintingStyle.fill
+        ..color = color;
       canvas.drawRRect(RRect.fromRectAndRadius(rect, cornerRadius), paint);
     }
   }
@@ -111,23 +108,21 @@ extension TextWireframeRendering on SRTextWireframe {
     // Note if you're looking at the Goldens and seeing only boxes: golden
     // tests in Flutter do this on purpose to produce consistent results on all
     // platforms. See https://github.com/flutter/flutter/issues/28729
-    final paragraphBuilder =
-        ui.ParagraphBuilder(
-            ui.ParagraphStyle(
-              textAlign: textPosition?.alignment?.toTextAlign(),
-            ),
-          )
-          ..pushStyle(
-            ui.TextStyle(
-              color: _colorFromHexString(textStyle.color),
-              fontFamily: textStyle.family.split(',')[0],
-              fontSize: textStyle.size.toDouble(),
-            ),
-          )
-          ..addText(text);
-    final paragraph =
-        paragraphBuilder.build()
-          ..layout(ui.ParagraphConstraints(width: width.toDouble()));
+    final paragraphBuilder = ui.ParagraphBuilder(
+      ui.ParagraphStyle(
+        textAlign: textPosition?.alignment?.toTextAlign(),
+      ),
+    )
+      ..pushStyle(
+        ui.TextStyle(
+          color: _colorFromHexString(textStyle.color),
+          fontFamily: textStyle.family.split(',')[0],
+          fontSize: textStyle.size.toDouble(),
+        ),
+      )
+      ..addText(text);
+    final paragraph = paragraphBuilder.build()
+      ..layout(ui.ParagraphConstraints(width: width.toDouble()));
     canvas.drawParagraph(paragraph, Offset(x.toDouble(), y.toDouble()));
 
     canvas.restore();
@@ -137,10 +132,9 @@ extension TextWireframeRendering on SRTextWireframe {
 extension PlaceholderWireframeRendering on SRPlaceholderWireframe {
   void render(Canvas canvas) {
     canvas.save();
-    final paint =
-        Paint()
-          ..style = PaintingStyle.fill
-          ..color = Colors.grey;
+    final paint = Paint()
+      ..style = PaintingStyle.fill
+      ..color = Colors.grey;
     canvas.drawRect(toRect(), paint);
 
     if (label case final label?) {
@@ -148,9 +142,8 @@ extension PlaceholderWireframeRendering on SRPlaceholderWireframe {
           ui.ParagraphBuilder(ui.ParagraphStyle(textAlign: TextAlign.center))
             ..pushStyle(ui.TextStyle(color: Colors.black))
             ..addText(label);
-      final paragraph =
-          paragraphBuilder.build()
-            ..layout(ui.ParagraphConstraints(width: width.toDouble()));
+      final paragraph = paragraphBuilder.build()
+        ..layout(ui.ParagraphConstraints(width: width.toDouble()));
       // Approximate center height
       final renderY = y + (height / 2.0);
       canvas.drawParagraph(paragraph, Offset(x.toDouble(), renderY));
@@ -162,9 +155,8 @@ extension PlaceholderWireframeRendering on SRPlaceholderWireframe {
 
 extension ImageWireframeRendering on SRImageWireframe {
   void render(Canvas canvas) {
-    final mockPlatform =
-        DatadogSessionReplayPlatform.instance
-            as MockDatadogSessionReplayPlatform;
+    final mockPlatform = DatadogSessionReplayPlatform.instance
+        as MockDatadogSessionReplayPlatform;
     final imageData = mockPlatform.imageCache[resourceId!];
     if (imageData != null && imageData.image != null) {
       canvas.save();

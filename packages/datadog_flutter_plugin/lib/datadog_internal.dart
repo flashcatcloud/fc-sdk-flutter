@@ -89,7 +89,7 @@ class FirstPartyHost {
   final RegExp regExp;
 
   FirstPartyHost._(this.hostName, this.headerTypes)
-    : regExp = RegExp('^(.*\\.)*${RegExp.escape(hostName)}\$');
+      : regExp = RegExp('^(.*\\.)*${RegExp.escape(hostName)}\$');
 
   bool matches(Uri uri) {
     return regExp.hasMatch(uri.host.toString());

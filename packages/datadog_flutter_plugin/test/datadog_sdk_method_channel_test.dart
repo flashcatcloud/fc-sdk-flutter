@@ -24,9 +24,9 @@ void main() {
     ambiguate(TestDefaultBinaryMessengerBinding.instance)
         ?.defaultBinaryMessenger
         .setMockMethodCallHandler(ddSdkPlatform.methodChannel, (message) {
-          log.add(message);
-          return null;
-        });
+      log.add(message);
+      return null;
+    });
     internalLogger = InternalLogger();
   });
 
@@ -110,16 +110,16 @@ void main() {
     ambiguate(TestDefaultBinaryMessengerBinding.instance)
         ?.defaultBinaryMessenger
         .setMockMethodCallHandler(ddSdkPlatform.methodChannel, (message) {
-          log.add(message);
-          if (message.method == 'attachToExisting') {
-            return Future<Map<String, Object?>>.value({
-              'loggingEnabled': true,
-              'rumEnabled': false,
-            });
-          }
-
-          return null;
+      log.add(message);
+      if (message.method == 'attachToExisting') {
+        return Future<Map<String, Object?>>.value({
+          'loggingEnabled': true,
+          'rumEnabled': false,
         });
+      }
+
+      return null;
+    });
     final response = await ddSdkPlatform.attachToExisting(
       DatadogAttachConfiguration(),
     );
@@ -134,13 +134,13 @@ void main() {
     ambiguate(TestDefaultBinaryMessengerBinding.instance)
         ?.defaultBinaryMessenger
         .setMockMethodCallHandler(ddSdkPlatform.methodChannel, (message) {
-          log.add(message);
-          if (message.method == 'attachToExisting') {
-            return Future<Map<String, Object?>>.value({'rumEnabled': 'string'});
-          }
+      log.add(message);
+      if (message.method == 'attachToExisting') {
+        return Future<Map<String, Object?>>.value({'rumEnabled': 'string'});
+      }
 
-          return null;
-        });
+      return null;
+    });
     final response = await ddSdkPlatform.attachToExisting(
       DatadogAttachConfiguration(),
     );
