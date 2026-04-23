@@ -11,6 +11,7 @@ import 'package:datadog_session_replay/src/rum_context.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_test_goldens/flutter_test_goldens.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'golden_test_helpers.dart';
@@ -20,6 +21,10 @@ void main() {
   late SessionReplayRecorder recorder;
   late RUMContext context;
   late MockDatadogSessionReplayPlatform platform;
+
+  setUpAll(() async {
+    await TestFonts.loadAppFonts();
+  });
 
   setUp(() {
     recorder = SessionReplayRecorder(
@@ -277,6 +282,136 @@ void main() {
                 ),
               ],
             ),
+          ),
+        ),
+      ),
+    );
+    await snapshotTest(tester, recorder, fixture);
+  });
+
+  testWidgets('unmasked checkboxes', (tester) async {
+    final fixture = MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(title: const Text('Unmasked Checkboxes')),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Checkbox(value: true, onChanged: (_) {}),
+              Checkbox(value: false, onChanged: (_) {}),
+              Checkbox(value: null, tristate: true, onChanged: (_) {}),
+              Checkbox(value: true, onChanged: null),
+              Checkbox(value: false, onChanged: null),
+              CupertinoCheckbox(value: true, onChanged: (_) {}),
+              CupertinoCheckbox(value: false, onChanged: (_) {}),
+              CupertinoCheckbox(value: null, tristate: true, onChanged: (_) {}),
+              CupertinoCheckbox(value: true, onChanged: null),
+              CupertinoCheckbox(value: false, onChanged: null),
+            ],
+          ),
+        ),
+      ),
+    );
+    await snapshotTest(tester, recorder, fixture);
+  });
+
+  testWidgets('masked checkboxes', (tester) async {
+    recorder = SessionReplayRecorder(
+      defaultCapturePrivacy: TreeCapturePrivacy(
+        textAndInputPrivacyLevel: TextAndInputPrivacyLevel.maskAllInputs,
+        imagePrivacyLevel: ImagePrivacyLevel.maskNone,
+      ),
+      touchPrivacyLevel: TouchPrivacyLevel.show,
+    );
+    recorder.updateContext(context);
+
+    final fixture = MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(title: const Text('Masked Checkboxes')),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Checkbox(value: true, onChanged: (_) {}),
+              Checkbox(value: false, onChanged: (_) {}),
+              Checkbox(value: null, tristate: true, onChanged: (_) {}),
+              CupertinoCheckbox(value: true, onChanged: (_) {}),
+              CupertinoCheckbox(value: false, onChanged: (_) {}),
+              CupertinoCheckbox(value: null, tristate: true, onChanged: (_) {}),
+            ],
+          ),
+        ),
+      ),
+    );
+    await snapshotTest(tester, recorder, fixture);
+  });
+
+  testWidgets('unmasked radios', (tester) async {
+    final fixture = MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(title: const Text('Unmasked Radios')),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              RadioGroup<int>(
+                groupValue: 1,
+                onChanged: (_) {},
+                child: Radio<int>(value: 1),
+              ),
+              RadioGroup<int>(
+                groupValue: 2,
+                onChanged: (_) {},
+                child: Radio<int>(value: 1),
+              ),
+              Radio<int>(value: 1),
+              RadioGroup<int>(
+                groupValue: 1,
+                onChanged: (_) {},
+                child: CupertinoRadio<int>(value: 1),
+              ),
+              RadioGroup<int>(
+                groupValue: 2,
+                onChanged: (_) {},
+                child: CupertinoRadio<int>(value: 1),
+              ),
+              CupertinoRadio<int>(value: 1),
+            ],
+          ),
+        ),
+      ),
+    );
+    await snapshotTest(tester, recorder, fixture);
+  });
+
+  testWidgets('masked radios', (tester) async {
+    recorder = SessionReplayRecorder(
+      defaultCapturePrivacy: TreeCapturePrivacy(
+        textAndInputPrivacyLevel: TextAndInputPrivacyLevel.maskAllInputs,
+        imagePrivacyLevel: ImagePrivacyLevel.maskNone,
+      ),
+      touchPrivacyLevel: TouchPrivacyLevel.show,
+    );
+    recorder.updateContext(context);
+
+    final fixture = MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(title: const Text('Masked Radios')),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              RadioGroup<int>(
+                groupValue: 1,
+                onChanged: (_) {},
+                child: Radio<int>(value: 1),
+              ),
+              RadioGroup<int>(
+                groupValue: 1,
+                onChanged: (_) {},
+                child: CupertinoRadio<int>(value: 1),
+              ),
+            ],
           ),
         ),
       ),

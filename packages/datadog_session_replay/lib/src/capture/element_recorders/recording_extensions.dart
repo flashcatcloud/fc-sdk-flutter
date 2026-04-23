@@ -5,6 +5,8 @@
 import 'package:flutter/widgets.dart';
 
 import '../../sr_data_models.dart';
+import '../recorder.dart';
+import '../../../datadog_session_replay.dart';
 
 extension SRTextAlignment on TextAlign {
   SRHorizontalAlignment getSrHorizontalAlignment(TextDirection? textDirection) {
@@ -25,5 +27,23 @@ extension SRTextAlignment on TextAlign {
       case TextAlign.center:
         return SRHorizontalAlignment.center;
     }
+  }
+}
+
+extension TreeCapturePrivacyExtension on TreeCapturePrivacy {
+  bool get shouldMaskInputs => 
+    textAndInputPrivacyLevel == TextAndInputPrivacyLevel.maskAllInputs ||
+    textAndInputPrivacyLevel == TextAndInputPrivacyLevel.maskAll;
+}
+
+extension BorderSideStateResolver on BorderSide? {
+  BorderSide? resolveSide(Set<WidgetState> states) {
+    if (this is WidgetStateProperty) {
+      return WidgetStateProperty.resolveAs<BorderSide?>(this, states);
+    }
+    if (!states.contains(WidgetState.selected)) {
+      return this;
+    }
+    return null;
   }
 }

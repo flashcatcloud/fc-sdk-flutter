@@ -6,6 +6,9 @@ import 'package:datadog_session_replay/src/capture/recorder.dart';
 import 'package:flutter/widgets.dart';
 
 /// A simplified implementation of [SessionReplayCapture] used for testing.
+///
+/// Note: to properly test recorders, we need to supply a full widget tree, as
+/// [Element] is too difficult to mock effectively.
 class SimpleTestCapture extends StatefulWidget {
   final SessionReplayRecorder recorder;
   final Widget? child;
