@@ -15,8 +15,9 @@ variables:
   SLACK_CHANNEL: "#mobile-sdk-ops"
   FLUTTER_MIN_VERSION: '3.27.0'
 
-  KUBERNETES_MEMORY_REQUEST: "16Gi"
-  KUBERNETES_MEMORY_LIMIT: "32Gi"
+  KUBERNETES_MEMORY_REQUEST: "32Gi"
+  KUBERNETES_MEMORY_LIMIT: "48Gi"
+  KUBERNETES_CPU_REQUEST: 4
 
 stages:
   - ci-image
@@ -42,7 +43,8 @@ stages:
     - dart pub global activate junitreport
     - melos bootstrap
     - mkdir -p $CI_PROJECT_DIR/.build/test-results/
-    - melos prepare
+    - melos full_clean
+    - melos prepare    
 
 .pre-web:
   script:
@@ -64,7 +66,7 @@ stages:
 
 .pre-android:
   script:
-    - yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "build-tools;34.0.0" "platform-tools" "platforms;android-35" || true
+    - yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "build-tools;36.0.0" "platform-tools" "platforms;android-36" || true
     - yes | flutter doctor --android-licenses || true
     # Kill all active emulators
     - pushd tools/ci 

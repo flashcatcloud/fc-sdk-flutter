@@ -74,7 +74,7 @@ scripts:
       concurrency: 1
     run: |
       cd example/android
-      ./gradlew --console=plain --quiet ktlintCheck detekt
+      ./gradlew --console=plain ktlintCheck detekt
     packageFilters:
       dirExists: android
       ignore: 
