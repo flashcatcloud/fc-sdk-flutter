@@ -59,9 +59,13 @@ void main() {
     platform.clearImages();
   });
 
-  Future<void> precacheImageCommonImages(WidgetTester tester) async {
+  Future<void> precacheImageCommonImages(WidgetTester tester,
+      {double? scale}) async {
     await tester.runAsync(() async {
-      await precacheImage(AssetImage(assetImage), tester.binding.rootElement!);
+      final ImageProvider assetProvider = scale != null
+          ? ExactAssetImage(assetImage, scale: scale)
+          : AssetImage(assetImage);
+      await precacheImage(assetProvider, tester.binding.rootElement!);
       await precacheImage(
         FileImage(File(assetImage)),
         tester.binding.rootElement!,
@@ -73,13 +77,16 @@ void main() {
     });
   }
 
-  Widget createFixtureBody() {
+  Widget createFixtureBody({double? scale}) {
     return Padding(
       padding: EdgeInsets.all(12),
       child: Column(
         spacing: 12,
         children: [
-          SizedBox(width: 130, height: 130, child: Image.asset(assetImage)),
+          SizedBox(
+              width: 130,
+              height: 130,
+              child: Image.asset(assetImage, scale: scale)),
           SizedBox(
             width: 130,
             height: 130,
@@ -124,6 +131,24 @@ void main() {
       home: Scaffold(
         appBar: AppBar(title: const Text('Mask Non-Asset Images')),
         body: createFixtureBody(),
+      ),
+    );
+    await snapshotTest(tester, recorder, fixture);
+  });
+
+  testWidgets('global mask non-asset images with scaled asset', (tester) async {
+    await precacheImageCommonImages(tester, scale: 2.0);
+
+    recorder.defaultTreeCapturePrivacy = TreeCapturePrivacy(
+      textAndInputPrivacyLevel: TextAndInputPrivacyLevel.maskAll,
+      imagePrivacyLevel: ImagePrivacyLevel.maskNonAssetsOnly,
+    );
+
+    final fixture = MaterialApp(
+      home: Scaffold(
+        appBar:
+            AppBar(title: const Text('Mask Non-Asset Images (Scaled Asset)')),
+        body: createFixtureBody(scale: 2.0),
       ),
     );
     await snapshotTest(tester, recorder, fixture);
