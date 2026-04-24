@@ -12,6 +12,10 @@
   * Propagate trace and session replay sample rates to RUM `ViewEvent`s.
   * Reduce .so file size.
   * Downgrade androidx-core to 1.15.0 in order to preserve Android compileSdk 35 compatibility.
+  
+## 3.1.2
+
+* [iOS] Prevent stripping of iOS context methods. See [#990](https://github.com/DataDog/dd-sdk-flutter/issues/990).
 
 ## 3.1.1
 
