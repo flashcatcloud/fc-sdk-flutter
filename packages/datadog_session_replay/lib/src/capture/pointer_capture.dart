@@ -47,7 +47,8 @@ class PointerSnapshotRecorderProvider extends InheritedWidget {
   @override
   bool updateShouldNotify(
     covariant PointerSnapshotRecorderProvider oldWidget,
-  ) => recorder != oldWidget.recorder;
+  ) =>
+      recorder != oldWidget.recorder;
 
   static PointerSnapshotRecorderProvider? of(BuildContext context) {
     return context
@@ -85,7 +86,7 @@ class PointerSnapshotRecorder {
       ),
     );
   }
-  
+
   // Uncapturing a pointer removes any previous events from the pointer, and
   // flags it as hidden until the next snapshot. This is partially to support
   // 'hover' events that don't have up / down that are trackable, and because

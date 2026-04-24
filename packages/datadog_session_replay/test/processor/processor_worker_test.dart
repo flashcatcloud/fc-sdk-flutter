@@ -281,9 +281,8 @@ void main() {
         final encodedRecord = jsonDecode(jsonRecord);
 
         // Then
-        final encodedMutation =
-            encodedRecord['records'][0]['data']['updates'][0]
-                as Map<String, Object?>;
+        final encodedMutation = encodedRecord['records'][0]['data']['updates']
+            [0] as Map<String, Object?>;
         expect(encodedMutation.containsKey('x'), isFalse);
         expect(encodedMutation.containsKey('y'), isFalse);
       },

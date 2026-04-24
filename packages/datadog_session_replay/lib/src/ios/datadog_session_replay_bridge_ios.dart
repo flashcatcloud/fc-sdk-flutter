@@ -10,34 +10,32 @@ import 'dart:ffi' as ffi;
 import 'package:objective_c/objective_c.dart' as objc;
 
 @ffi.Native<
-  ffi.Pointer<objc.ObjCObject> Function(
-    ffi.Pointer<objc.ObjCObject>,
-    ffi.Pointer<ffi.Void>,
-  )
->()
+    ffi.Pointer<objc.ObjCObject> Function(
+      ffi.Pointer<objc.ObjCObject>,
+      ffi.Pointer<ffi.Void>,
+    )>()
 external ffi.Pointer<objc.ObjCObject>
-_datadog_session_replay_bridge_protocolTrampoline_1mbt9g9(
+    _datadog_session_replay_bridge_protocolTrampoline_1mbt9g9(
   ffi.Pointer<objc.ObjCObject> target,
   ffi.Pointer<ffi.Void> arg0,
 );
 
 @ffi.Native<
-  ffi.Pointer<objc.ObjCBlockImpl> Function(ffi.Pointer<objc.ObjCBlockImpl>)
->(isLeaf: true)
+    ffi.Pointer<objc.ObjCBlockImpl> Function(
+        ffi.Pointer<objc.ObjCBlockImpl>)>(isLeaf: true)
 external ffi.Pointer<objc.ObjCBlockImpl>
-_datadog_session_replay_bridge_wrapListenerBlock_xtuoz7(
+    _datadog_session_replay_bridge_wrapListenerBlock_xtuoz7(
   ffi.Pointer<objc.ObjCBlockImpl> block,
 );
 
 @ffi.Native<
-  ffi.Pointer<objc.ObjCBlockImpl> Function(
-    ffi.Pointer<objc.ObjCBlockImpl>,
-    ffi.Pointer<objc.ObjCBlockImpl>,
-    ffi.Pointer<objc.DOBJC_Context>,
-  )
->(isLeaf: true)
+    ffi.Pointer<objc.ObjCBlockImpl> Function(
+      ffi.Pointer<objc.ObjCBlockImpl>,
+      ffi.Pointer<objc.ObjCBlockImpl>,
+      ffi.Pointer<objc.DOBJC_Context>,
+    )>(isLeaf: true)
 external ffi.Pointer<objc.ObjCBlockImpl>
-_datadog_session_replay_bridge_wrapBlockingBlock_xtuoz7(
+    _datadog_session_replay_bridge_wrapBlockingBlock_xtuoz7(
   ffi.Pointer<objc.ObjCBlockImpl> block,
   ffi.Pointer<objc.ObjCBlockImpl> listnerBlock,
   ffi.Pointer<objc.DOBJC_Context> context,
@@ -47,60 +45,48 @@ late final _class_FlutterRUMCoreContext = objc.getClass(
   "FlutterRUMCoreContext",
 );
 late final _sel_isKindOfClass_ = objc.registerName("isKindOfClass:");
-final _objc_msgSend_19nvye5 =
-    objc.msgSendPointer
-        .cast<
-          ffi.NativeFunction<
+final _objc_msgSend_19nvye5 = objc.msgSendPointer
+    .cast<
+        ffi.NativeFunction<
             ffi.Bool Function(
               ffi.Pointer<objc.ObjCObject>,
               ffi.Pointer<objc.ObjCSelector>,
               ffi.Pointer<objc.ObjCObject>,
-            )
-          >
-        >()
-        .asFunction<
-          bool Function(
-            ffi.Pointer<objc.ObjCObject>,
-            ffi.Pointer<objc.ObjCSelector>,
-            ffi.Pointer<objc.ObjCObject>,
-          )
-        >();
+            )>>()
+    .asFunction<
+        bool Function(
+          ffi.Pointer<objc.ObjCObject>,
+          ffi.Pointer<objc.ObjCSelector>,
+          ffi.Pointer<objc.ObjCObject>,
+        )>();
 late final _sel_sessionID = objc.registerName("sessionID");
-final _objc_msgSend_151sglz =
-    objc.msgSendPointer
-        .cast<
-          ffi.NativeFunction<
+final _objc_msgSend_151sglz = objc.msgSendPointer
+    .cast<
+        ffi.NativeFunction<
             ffi.Pointer<objc.ObjCObject> Function(
               ffi.Pointer<objc.ObjCObject>,
               ffi.Pointer<objc.ObjCSelector>,
-            )
-          >
-        >()
-        .asFunction<
-          ffi.Pointer<objc.ObjCObject> Function(
-            ffi.Pointer<objc.ObjCObject>,
-            ffi.Pointer<objc.ObjCSelector>,
-          )
-        >();
+            )>>()
+    .asFunction<
+        ffi.Pointer<objc.ObjCObject> Function(
+          ffi.Pointer<objc.ObjCObject>,
+          ffi.Pointer<objc.ObjCSelector>,
+        )>();
 late final _sel_setSessionID_ = objc.registerName("setSessionID:");
-final _objc_msgSend_xtuoz7 =
-    objc.msgSendPointer
-        .cast<
-          ffi.NativeFunction<
+final _objc_msgSend_xtuoz7 = objc.msgSendPointer
+    .cast<
+        ffi.NativeFunction<
             ffi.Void Function(
               ffi.Pointer<objc.ObjCObject>,
               ffi.Pointer<objc.ObjCSelector>,
               ffi.Pointer<objc.ObjCObject>,
-            )
-          >
-        >()
-        .asFunction<
-          void Function(
-            ffi.Pointer<objc.ObjCObject>,
-            ffi.Pointer<objc.ObjCSelector>,
-            ffi.Pointer<objc.ObjCObject>,
-          )
-        >();
+            )>>()
+    .asFunction<
+        void Function(
+          ffi.Pointer<objc.ObjCObject>,
+          ffi.Pointer<objc.ObjCSelector>,
+          ffi.Pointer<objc.ObjCObject>,
+        )>();
 late final _sel_viewID = objc.registerName("viewID");
 late final _sel_setViewID_ = objc.registerName("setViewID:");
 late final _sel_applicationID = objc.registerName("applicationID");
@@ -110,98 +96,96 @@ typedef Dartinstancetype = objc.ObjCObjectBase;
 late final _sel_init = objc.registerName("init");
 late final _sel_new = objc.registerName("new");
 late final _sel_allocWithZone_ = objc.registerName("allocWithZone:");
-final _objc_msgSend_1cwp428 =
-    objc.msgSendPointer
-        .cast<
-          ffi.NativeFunction<
+final _objc_msgSend_1cwp428 = objc.msgSendPointer
+    .cast<
+        ffi.NativeFunction<
             ffi.Pointer<objc.ObjCObject> Function(
               ffi.Pointer<objc.ObjCObject>,
               ffi.Pointer<objc.ObjCSelector>,
               ffi.Pointer<objc.NSZone>,
-            )
-          >
-        >()
-        .asFunction<
-          ffi.Pointer<objc.ObjCObject> Function(
-            ffi.Pointer<objc.ObjCObject>,
-            ffi.Pointer<objc.ObjCSelector>,
-            ffi.Pointer<objc.NSZone>,
-          )
-        >();
+            )>>()
+    .asFunction<
+        ffi.Pointer<objc.ObjCObject> Function(
+          ffi.Pointer<objc.ObjCObject>,
+          ffi.Pointer<objc.ObjCSelector>,
+          ffi.Pointer<objc.NSZone>,
+        )>();
 late final _sel_alloc = objc.registerName("alloc");
 late final _sel_self = objc.registerName("self");
 ffi.Pointer<objc.ObjCObject> _ObjCBlock_objcObjCObject_ffiVoid_fnPtrTrampoline(
   ffi.Pointer<objc.ObjCBlockImpl> block,
   ffi.Pointer<ffi.Void> arg0,
-) => block.ref.target
-    .cast<
-      ffi.NativeFunction<
-        ffi.Pointer<objc.ObjCObject> Function(ffi.Pointer<ffi.Void> arg0)
-      >
-    >()
-    .asFunction<ffi.Pointer<objc.ObjCObject> Function(ffi.Pointer<ffi.Void>)>()(
-  arg0,
-);
+) =>
+    block.ref.target
+        .cast<
+            ffi.NativeFunction<
+                ffi.Pointer<objc.ObjCObject> Function(
+                    ffi.Pointer<ffi.Void> arg0)>>()
+        .asFunction<
+            ffi.Pointer<objc.ObjCObject> Function(ffi.Pointer<ffi.Void>)>()(
+      arg0,
+    );
 ffi.Pointer<ffi.Void> _ObjCBlock_objcObjCObject_ffiVoid_fnPtrCallable =
     ffi.Pointer.fromFunction<
-      ffi.Pointer<objc.ObjCObject> Function(
-        ffi.Pointer<objc.ObjCBlockImpl>,
-        ffi.Pointer<ffi.Void>,
-      )
-    >(_ObjCBlock_objcObjCObject_ffiVoid_fnPtrTrampoline).cast();
+            ffi.Pointer<objc.ObjCObject> Function(
+              ffi.Pointer<objc.ObjCBlockImpl>,
+              ffi.Pointer<ffi.Void>,
+            )>(_ObjCBlock_objcObjCObject_ffiVoid_fnPtrTrampoline)
+        .cast();
 ffi.Pointer<objc.ObjCObject>
-_ObjCBlock_objcObjCObject_ffiVoid_closureTrampoline(
+    _ObjCBlock_objcObjCObject_ffiVoid_closureTrampoline(
   ffi.Pointer<objc.ObjCBlockImpl> block,
   ffi.Pointer<ffi.Void> arg0,
-) => (objc.getBlockClosure(block)
-    as ffi.Pointer<objc.ObjCObject> Function(ffi.Pointer<ffi.Void>))(arg0);
+) =>
+        (objc.getBlockClosure(block) as ffi.Pointer<objc.ObjCObject> Function(
+            ffi.Pointer<ffi.Void>))(arg0);
 ffi.Pointer<ffi.Void> _ObjCBlock_objcObjCObject_ffiVoid_closureCallable =
     ffi.Pointer.fromFunction<
-      ffi.Pointer<objc.ObjCObject> Function(
-        ffi.Pointer<objc.ObjCBlockImpl>,
-        ffi.Pointer<ffi.Void>,
-      )
-    >(_ObjCBlock_objcObjCObject_ffiVoid_closureTrampoline).cast();
+            ffi.Pointer<objc.ObjCObject> Function(
+              ffi.Pointer<objc.ObjCBlockImpl>,
+              ffi.Pointer<ffi.Void>,
+            )>(_ObjCBlock_objcObjCObject_ffiVoid_closureTrampoline)
+        .cast();
 
 /// Construction methods for `objc.ObjCBlock<ffi.Pointer<objc.ObjCObject> Function(ffi.Pointer<ffi.Void>)>`.
 abstract final class ObjCBlock_objcObjCObject_ffiVoid {
   /// Returns a block that wraps the given raw block pointer.
-  static objc.ObjCBlock<
-    ffi.Pointer<objc.ObjCObject> Function(ffi.Pointer<ffi.Void>)
-  >
-  castFromPointer(
+  static objc
+      .ObjCBlock<ffi.Pointer<objc.ObjCObject> Function(ffi.Pointer<ffi.Void>)>
+      castFromPointer(
     ffi.Pointer<objc.ObjCBlockImpl> pointer, {
     bool retain = false,
     bool release = false,
-  }) => objc.ObjCBlock<
-    ffi.Pointer<objc.ObjCObject> Function(ffi.Pointer<ffi.Void>)
-  >(pointer, retain: retain, release: release);
+  }) =>
+          objc.ObjCBlock<
+                  ffi.Pointer<objc.ObjCObject> Function(ffi.Pointer<ffi.Void>)>(
+              pointer,
+              retain: retain,
+              release: release);
 
   /// Creates a block from a C function pointer.
   ///
   /// This block must be invoked by native code running on the same thread as
   /// the isolate that registered it. Invoking the block on the wrong thread
   /// will result in a crash.
-  static objc.ObjCBlock<
-    ffi.Pointer<objc.ObjCObject> Function(ffi.Pointer<ffi.Void>)
-  >
-  fromFunctionPointer(
+  static objc
+      .ObjCBlock<ffi.Pointer<objc.ObjCObject> Function(ffi.Pointer<ffi.Void>)>
+      fromFunctionPointer(
     ffi.Pointer<
-      ffi.NativeFunction<
-        ffi.Pointer<objc.ObjCObject> Function(ffi.Pointer<ffi.Void> arg0)
-      >
-    >
-    ptr,
-  ) => objc.ObjCBlock<
-    ffi.Pointer<objc.ObjCObject> Function(ffi.Pointer<ffi.Void>)
-  >(
-    objc.newPointerBlock(
-      _ObjCBlock_objcObjCObject_ffiVoid_fnPtrCallable,
-      ptr.cast(),
-    ),
-    retain: false,
-    release: true,
-  );
+            ffi.NativeFunction<
+                ffi.Pointer<objc.ObjCObject> Function(
+                    ffi.Pointer<ffi.Void> arg0)>>
+        ptr,
+  ) =>
+          objc.ObjCBlock<
+              ffi.Pointer<objc.ObjCObject> Function(ffi.Pointer<ffi.Void>)>(
+            objc.newPointerBlock(
+              _ObjCBlock_objcObjCObject_ffiVoid_fnPtrCallable,
+              ptr.cast(),
+            ),
+            retain: false,
+            release: true,
+          );
 
   /// Creates a block from a Dart function.
   ///
@@ -211,50 +195,44 @@ abstract final class ObjCBlock_objcObjCObject_ffiVoid {
   ///
   /// If `keepIsolateAlive` is true, this block will keep this isolate alive
   /// until it is garbage collected by both Dart and ObjC.
-  static objc.ObjCBlock<
-    ffi.Pointer<objc.ObjCObject> Function(ffi.Pointer<ffi.Void>)
-  >
-  fromFunction(
+  static objc
+      .ObjCBlock<ffi.Pointer<objc.ObjCObject> Function(ffi.Pointer<ffi.Void>)>
+      fromFunction(
     objc.ObjCObjectBase Function(ffi.Pointer<ffi.Void>) fn, {
     bool keepIsolateAlive = true,
-  }) => objc.ObjCBlock<
-    ffi.Pointer<objc.ObjCObject> Function(ffi.Pointer<ffi.Void>)
-  >(
-    objc.newClosureBlock(
-      _ObjCBlock_objcObjCObject_ffiVoid_closureCallable,
-      (ffi.Pointer<ffi.Void> arg0) => fn(arg0).ref.retainAndAutorelease(),
-      keepIsolateAlive,
-    ),
-    retain: false,
-    release: true,
-  );
+  }) =>
+          objc.ObjCBlock<
+              ffi.Pointer<objc.ObjCObject> Function(ffi.Pointer<ffi.Void>)>(
+            objc.newClosureBlock(
+              _ObjCBlock_objcObjCObject_ffiVoid_closureCallable,
+              (ffi.Pointer<ffi.Void> arg0) =>
+                  fn(arg0).ref.retainAndAutorelease(),
+              keepIsolateAlive,
+            ),
+            retain: false,
+            release: true,
+          );
 }
 
 /// Call operator for `objc.ObjCBlock<ffi.Pointer<objc.ObjCObject> Function(ffi.Pointer<ffi.Void>)>`.
-extension ObjCBlock_objcObjCObject_ffiVoid_CallExtension
-    on
-        objc.ObjCBlock<
-          ffi.Pointer<objc.ObjCObject> Function(ffi.Pointer<ffi.Void>)
-        > {
+extension ObjCBlock_objcObjCObject_ffiVoid_CallExtension on objc
+    .ObjCBlock<ffi.Pointer<objc.ObjCObject> Function(ffi.Pointer<ffi.Void>)> {
   objc.ObjCObjectBase call(ffi.Pointer<ffi.Void> arg0) => objc.ObjCObjectBase(
-    ref.pointer.ref.invoke
-        .cast<
-          ffi.NativeFunction<
-            ffi.Pointer<objc.ObjCObject> Function(
-              ffi.Pointer<objc.ObjCBlockImpl> block,
-              ffi.Pointer<ffi.Void> arg0,
-            )
-          >
-        >()
-        .asFunction<
-          ffi.Pointer<objc.ObjCObject> Function(
-            ffi.Pointer<objc.ObjCBlockImpl>,
-            ffi.Pointer<ffi.Void>,
-          )
-        >()(ref.pointer, arg0),
-    retain: true,
-    release: true,
-  );
+        ref.pointer.ref.invoke
+            .cast<
+                ffi.NativeFunction<
+                    ffi.Pointer<objc.ObjCObject> Function(
+                      ffi.Pointer<objc.ObjCBlockImpl> block,
+                      ffi.Pointer<ffi.Void> arg0,
+                    )>>()
+            .asFunction<
+                ffi.Pointer<objc.ObjCObject> Function(
+                  ffi.Pointer<objc.ObjCBlockImpl>,
+                  ffi.Pointer<ffi.Void>,
+                )>()(ref.pointer, arg0),
+        retain: true,
+        release: true,
+      );
 }
 
 late final _sel_retain = objc.registerName("retain");
@@ -270,7 +248,7 @@ class FlutterRUMCoreContext extends objc.NSObject {
 
   /// Constructs a [FlutterRUMCoreContext] that points to the same underlying object as [other].
   FlutterRUMCoreContext.castFrom(objc.ObjCObjectBase other)
-    : this._(other.ref.pointer, retain: true, release: true);
+      : this._(other.ref.pointer, retain: true, release: true);
 
   /// Constructs a [FlutterRUMCoreContext] that wraps the given raw object pointer.
   FlutterRUMCoreContext.castFromPointer(
@@ -433,30 +411,32 @@ late final _sel_setCustomEndpoint_ = objc.registerName("setCustomEndpoint:");
 void _ObjCBlock_ffiVoid_FlutterRUMCoreContext_fnPtrTrampoline(
   ffi.Pointer<objc.ObjCBlockImpl> block,
   ffi.Pointer<objc.ObjCObject> arg0,
-) => block.ref.target
-    .cast<
-      ffi.NativeFunction<ffi.Void Function(ffi.Pointer<objc.ObjCObject> arg0)>
-    >()
-    .asFunction<void Function(ffi.Pointer<objc.ObjCObject>)>()(arg0);
+) =>
+    block.ref.target
+        .cast<
+            ffi.NativeFunction<
+                ffi.Void Function(ffi.Pointer<objc.ObjCObject> arg0)>>()
+        .asFunction<void Function(ffi.Pointer<objc.ObjCObject>)>()(arg0);
 ffi.Pointer<ffi.Void> _ObjCBlock_ffiVoid_FlutterRUMCoreContext_fnPtrCallable =
     ffi.Pointer.fromFunction<
-      ffi.Void Function(
-        ffi.Pointer<objc.ObjCBlockImpl>,
-        ffi.Pointer<objc.ObjCObject>,
-      )
-    >(_ObjCBlock_ffiVoid_FlutterRUMCoreContext_fnPtrTrampoline).cast();
+            ffi.Void Function(
+              ffi.Pointer<objc.ObjCBlockImpl>,
+              ffi.Pointer<objc.ObjCObject>,
+            )>(_ObjCBlock_ffiVoid_FlutterRUMCoreContext_fnPtrTrampoline)
+        .cast();
 void _ObjCBlock_ffiVoid_FlutterRUMCoreContext_closureTrampoline(
   ffi.Pointer<objc.ObjCBlockImpl> block,
   ffi.Pointer<objc.ObjCObject> arg0,
-) => (objc.getBlockClosure(block)
-    as void Function(ffi.Pointer<objc.ObjCObject>))(arg0);
+) =>
+    (objc.getBlockClosure(block) as void Function(
+        ffi.Pointer<objc.ObjCObject>))(arg0);
 ffi.Pointer<ffi.Void> _ObjCBlock_ffiVoid_FlutterRUMCoreContext_closureCallable =
     ffi.Pointer.fromFunction<
-      ffi.Void Function(
-        ffi.Pointer<objc.ObjCBlockImpl>,
-        ffi.Pointer<objc.ObjCObject>,
-      )
-    >(_ObjCBlock_ffiVoid_FlutterRUMCoreContext_closureTrampoline).cast();
+            ffi.Void Function(
+              ffi.Pointer<objc.ObjCBlockImpl>,
+              ffi.Pointer<objc.ObjCObject>,
+            )>(_ObjCBlock_ffiVoid_FlutterRUMCoreContext_closureTrampoline)
+        .cast();
 void _ObjCBlock_ffiVoid_FlutterRUMCoreContext_listenerTrampoline(
   ffi.Pointer<objc.ObjCBlockImpl> block,
   ffi.Pointer<objc.ObjCObject> arg0,
@@ -468,26 +448,24 @@ void _ObjCBlock_ffiVoid_FlutterRUMCoreContext_listenerTrampoline(
 }
 
 ffi.NativeCallable<
-  ffi.Void Function(
-    ffi.Pointer<objc.ObjCBlockImpl>,
-    ffi.Pointer<objc.ObjCObject>,
-  )
->
-_ObjCBlock_ffiVoid_FlutterRUMCoreContext_listenerCallable = ffi.NativeCallable<
-    ffi.Void Function(
-      ffi.Pointer<objc.ObjCBlockImpl>,
-      ffi.Pointer<objc.ObjCObject>,
-    )
-  >.listener(_ObjCBlock_ffiVoid_FlutterRUMCoreContext_listenerTrampoline)
-  ..keepIsolateAlive = false;
+        ffi.Void Function(
+          ffi.Pointer<objc.ObjCBlockImpl>,
+          ffi.Pointer<objc.ObjCObject>,
+        )> _ObjCBlock_ffiVoid_FlutterRUMCoreContext_listenerCallable =
+    ffi.NativeCallable<
+        ffi.Void Function(
+          ffi.Pointer<objc.ObjCBlockImpl>,
+          ffi.Pointer<objc.ObjCObject>,
+        )>.listener(_ObjCBlock_ffiVoid_FlutterRUMCoreContext_listenerTrampoline)
+      ..keepIsolateAlive = false;
 void _ObjCBlock_ffiVoid_FlutterRUMCoreContext_blockingTrampoline(
   ffi.Pointer<objc.ObjCBlockImpl> block,
   ffi.Pointer<ffi.Void> waiter,
   ffi.Pointer<objc.ObjCObject> arg0,
 ) {
   try {
-    (objc.getBlockClosure(block)
-        as void Function(ffi.Pointer<objc.ObjCObject>))(arg0);
+    (objc.getBlockClosure(block) as void Function(
+        ffi.Pointer<objc.ObjCObject>))(arg0);
   } catch (e) {
   } finally {
     objc.signalWaiter(waiter);
@@ -496,50 +474,47 @@ void _ObjCBlock_ffiVoid_FlutterRUMCoreContext_blockingTrampoline(
 }
 
 ffi.NativeCallable<
-  ffi.Void Function(
-    ffi.Pointer<objc.ObjCBlockImpl>,
-    ffi.Pointer<ffi.Void>,
-    ffi.Pointer<objc.ObjCObject>,
-  )
->
-_ObjCBlock_ffiVoid_FlutterRUMCoreContext_blockingCallable = ffi.NativeCallable<
-    ffi.Void Function(
-      ffi.Pointer<objc.ObjCBlockImpl>,
-      ffi.Pointer<ffi.Void>,
-      ffi.Pointer<objc.ObjCObject>,
-    )
-  >.isolateLocal(_ObjCBlock_ffiVoid_FlutterRUMCoreContext_blockingTrampoline)
-  ..keepIsolateAlive = false;
+        ffi.Void Function(
+          ffi.Pointer<objc.ObjCBlockImpl>,
+          ffi.Pointer<ffi.Void>,
+          ffi.Pointer<objc.ObjCObject>,
+        )> _ObjCBlock_ffiVoid_FlutterRUMCoreContext_blockingCallable =
+    ffi.NativeCallable<
+            ffi.Void Function(
+              ffi.Pointer<objc.ObjCBlockImpl>,
+              ffi.Pointer<ffi.Void>,
+              ffi.Pointer<objc.ObjCObject>,
+            )>.isolateLocal(
+        _ObjCBlock_ffiVoid_FlutterRUMCoreContext_blockingTrampoline)
+      ..keepIsolateAlive = false;
 ffi.NativeCallable<
-  ffi.Void Function(
-    ffi.Pointer<objc.ObjCBlockImpl>,
-    ffi.Pointer<ffi.Void>,
-    ffi.Pointer<objc.ObjCObject>,
-  )
->
-_ObjCBlock_ffiVoid_FlutterRUMCoreContext_blockingListenerCallable =
+        ffi.Void Function(
+          ffi.Pointer<objc.ObjCBlockImpl>,
+          ffi.Pointer<ffi.Void>,
+          ffi.Pointer<objc.ObjCObject>,
+        )> _ObjCBlock_ffiVoid_FlutterRUMCoreContext_blockingListenerCallable =
     ffi.NativeCallable<
         ffi.Void Function(
           ffi.Pointer<objc.ObjCBlockImpl>,
           ffi.Pointer<ffi.Void>,
           ffi.Pointer<objc.ObjCObject>,
-        )
-      >.listener(_ObjCBlock_ffiVoid_FlutterRUMCoreContext_blockingTrampoline)
+        )>.listener(_ObjCBlock_ffiVoid_FlutterRUMCoreContext_blockingTrampoline)
       ..keepIsolateAlive = false;
 
 /// Construction methods for `objc.ObjCBlock<ffi.Void Function(FlutterRUMCoreContext?)>`.
 abstract final class ObjCBlock_ffiVoid_FlutterRUMCoreContext {
   /// Returns a block that wraps the given raw block pointer.
   static objc.ObjCBlock<ffi.Void Function(FlutterRUMCoreContext?)>
-  castFromPointer(
+      castFromPointer(
     ffi.Pointer<objc.ObjCBlockImpl> pointer, {
     bool retain = false,
     bool release = false,
-  }) => objc.ObjCBlock<ffi.Void Function(FlutterRUMCoreContext?)>(
-    pointer,
-    retain: retain,
-    release: release,
-  );
+  }) =>
+          objc.ObjCBlock<ffi.Void Function(FlutterRUMCoreContext?)>(
+            pointer,
+            retain: retain,
+            release: release,
+          );
 
   /// Creates a block from a C function pointer.
   ///
@@ -547,19 +522,20 @@ abstract final class ObjCBlock_ffiVoid_FlutterRUMCoreContext {
   /// the isolate that registered it. Invoking the block on the wrong thread
   /// will result in a crash.
   static objc.ObjCBlock<ffi.Void Function(FlutterRUMCoreContext?)>
-  fromFunctionPointer(
+      fromFunctionPointer(
     ffi.Pointer<
-      ffi.NativeFunction<ffi.Void Function(ffi.Pointer<objc.ObjCObject> arg0)>
-    >
-    ptr,
-  ) => objc.ObjCBlock<ffi.Void Function(FlutterRUMCoreContext?)>(
-    objc.newPointerBlock(
-      _ObjCBlock_ffiVoid_FlutterRUMCoreContext_fnPtrCallable,
-      ptr.cast(),
-    ),
-    retain: false,
-    release: true,
-  );
+            ffi.NativeFunction<
+                ffi.Void Function(ffi.Pointer<objc.ObjCObject> arg0)>>
+        ptr,
+  ) =>
+          objc.ObjCBlock<ffi.Void Function(FlutterRUMCoreContext?)>(
+            objc.newPointerBlock(
+              _ObjCBlock_ffiVoid_FlutterRUMCoreContext_fnPtrCallable,
+              ptr.cast(),
+            ),
+            retain: false,
+            release: true,
+          );
 
   /// Creates a block from a Dart function.
   ///
@@ -572,23 +548,24 @@ abstract final class ObjCBlock_ffiVoid_FlutterRUMCoreContext {
   static objc.ObjCBlock<ffi.Void Function(FlutterRUMCoreContext?)> fromFunction(
     void Function(FlutterRUMCoreContext?) fn, {
     bool keepIsolateAlive = true,
-  }) => objc.ObjCBlock<ffi.Void Function(FlutterRUMCoreContext?)>(
-    objc.newClosureBlock(
-      _ObjCBlock_ffiVoid_FlutterRUMCoreContext_closureCallable,
-      (ffi.Pointer<objc.ObjCObject> arg0) => fn(
-        arg0.address == 0
-            ? null
-            : FlutterRUMCoreContext.castFromPointer(
-              arg0,
-              retain: true,
-              release: true,
-            ),
-      ),
-      keepIsolateAlive,
-    ),
-    retain: false,
-    release: true,
-  );
+  }) =>
+      objc.ObjCBlock<ffi.Void Function(FlutterRUMCoreContext?)>(
+        objc.newClosureBlock(
+          _ObjCBlock_ffiVoid_FlutterRUMCoreContext_closureCallable,
+          (ffi.Pointer<objc.ObjCObject> arg0) => fn(
+            arg0.address == 0
+                ? null
+                : FlutterRUMCoreContext.castFromPointer(
+                    arg0,
+                    retain: true,
+                    release: true,
+                  ),
+          ),
+          keepIsolateAlive,
+        ),
+        retain: false,
+        release: true,
+      );
 
   /// Creates a listener block from a Dart function.
   ///
@@ -610,10 +587,10 @@ abstract final class ObjCBlock_ffiVoid_FlutterRUMCoreContext {
         arg0.address == 0
             ? null
             : FlutterRUMCoreContext.castFromPointer(
-              arg0,
-              retain: false,
-              release: true,
-            ),
+                arg0,
+                retain: false,
+                release: true,
+              ),
       ),
       keepIsolateAlive,
     );
@@ -649,10 +626,10 @@ abstract final class ObjCBlock_ffiVoid_FlutterRUMCoreContext {
         arg0.address == 0
             ? null
             : FlutterRUMCoreContext.castFromPointer(
-              arg0,
-              retain: false,
-              release: true,
-            ),
+                arg0,
+                retain: false,
+                release: true,
+              ),
       ),
       keepIsolateAlive,
     );
@@ -664,10 +641,10 @@ abstract final class ObjCBlock_ffiVoid_FlutterRUMCoreContext {
         arg0.address == 0
             ? null
             : FlutterRUMCoreContext.castFromPointer(
-              arg0,
-              retain: false,
-              release: true,
-            ),
+                arg0,
+                retain: false,
+                release: true,
+              ),
       ),
       keepIsolateAlive,
     );
@@ -691,44 +668,37 @@ extension ObjCBlock_ffiVoid_FlutterRUMCoreContext_CallExtension
     on objc.ObjCBlock<ffi.Void Function(FlutterRUMCoreContext?)> {
   void call(FlutterRUMCoreContext? arg0) => ref.pointer.ref.invoke
       .cast<
-        ffi.NativeFunction<
-          ffi.Void Function(
-            ffi.Pointer<objc.ObjCBlockImpl> block,
-            ffi.Pointer<objc.ObjCObject> arg0,
-          )
-        >
-      >()
+          ffi.NativeFunction<
+              ffi.Void Function(
+                ffi.Pointer<objc.ObjCBlockImpl> block,
+                ffi.Pointer<objc.ObjCObject> arg0,
+              )>>()
       .asFunction<
-        void Function(
-          ffi.Pointer<objc.ObjCBlockImpl>,
-          ffi.Pointer<objc.ObjCObject>,
-        )
-      >()(ref.pointer, arg0?.ref.pointer ?? ffi.nullptr);
+          void Function(
+            ffi.Pointer<objc.ObjCBlockImpl>,
+            ffi.Pointer<objc.ObjCObject>,
+          )>()(ref.pointer, arg0?.ref.pointer ?? ffi.nullptr);
 }
 
 late final _sel_initWithCustomEndpoint_onContextChanged_ = objc.registerName(
   "initWithCustomEndpoint:onContextChanged:",
 );
-final _objc_msgSend_r0bo0s =
-    objc.msgSendPointer
-        .cast<
-          ffi.NativeFunction<
+final _objc_msgSend_r0bo0s = objc.msgSendPointer
+    .cast<
+        ffi.NativeFunction<
             ffi.Pointer<objc.ObjCObject> Function(
               ffi.Pointer<objc.ObjCObject>,
               ffi.Pointer<objc.ObjCSelector>,
               ffi.Pointer<objc.ObjCObject>,
               ffi.Pointer<objc.ObjCBlockImpl>,
-            )
-          >
-        >()
-        .asFunction<
-          ffi.Pointer<objc.ObjCObject> Function(
-            ffi.Pointer<objc.ObjCObject>,
-            ffi.Pointer<objc.ObjCSelector>,
-            ffi.Pointer<objc.ObjCObject>,
-            ffi.Pointer<objc.ObjCBlockImpl>,
-          )
-        >();
+            )>>()
+    .asFunction<
+        ffi.Pointer<objc.ObjCObject> Function(
+          ffi.Pointer<objc.ObjCObject>,
+          ffi.Pointer<objc.ObjCSelector>,
+          ffi.Pointer<objc.ObjCObject>,
+          ffi.Pointer<objc.ObjCBlockImpl>,
+        )>();
 
 /// FlutterSessionReplayConfiguration
 class FlutterSessionReplayConfiguration extends objc.NSObject {
@@ -740,7 +710,7 @@ class FlutterSessionReplayConfiguration extends objc.NSObject {
 
   /// Constructs a [FlutterSessionReplayConfiguration] that points to the same underlying object as [other].
   FlutterSessionReplayConfiguration.castFrom(objc.ObjCObjectBase other)
-    : this._(other.ref.pointer, retain: true, release: true);
+      : this._(other.ref.pointer, retain: true, release: true);
 
   /// Constructs a [FlutterSessionReplayConfiguration] that wraps the given raw object pointer.
   FlutterSessionReplayConfiguration.castFromPointer(
@@ -891,103 +861,86 @@ late final _sel_enableWith_ = objc.registerName("enableWith:");
 late final _sel_setHasReplayWithHasReplay_ = objc.registerName(
   "setHasReplayWithHasReplay:",
 );
-final _objc_msgSend_1s56lr9 =
-    objc.msgSendPointer
-        .cast<
-          ffi.NativeFunction<
+final _objc_msgSend_1s56lr9 = objc.msgSendPointer
+    .cast<
+        ffi.NativeFunction<
             ffi.Void Function(
               ffi.Pointer<objc.ObjCObject>,
               ffi.Pointer<objc.ObjCSelector>,
               ffi.Bool,
-            )
-          >
-        >()
-        .asFunction<
-          void Function(
-            ffi.Pointer<objc.ObjCObject>,
-            ffi.Pointer<objc.ObjCSelector>,
-            bool,
-          )
-        >();
+            )>>()
+    .asFunction<
+        void Function(
+          ffi.Pointer<objc.ObjCObject>,
+          ffi.Pointer<objc.ObjCSelector>,
+          bool,
+        )>();
 late final _sel_setRecordCountFor_count_ = objc.registerName(
   "setRecordCountFor:count:",
 );
-final _objc_msgSend_1nvl641 =
-    objc.msgSendPointer
-        .cast<
-          ffi.NativeFunction<
+final _objc_msgSend_1nvl641 = objc.msgSendPointer
+    .cast<
+        ffi.NativeFunction<
             ffi.Void Function(
               ffi.Pointer<objc.ObjCObject>,
               ffi.Pointer<objc.ObjCSelector>,
               ffi.Pointer<objc.ObjCObject>,
               ffi.Long,
-            )
-          >
-        >()
-        .asFunction<
-          void Function(
-            ffi.Pointer<objc.ObjCObject>,
-            ffi.Pointer<objc.ObjCSelector>,
-            ffi.Pointer<objc.ObjCObject>,
-            int,
-          )
-        >();
+            )>>()
+    .asFunction<
+        void Function(
+          ffi.Pointer<objc.ObjCObject>,
+          ffi.Pointer<objc.ObjCSelector>,
+          ffi.Pointer<objc.ObjCObject>,
+          int,
+        )>();
 late final _sel_writeSegmentWithSegment_ = objc.registerName(
   "writeSegmentWithSegment:",
 );
 late final _sel_postTelemetryDebugWithId_message_ = objc.registerName(
   "postTelemetryDebugWithId:message:",
 );
-final _objc_msgSend_pfv6jd =
-    objc.msgSendPointer
-        .cast<
-          ffi.NativeFunction<
+final _objc_msgSend_pfv6jd = objc.msgSendPointer
+    .cast<
+        ffi.NativeFunction<
             ffi.Void Function(
               ffi.Pointer<objc.ObjCObject>,
               ffi.Pointer<objc.ObjCSelector>,
               ffi.Pointer<objc.ObjCObject>,
               ffi.Pointer<objc.ObjCObject>,
-            )
-          >
-        >()
-        .asFunction<
-          void Function(
-            ffi.Pointer<objc.ObjCObject>,
-            ffi.Pointer<objc.ObjCSelector>,
-            ffi.Pointer<objc.ObjCObject>,
-            ffi.Pointer<objc.ObjCObject>,
-          )
-        >();
-late final _sel_postTelemetryErrorWithMessage_kind_stackTrace_ = objc
-    .registerName("postTelemetryErrorWithMessage:kind:stackTrace:");
-final _objc_msgSend_r8gdi7 =
-    objc.msgSendPointer
-        .cast<
-          ffi.NativeFunction<
+            )>>()
+    .asFunction<
+        void Function(
+          ffi.Pointer<objc.ObjCObject>,
+          ffi.Pointer<objc.ObjCSelector>,
+          ffi.Pointer<objc.ObjCObject>,
+          ffi.Pointer<objc.ObjCObject>,
+        )>();
+late final _sel_postTelemetryErrorWithMessage_kind_stackTrace_ =
+    objc.registerName("postTelemetryErrorWithMessage:kind:stackTrace:");
+final _objc_msgSend_r8gdi7 = objc.msgSendPointer
+    .cast<
+        ffi.NativeFunction<
             ffi.Void Function(
               ffi.Pointer<objc.ObjCObject>,
               ffi.Pointer<objc.ObjCSelector>,
               ffi.Pointer<objc.ObjCObject>,
               ffi.Pointer<objc.ObjCObject>,
               ffi.Pointer<objc.ObjCObject>,
-            )
-          >
-        >()
-        .asFunction<
-          void Function(
-            ffi.Pointer<objc.ObjCObject>,
-            ffi.Pointer<objc.ObjCSelector>,
-            ffi.Pointer<objc.ObjCObject>,
-            ffi.Pointer<objc.ObjCObject>,
-            ffi.Pointer<objc.ObjCObject>,
-          )
-        >();
+            )>>()
+    .asFunction<
+        void Function(
+          ffi.Pointer<objc.ObjCObject>,
+          ffi.Pointer<objc.ObjCSelector>,
+          ffi.Pointer<objc.ObjCObject>,
+          ffi.Pointer<objc.ObjCObject>,
+          ffi.Pointer<objc.ObjCObject>,
+        )>();
 late final _sel_saveImageForProcessingWithResourceKey_width_height_data_ = objc
     .registerName("saveImageForProcessingWithResourceKey:width:height:data:");
-final _objc_msgSend_g5idq5 =
-    objc.msgSendPointer
-        .cast<
-          ffi.NativeFunction<
+final _objc_msgSend_g5idq5 = objc.msgSendPointer
+    .cast<
+        ffi.NativeFunction<
             ffi.Void Function(
               ffi.Pointer<objc.ObjCObject>,
               ffi.Pointer<objc.ObjCSelector>,
@@ -995,38 +948,31 @@ final _objc_msgSend_g5idq5 =
               ffi.Long,
               ffi.Long,
               ffi.Pointer<objc.ObjCObject>,
-            )
-          >
-        >()
-        .asFunction<
-          void Function(
-            ffi.Pointer<objc.ObjCObject>,
-            ffi.Pointer<objc.ObjCSelector>,
-            int,
-            int,
-            int,
-            ffi.Pointer<objc.ObjCObject>,
-          )
-        >();
+            )>>()
+    .asFunction<
+        void Function(
+          ffi.Pointer<objc.ObjCObject>,
+          ffi.Pointer<objc.ObjCSelector>,
+          int,
+          int,
+          int,
+          ffi.Pointer<objc.ObjCObject>,
+        )>();
 late final _sel_resourceIdForKey_ = objc.registerName("resourceIdForKey:");
-final _objc_msgSend_qugqlf =
-    objc.msgSendPointer
-        .cast<
-          ffi.NativeFunction<
+final _objc_msgSend_qugqlf = objc.msgSendPointer
+    .cast<
+        ffi.NativeFunction<
             ffi.Pointer<objc.ObjCObject> Function(
               ffi.Pointer<objc.ObjCObject>,
               ffi.Pointer<objc.ObjCSelector>,
               ffi.Long,
-            )
-          >
-        >()
-        .asFunction<
-          ffi.Pointer<objc.ObjCObject> Function(
-            ffi.Pointer<objc.ObjCObject>,
-            ffi.Pointer<objc.ObjCSelector>,
-            int,
-          )
-        >();
+            )>>()
+    .asFunction<
+        ffi.Pointer<objc.ObjCObject> Function(
+          ffi.Pointer<objc.ObjCObject>,
+          ffi.Pointer<objc.ObjCSelector>,
+          int,
+        )>();
 
 /// FlutterSessionReplay
 class FlutterSessionReplay extends objc.NSObject {
@@ -1038,7 +984,7 @@ class FlutterSessionReplay extends objc.NSObject {
 
   /// Constructs a [FlutterSessionReplay] that points to the same underlying object as [other].
   FlutterSessionReplay.castFrom(objc.ObjCObjectBase other)
-    : this._(other.ref.pointer, retain: true, release: true);
+      : this._(other.ref.pointer, retain: true, release: true);
 
   /// Constructs a [FlutterSessionReplay] that wraps the given raw object pointer.
   FlutterSessionReplay.castFromPointer(

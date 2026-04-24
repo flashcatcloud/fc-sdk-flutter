@@ -21,22 +21,21 @@ void main() async {
     site: DatadogSite.us1,
     nativeCrashReportEnabled: true,
     loggingConfiguration: DatadogLoggingConfiguration(),
-    rumConfiguration:
-        applicationId != null
-            ? DatadogRumConfiguration(
-              sessionSamplingRate: 100.0,
-              applicationId: applicationId,
-              detectLongTasks: true,
-              reportFlutterPerformance: true,
-            )
-            : null,
+    rumConfiguration: applicationId != null
+        ? DatadogRumConfiguration(
+            sessionSamplingRate: 100.0,
+            applicationId: applicationId,
+            detectLongTasks: true,
+            reportFlutterPerformance: true,
+          )
+        : null,
   )..enableSessionReplay(
-    DatadogSessionReplayConfiguration(
-      textAndInputPrivacyLevel: TextAndInputPrivacyLevel.maskSensitiveInputs,
-      touchPrivacyLevel: TouchPrivacyLevel.show,
-      replaySampleRate: 1.0,
-    ),
-  );
+      DatadogSessionReplayConfiguration(
+        textAndInputPrivacyLevel: TextAndInputPrivacyLevel.maskSensitiveInputs,
+        touchPrivacyLevel: TouchPrivacyLevel.show,
+        replaySampleRate: 1.0,
+      ),
+    );
 
   final ddsdk = DatadogSdk.instance;
   ddsdk.sdkVerbosity = CoreLoggerLevel.debug;
