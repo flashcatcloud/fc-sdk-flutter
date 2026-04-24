@@ -18,7 +18,6 @@ import 'package:mocktail/mocktail.dart';
 
 import '../simple_test_capture.dart';
 
-
 SimpleTestCapture captureCheckbox(
   SessionReplayRecorder recorder,
   Widget checkbox,
@@ -65,7 +64,8 @@ void main() {
   });
 
   SRTextWireframe wireframeOf(CaptureResult? capture) {
-    return capture!.viewTreeSnapshot.nodes.first.buildWireframes().first as SRTextWireframe;
+    return capture!.viewTreeSnapshot.nodes.first.buildWireframes().first
+        as SRTextWireframe;
   }
 
   void metaTestWidgets(
@@ -91,12 +91,13 @@ void main() {
   }
 
   group('symbol output', () {
-
     metaTestWidgets(
       'checked checkbox shows checkmark symbol',
       [
-        () => captureCheckbox(recorder, Checkbox(value: true, onChanged: (_) {})),
-        () => captureCheckbox(recorder, CupertinoCheckbox(value: true, onChanged: (_) {})),
+        () =>
+            captureCheckbox(recorder, Checkbox(value: true, onChanged: (_) {})),
+        () => captureCheckbox(
+            recorder, CupertinoCheckbox(value: true, onChanged: (_) {})),
       ],
       (capture) {
         expect(capture, isNotNull);
@@ -108,8 +109,10 @@ void main() {
     metaTestWidgets(
       'unchecked checkbox shows empty text',
       [
-        () => captureCheckbox(recorder, Checkbox(value: false, onChanged: (_) {})),
-        () => captureCheckbox(recorder, CupertinoCheckbox(value: false, onChanged: (_) {})),
+        () => captureCheckbox(
+            recorder, Checkbox(value: false, onChanged: (_) {})),
+        () => captureCheckbox(
+            recorder, CupertinoCheckbox(value: false, onChanged: (_) {})),
       ],
       (capture) {
         expect(capture, isNotNull);
@@ -121,8 +124,10 @@ void main() {
     metaTestWidgets(
       'tristate checkbox shows dash symbol',
       [
-        () => captureCheckbox(recorder, Checkbox(value: null, tristate: true, onChanged: (_) {})),
-        () => captureCheckbox(recorder, CupertinoCheckbox(value: null, tristate: true, onChanged: (_) {})),
+        () => captureCheckbox(
+            recorder, Checkbox(value: null, tristate: true, onChanged: (_) {})),
+        () => captureCheckbox(recorder,
+            CupertinoCheckbox(value: null, tristate: true, onChanged: (_) {})),
       ],
       (capture) {
         expect(capture, isNotNull);
@@ -135,7 +140,9 @@ void main() {
   group('fill color', () {
     final statefulFill = WidgetStateProperty.resolveWith<Color?>((states) {
       if (states.contains(WidgetState.selected)) {
-        return states.contains(WidgetState.disabled) ? Colors.grey : Colors.blue;
+        return states.contains(WidgetState.disabled)
+            ? Colors.grey
+            : Colors.blue;
       }
       return Colors.transparent;
     });
@@ -143,71 +150,107 @@ void main() {
     metaTestWidgets(
       'enabled selected checkbox has active fill color',
       [
-        () => captureCheckbox(recorder, Checkbox(value: true, onChanged: (_) {}, fillColor: statefulFill)),
-        () => captureCheckbox(recorder, CupertinoCheckbox(value: true, onChanged: (_) {}, fillColor: statefulFill)),
+        () => captureCheckbox(recorder,
+            Checkbox(value: true, onChanged: (_) {}, fillColor: statefulFill)),
+        () => captureCheckbox(
+            recorder,
+            CupertinoCheckbox(
+                value: true, onChanged: (_) {}, fillColor: statefulFill)),
       ],
       (capture) {
         expect(capture, isNotNull);
-        expect(wireframeOf(capture).shapeStyle!.backgroundColor, Colors.blue.toHexString());
+        expect(wireframeOf(capture).shapeStyle!.backgroundColor,
+            Colors.blue.toHexString());
       },
     );
 
     metaTestWidgets(
       'enabled unselected checkbox has transparent fill',
       [
-        () => captureCheckbox(recorder, Checkbox(value: false, onChanged: (_) {}, fillColor: statefulFill)),
-        () => captureCheckbox(recorder, CupertinoCheckbox(value: false, onChanged: (_) {}, fillColor: statefulFill)),
+        () => captureCheckbox(recorder,
+            Checkbox(value: false, onChanged: (_) {}, fillColor: statefulFill)),
+        () => captureCheckbox(
+            recorder,
+            CupertinoCheckbox(
+                value: false, onChanged: (_) {}, fillColor: statefulFill)),
       ],
       (capture) {
         expect(capture, isNotNull);
-        expect(wireframeOf(capture).shapeStyle!.backgroundColor, Colors.transparent.toHexString());
+        expect(wireframeOf(capture).shapeStyle!.backgroundColor,
+            Colors.transparent.toHexString());
       },
     );
 
     metaTestWidgets(
       'enabled tristate checkbox has active fill color',
       [
-        () => captureCheckbox(recorder, Checkbox(value: null, tristate: true, onChanged: (_) {}, fillColor: statefulFill)),
-        () => captureCheckbox(recorder, CupertinoCheckbox(value: null, tristate: true, onChanged: (_) {}, fillColor: statefulFill)),
+        () => captureCheckbox(
+            recorder,
+            Checkbox(
+                value: null,
+                tristate: true,
+                onChanged: (_) {},
+                fillColor: statefulFill)),
+        () => captureCheckbox(
+            recorder,
+            CupertinoCheckbox(
+                value: null,
+                tristate: true,
+                onChanged: (_) {},
+                fillColor: statefulFill)),
       ],
       (capture) {
         expect(capture, isNotNull);
-        expect(wireframeOf(capture).shapeStyle!.backgroundColor, Colors.blue.toHexString());
+        expect(wireframeOf(capture).shapeStyle!.backgroundColor,
+            Colors.blue.toHexString());
       },
     );
 
     metaTestWidgets(
       'disabled selected checkbox has disabled fill color',
       [
-        () => captureCheckbox(recorder, Checkbox(value: true, onChanged: null, fillColor: statefulFill)),
-        () => captureCheckbox(recorder, CupertinoCheckbox(value: true, onChanged: null, fillColor: statefulFill)),
+        () => captureCheckbox(recorder,
+            Checkbox(value: true, onChanged: null, fillColor: statefulFill)),
+        () => captureCheckbox(
+            recorder,
+            CupertinoCheckbox(
+                value: true, onChanged: null, fillColor: statefulFill)),
       ],
       (capture) {
         expect(capture, isNotNull);
-        expect(wireframeOf(capture).shapeStyle!.backgroundColor, Colors.grey.toHexString());
+        expect(wireframeOf(capture).shapeStyle!.backgroundColor,
+            Colors.grey.toHexString());
       },
     );
 
     metaTestWidgets(
       'disabled unselected checkbox has transparent fill',
       [
-        () => captureCheckbox(recorder, Checkbox(value: false, onChanged: null, fillColor: statefulFill)),
-        () => captureCheckbox(recorder, CupertinoCheckbox(value: false, onChanged: null, fillColor: statefulFill)),
+        () => captureCheckbox(recorder,
+            Checkbox(value: false, onChanged: null, fillColor: statefulFill)),
+        () => captureCheckbox(
+            recorder,
+            CupertinoCheckbox(
+                value: false, onChanged: null, fillColor: statefulFill)),
       ],
       (capture) {
         expect(capture, isNotNull);
-        expect(wireframeOf(capture).shapeStyle!.backgroundColor, Colors.transparent.toHexString());
+        expect(wireframeOf(capture).shapeStyle!.backgroundColor,
+            Colors.transparent.toHexString());
       },
     );
   });
 
   group('symbol color', () {
-
     metaTestWidgets(
       'enabled selected checkbox symbol uses checkColor',
       [
-        () => captureCheckbox(recorder, Checkbox(value: true, onChanged: (_) {}, checkColor: Colors.red)),
-        () => captureCheckbox(recorder, CupertinoCheckbox(value: true, onChanged: (_) {}, checkColor: Colors.red)),
+        () => captureCheckbox(recorder,
+            Checkbox(value: true, onChanged: (_) {}, checkColor: Colors.red)),
+        () => captureCheckbox(
+            recorder,
+            CupertinoCheckbox(
+                value: true, onChanged: (_) {}, checkColor: Colors.red)),
       ],
       (capture) {
         expect(capture, isNotNull);
@@ -215,14 +258,16 @@ void main() {
       },
     );
 
-    testWidgets('disabled material selected checkbox default symbol color comes from theme surface', (tester) async {
+    testWidgets(
+        'disabled material selected checkbox default symbol color comes from theme surface',
+        (tester) async {
       // Given — M3 default: disabled+selected uses theme.colorScheme.surface
       const surface = Color(0xFF112233);
       final tree = captureCheckbox(
         recorder,
         Theme(
-        data: ThemeData(colorScheme: ColorScheme.light(surface: surface)),
-        child: Checkbox(value: true, onChanged: null),
+          data: ThemeData(colorScheme: ColorScheme.light(surface: surface)),
+          child: Checkbox(value: true, onChanged: null),
         ),
       );
       await tester.pumpWidget(tree);
@@ -235,7 +280,9 @@ void main() {
       expect(wireframeOf(capture).textStyle.color, surface.toHexString());
     });
 
-    testWidgets('disabled cupertino selected checkbox default symbol color is grey-black', (tester) async {
+    testWidgets(
+        'disabled cupertino selected checkbox default symbol color is grey-black',
+        (tester) async {
       // Given — CupertinoCheckbox default: white when enabled, grey-black when disabled
       final tree = captureCheckbox(
         recorder,
@@ -248,7 +295,8 @@ void main() {
 
       // Then — Color.fromARGB(64, 0, 0, 0) light-mode variant of _kDisabledCheckColor
       expect(capture, isNotNull);
-      expect(wireframeOf(capture).textStyle.color, Color.fromARGB(64, 0, 0, 0).toHexString());
+      expect(wireframeOf(capture).textStyle.color,
+          Color.fromARGB(64, 0, 0, 0).toHexString());
     });
   });
 
@@ -259,58 +307,72 @@ void main() {
     metaTestWidgets(
       'enabled selected checkbox has transparent border',
       [
-        () => captureCheckbox(recorder, Checkbox(
-          value: true,
-          onChanged: (_) {},
-          side: BorderSide(color: Colors.green, width: 2),
-        )),
-        () => captureCheckbox(recorder, CupertinoCheckbox(
-          value: true,
-          onChanged: (_) {},
-          side: BorderSide(color: Colors.green, width: 2),
-        )),
+        () => captureCheckbox(
+            recorder,
+            Checkbox(
+              value: true,
+              onChanged: (_) {},
+              side: BorderSide(color: Colors.green, width: 2),
+            )),
+        () => captureCheckbox(
+            recorder,
+            CupertinoCheckbox(
+              value: true,
+              onChanged: (_) {},
+              side: BorderSide(color: Colors.green, width: 2),
+            )),
       ],
       (capture) {
         expect(capture, isNotNull);
-        expect(wireframeOf(capture).border!.color, Colors.transparent.toHexString());
+        expect(wireframeOf(capture).border!.color,
+            Colors.transparent.toHexString());
       },
     );
 
     metaTestWidgets(
       'enabled tristate checkbox has transparent border',
       [
-        () => captureCheckbox(recorder, Checkbox(
-          value: null,
-          tristate: true,
-          onChanged: (_) {},
-          side: BorderSide(color: Colors.green, width: 2),
-        )),
-        () => captureCheckbox(recorder, CupertinoCheckbox(
-          value: null,
-          tristate: true,
-          onChanged: (_) {},
-          side: BorderSide(color: Colors.green, width: 2),
-        )),
+        () => captureCheckbox(
+            recorder,
+            Checkbox(
+              value: null,
+              tristate: true,
+              onChanged: (_) {},
+              side: BorderSide(color: Colors.green, width: 2),
+            )),
+        () => captureCheckbox(
+            recorder,
+            CupertinoCheckbox(
+              value: null,
+              tristate: true,
+              onChanged: (_) {},
+              side: BorderSide(color: Colors.green, width: 2),
+            )),
       ],
       (capture) {
         expect(capture, isNotNull);
-        expect(wireframeOf(capture).border!.color, Colors.transparent.toHexString());
+        expect(wireframeOf(capture).border!.color,
+            Colors.transparent.toHexString());
       },
     );
 
     metaTestWidgets(
       'enabled unselected checkbox has visible border',
       [
-        () => captureCheckbox(recorder, Checkbox(
-          value: false,
-          onChanged: (_) {},
-          side: BorderSide(color: Colors.green, width: 2),
-        )),
-        () => captureCheckbox(recorder, CupertinoCheckbox(
-          value: false,
-          onChanged: (_) {},
-          side: BorderSide(color: Colors.green, width: 2),
-        )),
+        () => captureCheckbox(
+            recorder,
+            Checkbox(
+              value: false,
+              onChanged: (_) {},
+              side: BorderSide(color: Colors.green, width: 2),
+            )),
+        () => captureCheckbox(
+            recorder,
+            CupertinoCheckbox(
+              value: false,
+              onChanged: (_) {},
+              side: BorderSide(color: Colors.green, width: 2),
+            )),
       ],
       (capture) {
         expect(capture, isNotNull);
@@ -323,16 +385,20 @@ void main() {
     metaTestWidgets(
       'custom side color and width are applied',
       [
-        () => captureCheckbox(recorder, Checkbox(
-          value: false,
-          onChanged: (_) {},
-          side: BorderSide(color: Colors.red, width: 3),
-        )),
-        () => captureCheckbox(recorder, CupertinoCheckbox(
-          value: false,
-          onChanged: (_) {},
-          side: BorderSide(color: Colors.red, width: 3),
-        )),
+        () => captureCheckbox(
+            recorder,
+            Checkbox(
+              value: false,
+              onChanged: (_) {},
+              side: BorderSide(color: Colors.red, width: 3),
+            )),
+        () => captureCheckbox(
+            recorder,
+            CupertinoCheckbox(
+              value: false,
+              onChanged: (_) {},
+              side: BorderSide(color: Colors.red, width: 3),
+            )),
       ],
       (capture) {
         expect(capture, isNotNull);
@@ -344,20 +410,21 @@ void main() {
   });
 
   group('layout and size', () {
-
     metaTestWidgets(
       'checkbox produces a single wireframe node',
       [
-        () => captureCheckbox(recorder, Checkbox(
-          value: true, 
-          onChanged: (_) {}, 
-          side: BorderSide(strokeAlign: BorderSide.strokeAlignInside)
-        )),
-        () => captureCheckbox(recorder, CupertinoCheckbox(
-          value: true, 
-          onChanged: (_) {}, 
-          side: BorderSide(strokeAlign: BorderSide.strokeAlignInside)
-        )),
+        () => captureCheckbox(
+            recorder,
+            Checkbox(
+                value: true,
+                onChanged: (_) {},
+                side: BorderSide(strokeAlign: BorderSide.strokeAlignInside))),
+        () => captureCheckbox(
+            recorder,
+            CupertinoCheckbox(
+                value: true,
+                onChanged: (_) {},
+                side: BorderSide(strokeAlign: BorderSide.strokeAlignInside))),
       ],
       (capture) {
         expect(capture, isNotNull);
@@ -368,13 +435,11 @@ void main() {
     testWidgets('material checkbox has default size of 18x18', (tester) async {
       // Given
       final tree = captureCheckbox(
-        recorder,
-        Checkbox(
-          value: true, 
-          onChanged: (_) {}, 
-          side: BorderSide(strokeAlign: BorderSide.strokeAlignInside)
-        )
-      );
+          recorder,
+          Checkbox(
+              value: true,
+              onChanged: (_) {},
+              side: BorderSide(strokeAlign: BorderSide.strokeAlignInside)));
       await tester.pumpWidget(tree);
 
       // When
@@ -390,13 +455,11 @@ void main() {
     testWidgets('cupertino checkbox has default size of 14x14', (tester) async {
       // Given
       final tree = captureCheckbox(
-        recorder,
-        CupertinoCheckbox(
-          value: true, 
-          onChanged: (_) {}, 
-          side: BorderSide(strokeAlign: BorderSide.strokeAlignInside)
-        )
-      );
+          recorder,
+          CupertinoCheckbox(
+              value: true,
+              onChanged: (_) {},
+              side: BorderSide(strokeAlign: BorderSide.strokeAlignInside)));
       await tester.pumpWidget(tree);
 
       // When
@@ -414,13 +477,11 @@ void main() {
       final tree = captureCheckbox(
         recorder,
         Transform.scale(
-          scale: 0.5,
-          child: Checkbox(
-            value: true, 
-            onChanged: (_) {}, 
-            side: BorderSide(strokeAlign: BorderSide.strokeAlignInside)
-          )
-        ),
+            scale: 0.5,
+            child: Checkbox(
+                value: true,
+                onChanged: (_) {},
+                side: BorderSide(strokeAlign: BorderSide.strokeAlignInside))),
       );
       await tester.pumpWidget(tree);
 
@@ -437,12 +498,13 @@ void main() {
   });
 
   group('text style', () {
-
     metaTestWidgets(
       'symbol size is 70% of the checkbox height',
       [
-        () => captureCheckbox(recorder, Checkbox(value: true, onChanged: (_) {})),
-        () => captureCheckbox(recorder, CupertinoCheckbox(value: true, onChanged: (_) {})),
+        () =>
+            captureCheckbox(recorder, Checkbox(value: true, onChanged: (_) {})),
+        () => captureCheckbox(
+            recorder, CupertinoCheckbox(value: true, onChanged: (_) {})),
       ],
       (capture) {
         expect(capture, isNotNull);
@@ -454,31 +516,39 @@ void main() {
     metaTestWidgets(
       'symbol is center aligned horizontally and vertically',
       [
-        () => captureCheckbox(recorder, Checkbox(value: true, onChanged: (_) {})),
-        () => captureCheckbox(recorder, CupertinoCheckbox(value: true, onChanged: (_) {})),
+        () =>
+            captureCheckbox(recorder, Checkbox(value: true, onChanged: (_) {})),
+        () => captureCheckbox(
+            recorder, CupertinoCheckbox(value: true, onChanged: (_) {})),
       ],
       (capture) {
         expect(capture, isNotNull);
         final wire = wireframeOf(capture);
-        expect(wire.textPosition?.alignment?.horizontal, SRHorizontalAlignment.center);
-        expect(wire.textPosition?.alignment?.vertical, SRVerticalAlignment.center);
+        expect(wire.textPosition?.alignment?.horizontal,
+            SRHorizontalAlignment.center);
+        expect(
+            wire.textPosition?.alignment?.vertical, SRVerticalAlignment.center);
       },
     );
   });
 
   group('privacy', () {
-
     metaTestWidgets(
       'maskAllInputs masks checked checkbox with x symbol',
       [
-        () => captureCheckbox(recorder, Checkbox(value: true, onChanged: (_) {})),
-        () => captureCheckbox(recorder, CupertinoCheckbox(value: true, onChanged: (_) {})),
+        () =>
+            captureCheckbox(recorder, Checkbox(value: true, onChanged: (_) {})),
+        () => captureCheckbox(
+            recorder, CupertinoCheckbox(value: true, onChanged: (_) {})),
       ],
       (capture) {
         expect(capture, isNotNull);
         final wire = wireframeOf(capture);
         expect(wire.text, 'x');
-        expect(wire.shapeStyle!.backgroundColor, anyOf(Colors.transparent.toHexString(), CupertinoColors.white.toHexString()));
+        expect(
+            wire.shapeStyle!.backgroundColor,
+            anyOf(Colors.transparent.toHexString(),
+                CupertinoColors.white.toHexString()));
         expect(wire.border, isNotNull);
       },
       beforeEach: () => recorder.defaultTreeCapturePrivacy = TreeCapturePrivacy(
@@ -490,14 +560,19 @@ void main() {
     metaTestWidgets(
       'maskAll masks checked checkbox with x symbol',
       [
-        () => captureCheckbox(recorder, Checkbox(value: true, onChanged: (_) {})),
-        () => captureCheckbox(recorder, CupertinoCheckbox(value: true, onChanged: (_) {})),
+        () =>
+            captureCheckbox(recorder, Checkbox(value: true, onChanged: (_) {})),
+        () => captureCheckbox(
+            recorder, CupertinoCheckbox(value: true, onChanged: (_) {})),
       ],
       (capture) {
         expect(capture, isNotNull);
         final wire = wireframeOf(capture);
         expect(wire.text, 'x');
-        expect(wire.shapeStyle!.backgroundColor, anyOf(Colors.transparent.toHexString(), CupertinoColors.white.toHexString()));
+        expect(
+            wire.shapeStyle!.backgroundColor,
+            anyOf(Colors.transparent.toHexString(),
+                CupertinoColors.white.toHexString()));
         expect(wire.border, isNotNull);
       },
       beforeEach: () => recorder.defaultTreeCapturePrivacy = TreeCapturePrivacy(
@@ -509,8 +584,10 @@ void main() {
     metaTestWidgets(
       'maskAllInputs masks unchecked checkbox with x symbol',
       [
-        () => captureCheckbox(recorder, Checkbox(value: false, onChanged: (_) {})),
-        () => captureCheckbox(recorder, CupertinoCheckbox(value: false, onChanged: (_) {})),
+        () => captureCheckbox(
+            recorder, Checkbox(value: false, onChanged: (_) {})),
+        () => captureCheckbox(
+            recorder, CupertinoCheckbox(value: false, onChanged: (_) {})),
       ],
       (capture) {
         expect(capture, isNotNull);
@@ -525,8 +602,10 @@ void main() {
     metaTestWidgets(
       'maskSensitiveInputs does not mask checkbox',
       [
-        () => captureCheckbox(recorder, Checkbox(value: true, onChanged: (_) {})),
-        () => captureCheckbox(recorder, CupertinoCheckbox(value: true, onChanged: (_) {})),
+        () =>
+            captureCheckbox(recorder, Checkbox(value: true, onChanged: (_) {})),
+        () => captureCheckbox(
+            recorder, CupertinoCheckbox(value: true, onChanged: (_) {})),
       ],
       (capture) {
         expect(capture, isNotNull);
