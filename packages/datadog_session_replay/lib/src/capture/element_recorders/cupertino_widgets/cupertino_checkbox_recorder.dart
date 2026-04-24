@@ -135,7 +135,8 @@ class CupertinoCheckboxRecorder implements ElementRecorder {
       return CupertinoColors.white.withValues(alpha: 0.5);
     }
     if (states.contains(WidgetState.selected)) {
-      return widget.activeColor ?? _defaultFillColorCupertino.resolveColor(element);
+      return widget.activeColor ??
+          _defaultFillColorCupertino.resolveColor(element);
     }
     return CupertinoColors.white;
   }
