@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.0.1
+
+* Add GraphQL errors to resource events.
+* Catch errors on tracing header creation. See [#979](https://github.com/DataDog/dd-sdk-flutter/issues/979)
+
 ## 2.0.0
 
 * Support RUM context in trace headers.
