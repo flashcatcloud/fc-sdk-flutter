@@ -52,8 +52,7 @@ class PrivacyRecorder implements ElementRecorder {
     return SpecificElement(
       subtreeStrategy: subtreeStrategy,
       subtreePrivacy: TreeCapturePrivacy(
-        textAndInputPrivacyLevel:
-            widget.textAndInputPrivacyLevel ??
+        textAndInputPrivacyLevel: widget.textAndInputPrivacyLevel ??
             capturePrivacy.textAndInputPrivacyLevel,
         imagePrivacyLevel:
             widget.imagePrivacyLevel ?? capturePrivacy.imagePrivacyLevel,

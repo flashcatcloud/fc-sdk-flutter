@@ -31,9 +31,9 @@ extension SRTextAlignment on TextAlign {
 }
 
 extension TreeCapturePrivacyExtension on TreeCapturePrivacy {
-  bool get shouldMaskInputs => 
-    textAndInputPrivacyLevel == TextAndInputPrivacyLevel.maskAllInputs ||
-    textAndInputPrivacyLevel == TextAndInputPrivacyLevel.maskAll;
+  bool get shouldMaskInputs =>
+      textAndInputPrivacyLevel == TextAndInputPrivacyLevel.maskAllInputs ||
+      textAndInputPrivacyLevel == TextAndInputPrivacyLevel.maskAll;
 }
 
 extension BorderSideStateResolver on BorderSide? {

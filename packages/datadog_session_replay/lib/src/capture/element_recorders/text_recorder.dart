@@ -59,10 +59,9 @@ class TextElementRecorder implements ElementRecorder {
       );
 
       return SpecificElement(
-        subtreeStrategy:
-            hasWidgetChildern
-                ? CaptureNodeSubtreeStrategy.record
-                : CaptureNodeSubtreeStrategy.ignore,
+        subtreeStrategy: hasWidgetChildern
+            ? CaptureNodeSubtreeStrategy.record
+            : CaptureNodeSubtreeStrategy.ignore,
         nodes: [node],
       );
     }

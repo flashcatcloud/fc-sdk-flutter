@@ -105,6 +105,7 @@ build-flutter:
     - specific:true
   script:
     - !reference [.pre, script]
+    - melos dartfmt_check
     - melos run analyze:dart
     - melos run unit_test:flutter
     - melos run golden_test:flutter

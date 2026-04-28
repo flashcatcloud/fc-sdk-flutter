@@ -174,8 +174,10 @@ void main() {
       when(() => mockResponse.headers).thenReturn({
         HttpHeaders.contentTypeHeader: ContentType('image', 'png').toString()
       });
-      final chunkedStream =
-          http.ByteStream(Stream.fromIterable([[1, 2, 3], [4, 5]]));
+      final chunkedStream = http.ByteStream(Stream.fromIterable([
+        [1, 2, 3],
+        [4, 5]
+      ]));
       when(() => mockResponse.stream).thenAnswer((_) => chunkedStream);
 
       await client.get(testUri, headers: {'x-datadog-header': 'header'});

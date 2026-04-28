@@ -169,16 +169,15 @@ void main() {
   });
 
   test('initialize encoding serializes enums correctly', () {
-    final configuration =
-        DatadogConfiguration(
-            clientToken: 'fakeClientToken',
-            env: 'environment',
-            site: DatadogSite.us1,
-          )
-          ..batchSize = BatchSize.small
-          ..uploadFrequency = UploadFrequency.frequent
-          ..batchProcessingLevel = BatchProcessingLevel.low
-          ..site = DatadogSite.eu1;
+    final configuration = DatadogConfiguration(
+      clientToken: 'fakeClientToken',
+      env: 'environment',
+      site: DatadogSite.us1,
+    )
+      ..batchSize = BatchSize.small
+      ..uploadFrequency = UploadFrequency.frequent
+      ..batchProcessingLevel = BatchProcessingLevel.low
+      ..site = DatadogSite.eu1;
 
     final encoded = configuration.encode();
     expect(encoded['batchSize'], 'BatchSize.small');

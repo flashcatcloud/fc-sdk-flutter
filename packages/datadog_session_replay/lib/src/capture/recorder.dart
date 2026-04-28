@@ -308,8 +308,9 @@ class SessionReplayRecorder {
 
   void _populateElementRecorderMap(List<ElementRecorder> recorders) {
     for (final recorder in recorders) {
-      if (recorder is GenericElementRecorder) {                                       // Broad match recorder for widgets with generic parameters
-        _genericElementRecorder.add(recorder);                                                                                       
+      if (recorder is GenericElementRecorder) {
+        // Broad match recorder for widgets with generic parameters
+        _genericElementRecorder.add(recorder);
         continue;
       }
       for (final type in recorder.handlesTypes) {
@@ -373,8 +374,8 @@ class SessionReplayRecorder {
       }
 
       final widget = e.widget;
-      final recorder = _elementRecordersByType[widget.runtimeType] 
-        ?? _genericElementRecorder.firstWhereOrNull((r) => r.accepts(widget));
+      final recorder = _elementRecordersByType[widget.runtimeType] ??
+          _genericElementRecorder.firstWhereOrNull((r) => r.accepts(widget));
       var subtreeStrategy = CaptureNodeSubtreeStrategy.record;
       if (recorder != null) {
         final transformMatrix = renderObject.getTransformTo(

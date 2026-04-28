@@ -15,8 +15,7 @@ const double _outerRadius = 7.0;
 const double _innerRadius = 2.975;
 const double _borderOutlineStrokeWidth = 1; // Should be 0.3
 
-final Color _disabledOuterColor =
-    CupertinoColors.white.withValues(alpha: 0.50);
+final Color _disabledOuterColor = CupertinoColors.white.withValues(alpha: 0.50);
 const Color _disabledInnerColor = CupertinoDynamicColor.withBrightness(
   color: Color.fromARGB(64, 0, 0, 0),
   darkColor: Color.fromARGB(64, 255, 255, 255),
@@ -135,7 +134,8 @@ class CupertinoRadioRecorder implements GenericElementRecorder {
     required CupertinoRadio<dynamic> widget,
     required Set<WidgetState> states,
   }) {
-    if (states.contains(WidgetState.disabled) && states.contains(WidgetState.selected)) {
+    if (states.contains(WidgetState.disabled) &&
+        states.contains(WidgetState.selected)) {
       widget.fillColor ?? _disabledInnerColor.resolveColor(element);
     }
     if (states.contains(WidgetState.selected)) {
@@ -148,7 +148,8 @@ class CupertinoRadioRecorder implements GenericElementRecorder {
     required Element element,
     required Set<WidgetState> states,
   }) {
-    if (states.contains(WidgetState.selected) && !states.contains(WidgetState.disabled)) {
+    if (states.contains(WidgetState.selected) &&
+        !states.contains(WidgetState.disabled)) {
       return BorderSide(
         color: CupertinoColors.transparent,
         width: _borderOutlineStrokeWidth,

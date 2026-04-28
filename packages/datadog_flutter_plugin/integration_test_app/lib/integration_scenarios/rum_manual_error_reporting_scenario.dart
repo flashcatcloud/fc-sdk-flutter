@@ -37,10 +37,13 @@ class _RumManualErrorReportingScenarioState
         RumErrorSource.source,
         errorType: 'NullThrown',
       );
-      rum.addErrorInfo('Rum error message', RumErrorSource.network,
-          attributes: {
-            DatadogAttributes.errorFingerprint: 'custom-fingerprint',
-          },);
+      rum.addErrorInfo(
+        'Rum error message',
+        RumErrorSource.network,
+        attributes: {
+          DatadogAttributes.errorFingerprint: 'custom-fingerprint',
+        },
+      );
     }
   }
 

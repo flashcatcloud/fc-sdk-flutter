@@ -31,7 +31,7 @@ class _InAppBrowserExampleState extends State<InAppBrowserExample> {
   late final InAppBrowser _browser;
 
   @override
-  void initState() {    
+  void initState() {
     super.initState();
 
     _browser = MyInAppBrowser(

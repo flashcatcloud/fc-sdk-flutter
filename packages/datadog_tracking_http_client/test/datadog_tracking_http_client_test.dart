@@ -310,7 +310,8 @@ void main() {
           capturedKey, 200, RumResourceType.media, 88888, any()));
     });
 
-    test('reports streamed response size when contentLength is unknown (chunked)',
+    test(
+        'reports streamed response size when contentLength is unknown (chunked)',
         () async {
       var url = Uri.parse('https://test_url/path');
       final completer = setupMockRequest(url);
@@ -324,8 +325,8 @@ void main() {
       ).captured[0] as String;
 
       // contentLength -1 = unknown (e.g. chunked transfer encoding)
-      final mockResponse = setupMockClientResponse(200, size: -1,
-          mimeType: 'application/octet-stream');
+      final mockResponse = setupMockClientResponse(200,
+          size: -1, mimeType: 'application/octet-stream');
       completer.complete(mockResponse);
       var response = await request.done;
 
