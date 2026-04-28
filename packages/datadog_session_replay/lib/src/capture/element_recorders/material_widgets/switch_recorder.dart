@@ -41,9 +41,11 @@ class SwitchRecorder implements ElementRecorder {
     final ThemeData theme = Theme.of(element);
 
     final bool applyCupertinoTheme = switch (theme.platform) {
-      TargetPlatform.iOS || TargetPlatform.macOS => widget.applyCupertinoTheme ??
-        theme.cupertinoOverrideTheme?.applyThemeToAll ??
-        false,
+      TargetPlatform.iOS ||
+      TargetPlatform.macOS =>
+        widget.applyCupertinoTheme ??
+            theme.cupertinoOverrideTheme?.applyThemeToAll ??
+            false,
       _ => false,
     };
 
@@ -55,37 +57,56 @@ class SwitchRecorder implements ElementRecorder {
       if (widget.value && !isMasked) WidgetState.selected,
     };
 
-    final double trackWidth  = isCupertinoStyle ? 51.0 : (theme.useMaterial3 ? 52.0 : 33.0);
-    final double trackHeight = isCupertinoStyle ? 31.0 : (theme.useMaterial3 ? 32.0 : 14.0);
+    final double trackWidth =
+        isCupertinoStyle ? 51.0 : (theme.useMaterial3 ? 52.0 : 33.0);
+    final double trackHeight =
+        isCupertinoStyle ? 31.0 : (theme.useMaterial3 ? 32.0 : 14.0);
     final bool hasThumbIcon = widget.thumbIcon != null;
     final double thumbRadius = isCupertinoStyle
-      ? 14.0
-      : theme.useMaterial3
-        ? (hasThumbIcon || states.contains(WidgetState.selected) ? 12.0 : 8.0)
-        : 10.0;
+        ? 14.0
+        : theme.useMaterial3
+            ? (hasThumbIcon || states.contains(WidgetState.selected)
+                ? 12.0
+                : 8.0)
+            : 10.0;
 
     final double disabledOpacity =
         (isCupertinoStyle && states.contains(WidgetState.disabled)) ? 0.5 : 1.0;
 
-    Color thumbColor =
-        _getThumbColor(widget: widget, states: states, isCupertinoStyle: isCupertinoStyle, theme: theme);
-    Color trackColor =
-        _getTrackColor(element: element, widget: widget, states: states, applyCupertinoTheme: applyCupertinoTheme, isCupertinoStyle: isCupertinoStyle, theme: theme);
+    Color thumbColor = _getThumbColor(
+        widget: widget,
+        states: states,
+        isCupertinoStyle: isCupertinoStyle,
+        theme: theme);
+    Color trackColor = _getTrackColor(
+        element: element,
+        widget: widget,
+        states: states,
+        applyCupertinoTheme: applyCupertinoTheme,
+        isCupertinoStyle: isCupertinoStyle,
+        theme: theme);
     BorderSide borderSide = _getBorderSide(
-        widget: widget, states: states, isCupertinoStyle: isCupertinoStyle, theme: theme);
+        widget: widget,
+        states: states,
+        isCupertinoStyle: isCupertinoStyle,
+        theme: theme);
 
     if (disabledOpacity < 1.0) {
       thumbColor = thumbColor.withValues(alpha: thumbColor.a * disabledOpacity);
       trackColor = trackColor.withValues(alpha: trackColor.a * disabledOpacity);
       borderSide = borderSide.copyWith(
-        color: borderSide.color.withValues(alpha: borderSide.color.a * disabledOpacity),
+        color: borderSide.color
+            .withValues(alpha: borderSide.color.a * disabledOpacity),
       );
     }
 
     final adjustedBounds = Rect.fromCenter(
       center: attributes.paintBounds.center,
-      width: (trackWidth + borderSide.width * (borderSide.strokeAlign + 1.0)) * attributes.scaleX,
-      height: (trackHeight + borderSide.width * (borderSide.strokeAlign + 1.0)) * attributes.scaleX,
+      width: (trackWidth + borderSide.width * (borderSide.strokeAlign + 1.0)) *
+          attributes.scaleX,
+      height:
+          (trackHeight + borderSide.width * (borderSide.strokeAlign + 1.0)) *
+              attributes.scaleX,
     );
 
     attributes = CapturedViewAttributes(
@@ -134,6 +155,7 @@ class SwitchRecorder implements ElementRecorder {
       }
       child.visitChildElements(visit);
     }
+
     element.visitChildElements(visit);
     return result;
   }
@@ -155,10 +177,11 @@ class SwitchRecorder implements ElementRecorder {
     required bool isCupertinoStyle,
     required ThemeData theme,
   }) {
-    return widget.thumbColor?.resolve(states)
-      ?? _widgetThumbColor(widget, states)
-      ?? theme.switchTheme.thumbColor?.resolve(states)
-      ?? _defaultThumbColor(states: states, isCupertinoStyle: isCupertinoStyle, theme: theme);
+    return widget.thumbColor?.resolve(states) ??
+        _widgetThumbColor(widget, states) ??
+        theme.switchTheme.thumbColor?.resolve(states) ??
+        _defaultThumbColor(
+            states: states, isCupertinoStyle: isCupertinoStyle, theme: theme);
   }
 
   Color _getTrackColor({
@@ -172,16 +195,21 @@ class SwitchRecorder implements ElementRecorder {
     final Color cupertinoPrimaryColor =
         theme.cupertinoOverrideTheme?.primaryColor ?? theme.colorScheme.primary;
 
-    return widget.trackColor?.resolve(states)
-      ?? _widgetTrackColor(widget, states)
-      ?? switch (states.contains(WidgetState.selected)){
-        true => (applyCupertinoTheme
-          ? cupertinoPrimaryColor
-          : theme.switchTheme.trackColor?.resolve(states)
-          ) ?? _widgetThumbColor(widget, states)?.withValues(alpha: 0x80 / 255.0),
-        false => theme.switchTheme.trackColor?.resolve(states),
-      }
-      ?? _defaultTrackColor(element: element, states: states, isCupertinoStyle: isCupertinoStyle, theme: theme);
+    return widget.trackColor?.resolve(states) ??
+        _widgetTrackColor(widget, states) ??
+        switch (states.contains(WidgetState.selected)) {
+          true => (applyCupertinoTheme
+                  ? cupertinoPrimaryColor
+                  : theme.switchTheme.trackColor?.resolve(states)) ??
+              _widgetThumbColor(widget, states)
+                  ?.withValues(alpha: 0x80 / 255.0),
+          false => theme.switchTheme.trackColor?.resolve(states),
+        } ??
+        _defaultTrackColor(
+            element: element,
+            states: states,
+            isCupertinoStyle: isCupertinoStyle,
+            theme: theme);
   }
 
   Color _defaultThumbColor({
@@ -209,7 +237,9 @@ class SwitchRecorder implements ElementRecorder {
       }
       return states.contains(WidgetState.selected)
           ? theme.colorScheme.secondary
-          : isDark ? Colors.grey.shade400 : Colors.grey.shade50;
+          : isDark
+              ? Colors.grey.shade400
+              : Colors.grey.shade50;
     }
   }
 
@@ -236,13 +266,15 @@ class SwitchRecorder implements ElementRecorder {
           : theme.colorScheme.surfaceContainerHighest;
     } else {
       final bool isDark = theme.brightness == Brightness.dark;
-      
+
       if (states.contains(WidgetState.disabled)) {
         return isDark ? Colors.white10 : Colors.black12;
       }
       return states.contains(WidgetState.selected)
           ? theme.colorScheme.secondary.withValues(alpha: 0x80 / 255.0)
-          : isDark ? Colors.white30 : const Color(0x52000000);    // Black with 32% opacity
+          : isDark
+              ? Colors.white30
+              : const Color(0x52000000); // Black with 32% opacity
     }
   }
 
@@ -252,26 +284,26 @@ class SwitchRecorder implements ElementRecorder {
     required bool isCupertinoStyle,
     required ThemeData theme,
   }) {
-    final double trackOutlineWidth = widget.trackOutlineWidth?.resolve(states)
-      ?? theme.switchTheme.trackOutlineWidth?.resolve(states)
-      ?? (isCupertinoStyle ? 0.0 : (theme.useMaterial3 ? 2.0 : 0.0));
+    final double trackOutlineWidth =
+        widget.trackOutlineWidth?.resolve(states) ??
+            theme.switchTheme.trackOutlineWidth?.resolve(states) ??
+            (isCupertinoStyle ? 0.0 : (theme.useMaterial3 ? 2.0 : 0.0));
 
-    final Color trackOutlineColor = widget.trackOutlineColor?.resolve(states)
-        ?? theme.switchTheme.trackOutlineColor?.resolve(states)
-        ?? (isCupertinoStyle
-          ? Colors.transparent
-          : switch (theme.useMaterial3) {
-            true => states.contains(WidgetState.selected)
-              ? Colors.transparent
-              : states.contains(WidgetState.disabled)
-                ? theme.colorScheme.onSurface.withValues(alpha: 0.12)
-                : theme.colorScheme.outline,
-            false => Colors.transparent,
-          }
-        );
-    
+    final Color trackOutlineColor = widget.trackOutlineColor?.resolve(states) ??
+        theme.switchTheme.trackOutlineColor?.resolve(states) ??
+        (isCupertinoStyle
+            ? Colors.transparent
+            : switch (theme.useMaterial3) {
+                true => states.contains(WidgetState.selected)
+                    ? Colors.transparent
+                    : states.contains(WidgetState.disabled)
+                        ? theme.colorScheme.onSurface.withValues(alpha: 0.12)
+                        : theme.colorScheme.outline,
+                false => Colors.transparent,
+              });
+
     return BorderSide(
-      color: trackOutlineColor, 
+      color: trackOutlineColor,
       width: trackOutlineWidth,
       strokeAlign: BorderSide.strokeAlignCenter,
     );
@@ -307,10 +339,13 @@ class SwitchNode extends CaptureNode {
   @override
   List<SRWireframe> buildWireframes() {
     final dotDiameter = (innerRadius * 2.0).round();
-    final thumbAttributeX = isSelected 
-      ? attributes.x + attributes.width - ((attributes.height + dotDiameter) / 2).round() 
-      : attributes.x + ((attributes.height - dotDiameter) / 2).round();
-    final thumbAttributeY = attributes.y + ((attributes.height - dotDiameter) / 2).round();
+    final thumbAttributeX = isSelected
+        ? attributes.x +
+            attributes.width -
+            ((attributes.height + dotDiameter) / 2).round()
+        : attributes.x + ((attributes.height - dotDiameter) / 2).round();
+    final thumbAttributeY =
+        attributes.y + ((attributes.height - dotDiameter) / 2).round();
 
     return [
       SRShapeWireframe(
@@ -326,18 +361,17 @@ class SwitchNode extends CaptureNode {
           backgroundColor: trackColor.toHexString(),
         ),
       ),
-
-        SRShapeWireframe(
-          id: thumbWireframeId,
-          x: thumbAttributeX,
-          y: thumbAttributeY,
-          width: dotDiameter,
-          height: dotDiameter,
-          shapeStyle: SRShapeStyle(
-            cornerRadius: dotDiameter / 2.0,
-            backgroundColor: thumbColor.toHexString(),
-          ),
+      SRShapeWireframe(
+        id: thumbWireframeId,
+        x: thumbAttributeX,
+        y: thumbAttributeY,
+        width: dotDiameter,
+        height: dotDiameter,
+        shapeStyle: SRShapeStyle(
+          cornerRadius: dotDiameter / 2.0,
+          backgroundColor: thumbColor.toHexString(),
         ),
+      ),
     ];
   }
 }

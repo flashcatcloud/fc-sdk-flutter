@@ -47,8 +47,7 @@ class CupertinoSwitchRecorder implements ElementRecorder {
     final double disabledOpacity =
         states.contains(WidgetState.disabled) ? 0.5 : 1.0;
 
-    Color thumbColor =
-        _getThumbColor(widget: widget, states: states);
+    Color thumbColor = _getThumbColor(widget: widget, states: states);
     Color trackColor =
         _getTrackColor(element: element, widget: widget, states: states);
     BorderSide borderSide =
@@ -58,14 +57,18 @@ class CupertinoSwitchRecorder implements ElementRecorder {
       thumbColor = thumbColor.withValues(alpha: thumbColor.a * disabledOpacity);
       trackColor = trackColor.withValues(alpha: trackColor.a * disabledOpacity);
       borderSide = borderSide.copyWith(
-        color: borderSide.color.withValues(alpha: borderSide.color.a * disabledOpacity),
+        color: borderSide.color
+            .withValues(alpha: borderSide.color.a * disabledOpacity),
       );
     }
 
     final adjustedBounds = Rect.fromCenter(
       center: attributes.paintBounds.center,
-      width: (_trackWidth + borderSide.width * (borderSide.strokeAlign + 1.0)) * attributes.scaleX,
-      height: (_trackHeight + borderSide.width * (borderSide.strokeAlign + 1.0)) * attributes.scaleX,
+      width: (_trackWidth + borderSide.width * (borderSide.strokeAlign + 1.0)) *
+          attributes.scaleX,
+      height:
+          (_trackHeight + borderSide.width * (borderSide.strokeAlign + 1.0)) *
+              attributes.scaleX,
     );
 
     attributes = CapturedViewAttributes(
@@ -110,10 +113,12 @@ class CupertinoSwitchRecorder implements ElementRecorder {
 
   Color _resolveActiveColor(CupertinoSwitch widget, Element element) {
     final CupertinoThemeData theme = CupertinoTheme.of(element);
-    final Color colorToResolve = widget.activeTrackColor
-      ?? ((widget.applyTheme ?? theme.applyThemeToAll) ? theme.primaryColor : null) 
-      ?? CupertinoColors.systemGreen;
-    
+    final Color colorToResolve = widget.activeTrackColor ??
+        ((widget.applyTheme ?? theme.applyThemeToAll)
+            ? theme.primaryColor
+            : null) ??
+        CupertinoColors.systemGreen;
+
     return colorToResolve.resolveColor(element);
   }
 
@@ -127,12 +132,12 @@ class CupertinoSwitchRecorder implements ElementRecorder {
     required Set<WidgetState> states,
   }) {
     if (states.contains(WidgetState.selected)) {
-      return _resolvePropertyColor(widget.thumbColor, states)
-        ?? CupertinoColors.white;
+      return _resolvePropertyColor(widget.thumbColor, states) ??
+          CupertinoColors.white;
     }
-    return _resolvePropertyColor(widget.inactiveThumbColor, states)
-        ?? _resolvePropertyColor(widget.thumbColor, states)
-        ?? CupertinoColors.white;
+    return _resolvePropertyColor(widget.inactiveThumbColor, states) ??
+        _resolvePropertyColor(widget.thumbColor, states) ??
+        CupertinoColors.white;
   }
 
   Color _getTrackColor({
@@ -140,11 +145,10 @@ class CupertinoSwitchRecorder implements ElementRecorder {
     required CupertinoSwitch widget,
     required Set<WidgetState> states,
   }) {
-    return _resolvePropertyColor(_widgetTrackColor(widget, states), states)
-      ?? (states.contains(WidgetState.selected)
-        ? _resolveActiveColor(widget, element)
-        : CupertinoColors.secondarySystemFill.resolveColor(element)
-      );
+    return _resolvePropertyColor(_widgetTrackColor(widget, states), states) ??
+        (states.contains(WidgetState.selected)
+            ? _resolveActiveColor(widget, element)
+            : CupertinoColors.secondarySystemFill.resolveColor(element));
   }
 
   BorderSide _getBorderSide({
@@ -157,7 +161,8 @@ class CupertinoSwitchRecorder implements ElementRecorder {
     if (outlineColor == null) {
       return BorderSide(color: CupertinoColors.transparent, width: 0.0);
     }
-    final double outlineWidth = widget.trackOutlineWidth?.resolve(states) ?? 2.0;
+    final double outlineWidth =
+        widget.trackOutlineWidth?.resolve(states) ?? 2.0;
 
     return BorderSide(
       color: outlineColor,
