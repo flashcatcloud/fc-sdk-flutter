@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.0.3
+
+* Loosen constraints on `webview_flutter_android`. See [#999](https://github.com/DataDog/dd-sdk-flutter/issues/999)
+
 ## 3.0.2
 
 * Fix crash with iOS Webview tracking in Flutter 3.38+.
