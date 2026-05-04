@@ -38,9 +38,11 @@ class DatadogSessionReplay {
 
   int _errorCounter = 0;
   bool _newFrameBuilt = true;
-  Timer? _captureTimer;                                                   // When null is idle, otherwise is active
+  Timer? _captureTimer; // When null is idle, otherwise is active
 
-  bool get isCapturing => _captureTimer != null;                          // Returns true if a session replay recording is happening
+  bool get isCapturing =>
+      _captureTimer !=
+      null; // Returns true if a session replay recording is happening
 
   @internal
   static Future<DatadogSessionReplay> init(
