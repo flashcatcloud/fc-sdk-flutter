@@ -78,12 +78,17 @@ class DatadogSessionReplayConfiguration {
 
   String? customEndpoint;
 
+  /// Define whether Session Replay must start recording immediately, by default is
+  /// set to true in order no keep the current behavior
+  bool startRecordingImmediately;
+
   DatadogSessionReplayConfiguration({
     required this.replaySampleRate,
     this.textAndInputPrivacyLevel = TextAndInputPrivacyLevel.maskAll,
     this.imagePrivacyLevel = ImagePrivacyLevel.maskAll,
     this.touchPrivacyLevel = TouchPrivacyLevel.hide,
     this.customEndpoint,
+    this.startRecordingImmediately = true,
   });
 }
 

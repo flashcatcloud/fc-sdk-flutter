@@ -38,6 +38,9 @@ class DatadogSessionReplay {
 
   int _errorCounter = 0;
   bool _newFrameBuilt = true;
+  Timer? _captureTimer;                                                   // When null is idle, otherwise is active
+
+  bool get isCapturing => _captureTimer != null;                          // Returns true if a session replay recording is happening
 
   @internal
   static Future<DatadogSessionReplay> init(
@@ -48,6 +51,12 @@ class DatadogSessionReplay {
     _instance = DatadogSessionReplay._(configuration, logger);
     await _instance!._start();
     return _instance!;
+  }
+
+  @visibleForTesting
+  static void resetInstance() {
+    _instance?.stopRecording();
+    _instance = null;
   }
 
   DatadogSessionReplay._(this._configuration, this.internalLogger)
@@ -72,6 +81,20 @@ class DatadogSessionReplay {
     _recorder.onContextChanged(context);
   }
 
+  void startRecording() {
+    if (_captureTimer != null) return;
+    _startPeriodicCapture();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Let capture know that a new element tree is available for capture.
+      _newFrameBuilt = true;
+    });
+  }
+
+  void stopRecording() {
+    _captureTimer?.cancel();
+    _captureTimer = null;
+  }
+
   Future<void> _start() async {
     final platform = DatadogSessionReplayPlatform.instance;
     bool success = false;
@@ -82,11 +105,7 @@ class DatadogSessionReplay {
     if (success) {
       await _processor.start();
 
-      _startPeriodicCapture();
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        // Let capture know that a new element tree is available for capture.
-        _newFrameBuilt = true;
-      });
+      if (_configuration.startRecordingImmediately) startRecording();
     }
   }
 
@@ -97,7 +116,7 @@ class DatadogSessionReplay {
     /// Using the timer (instead of as part of addPostFrameCallback) allows
     /// Flutter to schedule this outside of the build phase, which means our
     /// tree capture shouldn't affect tree build time.
-    Timer.periodic(minCaptureTiming, (timer) async {
+    _captureTimer = Timer.periodic(minCaptureTiming, (timer) async {
       bool shouldWatchForNextFrame = true;
       if (_newFrameBuilt) {
         try {
@@ -126,6 +145,7 @@ class DatadogSessionReplay {
             // Too many errors, cancel this periodic timer and don't schedule
             // another post frame callback
             timer.cancel();
+            _captureTimer = null;
             shouldWatchForNextFrame = false;
           }
         }
@@ -133,7 +153,7 @@ class DatadogSessionReplay {
       }
 
       // If we've received too many errors, don't request any more post frame callbacks
-      if (shouldWatchForNextFrame) {
+      if (shouldWatchForNextFrame && _captureTimer != null) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           _newFrameBuilt = true;
         });
