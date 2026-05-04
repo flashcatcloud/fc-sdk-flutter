@@ -220,24 +220,24 @@ class RadioRecorder implements GenericElementRecorder {
     required CapturedViewAttributes attributes,
     required double radius,
   }) {
-    final w = attributes.height;
+    final h = attributes.height;
 
     // Preserves .5 precision
-    int w2 = (w * 2).round();
+    int h2 = (h * 2).round();
     int r2 = (radius * 2).round();
 
-    if ((w2 - 2 * r2) % 4 == 0) {
+    if ((h2 - 2 * r2) % 4 == 0) {
       return r2 / 2.0;
     }
 
     int r2Down = r2 - 1;
     int r2Up = r2 + 1;
 
-    if ((w2 - 2 * r2Down) % 4 == 0) {
+    if ((h2 - 2 * r2Down) % 4 == 0) {
       return r2Down / 2.0;
     }
 
-    if ((w2 - 2 * r2Up) % 4 == 0) {
+    if ((h2 - 2 * r2Up) % 4 == 0) {
       return r2Up / 2.0;
     }
 

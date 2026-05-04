@@ -113,11 +113,15 @@ class CupertinoSwitchRecorder implements ElementRecorder {
 
   Color _resolveActiveColor(CupertinoSwitch widget, Element element) {
     final CupertinoThemeData theme = CupertinoTheme.of(element);
-    final Color colorToResolve = widget.activeTrackColor ??
-        ((widget.applyTheme ?? theme.applyThemeToAll)
-            ? theme.primaryColor
-            : null) ??
-        CupertinoColors.systemGreen;
+    final Color colorToResolve;
+
+    if (widget.activeTrackColor != null) {
+      colorToResolve = widget.activeTrackColor!;
+    } else if (widget.applyTheme ?? theme.applyThemeToAll) {
+      colorToResolve = theme.primaryColor;
+    } else {
+      colorToResolve = CupertinoColors.systemGreen;
+    }
 
     return colorToResolve.resolveColor(element);
   }

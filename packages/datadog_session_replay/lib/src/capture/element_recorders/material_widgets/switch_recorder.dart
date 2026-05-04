@@ -150,7 +150,9 @@ class SwitchRecorder implements ElementRecorder {
       if (ro is RenderCustomPaint) {
         try {
           result = (ro.painter as dynamic).isCupertino as bool? ?? false;
-        } catch (_) {}
+        } on NoSuchMethodError {
+          // painter does not have isCupertino — not a Cupertino-style switch
+        }
         return;
       }
       child.visitChildElements(visit);
@@ -195,16 +197,22 @@ class SwitchRecorder implements ElementRecorder {
     final Color cupertinoPrimaryColor =
         theme.cupertinoOverrideTheme?.primaryColor ?? theme.colorScheme.primary;
 
-    return widget.trackColor?.resolve(states) ??
-        _widgetTrackColor(widget, states) ??
-        switch (states.contains(WidgetState.selected)) {
-          true => (applyCupertinoTheme
-                  ? cupertinoPrimaryColor
-                  : theme.switchTheme.trackColor?.resolve(states)) ??
-              _widgetThumbColor(widget, states)
-                  ?.withValues(alpha: 0x80 / 255.0),
-          false => theme.switchTheme.trackColor?.resolve(states),
-        } ??
+    final Color? widgetColor =
+        widget.trackColor?.resolve(states) ?? _widgetTrackColor(widget, states);
+    if (widgetColor != null) return widgetColor;
+
+    Color? themeColor;
+    if (states.contains(WidgetState.selected)) {
+      final Color? selectedColor = applyCupertinoTheme
+          ? cupertinoPrimaryColor
+          : theme.switchTheme.trackColor?.resolve(states);
+      themeColor = selectedColor ??
+          _widgetThumbColor(widget, states)?.withValues(alpha: 0x80 / 255.0);
+    } else {
+      themeColor = theme.switchTheme.trackColor?.resolve(states);
+    }
+
+    return themeColor ??
         _defaultTrackColor(
             element: element,
             states: states,
@@ -289,18 +297,19 @@ class SwitchRecorder implements ElementRecorder {
             theme.switchTheme.trackOutlineWidth?.resolve(states) ??
             (isCupertinoStyle ? 0.0 : (theme.useMaterial3 ? 2.0 : 0.0));
 
-    final Color trackOutlineColor = widget.trackOutlineColor?.resolve(states) ??
-        theme.switchTheme.trackOutlineColor?.resolve(states) ??
-        (isCupertinoStyle
-            ? Colors.transparent
-            : switch (theme.useMaterial3) {
-                true => states.contains(WidgetState.selected)
-                    ? Colors.transparent
-                    : states.contains(WidgetState.disabled)
-                        ? theme.colorScheme.onSurface.withValues(alpha: 0.12)
-                        : theme.colorScheme.outline,
-                false => Colors.transparent,
-              });
+    Color? trackOutlineColor = widget.trackOutlineColor?.resolve(states) ??
+        theme.switchTheme.trackOutlineColor?.resolve(states);
+    if (trackOutlineColor == null) {
+      if (isCupertinoStyle ||
+          !theme.useMaterial3 ||
+          states.contains(WidgetState.selected)) {
+        trackOutlineColor = Colors.transparent;
+      } else if (states.contains(WidgetState.disabled)) {
+        trackOutlineColor = theme.colorScheme.onSurface.withValues(alpha: 0.12);
+      } else {
+        trackOutlineColor = theme.colorScheme.outline;
+      }
+    }
 
     return BorderSide(
       color: trackOutlineColor,
