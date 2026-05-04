@@ -98,8 +98,7 @@ void main() {
     expect(view1.viewEvents.last.view.resourceCount, 2);
     // After redirects, we don't end up with a picsum.photos url.
     expect(view1.resourceEvents[0].url.contains('picsum.photos'), isTrue);
-    expect(view1.resourceEvents[1].url,
-        'https://imgix.datadoghq.com/img/about/presskit/kit/press_kit.png');
+    expect(view1.resourceEvents[1].url, 'https://placehold.co/200x200.png');
     // Allow this to fail since we don't have as much control over them
     if (view1.resourceEvents[1].statusCode == 200) {
       expect(view1.resourceEvents[1].resourceType, 'image');

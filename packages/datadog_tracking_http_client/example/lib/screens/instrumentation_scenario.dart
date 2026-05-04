@@ -25,7 +25,7 @@ class InstrumentationScenario extends StatefulWidget {
 class _InstrumentationScenarioState extends State<InstrumentationScenario> {
   final images = [
     'https://picsum.photos/200',
-    'https://imgix.datadoghq.com/img/about/presskit/kit/press_kit.png'
+    'https://placehold.co/200x200.png'
   ];
 
   bool _doneWait = false;

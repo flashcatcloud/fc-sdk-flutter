@@ -9,7 +9,7 @@ import '../custom_card.dart';
 class NetworkScreen extends StatelessWidget {
   static const images = [
     'https://picsum.photos/200',
-    'https://imgix.datadoghq.com/img/about/presskit/kit/press_kit.png'
+    'https://placehold.co/200x200.png'
   ];
 
   const NetworkScreen({super.key});
