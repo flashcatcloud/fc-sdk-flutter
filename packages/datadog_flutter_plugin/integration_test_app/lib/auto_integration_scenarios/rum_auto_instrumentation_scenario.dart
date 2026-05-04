@@ -18,8 +18,8 @@ class RumAutoInstrumentationScenario extends StatefulWidget {
 class _RumAutoInstrumentationScenarioState
     extends State<RumAutoInstrumentationScenario> {
   final images = [
-    'https://imgix.datadoghq.com/img/about/presskit/kit/press_kit.png',
-    'https://imgix.datadoghq.com/img/about/presskit/kit/press_kit.png'
+    'https://placehold.co/75x75.png',
+    'https://placehold.co/75x75.png'
   ];
 
   @override
