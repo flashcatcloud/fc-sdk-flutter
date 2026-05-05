@@ -23,6 +23,8 @@ import 'element_recorders/material_widgets/checkbox_recorder.dart';
 import 'element_recorders/cupertino_widgets/cupertino_checkbox_recorder.dart';
 import 'element_recorders/material_widgets/radio_recorder.dart';
 import 'element_recorders/cupertino_widgets/cupertino_radio_recorder.dart';
+import 'element_recorders/material_widgets/switch_recorder.dart';
+import 'element_recorders/cupertino_widgets/cupertino_switch_recorder.dart';
 import 'pointer_capture.dart';
 import 'view_tree_snapshot.dart';
 
@@ -179,6 +181,8 @@ class SessionReplayRecorder {
       CupertinoCheckboxRecorder(keyGenerator),
       RadioRecorder(keyGenerator),
       CupertinoRadioRecorder(keyGenerator),
+      SwitchRecorder(keyGenerator),
+      CupertinoSwitchRecorder(keyGenerator),
     ]);
   }
 
