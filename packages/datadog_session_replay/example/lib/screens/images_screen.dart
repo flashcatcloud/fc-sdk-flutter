@@ -21,7 +21,7 @@ class _ImagesScreenState extends State<ImagesScreen> {
           children: [
             Image.asset('assets/dd_logo_v_rgb.png'),
             Image.network(
-              'https://imgix.datadoghq.com/img/about/presskit/kit/press_kit.png',
+              'https://placehold.co/200x200.png',
             ),
           ],
         ),

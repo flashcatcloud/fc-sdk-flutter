@@ -21,7 +21,7 @@ import 'mock_platform.dart';
 
 const String assetImage = 'assets/dd_logo_v_rgb.png';
 const String networkImageUrl =
-    'https://datadog-docs.imgix.net/img/dd_logo_n_70x75.png';
+    'https://docs.dd-static.net/img/dd_logo_n_70x75.png';
 
 void main() {
   late SessionReplayRecorder recorder;
