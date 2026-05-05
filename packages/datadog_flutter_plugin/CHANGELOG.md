@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.2.1
+
+* Prevent stripping of iOS context methods. See [#990](https://github.com/DataDog/dd-sdk-flutter/issues/990)
+
 ## 3.2.0
 
 * [Web] Add support for long custom actions (`startAction` / `stopAction`).
