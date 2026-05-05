@@ -418,4 +418,57 @@ void main() {
     );
     await snapshotTest(tester, recorder, fixture);
   });
+
+  testWidgets('unmasked switches', (tester) async {
+    final fixture = MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(title: const Text('Unmasked Switches')),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Switch(value: true, onChanged: (_) {}),
+              Switch(value: false, onChanged: (_) {}),
+              Switch(value: true, onChanged: null),
+              Switch(value: false, onChanged: null),
+              CupertinoSwitch(value: true, onChanged: (_) {}),
+              CupertinoSwitch(value: false, onChanged: (_) {}),
+              CupertinoSwitch(value: true, onChanged: null),
+              CupertinoSwitch(value: false, onChanged: null),
+            ],
+          ),
+        ),
+      ),
+    );
+    await snapshotTest(tester, recorder, fixture);
+  });
+
+  testWidgets('masked switches', (tester) async {
+    recorder = SessionReplayRecorder(
+      defaultCapturePrivacy: TreeCapturePrivacy(
+        textAndInputPrivacyLevel: TextAndInputPrivacyLevel.maskAllInputs,
+        imagePrivacyLevel: ImagePrivacyLevel.maskNone,
+      ),
+      touchPrivacyLevel: TouchPrivacyLevel.show,
+    );
+    recorder.updateContext(context);
+
+    final fixture = MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(title: const Text('Masked Switches')),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Switch(value: true, onChanged: (_) {}),
+              Switch(value: false, onChanged: (_) {}),
+              CupertinoSwitch(value: true, onChanged: (_) {}),
+              CupertinoSwitch(value: false, onChanged: (_) {}),
+            ],
+          ),
+        ),
+      ),
+    );
+    await snapshotTest(tester, recorder, fixture);
+  });
 }
