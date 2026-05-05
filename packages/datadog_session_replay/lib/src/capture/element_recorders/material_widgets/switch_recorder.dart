@@ -17,13 +17,13 @@ import '../recording_extensions.dart';
 
 /// Detects 'Switch' widgets and places a Switch icon
 /// on SessionReplay.
-class SwitchRecorder implements ElementRecorder {
+class SwitchRecorder implements GenericElementRecorder {
   final KeyGenerator keyGenerator;
 
   const SwitchRecorder(this.keyGenerator);
 
   @override
-  List<Type> get handlesTypes => [Switch];
+  bool accepts(Widget widget) => widget is Switch;
 
   @override
   CaptureNodeSemantics? captureSemantics(

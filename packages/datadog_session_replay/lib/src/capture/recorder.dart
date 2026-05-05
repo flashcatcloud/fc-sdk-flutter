@@ -54,14 +54,14 @@ class TreeCapturePrivacy {
   }
 }
 
-abstract interface class ElementRecorder {
-  List<Type> get handlesTypes;
-
+abstract interface class GenericElementRecorder {
   CaptureNodeSemantics? captureSemantics(
     Element element,
     CapturedViewAttributes attributes,
     TreeCapturePrivacy capturePrivacy,
   );
+
+  bool accepts(Widget widget);
 }
 
 extension<T> on List<T> {
@@ -71,10 +71,6 @@ extension<T> on List<T> {
     }
     return null;
   }
-}
-
-abstract interface class GenericElementRecorder implements ElementRecorder {
-  bool accepts(Widget widget);
 }
 
 class KeyGenerator {
@@ -135,7 +131,6 @@ class CaptureResult {
 
 class SessionReplayRecorder {
   final DatadogTimeProvider _timeProvider;
-  final Map<Type, ElementRecorder> _elementRecordersByType = {};
   final List<GenericElementRecorder> _genericElementRecorder = [];
 
   final Map<Key, Element> _elements = {};
@@ -188,7 +183,7 @@ class SessionReplayRecorder {
 
   @visibleForTesting
   SessionReplayRecorder.withCustomRecorders(
-    List<ElementRecorder> elementRecorders, {
+    List<GenericElementRecorder> elementRecorders, {
     DatadogTimeProvider timeProvider = const DefaultTimeProvider(),
     required TreeCapturePrivacy defaultCapturePrivacy,
     required TouchPrivacyLevel touchPrivacyLevel,
@@ -306,17 +301,8 @@ class SessionReplayRecorder {
     }
   }
 
-  void _populateElementRecorderMap(List<ElementRecorder> recorders) {
-    for (final recorder in recorders) {
-      if (recorder is GenericElementRecorder) {
-        // Broad match recorder for widgets with generic parameters
-        _genericElementRecorder.add(recorder);
-        continue;
-      }
-      for (final type in recorder.handlesTypes) {
-        _elementRecordersByType[type] = recorder;
-      }
-    }
+  void _populateElementRecorderMap(List<GenericElementRecorder> recorders) {
+    _genericElementRecorder.addAll(recorders);
   }
 
   // Certain elements will cause everything under the element to be invisible, such
@@ -374,7 +360,7 @@ class SessionReplayRecorder {
       }
 
       final widget = e.widget;
-      final recorder = _elementRecordersByType[widget.runtimeType] ??
+      final recorder =
           _genericElementRecorder.firstWhereOrNull((r) => r.accepts(widget));
       var subtreeStrategy = CaptureNodeSubtreeStrategy.record;
       if (recorder != null) {

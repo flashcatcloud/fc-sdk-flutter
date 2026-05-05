@@ -15,13 +15,13 @@ const int _minLabelWidth = 100;
 /// [PrivacyRecorder] capture and modifies the tree privacy settings
 /// by reading the [SessionReplayPrivacy] widget. It also informs
 /// the recorder when to ignore a subtree that is hidden.
-class PrivacyRecorder implements ElementRecorder {
+class PrivacyRecorder implements GenericElementRecorder {
   final KeyGenerator keyGenerator;
 
   PrivacyRecorder(this.keyGenerator);
 
   @override
-  List<Type> get handlesTypes => [SessionReplayPrivacy];
+  bool accepts(Widget widget) => widget is SessionReplayPrivacy;
 
   @override
   CaptureNodeSemantics? captureSemantics(

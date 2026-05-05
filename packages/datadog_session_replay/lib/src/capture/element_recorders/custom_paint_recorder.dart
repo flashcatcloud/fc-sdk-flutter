@@ -12,13 +12,13 @@ import '../view_tree_snapshot.dart';
 /// Detects `CustomPaint` widgets and places a placeholder
 /// in SessionReplay.
 @immutable
-class CustomPaintRecorder implements ElementRecorder {
+class CustomPaintRecorder implements GenericElementRecorder {
   final KeyGenerator keyGenerator;
 
   const CustomPaintRecorder(this.keyGenerator);
 
   @override
-  List<Type> get handlesTypes => [CustomPaint];
+  bool accepts(Widget widget) => widget is CustomPaint;
 
   @override
   CaptureNodeSemantics? captureSemantics(

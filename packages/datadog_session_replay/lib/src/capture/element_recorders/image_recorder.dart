@@ -23,13 +23,13 @@ const int _labelMinWidth = 125;
 // This is essentially an 800x800 image, with a raw size of 2meg
 const int maxImageSize = 640000;
 
-class ImageRecorder implements ElementRecorder {
+class ImageRecorder implements GenericElementRecorder {
   final KeyGenerator keyGenerator;
 
   const ImageRecorder(this.keyGenerator);
 
   @override
-  List<Type> get handlesTypes => [RawImage, Image];
+  bool accepts(Widget widget) => widget is RawImage || widget is Image;
 
   @override
   CaptureNodeSemantics? captureSemantics(

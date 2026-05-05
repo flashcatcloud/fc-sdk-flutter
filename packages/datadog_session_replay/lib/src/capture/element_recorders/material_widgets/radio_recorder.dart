@@ -24,9 +24,6 @@ class RadioRecorder implements GenericElementRecorder {
   const RadioRecorder(this.keyGenerator);
 
   @override
-  List<Type> get handlesTypes => [];
-
-  @override
   bool accepts(Widget widget) => widget is Radio;
 
   @override

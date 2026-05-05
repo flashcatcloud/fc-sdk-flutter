@@ -18,13 +18,13 @@ const double _thumbRadius = 14.0;
 
 /// Detects 'CupertinoSwitch' widgets and places a Switch icon
 /// on SessionReplay.
-class CupertinoSwitchRecorder implements ElementRecorder {
+class CupertinoSwitchRecorder implements GenericElementRecorder {
   final KeyGenerator keyGenerator;
 
   const CupertinoSwitchRecorder(this.keyGenerator);
 
   @override
-  List<Type> get handlesTypes => [CupertinoSwitch];
+  bool accepts(Widget widget) => widget is CupertinoSwitch;
 
   @override
   CaptureNodeSemantics? captureSemantics(

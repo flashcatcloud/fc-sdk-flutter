@@ -31,13 +31,13 @@ const _transparentBorder =
 
 /// Detects 'Checkbox' widgets and places a check box
 /// in SessionReplay.
-class CheckboxRecorder implements ElementRecorder {
+class CheckboxRecorder implements GenericElementRecorder {
   final KeyGenerator keyGenerator;
 
   const CheckboxRecorder(this.keyGenerator);
 
   @override
-  List<Type> get handlesTypes => [Checkbox];
+  bool accepts(Widget widget) => widget is Checkbox;
 
   @override
   CaptureNodeSemantics? captureSemantics(

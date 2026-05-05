@@ -48,9 +48,6 @@ class CupertinoRadioRecorder implements GenericElementRecorder {
   const CupertinoRadioRecorder(this.keyGenerator);
 
   @override
-  List<Type> get handlesTypes => [];
-
-  @override
   bool accepts(Widget widget) => widget is CupertinoRadio;
 
   @override

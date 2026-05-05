@@ -13,13 +13,13 @@ import '../view_tree_snapshot.dart';
 import 'common_nodes.dart';
 import 'recording_extensions.dart';
 
-class TextElementRecorder implements ElementRecorder {
+class TextElementRecorder implements GenericElementRecorder {
   final KeyGenerator keyGenerator;
 
   const TextElementRecorder(this.keyGenerator);
 
   @override
-  List<Type> get handlesTypes => [RichText];
+  bool accepts(Widget widget) => widget is RichText;
 
   @override
   CaptureNodeSemantics? captureSemantics(

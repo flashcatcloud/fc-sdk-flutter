@@ -10,13 +10,14 @@ import '../recorder.dart';
 import '../view_tree_snapshot.dart';
 import 'common_nodes.dart';
 
-class ContainerRecorder implements ElementRecorder {
+class ContainerRecorder implements GenericElementRecorder {
   final KeyGenerator keyGenerator;
 
   const ContainerRecorder(this.keyGenerator);
 
   @override
-  List<Type> get handlesTypes => [ColoredBox, Material, DecoratedBox];
+  bool accepts(Widget widget) =>
+      widget is ColoredBox || widget is Material || widget is DecoratedBox;
 
   @override
   CaptureNodeSemantics? captureSemantics(
