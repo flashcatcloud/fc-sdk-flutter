@@ -28,7 +28,7 @@ void main() {
       const Duration(seconds: 60),
       (logRequests) {
         logs = logRequests;
-        return logs.length >= 5;
+        return logs.length >= 6;
       },
     );
 
@@ -40,13 +40,12 @@ void main() {
     expect(logs[0].accountName, isNull);
 
     expect(logs[1].userAnonymousId, isNotNull);
-    expect(logs[1].userId, 'bits');
-    expect(logs[1].userEmail, 'bits@datadoghq.com');
-    expect(logs[1].userName, 'Bits Dawoof');
-    expect(logs[1].getUserProperty('type'), 'dog');
-    expect(logs[1].getUserProperty('department'), 'data');
+    expect(logs[1].userId, isNull);
+    expect(logs[1].userEmail, isNull);
+    expect(logs[1].userName, isNull);
     expect(logs[1].accountId, isNull);
     expect(logs[1].accountName, isNull);
+    expect(logs[1].getUserProperty('fetch_status'), 'waiting_for_ball');
 
     expect(logs[2].userAnonymousId, isNotNull);
     expect(logs[2].userId, 'bits');
@@ -54,17 +53,15 @@ void main() {
     expect(logs[2].userName, 'Bits Dawoof');
     expect(logs[2].getUserProperty('type'), 'dog');
     expect(logs[2].getUserProperty('department'), 'data');
-    expect(logs[2].accountId, 'bits-account');
-    expect(logs[2].accountName, 'Dawoof, Bits');
-    expect(logs[2].getAccountProperty('type'), 'top_dog');
-    expect(logs[2].getAccountProperty('department'), 'fetching');
+    expect(logs[2].accountId, isNull);
+    expect(logs[2].accountName, isNull);
 
     expect(logs[3].userAnonymousId, isNotNull);
-    expect(logs[3].userId, isNull);
-    expect(logs[3].userEmail, isNull);
-    expect(logs[3].userName, isNull);
-    expect(logs[3].getUserProperty('type'), isNull);
-    expect(logs[3].getUserProperty('department'), isNull);
+    expect(logs[3].userId, 'bits');
+    expect(logs[3].userEmail, 'bits@datadoghq.com');
+    expect(logs[3].userName, 'Bits Dawoof');
+    expect(logs[3].getUserProperty('type'), 'dog');
+    expect(logs[3].getUserProperty('department'), 'data');
     expect(logs[3].accountId, 'bits-account');
     expect(logs[3].accountName, 'Dawoof, Bits');
     expect(logs[3].getAccountProperty('type'), 'top_dog');
@@ -76,9 +73,20 @@ void main() {
     expect(logs[4].userName, isNull);
     expect(logs[4].getUserProperty('type'), isNull);
     expect(logs[4].getUserProperty('department'), isNull);
-    expect(logs[4].accountId, isNull);
-    expect(logs[4].accountName, isNull);
-    expect(logs[4].getAccountProperty('type'), isNull);
-    expect(logs[4].getAccountProperty('department'), isNull);
+    expect(logs[4].accountId, 'bits-account');
+    expect(logs[4].accountName, 'Dawoof, Bits');
+    expect(logs[4].getAccountProperty('type'), 'top_dog');
+    expect(logs[4].getAccountProperty('department'), 'fetching');
+
+    expect(logs[5].userAnonymousId, isNotNull);
+    expect(logs[5].userId, isNull);
+    expect(logs[5].userEmail, isNull);
+    expect(logs[5].userName, isNull);
+    expect(logs[5].getUserProperty('type'), isNull);
+    expect(logs[5].getUserProperty('department'), isNull);
+    expect(logs[5].accountId, isNull);
+    expect(logs[5].accountName, isNull);
+    expect(logs[5].getAccountProperty('type'), isNull);
+    expect(logs[5].getAccountProperty('department'), isNull);
   });
 }
