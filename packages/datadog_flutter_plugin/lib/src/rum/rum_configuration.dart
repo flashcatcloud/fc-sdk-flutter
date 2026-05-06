@@ -221,6 +221,17 @@ class DatadogRumConfiguration {
   /// [RumVitalOperationEvent]s before they are sent to Datadog.
   RumVitalOperationEventMapper? vitalOperationStepEventMapper;
 
+  /// Captures HTTP request and response headers from intercepted requests and
+  /// includes them in RUM resource events. Applies across all Datadog HTTP
+  /// tracking clients ([DatadogTrackingHttpClient], [DatadogClient], and
+  /// [DatadogDioInterceptor]).
+  ///
+  /// Requires native SDK 3.8.0+ on both Android and iOS for headers to appear
+  /// in events.
+  ///
+  /// Defaults to `null` (disabled).
+  ResourceHeadersExtractor? trackResourceHeaders;
+
   Map<String, Object?> additionalConfig;
 
   DatadogRumConfiguration({
@@ -246,6 +257,7 @@ class DatadogRumConfiguration {
     this.errorEventMapper,
     this.longTaskEventMapper,
     this.vitalOperationStepEventMapper,
+    this.trackResourceHeaders,
     this.additionalConfig = const <String, Object>{},
   })  : sessionSamplingRate = max(0, min(sessionSamplingRate, 100)),
         traceSampleRate = max(0, min(traceSampleRate, 100)),
