@@ -5,6 +5,7 @@
 import 'package:datadog_flutter_plugin/datadog_flutter_plugin.dart';
 import 'package:flutter/gestures.dart' hide PointerEvent;
 import 'package:flutter/widgets.dart';
+import 'package:meta/meta.dart';
 
 import '../datadog_session_replay.dart';
 import 'capture/pointer_capture.dart';
@@ -66,6 +67,8 @@ class _SessionReplayCaptureState extends State<SessionReplayCapture> {
         recorder: pointerRecorder,
         child: PointerRecorder(
           pointerRecorder: pointerRecorder,
+          shouldCapturePointers: () =>
+              widget.sessionReplay.shouldCapturePointers,
           child: builtChild,
         ),
       );
@@ -146,14 +149,20 @@ class SessionReplayPrivacy extends StatelessWidget {
   }
 }
 
+@internal
 @immutable
 class PointerRecorder extends StatelessWidget {
   final PointerSnapshotRecorder pointerRecorder;
+  final bool Function() shouldCapturePointers;
   final Widget child;
+
+  @visibleForTesting
+  static bool alwaysCapture() => true;
 
   const PointerRecorder({
     super.key,
     required this.pointerRecorder,
+    this.shouldCapturePointers = alwaysCapture,
     required this.child,
   });
 
@@ -173,6 +182,7 @@ class PointerRecorder extends StatelessWidget {
       _capturePointerEvent(SRPointerEventType.up, event);
 
   void _capturePointerEvent(SRPointerEventType type, PointerEvent event) {
+    if (!shouldCapturePointers()) return;
     pointerRecorder.capturePointer(
       event.pointer,
       type,
@@ -195,6 +205,7 @@ class PointerRecorder extends StatelessWidget {
   }
 }
 
+@internal
 @immutable
 class PointerUnrecorder extends StatelessWidget {
   final PointerSnapshotRecorder pointerRecorder;

@@ -144,6 +144,70 @@ void main() {
       });
 
       test(
+          'stopRecording(captureGestures: true) keeps shouldCapturePointers true',
+          () async {
+        // Given
+        final sr =
+            await DatadogSessionReplay.init(defaultConfig, mockInternalLogger);
+        sr.startRecording();
+
+        // When
+        sr.stopRecording(captureGestures: true);
+
+        // Then
+        expect(sr.isCapturing, false);
+        expect(sr.shouldCapturePointers, true);
+      });
+
+      test(
+          'stopRecording() without captureGestures sets shouldCapturePointers to false',
+          () async {
+        // Given
+        final sr =
+            await DatadogSessionReplay.init(defaultConfig, mockInternalLogger);
+        sr.startRecording();
+
+        // When
+        sr.stopRecording();
+
+        // Then
+        expect(sr.isCapturing, false);
+        expect(sr.shouldCapturePointers, false);
+      });
+
+      test(
+          'startRecording() after stopRecording(captureGestures: true) clears gesture flag',
+          () async {
+        // Given
+        final sr =
+            await DatadogSessionReplay.init(defaultConfig, mockInternalLogger);
+        sr.stopRecording(captureGestures: true);
+
+        // When
+        sr.startRecording();
+        sr.stopRecording();
+
+        // Then
+        expect(sr.isCapturing, false);
+        expect(sr.shouldCapturePointers, false);
+      });
+
+      test(
+          'stopRecording() after stopRecording(captureGestures: true) resets shouldCapturePointers',
+          () async {
+        // Given
+        final sr =
+            await DatadogSessionReplay.init(defaultConfig, mockInternalLogger);
+        sr.stopRecording(captureGestures: true);
+
+        // When
+        sr.stopRecording();
+
+        // Then
+        expect(sr.shouldCapturePointers, false);
+      });
+
+      test(
           'isCapturing is true after init with startRecordingImmediately: true',
           () async {
         // Given — enable() must return true so _start() reaches startRecording()
