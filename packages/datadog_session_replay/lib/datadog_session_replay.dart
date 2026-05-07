@@ -78,8 +78,11 @@ class DatadogSessionReplayConfiguration {
 
   String? customEndpoint;
 
-  /// Define whether Session Replay must start recording immediately, by default is
-  /// set to true in order no keep the current behavior
+  /// Whether tree capture should begin as soon as Session Replay is
+  /// initialized. When `false`, call [DatadogSessionReplay.startRecording] to
+  /// begin capture.
+  ///
+  /// Defaults to `true`.
   bool startRecordingImmediately;
 
   DatadogSessionReplayConfiguration({

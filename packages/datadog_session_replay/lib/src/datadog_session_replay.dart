@@ -40,9 +40,8 @@ class DatadogSessionReplay {
   bool _newFrameBuilt = true;
   Timer? _captureTimer; // When null is idle, otherwise is active
 
-  bool get isCapturing =>
-      _captureTimer !=
-      null; // Returns true if a session replay recording is happening
+  /// Whether Session Replay is currently capturing tree snapshots.
+  bool get isCapturing => _captureTimer != null;
 
   @internal
   static Future<DatadogSessionReplay> init(
@@ -83,6 +82,8 @@ class DatadogSessionReplay {
     _recorder.onContextChanged(context);
   }
 
+  /// Begins periodic Session Replay tree capture. Has no effect if recording
+  /// is already in progress.
   void startRecording() {
     if (_captureTimer != null) return;
     _startPeriodicCapture();
@@ -92,6 +93,8 @@ class DatadogSessionReplay {
     });
   }
 
+  /// Stops periodic Session Replay tree capture. The processor isolate keeps
+  /// running so that [startRecording] can resume without re-initialization.
   void stopRecording() {
     _captureTimer?.cancel();
     _captureTimer = null;
