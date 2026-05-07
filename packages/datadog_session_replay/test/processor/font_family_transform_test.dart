@@ -145,7 +145,8 @@ void main() {
           },
         ),
       );
-      expect(t.transformFamily('packages/foo/Roboto'), 'FromPeeled, sans-serif');
+      expect(
+          t.transformFamily('packages/foo/Roboto'), 'FromPeeled, sans-serif');
     });
 
     test('smart: does not append sans-serif when already generic', () {
