@@ -2,6 +2,7 @@
 // This product includes software developed at Datadog (https://www.datadoghq.com/).
 // Copyright 2025-Present Datadog, Inc.
 
+import 'package:datadog_session_replay/datadog_session_replay.dart';
 import 'package:datadog_session_replay/src/capture/recorder.dart';
 import 'package:datadog_session_replay/src/processor/processor_worker.dart';
 import 'package:datadog_session_replay/src/sr_data_models.dart';
@@ -18,8 +19,10 @@ Future<void> snapshotTest(
   SessionReplayRecorder recorder,
   Widget fixture, {
   TestActions? testActions,
+  FontFamilyTransformConfig fontFamilyTransform =
+      const FontFamilyTransformConfig(),
 }) async {
-  final processor = ProcessorWorker();
+  final processor = ProcessorWorker(fontFamilyTransform: fontFamilyTransform);
   await tester.pumpWidget(
     SimpleTestCapture(key: Key('key'), recorder: recorder, child: fixture),
   );
