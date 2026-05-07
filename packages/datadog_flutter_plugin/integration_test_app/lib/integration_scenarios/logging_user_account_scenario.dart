@@ -27,6 +27,9 @@ class _LoggingUserAccountScenarioState
 
     log?.info('Log without default user and account information.');
 
+    DatadogSdk.instance.addUserExtraInfo({'fetch_status': 'waiting_for_ball'});
+    log?.info('Log with only extra info.');
+
     // Set a user - same as other users in integration scenarios
     DatadogSdk.instance.setUserInfo(
         id: 'bits',
