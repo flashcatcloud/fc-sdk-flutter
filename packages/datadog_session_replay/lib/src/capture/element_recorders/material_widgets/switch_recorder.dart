@@ -23,7 +23,7 @@ class SwitchRecorder implements ElementRecorder {
   const SwitchRecorder(this.keyGenerator);
 
   @override
-  List<Type> get handlesTypes => [Switch];
+  bool accepts(Widget widget) => widget is Switch;
 
   @override
   CaptureNodeSemantics? captureSemantics(

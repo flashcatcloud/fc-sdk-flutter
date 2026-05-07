@@ -52,7 +52,7 @@ class CupertinoCheckboxRecorder implements ElementRecorder {
   const CupertinoCheckboxRecorder(this.keyGenerator);
 
   @override
-  List<Type> get handlesTypes => [CupertinoCheckbox];
+  bool accepts(Widget widget) => widget is CupertinoCheckbox;
 
   @override
   CaptureNodeSemantics? captureSemantics(

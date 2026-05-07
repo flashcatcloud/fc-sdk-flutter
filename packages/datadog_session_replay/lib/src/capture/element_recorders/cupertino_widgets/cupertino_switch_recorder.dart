@@ -24,7 +24,7 @@ class CupertinoSwitchRecorder implements ElementRecorder {
   const CupertinoSwitchRecorder(this.keyGenerator);
 
   @override
-  List<Type> get handlesTypes => [CupertinoSwitch];
+  bool accepts(Widget widget) => widget is CupertinoSwitch;
 
   @override
   CaptureNodeSemantics? captureSemantics(

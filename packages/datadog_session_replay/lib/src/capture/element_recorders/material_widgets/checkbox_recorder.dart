@@ -37,7 +37,7 @@ class CheckboxRecorder implements ElementRecorder {
   const CheckboxRecorder(this.keyGenerator);
 
   @override
-  List<Type> get handlesTypes => [Checkbox];
+  bool accepts(Widget widget) => widget is Checkbox;
 
   @override
   CaptureNodeSemantics? captureSemantics(

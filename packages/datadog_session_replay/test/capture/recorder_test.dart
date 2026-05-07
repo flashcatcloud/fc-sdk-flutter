@@ -27,7 +27,8 @@ class MockElement extends Mock implements Element {
 
 class MockElementRecorder extends Mock implements ElementRecorder {
   @override
-  List<Type> get handlesTypes => [SimpleTestCapture, Placeholder, Center];
+  bool accepts(Widget widget) =>
+      widget is SimpleTestCapture || widget is Placeholder || widget is Center;
 }
 
 class MockCaptureNode extends Mock implements CaptureNode {}

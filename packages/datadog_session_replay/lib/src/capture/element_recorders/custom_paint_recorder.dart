@@ -18,7 +18,7 @@ class CustomPaintRecorder implements ElementRecorder {
   const CustomPaintRecorder(this.keyGenerator);
 
   @override
-  List<Type> get handlesTypes => [CustomPaint];
+  bool accepts(Widget widget) => widget is CustomPaint;
 
   @override
   CaptureNodeSemantics? captureSemantics(
