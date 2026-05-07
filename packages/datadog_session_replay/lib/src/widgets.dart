@@ -199,7 +199,6 @@ class PointerRecorder extends StatelessWidget {
   }
 }
 
-@internal
 @immutable
 class PointerUnrecorder extends StatelessWidget {
   final PointerSnapshotRecorder pointerRecorder;
