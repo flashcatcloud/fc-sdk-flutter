@@ -5,7 +5,6 @@
 import 'package:datadog_flutter_plugin/datadog_flutter_plugin.dart';
 import 'package:flutter/gestures.dart' hide PointerEvent;
 import 'package:flutter/widgets.dart';
-import 'package:meta/meta.dart';
 
 import '../datadog_session_replay.dart';
 import 'capture/pointer_capture.dart';
