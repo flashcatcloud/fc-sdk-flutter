@@ -153,7 +153,6 @@ class SessionReplayRecorder {
     required TouchPrivacyLevel touchPrivacyLevel,
     ImageDownscaling imageDownscaling = ImageDownscaling.disabled,
     int maxImagePixelBudget = defaultMaxImagePixelBudget,
-    InternalLogger? internalLogger,
   }) : this._(
           KeyGenerator(),
           timeProvider,
@@ -161,7 +160,6 @@ class SessionReplayRecorder {
           touchPrivacyLevel,
           imageDownscaling,
           maxImagePixelBudget,
-          internalLogger,
         );
 
   SessionReplayRecorder._(
@@ -171,7 +169,6 @@ class SessionReplayRecorder {
     this._touchPrivacyLevel,
     ImageDownscaling imageDownscaling,
     int maxImagePixelBudget,
-    InternalLogger? internalLogger,
   ) {
     _elementRecorders.addAll([
       ContainerRecorder(keyGenerator),
@@ -182,7 +179,6 @@ class SessionReplayRecorder {
         keyGenerator,
         imageDownscaling: imageDownscaling,
         maxImagePixelBudget: maxImagePixelBudget,
-        internalLogger: internalLogger,
       ),
       CustomPaintRecorder(keyGenerator),
       PrivacyRecorder(keyGenerator),

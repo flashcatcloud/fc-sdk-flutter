@@ -2,11 +2,11 @@
 // This product includes software developed at Datadog (https://www.datadoghq.com/).
 // Copyright 2025-Present Datadog, Inc.
 
+import 'dart:async' show TimeoutException;
+
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 
-import 'package:datadog_flutter_plugin/datadog_flutter_plugin.dart';
-import 'package:datadog_flutter_plugin/datadog_internal.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../../datadog_session_replay.dart';
@@ -23,18 +23,68 @@ const int _labelMinWidth = 125;
 // Default pixel budget (~800×800, raw RGBA ≈ 2 MB).
 const int defaultMaxImagePixelBudget = 640000;
 
+@visibleForTesting
+enum DownscalingNeed {
+  none,
+  fitToBounds,
+  downscaling,
+}
+
+const Duration _defaultDownscaleTimeout = Duration(milliseconds: 500);
+
+typedef DownscaleFunction = Future<ui.Image> Function(
+  ui.Image source,
+  int destWidth,
+  int destHeight,
+);
+
+/// Tracks repeated downscale failures (timeouts or raster errors) for one
+/// [ImageRecorder] instance.
+///
+/// After [maxConsecutiveFailures] failures, [isTripped] becomes true and stays
+/// true: there is no time-based or automatic recovery. Downscaling stays off
+/// until the app creates a new recorder (e.g. new SDK session / lifecycle).
+@visibleForTesting
+class DownscaleCircuitBreaker {
+  static const int maxConsecutiveFailures = 3;
+
+  int _consecutiveFailures = 0;
+  bool _tripped = false;
+
+  /// Whether downscaling has been permanently disabled for this breaker.
+  bool get isTripped => _tripped;
+
+  void recordSuccess() {
+    _consecutiveFailures = 0;
+  }
+
+  void recordFailure() {
+    _consecutiveFailures++;
+    if (_consecutiveFailures >= maxConsecutiveFailures) {
+      _tripped = true;
+    }
+  }
+}
+
 class ImageRecorder implements ElementRecorder {
   final KeyGenerator keyGenerator;
   final ImageDownscaling imageDownscaling;
   final int maxImagePixelBudget;
-  final InternalLogger? internalLogger;
+  final DownscaleCircuitBreaker _downscalingCircuitBreaker;
+  final DownscaleFunction _downscale;
+  final Duration _downscaleTimeout;
 
   ImageRecorder(
     this.keyGenerator, {
     this.imageDownscaling = ImageDownscaling.disabled,
     this.maxImagePixelBudget = defaultMaxImagePixelBudget,
-    this.internalLogger,
-  });
+    @visibleForTesting DownscaleCircuitBreaker? circuitBreaker,
+    @visibleForTesting DownscaleFunction? downscaleOverride,
+    @visibleForTesting Duration downscaleTimeout = _defaultDownscaleTimeout,
+  })  : _downscalingCircuitBreaker =
+            circuitBreaker ?? DownscaleCircuitBreaker(),
+        _downscale = downscaleOverride ?? _downscaleImageDefault,
+        _downscaleTimeout = downscaleTimeout;
 
   @override
   bool accepts(Widget widget) => widget is RawImage || widget is Image;
@@ -138,99 +188,100 @@ class ImageRecorder implements ElementRecorder {
     CapturedViewAttributes attributes,
     RawImage widget,
   ) async {
-    final List<CaptureNode> nodes = [];
     final image = widget.image;
     if (image == null) {
-      return _emptyOrErrorImage(elementId, attributes);
+      return _placeholder(elementId, attributes, 'Empty Image');
     }
 
-    final sourceWidth = image.width;
-    final sourceHeight = image.height;
-    final totalPixels = sourceWidth * sourceHeight;
-
-    final (destWidth, destHeight) = _targetCaptureDimensions(
-      sourceWidth,
-      sourceHeight,
+    final (need, scaledWidth, scaledHeight) = downscaleSizeTarget(
+      image.width,
+      image.height,
       attributes,
-      element,
+      _devicePixelRatio(element),
       maxImagePixelBudget,
     );
 
-    final needsRasterDownscale = imageDownscaling == ImageDownscaling.enabled &&
-        (destWidth != sourceWidth || destHeight != sourceHeight);
-
-    var encodingImage = image;
-    ui.Image? scaledDisposable;
-
-    if (needsRasterDownscale) {
-      final stopwatch = Stopwatch()..start();
-      final scaled = await _downscaleImage(image, destWidth, destHeight);
-      stopwatch.stop();
-      internalLogger?.log(
-        CoreLoggerLevel.debug,
-        'Session Replay image downscale: '
-        '${sourceWidth}x$sourceHeight (${totalPixels}px) -> '
-        '${destWidth}x$destHeight '
-        '(${destWidth * destHeight}px), '
-        'viewBounds=${attributes.width.toStringAsFixed(1)}x'
-        '${attributes.height.toStringAsFixed(1)}, '
-        'oversized=${totalPixels > maxImagePixelBudget}, '
-        'success=${scaled != null}, '
-        'took ${stopwatch.elapsedMilliseconds}ms',
+    if (need == DownscalingNeed.none) {
+      return _persistImageAsResourceNode(
+        elementId,
+        attributes,
+        sourceImageForKeyGen: image,
+        encodingImageForByteData: image,
       );
-      if (scaled != null) {
-        encodingImage = scaled;
-        if (!identical(scaled, image)) {
-          scaledDisposable = scaled;
-        }
-      } else if (totalPixels > maxImagePixelBudget) {
-        return _failedDownscalePlaceholder(elementId, attributes);
-      }
     }
 
-    if (identical(encodingImage, image) && totalPixels > maxImagePixelBudget) {
-      return _failedDownscalePlaceholder(elementId, attributes);
+    if (imageDownscaling == ImageDownscaling.disabled) {
+      return _placeholder(elementId, attributes, 'Large Image');
     }
 
+    if (_downscalingCircuitBreaker.isTripped) {
+      return _placeholder(elementId, attributes, 'Slow Device');
+    }
+
+    ui.Image? scaled;
+    try {
+      scaled = await _downscale(image, scaledWidth, scaledHeight)
+          .timeout(_downscaleTimeout);
+      _downscalingCircuitBreaker.recordSuccess();
+      return _persistImageAsResourceNode(
+        elementId,
+        attributes,
+        sourceImageForKeyGen: image,
+        encodingImageForByteData: scaled,
+      );
+    } on TimeoutException {
+      _downscalingCircuitBreaker.recordFailure();
+      return _placeholder(elementId, attributes, 'Slow Device');
+    } catch (_) {
+      _downscalingCircuitBreaker.recordFailure();
+      return _placeholder(elementId, attributes, 'Failed Downscale');
+    } finally {
+      scaled?.dispose();
+    }
+  }
+
+  Future<CaptureNodeSemantics> _persistImageAsResourceNode(
+    int elementId,
+    CapturedViewAttributes attributes, {
+    required ui.Image sourceImageForKeyGen,
+    required ui.Image encodingImageForByteData,
+  }) async {
     try {
       // Prevent conversion of the image data to speed things up, we're going to
       // be hashing / compressing in the processor anyway
-      final byteData = await encodingImage.toByteData(
+      final byteData = await encodingImageForByteData.toByteData(
         format: ui.ImageByteFormat.rawRgba,
       );
       if (byteData != null) {
-        final resourceKey = keyGenerator.keyForImage(image);
+        final resourceKey = keyGenerator.keyForImage(sourceImageForKeyGen);
         await DatadogSessionReplayPlatform.instance.saveImageForProcessing(
           resourceKey,
-          encodingImage.width,
-          encodingImage.height,
+          encodingImageForByteData.width,
+          encodingImageForByteData.height,
           byteData,
         );
-        nodes.add(
-          ResourceImageNode(
-            attributes,
-            wireframeId: elementId,
-            resourceKey: resourceKey,
-          ),
+        return SpecificElement(
+          subtreeStrategy: CaptureNodeSubtreeStrategy.ignore,
+          nodes: [
+            ResourceImageNode(
+              attributes,
+              wireframeId: elementId,
+              resourceKey: resourceKey,
+            ),
+          ],
         );
+      } else {
+        return _placeholder(elementId, attributes, 'Empty Image');
       }
-    } finally {
-      scaledDisposable?.dispose();
+    } catch (_) {
+      return _placeholder(elementId, attributes, 'Error Image');
     }
-
-    if (nodes.isEmpty) {
-      return _emptyOrErrorImage(elementId, attributes);
-    }
-
-    return SpecificElement(
-      subtreeStrategy: CaptureNodeSubtreeStrategy.ignore,
-      nodes: nodes,
-    );
   }
 
-  static SpecificElement _failedDownscalePlaceholder(
+  static SpecificElement _placeholder(
     int elementId,
     CapturedViewAttributes attributes,
+    String caption,
   ) {
     return SpecificElement(
       subtreeStrategy: CaptureNodeSubtreeStrategy.ignore,
@@ -238,66 +289,14 @@ class ImageRecorder implements ElementRecorder {
         PlaceholderNode(
           attributes,
           wireframeId: elementId,
-          caption: 'Failed Downscale',
+          caption: caption,
           minWidth: _labelMinWidth,
         ),
       ],
     );
   }
 
-  static SpecificElement _emptyOrErrorImage(
-    int elementId,
-    CapturedViewAttributes attributes,
-  ) {
-    return SpecificElement(
-      subtreeStrategy: CaptureNodeSubtreeStrategy.ignore,
-      nodes: [
-        PlaceholderNode(
-          attributes,
-          wireframeId: elementId,
-          caption: 'Empty Image',
-          minWidth: _labelMinWidth,
-        ),
-      ],
-    );
-  }
-
-  /// Target width/height in physical pixels: fit inside on-screen bounds × DPR,
-  /// then clamp total pixels to the pixel budget.
-  @visibleForTesting
-  static (int, int) targetCaptureDimensionsForTest(
-    int sourceWidth,
-    int sourceHeight,
-    CapturedViewAttributes attributes,
-    double devicePixelRatio, {
-    int pixelBudget = defaultMaxImagePixelBudget,
-  }) =>
-      _targetCaptureDimensionsForDpr(
-        sourceWidth,
-        sourceHeight,
-        attributes,
-        devicePixelRatio,
-        pixelBudget,
-      );
-
-  static (int, int) _targetCaptureDimensions(
-    int sourceWidth,
-    int sourceHeight,
-    CapturedViewAttributes attributes,
-    Element element,
-    int pixelBudget,
-  ) {
-    final dpr = _devicePixelRatio(element);
-    return _targetCaptureDimensionsForDpr(
-      sourceWidth,
-      sourceHeight,
-      attributes,
-      dpr,
-      pixelBudget,
-    );
-  }
-
-  static (int, int) _targetCaptureDimensionsForDpr(
+  static (DownscalingNeed, int, int) downscaleSizeTarget(
     int sourceWidth,
     int sourceHeight,
     CapturedViewAttributes attributes,
@@ -309,24 +308,42 @@ class ImageRecorder implements ElementRecorder {
     final renderedPhysicalHeight =
         math.max(1, (attributes.height * devicePixelRatio).ceil());
 
-    final fitScale = math.min(
+    if (renderedPhysicalWidth >= sourceWidth &&
+        renderedPhysicalHeight >= sourceHeight &&
+        sourceWidth * sourceHeight <= pixelBudget) {
+      // below budget, no downscaling needed
+      return (DownscalingNeed.none, sourceWidth, sourceHeight);
+    }
+
+    // Fit source pixels to how the image is actually painted: logical
+    // layout size × DPR gives the physical render box. Uniform scale
+    // (min of width/height ratios) keeps aspect ratio; cap at 1.0 avoids
+    // upscaling past native resolution.
+    final fitToBoundsScale = math.min(
       math.min(renderedPhysicalWidth / sourceWidth,
           renderedPhysicalHeight / sourceHeight),
       1.0,
     );
-    var width = math.max(1, (sourceWidth * fitScale).round());
-    var height = math.max(1, (sourceHeight * fitScale).round());
-
-    // If total pixels still exceeds the budget, scale both dimensions
-    // uniformly. Because pixels = w × h, scaling each by √(budget/pixels)
-    // yields the target area: (w×s) × (h×s) = w×h×s² = budget.
-    final pixels = width * height;
-    if (pixels > pixelBudget) {
-      final budgetScale = math.sqrt(pixelBudget / pixels);
-      width = math.max(1, (width * budgetScale).floor());
-      height = math.max(1, (height * budgetScale).floor());
+    final fitToBoundsWidth =
+        math.max(1, (sourceWidth * fitToBoundsScale).round());
+    final fitToBoundsHeight =
+        math.max(1, (sourceHeight * fitToBoundsScale).round());
+    final fitToBoundsPixels = fitToBoundsWidth * fitToBoundsHeight;
+    if (fitToBoundsPixels <= pixelBudget) {
+      // originally above budget, fit to bounds causes it to be below budget
+      return (DownscalingNeed.fitToBounds, fitToBoundsWidth, fitToBoundsHeight);
     }
-    return (width, height);
+
+    // Scale both dimensions uniformly to meet pixelBudget. Because
+    // pixels = w × h, scaling each by √(budget/pixels) yields the target
+    // area: (w×s) × (h×s) = w×h×s² = budget.
+    final downscaling = math.sqrt(pixelBudget / fitToBoundsPixels);
+    final downscaledWidth =
+        math.max(1, (fitToBoundsWidth * downscaling).floor());
+    final downscaledHeight =
+        math.max(1, (fitToBoundsHeight * downscaling).floor());
+    // originally above budget, scaling both dimensions uniformly down so it is in budget
+    return (DownscalingNeed.downscaling, downscaledWidth, downscaledHeight);
   }
 
   static double _devicePixelRatio(Element element) {
@@ -341,17 +358,11 @@ class ImageRecorder implements ElementRecorder {
     return 1.0;
   }
 
-  static Future<ui.Image?> _downscaleImage(
+  static Future<ui.Image> _downscaleImageDefault(
     ui.Image source,
     int destWidth,
     int destHeight,
   ) async {
-    if (destWidth < 1 || destHeight < 1) {
-      return null;
-    }
-    if (destWidth == source.width && destHeight == source.height) {
-      return null;
-    }
     final recorder = ui.PictureRecorder();
     final canvas = ui.Canvas(recorder);
     final paint = ui.Paint()..filterQuality = ui.FilterQuality.medium;
@@ -364,8 +375,6 @@ class ImageRecorder implements ElementRecorder {
     final picture = recorder.endRecording();
     try {
       return await picture.toImage(destWidth, destHeight);
-    } catch (_) {
-      return null;
     } finally {
       picture.dispose();
     }

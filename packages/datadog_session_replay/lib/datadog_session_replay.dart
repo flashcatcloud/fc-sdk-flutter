@@ -111,7 +111,7 @@ class FontFamilyTransformConfig {
 /// Controls Dart-side downscaling of captured images before they are sent to
 /// the native resource pipeline.
 enum ImageDownscaling {
-  /// Legacy behavior: images larger than the pixel budget are replaced by
+  /// Default behavior: images larger than the pixel budget are replaced by
   /// a "Large Image" placeholder wireframe.
   disabled,
 
