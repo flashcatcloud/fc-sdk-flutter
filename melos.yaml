@@ -255,7 +255,9 @@ scripts:
       scope: 'datadog_flutter_plugin'
 
   remove_cocoapods:
-    exec: |
+    exec: 
+      concurrency: 1
+    run: |
       cd example/ios
       pod deintegrate
       rm Podfile || true
@@ -273,7 +275,9 @@ scripts:
       generate `.env` files for all package examples
 
   pub:get:
-    exec: flutter pub get
+    exec:
+      concurrency: 1
+    run: flutter pub get
 
   pod_update:
     run: cd example/ios && pod update --repo-update
