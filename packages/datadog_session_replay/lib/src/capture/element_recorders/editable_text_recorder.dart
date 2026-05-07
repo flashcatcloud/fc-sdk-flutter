@@ -23,7 +23,7 @@ const _sensitiveInputTypes = [
 
 /// [EditableTextRecorder] captures the actual editable portion of the
 /// text, and handles obscuring the text that's captured.
-class EditableTextRecorder implements GenericElementRecorder {
+class EditableTextRecorder implements ElementRecorder {
   final KeyGenerator keyGenerator;
 
   EditableTextRecorder(this.keyGenerator);
@@ -101,7 +101,7 @@ class EditableTextRecorder implements GenericElementRecorder {
 
 /// [InputDecoratorRecorder] handles capturing the border around [TextField]
 /// and [CupertinoTextField] widgets.
-class InputDecoratorRecorder implements GenericElementRecorder {
+class InputDecoratorRecorder implements ElementRecorder {
   final KeyGenerator keyGenerator;
 
   InputDecoratorRecorder(this.keyGenerator);

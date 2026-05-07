@@ -25,7 +25,7 @@ class MockElement extends Mock implements Element {
   }
 }
 
-class MockElementRecorder extends Mock implements GenericElementRecorder {
+class MockElementRecorder extends Mock implements ElementRecorder {
   @override
   bool accepts(Widget widget) =>
       widget is SimpleTestCapture || widget is Placeholder || widget is Center;

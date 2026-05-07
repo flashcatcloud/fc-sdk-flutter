@@ -18,7 +18,7 @@ const double _defaultBorderThickness = 2.0;
 
 /// Detects 'Radio' widgets and places a Radio icon
 /// on SessionReplay.
-class RadioRecorder implements GenericElementRecorder {
+class RadioRecorder implements ElementRecorder {
   final KeyGenerator keyGenerator;
 
   const RadioRecorder(this.keyGenerator);

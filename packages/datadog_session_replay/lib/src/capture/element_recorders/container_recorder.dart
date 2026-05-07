@@ -10,7 +10,7 @@ import '../recorder.dart';
 import '../view_tree_snapshot.dart';
 import 'common_nodes.dart';
 
-class ContainerRecorder implements GenericElementRecorder {
+class ContainerRecorder implements ElementRecorder {
   final KeyGenerator keyGenerator;
 
   const ContainerRecorder(this.keyGenerator);

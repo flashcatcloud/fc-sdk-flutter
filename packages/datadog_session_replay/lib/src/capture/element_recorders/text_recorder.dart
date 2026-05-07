@@ -13,7 +13,7 @@ import '../view_tree_snapshot.dart';
 import 'common_nodes.dart';
 import 'recording_extensions.dart';
 
-class TextElementRecorder implements GenericElementRecorder {
+class TextElementRecorder implements ElementRecorder {
   final KeyGenerator keyGenerator;
 
   const TextElementRecorder(this.keyGenerator);

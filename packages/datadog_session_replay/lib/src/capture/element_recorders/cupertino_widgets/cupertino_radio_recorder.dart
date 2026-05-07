@@ -42,7 +42,7 @@ const CupertinoDynamicColor _defaultOuterColor =
 
 /// Detects 'CupertinoRadio' widgets and places a Radio icon
 /// on SessionReplay.
-class CupertinoRadioRecorder implements GenericElementRecorder {
+class CupertinoRadioRecorder implements ElementRecorder {
   final KeyGenerator keyGenerator;
 
   const CupertinoRadioRecorder(this.keyGenerator);

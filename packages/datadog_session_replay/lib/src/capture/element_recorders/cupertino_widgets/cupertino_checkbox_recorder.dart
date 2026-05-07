@@ -46,7 +46,7 @@ const Color _defaultCheckColor = CupertinoDynamicColor.withBrightness(
 
 /// Detects 'CupertinoCheckbox' widgets and places a check box
 /// in SessionReplay.
-class CupertinoCheckboxRecorder implements GenericElementRecorder {
+class CupertinoCheckboxRecorder implements ElementRecorder {
   final KeyGenerator keyGenerator;
 
   const CupertinoCheckboxRecorder(this.keyGenerator);

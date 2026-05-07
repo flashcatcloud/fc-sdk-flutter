@@ -31,7 +31,7 @@ const _transparentBorder =
 
 /// Detects 'Checkbox' widgets and places a check box
 /// in SessionReplay.
-class CheckboxRecorder implements GenericElementRecorder {
+class CheckboxRecorder implements ElementRecorder {
   final KeyGenerator keyGenerator;
 
   const CheckboxRecorder(this.keyGenerator);

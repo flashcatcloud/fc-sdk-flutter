@@ -23,7 +23,7 @@ const int _labelMinWidth = 125;
 // This is essentially an 800x800 image, with a raw size of 2meg
 const int maxImageSize = 640000;
 
-class ImageRecorder implements GenericElementRecorder {
+class ImageRecorder implements ElementRecorder {
   final KeyGenerator keyGenerator;
 
   const ImageRecorder(this.keyGenerator);
