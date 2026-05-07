@@ -29,7 +29,7 @@ class ImageRecorder implements ElementRecorder {
   const ImageRecorder(this.keyGenerator);
 
   @override
-  List<Type> get handlesTypes => [RawImage, Image];
+  bool accepts(Widget widget) => widget is RawImage || widget is Image;
 
   @override
   CaptureNodeSemantics? captureSemantics(

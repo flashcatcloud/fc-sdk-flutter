@@ -29,7 +29,7 @@ class EditableTextRecorder implements ElementRecorder {
   EditableTextRecorder(this.keyGenerator);
 
   @override
-  List<Type> get handlesTypes => [EditableText];
+  bool accepts(Widget widget) => widget is EditableText;
 
   @override
   CaptureNodeSemantics? captureSemantics(
@@ -107,7 +107,7 @@ class InputDecoratorRecorder implements ElementRecorder {
   InputDecoratorRecorder(this.keyGenerator);
 
   @override
-  List<Type> get handlesTypes => [InputDecorator];
+  bool accepts(Widget widget) => widget is InputDecorator;
 
   @override
   CaptureNodeSemantics? captureSemantics(

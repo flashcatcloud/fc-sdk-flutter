@@ -21,7 +21,7 @@ class PrivacyRecorder implements ElementRecorder {
   PrivacyRecorder(this.keyGenerator);
 
   @override
-  List<Type> get handlesTypes => [SessionReplayPrivacy];
+  bool accepts(Widget widget) => widget is SessionReplayPrivacy;
 
   @override
   CaptureNodeSemantics? captureSemantics(

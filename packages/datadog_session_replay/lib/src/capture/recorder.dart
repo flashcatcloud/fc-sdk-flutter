@@ -55,13 +55,13 @@ class TreeCapturePrivacy {
 }
 
 abstract interface class ElementRecorder {
-  List<Type> get handlesTypes;
-
   CaptureNodeSemantics? captureSemantics(
     Element element,
     CapturedViewAttributes attributes,
     TreeCapturePrivacy capturePrivacy,
   );
+
+  bool accepts(Widget widget);
 }
 
 extension<T> on List<T> {
@@ -71,10 +71,6 @@ extension<T> on List<T> {
     }
     return null;
   }
-}
-
-abstract interface class GenericElementRecorder implements ElementRecorder {
-  bool accepts(Widget widget);
 }
 
 class KeyGenerator {
@@ -135,8 +131,7 @@ class CaptureResult {
 
 class SessionReplayRecorder {
   final DatadogTimeProvider _timeProvider;
-  final Map<Type, ElementRecorder> _elementRecordersByType = {};
-  final List<GenericElementRecorder> _genericElementRecorder = [];
+  final List<ElementRecorder> _elementRecorders = [];
 
   final Map<Key, Element> _elements = {};
   RUMContext? _currentContext;
@@ -169,7 +164,7 @@ class SessionReplayRecorder {
     this._defaultTreeCapturePrivacy,
     this._touchPrivacyLevel,
   ) {
-    _populateElementRecorderMap([
+    _elementRecorders.addAll([
       ContainerRecorder(keyGenerator),
       TextElementRecorder(keyGenerator),
       EditableTextRecorder(keyGenerator),
@@ -195,7 +190,7 @@ class SessionReplayRecorder {
   })  : _timeProvider = timeProvider,
         _defaultTreeCapturePrivacy = defaultCapturePrivacy,
         _touchPrivacyLevel = touchPrivacyLevel {
-    _populateElementRecorderMap(elementRecorders);
+    _elementRecorders.addAll(elementRecorders);
   }
 
   void updateContext(RUMContext? context) {
@@ -306,19 +301,6 @@ class SessionReplayRecorder {
     }
   }
 
-  void _populateElementRecorderMap(List<ElementRecorder> recorders) {
-    for (final recorder in recorders) {
-      if (recorder is GenericElementRecorder) {
-        // Broad match recorder for widgets with generic parameters
-        _genericElementRecorder.add(recorder);
-        continue;
-      }
-      for (final type in recorder.handlesTypes) {
-        _elementRecordersByType[type] = recorder;
-      }
-    }
-  }
-
   // Certain elements will cause everything under the element to be invisible, such
   // as Visibility or FadeTransition. Ignore these trees.
   bool _shouldIgnoreTree(Element e) {
@@ -374,8 +356,8 @@ class SessionReplayRecorder {
       }
 
       final widget = e.widget;
-      final recorder = _elementRecordersByType[widget.runtimeType] ??
-          _genericElementRecorder.firstWhereOrNull((r) => r.accepts(widget));
+      final recorder =
+          _elementRecorders.firstWhereOrNull((r) => r.accepts(widget));
       var subtreeStrategy = CaptureNodeSubtreeStrategy.record;
       if (recorder != null) {
         final transformMatrix = renderObject.getTransformTo(

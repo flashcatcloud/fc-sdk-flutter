@@ -19,7 +19,7 @@ class TextElementRecorder implements ElementRecorder {
   const TextElementRecorder(this.keyGenerator);
 
   @override
-  List<Type> get handlesTypes => [RichText];
+  bool accepts(Widget widget) => widget is RichText;
 
   @override
   CaptureNodeSemantics? captureSemantics(
