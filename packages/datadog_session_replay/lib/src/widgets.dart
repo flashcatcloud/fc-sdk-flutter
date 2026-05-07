@@ -44,8 +44,11 @@ class _SessionReplayCaptureState extends State<SessionReplayCapture> {
   void initState() {
     super.initState();
 
-    // ignore: invalid_use_of_internal_member
-    pointerRecorder = PointerSnapshotRecorder(widget.rum.timeProvider);
+    pointerRecorder = PointerSnapshotRecorder(
+      // ignore: invalid_use_of_internal_member
+      widget.rum.timeProvider,
+      isCapturing: () => widget.sessionReplay.isCapturing,
+    );
   }
 
   @override
@@ -67,8 +70,6 @@ class _SessionReplayCaptureState extends State<SessionReplayCapture> {
         recorder: pointerRecorder,
         child: PointerRecorder(
           pointerRecorder: pointerRecorder,
-          shouldCapturePointers: () =>
-              widget.sessionReplay.shouldCapturePointers,
           child: builtChild,
         ),
       );
@@ -149,20 +150,14 @@ class SessionReplayPrivacy extends StatelessWidget {
   }
 }
 
-@internal
 @immutable
 class PointerRecorder extends StatelessWidget {
   final PointerSnapshotRecorder pointerRecorder;
-  final bool Function() shouldCapturePointers;
   final Widget child;
-
-  @visibleForTesting
-  static bool alwaysCapture() => true;
 
   const PointerRecorder({
     super.key,
     required this.pointerRecorder,
-    this.shouldCapturePointers = alwaysCapture,
     required this.child,
   });
 
@@ -182,7 +177,6 @@ class PointerRecorder extends StatelessWidget {
       _capturePointerEvent(SRPointerEventType.up, event);
 
   void _capturePointerEvent(SRPointerEventType type, PointerEvent event) {
-    if (!shouldCapturePointers()) return;
     pointerRecorder.capturePointer(
       event.pointer,
       type,

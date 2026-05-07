@@ -38,17 +38,11 @@ class DatadogSessionReplay {
 
   int _errorCounter = 0;
   bool _newFrameBuilt = true;
-  bool _captureGesturesWhenStopped =
-      false; // When true, gestures keeps being recorded when screen is not
   Timer? _captureTimer; // When null is idle, otherwise is active
 
   bool get isCapturing =>
       _captureTimer !=
       null; // Returns true if a session replay recording is happening
-
-  @internal
-  bool get shouldCapturePointers =>
-      _captureTimer != null || _captureGesturesWhenStopped;
 
   @internal
   static Future<DatadogSessionReplay> init(
@@ -91,7 +85,6 @@ class DatadogSessionReplay {
 
   void startRecording() {
     if (_captureTimer != null) return;
-    _captureGesturesWhenStopped = false;
     _startPeriodicCapture();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       // Let capture know that a new element tree is available for capture.
@@ -99,10 +92,9 @@ class DatadogSessionReplay {
     });
   }
 
-  void stopRecording({bool captureGestures = false}) {
+  void stopRecording() {
     _captureTimer?.cancel();
     _captureTimer = null;
-    _captureGesturesWhenStopped = captureGestures;
   }
 
   Future<void> _start() async {
