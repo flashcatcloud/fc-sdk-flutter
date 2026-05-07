@@ -4,9 +4,9 @@
 
 import 'package:flutter/widgets.dart';
 
+import '../../../datadog_session_replay.dart';
 import '../../sr_data_models.dart';
 import '../recorder.dart';
-import '../../../datadog_session_replay.dart';
 
 extension SRTextAlignment on TextAlign {
   SRHorizontalAlignment getSrHorizontalAlignment(TextDirection? textDirection) {

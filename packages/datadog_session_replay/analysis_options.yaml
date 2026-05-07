@@ -11,6 +11,7 @@ analyzer:
 
 linter:
   rules:
+    directives_ordering: true
     prefer_single_quotes: true
     prefer_relative_imports: true
     unawaited_futures: true
