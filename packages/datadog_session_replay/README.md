@@ -50,9 +50,17 @@ final configuration = DatadogConfiguration(
 
 ### Manual start and stop
 
-By default, tree capture begins as soon as Session Replay initializes. To defer capture until you are ready, set `startRecordingImmediately: false` on `DatadogSessionReplayConfiguration`, then call `DatadogSessionReplay.instance!.startRecording()` and `DatadogSessionReplay.instance!.stopRecording()` to toggle the Dart-side capture timer. The background processor isolate stays running while capture is stopped.
+By default, Session Replay starts recording when it initializes. To start recording manually, set `startRecordingImmediately: false` on `DatadogSessionReplayConfiguration`. Then, call `DatadogSessionReplay.instance!.startRecording()` to begin recording and `DatadogSessionReplay.instance!.stopRecording()` to pause it. The background processor isolate stays running while recording is stopped, so resuming is fast.
 
-Calling `stopRecording()` also stops pointer (touch/gesture) capture; both resume on the next `startRecording()` call.
+Calling `stopRecording()` also stops pointer capture (touch and gesture events). Both resume on the next `startRecording()` call.
+
+```dart
+// Begin capturing when the user reaches a screen you want recorded
+DatadogSessionReplay.instance!.startRecording();
+
+// Pause capture (for example, before showing a sensitive screen)
+DatadogSessionReplay.instance!.stopRecording();
+```
 
 Last, add a SessionReplayCapture widget to the root of your Widget tree, above your MaterialApp or similar application widget:
 

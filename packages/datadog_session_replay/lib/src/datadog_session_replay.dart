@@ -40,7 +40,7 @@ class DatadogSessionReplay {
   bool _newFrameBuilt = true;
   Timer? _captureTimer; // When null is idle, otherwise is active
 
-  /// Whether Session Replay is currently capturing tree snapshots.
+  /// Whether Session Replay is recording.
   bool get isCapturing => _captureTimer != null;
 
   @internal
@@ -93,7 +93,7 @@ class DatadogSessionReplay {
     });
   }
 
-  /// Stops periodic Session Replay tree capture. The processor isolate keeps
+  /// Stops periodic Session Replay recording . The processor isolate keeps
   /// running so that [startRecording] can resume without re-initialization.
   void stopRecording() {
     _captureTimer?.cancel();
@@ -108,7 +108,9 @@ class DatadogSessionReplay {
     });
 
     if (success) {
-      await _processor.start();
+      await _processor.start(
+        fontFamilyTransform: _configuration.fontFamilyTransform,
+      );
 
       if (_configuration.startRecordingImmediately) startRecording();
     }

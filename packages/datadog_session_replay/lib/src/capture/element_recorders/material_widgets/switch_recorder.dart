@@ -6,14 +6,14 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 
-import '../cupertino_widgets/cupertino_recording_extensions.dart';
-import 'radio_recorder.dart';
 import '../../../extensions.dart';
 import '../../../sr_data_models.dart';
 import '../../capture_node.dart';
 import '../../recorder.dart';
 import '../../view_tree_snapshot.dart';
+import '../cupertino_widgets/cupertino_recording_extensions.dart';
 import '../recording_extensions.dart';
+import 'radio_recorder.dart';
 
 /// Detects 'Switch' widgets and places a Switch icon
 /// on SessionReplay.
