@@ -3,7 +3,6 @@
 // Copyright 2025-Present Datadog, Inc.
 
 import 'dart:async';
-import 'dart:math' as math;
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
@@ -542,87 +541,18 @@ void main() {
     });
   });
 
-  testWidgets(
-      'large images build placeholder wireframe when downscaling disabled', (
-    tester,
-  ) async {
-    // Given
-    final keyGenerator = KeyGenerator();
-    recorder = SessionReplayRecorder.withCustomRecorders(
-      [
-        ImageRecorder(keyGenerator, imageDownscaling: ImageDownscaling.disabled)
-      ],
-      defaultCapturePrivacy: TreeCapturePrivacy(
-        textAndInputPrivacyLevel: TextAndInputPrivacyLevel.maskSensitiveInputs,
-        imagePrivacyLevel: ImagePrivacyLevel.maskNone,
-      ),
-      touchPrivacyLevel: TouchPrivacyLevel.show,
-    );
-    recorder.updateContext(context);
+  group('ImageDownscaling.disabled: decoded pixel budget vs on-screen bounds',
+      () {
+    const fixtureMaxPixelBudget = defaultMaxImagePixelBudget;
 
-    final x = randomDouble(min: 10, max: 50);
-    final y = randomDouble(min: 10, max: 50);
-    final width = 900;
-    final height = 900;
-
-    ui.Image? testImage = await tester.runAsync(() {
-      return createTestImage(width: width.round(), height: height.round());
-    });
-
-    final imageProvider = TestImageProvider(testImage!);
-    final tree = MaterialApp(
-      home: SimpleTestCapture(
-        key: Key('key'),
-        recorder: recorder,
-        child: Stack(
-          children: [
-            Positioned(
-              top: y,
-              left: x,
-              width: width.toDouble(),
-              height: height.toDouble(),
-              child: Image(image: imageProvider),
-            ),
-          ],
-        ),
-      ),
-    );
-    await tester.pumpWidget(tree);
-    imageProvider.complete();
-    await tester.pump();
-
-    // When
-    CaptureResult? capture;
-    await tester.runAsync(() async {
-      capture = await recorder.performCapture();
-    });
-
-    // Then
-    expect(capture!.viewTreeSnapshot.nodes.length, 1);
-
-    final capturedImageNode = capture!.viewTreeSnapshot.nodes.last;
-    final builtWireframes = capturedImageNode.buildWireframes();
-    expect(builtWireframes.length, 1);
-    final wireframe = builtWireframes.first as SRPlaceholderWireframe;
-
-    expect(wireframe.x, x.round());
-    expect(wireframe.y, y.round());
-    expect(wireframe.width, width.round());
-    expect(wireframe.height, height.round());
-    expect(wireframe.label, 'Large Image');
-
-    testImage.dispose();
-  });
-
-  testWidgets(
-    'large native image painted smaller than native yields Large Image from _captureImage when downscaling disabled',
-    (tester) async {
+    void useDisabledRecorder() {
       final keyGenerator = KeyGenerator();
       recorder = SessionReplayRecorder.withCustomRecorders(
         [
           ImageRecorder(
             keyGenerator,
             imageDownscaling: ImageDownscaling.disabled,
+            maxImagePixelBudget: fixtureMaxPixelBudget,
           ),
         ],
         defaultCapturePrivacy: TreeCapturePrivacy(
@@ -633,65 +563,251 @@ void main() {
         touchPrivacyLevel: TouchPrivacyLevel.show,
       );
       recorder.updateContext(context);
+    }
 
-      final dpr = tester.view.devicePixelRatio;
-      const nativeSide = 799;
-      final paintedSide = math.max(
-        125.0,
-        (nativeSide - 2) / dpr,
-      );
-      expect(
-        paintedSide * dpr,
-        lessThan(nativeSide.toDouble()),
-        reason:
-            'Rendered physical size must stay below native ($nativeSide) so '
-            'downscaleSizeTarget requests scaling; check DPR vs label min width',
-      );
+    testWidgets(
+      'below budget decoded, painted smaller: uploads native pixel dimensions',
+      (WidgetTester tester) async {
+        when(() => platform.saveImageForProcessing(any(), any(), any(), any()))
+            .thenAnswer((_) => Future.value());
+        final randomId = randomString();
+        when(() => platform.resourceIdForKey(any())).thenReturn(randomId);
+        useDisabledRecorder();
 
-      final x = randomDouble(min: 10, max: 50);
-      final y = randomDouble(min: 10, max: 50);
+        const nativeSide = 200;
+        final dpr = tester.view.devicePixelRatio;
+        final logicalPaint = (nativeSide - 2) / dpr;
+        expect((logicalPaint * dpr).ceil(), lessThan(nativeSide));
 
-      ui.Image? img = await tester.runAsync(() {
-        return createTestImage(width: nativeSide, height: nativeSide);
-      });
+        final x = randomDouble(min: 10, max: 50);
+        final y = randomDouble(min: 10, max: 50);
+        ui.Image? img = await tester.runAsync(() {
+          return createTestImage(width: nativeSide, height: nativeSide);
+        });
 
-      final imageProvider = TestImageProvider(img!);
-      final tree = MaterialApp(
-        home: SimpleTestCapture(
-          key: Key('key'),
-          recorder: recorder,
-          child: Stack(
-            children: [
-              Positioned(
-                top: y,
-                left: x,
-                width: paintedSide,
-                height: paintedSide,
-                child: Image(image: imageProvider),
-              ),
-            ],
+        final imageProvider = TestImageProvider(img!);
+        final tree = MaterialApp(
+          home: SimpleTestCapture(
+            key: Key('key'),
+            recorder: recorder,
+            child: Stack(
+              children: [
+                Positioned(
+                  top: y,
+                  left: x,
+                  width: logicalPaint,
+                  height: logicalPaint,
+                  child: Image(image: imageProvider),
+                ),
+              ],
+            ),
           ),
-        ),
-      );
-      await tester.pumpWidget(tree);
-      imageProvider.complete();
-      await tester.pump();
+        );
+        await tester.pumpWidget(tree);
+        imageProvider.complete();
+        await tester.pump();
 
-      CaptureResult? capture;
-      await tester.runAsync(() async {
-        capture = await recorder.performCapture();
-      });
+        CaptureResult? capture;
+        await tester.runAsync(() async {
+          capture = await recorder.performCapture();
+        });
 
-      expect(capture!.viewTreeSnapshot.nodes.length, 1);
-      final wireframe = capture!.viewTreeSnapshot.nodes.last
-          .buildWireframes()
-          .first as SRPlaceholderWireframe;
-      expect(wireframe.label, 'Large Image');
-      verifyZeroInteractions(platform);
+        expect(capture!.viewTreeSnapshot.nodes.length, 1);
+        final node = capture!.viewTreeSnapshot.nodes.last as ResourceImageNode;
+        final resourceKey = verify(
+          () => platform.saveImageForProcessing(
+            captureAny(),
+            nativeSide,
+            nativeSide,
+            any(),
+          ),
+        ).captured.first as int;
+        expect(node.resourceKey, resourceKey);
+        final wireframe = node.buildWireframes().first as SRImageWireframe;
+        verify(() => platform.resourceIdForKey(resourceKey));
+        expect(wireframe.resourceId, randomId);
 
-      img.dispose();
-    },
-  );
+        img.dispose();
+      },
+    );
+
+    testWidgets(
+      'below budget decoded, painted larger: uploads native pixel dimensions',
+      (WidgetTester tester) async {
+        when(() => platform.saveImageForProcessing(any(), any(), any(), any()))
+            .thenAnswer((_) => Future.value());
+        final randomId = randomString();
+        when(() => platform.resourceIdForKey(any())).thenReturn(randomId);
+        useDisabledRecorder();
+
+        const nativeSide = 100;
+        final x = randomDouble(min: 10, max: 50);
+        final y = randomDouble(min: 10, max: 50);
+        ui.Image? img = await tester.runAsync(() {
+          return createTestImage(width: nativeSide, height: nativeSide);
+        });
+
+        const layoutSide = 400.0;
+
+        final imageProvider = TestImageProvider(img!);
+        final tree = MaterialApp(
+          home: SimpleTestCapture(
+            key: Key('key'),
+            recorder: recorder,
+            child: Stack(
+              children: [
+                Positioned(
+                  top: y,
+                  left: x,
+                  width: layoutSide,
+                  height: layoutSide,
+                  child: Image(image: imageProvider),
+                ),
+              ],
+            ),
+          ),
+        );
+        await tester.pumpWidget(tree);
+        imageProvider.complete();
+        await tester.pump();
+
+        CaptureResult? capture;
+        await tester.runAsync(() async {
+          capture = await recorder.performCapture();
+        });
+
+        expect(capture!.viewTreeSnapshot.nodes.length, 1);
+        final node = capture!.viewTreeSnapshot.nodes.last as ResourceImageNode;
+        verify(
+          () => platform.saveImageForProcessing(
+            captureAny(),
+            nativeSide,
+            nativeSide,
+            any(),
+          ),
+        );
+        final wireframe = node.buildWireframes().first as SRImageWireframe;
+        verify(() => platform.resourceIdForKey(node.resourceKey));
+        expect(wireframe.resourceId, randomId);
+
+        img.dispose();
+      },
+    );
+
+    testWidgets(
+      'over budget decoded, painted smaller: '
+      'Large Image placeholder, no upload',
+      (WidgetTester tester) async {
+        useDisabledRecorder();
+
+        const side = 900;
+
+        final x = randomDouble(min: 10, max: 50);
+        final y = randomDouble(min: 10, max: 50);
+        ui.Image? img = await tester.runAsync(() {
+          return createTestImage(width: side, height: side);
+        });
+
+        final imageProvider = TestImageProvider(img!);
+        final tree = MaterialApp(
+          home: SimpleTestCapture(
+            key: Key('key'),
+            recorder: recorder,
+            child: Stack(
+              children: [
+                Positioned(
+                  top: y,
+                  left: x,
+                  width: 100,
+                  height: 40,
+                  child: Image(image: imageProvider),
+                ),
+              ],
+            ),
+          ),
+        );
+        await tester.pumpWidget(tree);
+        imageProvider.complete();
+        await tester.pump();
+
+        CaptureResult? capture;
+        await tester.runAsync(() async {
+          capture = await recorder.performCapture();
+        });
+
+        expect(capture!.viewTreeSnapshot.nodes.length, 1);
+        final wireframe = capture!.viewTreeSnapshot.nodes.last
+            .buildWireframes()
+            .first as SRPlaceholderWireframe;
+        expect(wireframe.label, isNull);
+        verifyNever(
+          () => platform.saveImageForProcessing(any(), any(), any(), any()),
+        );
+
+        img.dispose();
+      },
+    );
+
+    testWidgets(
+      'over budget decoded, painted at native logical size: '
+      'Large Image placeholder, no upload',
+      (WidgetTester tester) async {
+        useDisabledRecorder();
+
+        final x = randomDouble(min: 10, max: 50);
+        final y = randomDouble(min: 10, max: 50);
+        const width = 900;
+        const height = 900;
+
+        ui.Image? big = await tester.runAsync(() {
+          return createTestImage(width: width, height: height);
+        });
+
+        final imageProvider = TestImageProvider(big!);
+        final tree = MaterialApp(
+          home: SimpleTestCapture(
+            key: Key('key'),
+            recorder: recorder,
+            child: Stack(
+              children: [
+                Positioned(
+                  top: y,
+                  left: x,
+                  width: width.toDouble(),
+                  height: height.toDouble(),
+                  child: Image(image: imageProvider),
+                ),
+              ],
+            ),
+          ),
+        );
+        await tester.pumpWidget(tree);
+        imageProvider.complete();
+        await tester.pump();
+
+        CaptureResult? capture;
+        await tester.runAsync(() async {
+          capture = await recorder.performCapture();
+        });
+
+        expect(capture!.viewTreeSnapshot.nodes.length, 1);
+        final wireframe = capture!.viewTreeSnapshot.nodes.last
+            .buildWireframes()
+            .first as SRPlaceholderWireframe;
+
+        expect(wireframe.x, x.round());
+        expect(wireframe.y, y.round());
+        expect(wireframe.width, width);
+        expect(wireframe.height, height);
+        expect(wireframe.label, 'Large Image');
+        verifyNever(
+          () => platform.saveImageForProcessing(any(), any(), any(), any()),
+        );
+
+        big.dispose();
+      },
+    );
+  });
 
   testWidgets(
     'downscale throws non-timeout shows Failed Downscale placeholder',
@@ -814,69 +930,6 @@ void main() {
       ).called(1);
     },
   );
-
-  testWidgets('captured image below width has no label', (tester) async {
-    // Given — large image with downscaling disabled so we still get a placeholder.
-    final keyGenerator = KeyGenerator();
-    recorder = SessionReplayRecorder.withCustomRecorders(
-      [
-        ImageRecorder(keyGenerator, imageDownscaling: ImageDownscaling.disabled)
-      ],
-      defaultCapturePrivacy: TreeCapturePrivacy(
-        textAndInputPrivacyLevel: TextAndInputPrivacyLevel.maskSensitiveInputs,
-        imagePrivacyLevel: ImagePrivacyLevel.maskNone,
-      ),
-      touchPrivacyLevel: TouchPrivacyLevel.show,
-    );
-    recorder.updateContext(context);
-
-    final x = randomDouble(min: 10, max: 50);
-    final y = randomDouble(min: 10, max: 50);
-    final width = 900;
-    final height = 900;
-
-    ui.Image? testImage = await tester.runAsync(() {
-      return createTestImage(width: width.round(), height: height.round());
-    });
-
-    final imageProvider = TestImageProvider(testImage!);
-    final tree = MaterialApp(
-      home: SimpleTestCapture(
-        key: Key('key'),
-        recorder: recorder,
-        child: Stack(
-          children: [
-            Positioned(
-              top: y,
-              left: x,
-              width: 100.0,
-              height: 40.0,
-              child: Image(image: imageProvider),
-            ),
-          ],
-        ),
-      ),
-    );
-    await tester.pumpWidget(tree);
-    imageProvider.complete();
-    await tester.pump();
-
-    // When
-    CaptureResult? capture;
-    await tester.runAsync(() async {
-      capture = await recorder.performCapture();
-    });
-
-    // Then
-    expect(capture!.viewTreeSnapshot.nodes.length, 1);
-
-    final capturedImageNode = capture!.viewTreeSnapshot.nodes.last;
-    final builtWireframes = capturedImageNode.buildWireframes();
-    expect(builtWireframes.length, 1);
-    final wireframe = builtWireframes.first as SRPlaceholderWireframe;
-
-    expect(wireframe.label, isNull);
-  });
 
   /// Masking tests can avoid using the full recorder because we don't
   /// need to test widget positioning

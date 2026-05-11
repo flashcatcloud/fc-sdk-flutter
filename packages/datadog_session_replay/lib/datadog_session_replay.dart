@@ -108,17 +108,11 @@ class FontFamilyTransformConfig {
   });
 }
 
-/// Controls Dart-side downscaling of captured images before they are sent to
-/// the native resource pipeline.
 enum ImageDownscaling {
-  /// Default behavior: images larger than the pixel budget are replaced by
-  /// a "Large Image" placeholder wireframe.
+  /// Oversized images use a "Large Image" placeholder instead of downsampling.
   disabled,
 
-  /// Downscale images on the raster thread when needed so they fit both the
-  /// on-screen rendered size (logical bounds × device pixel ratio) and the
-  /// pixel budget. If raster downscale fails for an oversized image, a
-  /// "Failed Downscale" placeholder is shown instead.
+  /// Downscale before upload to fit rendered size and [maxImagePixelBudget].
   enabled,
 }
 
@@ -162,22 +156,14 @@ class DatadogSessionReplayConfiguration {
   /// use [FontFamilyStrategy.smart] for web-friendly normalization.
   FontFamilyTransformConfig fontFamilyTransform;
 
-  /// When [ImageDownscaling.enabled], images are downscaled in Dart when they
-  /// exceed the on-screen rendered size or [maxImagePixelBudget] so they can
-  /// still be uploaded. If downscale fails for an oversized image, a
-  /// "Failed Downscale" placeholder is shown.
-  ///
-  /// When [ImageDownscaling.disabled] (default), images above
-  /// [maxImagePixelBudget] use the legacy placeholder behavior.
+  /// When [ImageDownscaling.enabled], downscale in Dart to fit the viewport and
+  /// [maxImagePixelBudget]. When [ImageDownscaling.disabled], oversized images
+  /// use a "Large Image" placeholder ([maxImagePixelBudget] still applies).
   ImageDownscaling imageDownscaling;
 
-  /// Maximum total pixel count (width × height) for captured images.
-  ///
-  /// Images exceeding this budget are either replaced by a placeholder
-  /// ([ImageDownscaling.disabled]) or downscaled to fit
-  /// ([ImageDownscaling.enabled]).
-  ///
-  /// Defaults to 640 000 (~800×800).
+  /// Pixel budget (width x height). Overages become a placeholder when
+  /// [imageDownscaling] is [ImageDownscaling.disabled], or are downscaled when
+  /// [ImageDownscaling.enabled]. Default ~800x800 (`defaultMaxImagePixelBudget`).
   int maxImagePixelBudget;
 
   DatadogSessionReplayConfiguration({

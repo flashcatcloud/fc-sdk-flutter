@@ -20,7 +20,7 @@ import '../view_tree_snapshot.dart';
 // overlapping other content in the replay.
 const int _labelMinWidth = 125;
 
-// Default pixel budget (~800×800, raw RGBA ≈ 2 MB).
+// ~800x800 decoded pixels; raw RGBA ~2 MB.
 const int defaultMaxImagePixelBudget = 640000;
 
 @visibleForTesting
@@ -38,12 +38,7 @@ typedef DownscaleFunction = Future<ui.Image> Function(
   int destHeight,
 );
 
-/// Tracks repeated downscale failures (timeouts or raster errors) for one
-/// [ImageRecorder] instance.
-///
-/// After [maxConsecutiveFailures] failures, [isTripped] becomes true and stays
-/// true: there is no time-based or automatic recovery. Downscaling stays off
-/// until the app creates a new recorder (e.g. new SDK session / lifecycle).
+/// Trips after consecutive downscale failures; no automatic recovery.
 @visibleForTesting
 class DownscaleCircuitBreaker {
   static const int maxConsecutiveFailures = 3;
@@ -51,7 +46,6 @@ class DownscaleCircuitBreaker {
   int _consecutiveFailures = 0;
   bool _tripped = false;
 
-  /// Whether downscaling has been permanently disabled for this breaker.
   bool get isTripped => _tripped;
 
   void recordSuccess() {
@@ -211,7 +205,12 @@ class ImageRecorder implements ElementRecorder {
     }
 
     if (imageDownscaling == ImageDownscaling.disabled) {
-      return _placeholder(elementId, attributes, 'Large Image');
+      return _persistImageAsResourceNode(
+        elementId,
+        attributes,
+        sourceImageForKeyGen: image,
+        encodingImageForByteData: image,
+      );
     }
 
     if (_downscalingCircuitBreaker.isTripped) {
@@ -315,10 +314,7 @@ class ImageRecorder implements ElementRecorder {
       return (DownscalingNeed.none, sourceWidth, sourceHeight);
     }
 
-    // Fit source pixels to how the image is actually painted: logical
-    // layout size × DPR gives the physical render box. Uniform scale
-    // (min of width/height ratios) keeps aspect ratio; cap at 1.0 avoids
-    // upscaling past native resolution.
+    // Shrink to rendered physical size; cap at 1.0 (no upscale beyond native).
     final fitToBoundsScale = math.min(
       math.min(renderedPhysicalWidth / sourceWidth,
           renderedPhysicalHeight / sourceHeight),
@@ -330,19 +326,14 @@ class ImageRecorder implements ElementRecorder {
         math.max(1, (sourceHeight * fitToBoundsScale).round());
     final fitToBoundsPixels = fitToBoundsWidth * fitToBoundsHeight;
     if (fitToBoundsPixels <= pixelBudget) {
-      // originally above budget, fit to bounds causes it to be below budget
       return (DownscalingNeed.fitToBounds, fitToBoundsWidth, fitToBoundsHeight);
     }
 
-    // Scale both dimensions uniformly to meet pixelBudget. Because
-    // pixels = w × h, scaling each by √(budget/pixels) yields the target
-    // area: (w×s) × (h×s) = w×h×s² = budget.
     final downscaling = math.sqrt(pixelBudget / fitToBoundsPixels);
     final downscaledWidth =
         math.max(1, (fitToBoundsWidth * downscaling).floor());
     final downscaledHeight =
         math.max(1, (fitToBoundsHeight * downscaling).floor());
-    // originally above budget, scaling both dimensions uniformly down so it is in budget
     return (DownscalingNeed.downscaling, downscaledWidth, downscaledHeight);
   }
 
