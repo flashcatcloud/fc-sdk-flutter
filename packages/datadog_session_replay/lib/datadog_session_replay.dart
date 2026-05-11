@@ -145,7 +145,7 @@ class DatadogSessionReplayConfiguration {
   ///
   /// Defaults to `true`.
   bool startRecordingImmediately;
-  
+
   /// Rewrites captured font family strings into web-compatible CSS stacks in
   /// the processor isolate before snapshots are serialized.
   ///
