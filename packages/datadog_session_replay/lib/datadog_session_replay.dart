@@ -109,10 +109,20 @@ class FontFamilyTransformConfig {
 }
 
 enum ImageDownscaling {
-  /// Oversized images use a "Large Image" placeholder instead of downsampling.
+  /// No Dart-side resizing of decoded images before upload.
+  ///
+  /// If decoded width × height exceeds the configured
+  /// [DatadogSessionReplayConfiguration.maxImagePixelBudget], capture uses a
+  /// "Large Image" placeholder instead of uploading pixels.
+  ///
+  /// Decoded images within that budget are uploaded at native resolution. They
+  /// are **not** shrunk to match on-screen painted size; use
+  /// [ImageDownscaling.enabled] for that.
   disabled,
 
-  /// Downscale before upload to fit rendered size and [maxImagePixelBudget].
+  /// Downscale decoded images in Dart when needed so they fit the painted bounds
+  /// (logical size × device pixel ratio) and
+  /// [DatadogSessionReplayConfiguration.maxImagePixelBudget].
   enabled,
 }
 
@@ -156,14 +166,24 @@ class DatadogSessionReplayConfiguration {
   /// use [FontFamilyStrategy.smart] for web-friendly normalization.
   FontFamilyTransformConfig fontFamilyTransform;
 
-  /// When [ImageDownscaling.enabled], downscale in Dart to fit the viewport and
-  /// [maxImagePixelBudget]. When [ImageDownscaling.disabled], oversized images
-  /// use a "Large Image" placeholder ([maxImagePixelBudget] still applies).
+  /// Whether to downscale decoded images before upload.
+  ///
+  /// [ImageDownscaling.enabled] scales images to fit painted size and
+  /// [maxImagePixelBudget]. [ImageDownscaling.disabled] (the default) uploads
+  /// decoded pixels at native resolution when width × height is within
+  /// [maxImagePixelBudget]; if over budget, uses a "Large Image" placeholder.
   ImageDownscaling imageDownscaling;
 
-  /// Pixel budget (width x height). Overages become a placeholder when
-  /// [imageDownscaling] is [ImageDownscaling.disabled], or are downscaled when
-  /// [ImageDownscaling.enabled]. Default ~800x800 (`defaultMaxImagePixelBudget`).
+  /// Maximum decoded width × height (pixels) for image uploads.
+  ///
+  /// When [imageDownscaling] is [ImageDownscaling.disabled], decoded images
+  /// above this value use a "Large Image" placeholder; at or below it, native
+  /// decoded pixels are uploaded without resizing to on-screen painted size.
+  ///
+  /// When [imageDownscaling] is [ImageDownscaling.enabled], images are
+  /// downscaled as needed to meet this budget and the painted bounds.
+  ///
+  /// Defaults to approximately 800×800 decoded pixels.
   int maxImagePixelBudget;
 
   DatadogSessionReplayConfiguration({
