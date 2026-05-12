@@ -244,7 +244,7 @@ void main() {
           captureHeaders: ['x-emoji'],
         );
         // Each emoji is 4 bytes in UTF-8. Fill to just over 128 bytes.
-        final emoji = '\u{1F600}'; // 4 bytes
+        final emoji = '😀'; // 4 bytes
         final value = emoji * 33; // 132 bytes
         final headers = <String, List<String>>{
           'x-emoji': [value],
@@ -294,6 +294,52 @@ void main() {
         }
         expect(totalBytes, lessThanOrEqualTo(2048));
         expect(result.length, lessThan(30));
+      });
+
+      test(
+          'skips an oversized header but keeps capturing smaller subsequent ones',
+          () {
+        // Burn most of the 2048-byte budget with 16 fillers (~122 bytes each
+        // ≈ 1952 bytes), leaving ~96 bytes free. A subsequent "medium" header
+        // (~117 bytes) does not fit and must be skipped; a "tiny" header
+        // listed after it (~7 bytes) must still be captured. This exercises
+        // continue-vs-break on the byte-budget check.
+        final fillers =
+            List.generate(16, (i) => 'x-fill-${i.toString().padLeft(2, '0')}');
+        final extractor = ResourceHeadersExtractor(
+          includeDefaults: false,
+          captureHeaders: [...fillers, 'x-medium-overflow', 'x-tiny'],
+        );
+        final headers = <String, List<String>>{
+          for (final name in fillers) name: ['v' * 113],
+          'x-medium-overflow': ['m' * 100],
+          'x-tiny': ['v'],
+        };
+        final result = extractor.extractRequestHeaders(headers);
+        expect(result.containsKey('x-medium-overflow'), isFalse);
+        expect(result['x-tiny'], 'v');
+      });
+
+      test(
+          'preserves default response headers when many custom headers are listed first in the input',
+          () {
+        // When many large custom headers come before defaults in the input
+        // map order, defaults must still survive the byte budget.
+        final customNames = List.generate(
+            30, (i) => 'x-custom-${i.toString().padLeft(2, '0')}');
+        final extractor = ResourceHeadersExtractor(
+          captureHeaders: customNames,
+        );
+        // Each custom value is 100 bytes — 30 customs alone would blow the
+        // 2KB budget if iterated in input order before content-type.
+        final headers = <String, List<String>>{
+          for (final name in customNames) name: ['x' * 100],
+          'content-type': ['text/html'],
+          'etag': ['"abc"'],
+        };
+        final result = extractor.extractResponseHeaders(headers);
+        expect(result['content-type'], 'text/html');
+        expect(result['etag'], '"abc"');
       });
     });
 

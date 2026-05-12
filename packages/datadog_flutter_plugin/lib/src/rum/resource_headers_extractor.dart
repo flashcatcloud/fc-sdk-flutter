@@ -77,8 +77,8 @@ class ResourceHeadersExtractor {
   /// Additional header names to capture (case-insensitive).
   final List<String> captureHeaders;
 
-  final List<String> _requestHeaders;
-  final List<String> _responseHeaders;
+  final Set<String> _requestHeaders;
+  final Set<String> _responseHeaders;
 
   /// Creates a header extractor.
   ///
@@ -88,11 +88,11 @@ class ResourceHeadersExtractor {
   ResourceHeadersExtractor({
     this.includeDefaults = true,
     this.captureHeaders = const [],
-  })  : _requestHeaders = _buildHeaderList(
+  })  : _requestHeaders = _buildHeaderSet(
           includeDefaults ? _defaultRequestHeaders : const [],
           captureHeaders,
         ),
-        _responseHeaders = _buildHeaderList(
+        _responseHeaders = _buildHeaderSet(
           includeDefaults ? _defaultResponseHeaders : const [],
           captureHeaders,
         );
@@ -139,24 +139,25 @@ class ResourceHeadersExtractor {
 
   static Map<String, String> _extractHeaders(
     Map<String, List<String>> headers,
-    List<String> allowedHeaders,
+    Set<String> allowedHeaders,
   ) {
-    if (allowedHeaders.isEmpty) return const {};
+    if (headers.isEmpty || allowedHeaders.isEmpty) return const {};
 
-    final allowedSet = allowedHeaders.map((h) => h.toLowerCase()).toSet();
+    final inputByLowerName = <String, List<String>>{};
+    for (final entry in headers.entries) {
+      inputByLowerName[entry.key.toLowerCase()] = entry.value;
+    }
 
     final result = <String, String>{};
     var totalBytes = 0;
 
-    for (final entry in headers.entries) {
+    for (final lowerName in allowedHeaders) {
       if (result.length >= _maxHeadersCount) break;
-      if (totalBytes >= _headerSizeLimitBytes) break;
 
-      final lowerName = entry.key.toLowerCase();
-      if (!allowedSet.contains(lowerName)) continue;
-      if (_forbiddenHeaderPattern.hasMatch(lowerName)) continue;
+      final values = inputByLowerName[lowerName];
+      if (values == null) continue;
 
-      final joinedValue = entry.value.join(', ');
+      final joinedValue = values.join(', ');
       final truncatedValue = _truncateToUtf8ByteSize(
         joinedValue,
         _maxHeaderValueBytes,
@@ -166,7 +167,8 @@ class ResourceHeadersExtractor {
       final valueBytes = utf8.encode(truncatedValue).length;
       final entrySize = nameBytes + valueBytes;
 
-      if (totalBytes + entrySize > _headerSizeLimitBytes) break;
+      // Skip this header but keep trying smaller ones — matches dd-sdk-android.
+      if (totalBytes + entrySize > _headerSizeLimitBytes) continue;
 
       result[lowerName] = truncatedValue;
       totalBytes += entrySize;
@@ -175,19 +177,23 @@ class ResourceHeadersExtractor {
     return result;
   }
 
-  /// Builds a deduplicated, lowercase list of header names from defaults and
-  /// custom headers.
-  static List<String> _buildHeaderList(
+  /// Builds a deduplicated, lowercase set of header names from defaults and
+  /// custom headers. Headers matching [_forbiddenHeaderPattern] are filtered
+  /// out at build time so the security filter does not run per-call.
+  static Set<String> _buildHeaderSet(
     List<String> defaults,
     List<String> custom,
   ) {
-    final seen = <String>{};
-    final result = <String>[];
-    for (final h in [...defaults, ...custom]) {
+    final result = <String>{};
+    for (final h in defaults) {
       final lower = h.toLowerCase();
-      if (seen.add(lower)) {
-        result.add(lower);
-      }
+      if (_forbiddenHeaderPattern.hasMatch(lower)) continue;
+      result.add(lower);
+    }
+    for (final h in custom) {
+      final lower = h.toLowerCase();
+      if (_forbiddenHeaderPattern.hasMatch(lower)) continue;
+      result.add(lower);
     }
     return result;
   }

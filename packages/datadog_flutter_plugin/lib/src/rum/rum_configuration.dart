@@ -226,9 +226,6 @@ class DatadogRumConfiguration {
   /// tracking clients ([DatadogTrackingHttpClient], [DatadogClient], and
   /// [DatadogDioInterceptor]).
   ///
-  /// Requires native SDK 3.8.0+ on both Android and iOS for headers to appear
-  /// in events.
-  ///
   /// Defaults to `null` (disabled).
   ResourceHeadersExtractor? trackResourceHeaders;
 
