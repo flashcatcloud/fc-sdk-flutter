@@ -22,6 +22,7 @@ import 'element_recorders/editable_text_recorder.dart';
 import 'element_recorders/image_recorder.dart';
 import 'element_recorders/material_widgets/checkbox_recorder.dart';
 import 'element_recorders/material_widgets/radio_recorder.dart';
+import 'element_recorders/material_widgets/slider_recorder.dart';
 import 'element_recorders/material_widgets/switch_recorder.dart';
 import 'element_recorders/privacy_recorder.dart';
 import 'element_recorders/text_recorder.dart';
@@ -178,6 +179,7 @@ class SessionReplayRecorder {
       CupertinoRadioRecorder(keyGenerator),
       SwitchRecorder(keyGenerator),
       CupertinoSwitchRecorder(keyGenerator),
+      SliderRecorder(keyGenerator),
     ]);
   }
 

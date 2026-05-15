@@ -12,7 +12,7 @@ import '../../../sr_data_models.dart';
 import '../../capture_node.dart';
 import '../../recorder.dart';
 import '../../view_tree_snapshot.dart';
-import '../recording_extensions.dart';
+//import '../recording_extensions.dart';
 
 enum _SliderThumbStyle { round, handle }
 
@@ -32,6 +32,7 @@ typedef _SliderGeometry = ({
   _SliderTrackSegmentGeometry inactiveTrack,
   _SliderTrackSegmentGeometry activeTrack,
   _SliderTrackSegmentGeometry? secondaryActiveTrack,
+  Rect? gap,
 });
 
 /// Detects 'Slider' widgets and places an slider
@@ -63,49 +64,65 @@ class SliderRecorder implements ElementRecorder {
     if (widget is! Slider) return null;
 
     // Resolves for privacy settings
-    final bool isMasked = capturePrivacy.shouldMaskInputs;
+    //final bool isMasked = capturePrivacy.shouldMaskInputs;
 
-    // Resolve slider theme for colors
+    // Resolve slider theme. SliderTheme.of honors a local SliderTheme widget
+    // (an InheritedWidget); ThemeData.sliderTheme is only the global default
+    // and misses widget-tree overrides like SliderTheme(data: ..., child: ...).
     final ThemeData theme = Theme.of(element);
+    final SliderThemeData sliderTheme = SliderTheme.of(element);
 
-    final bool year2023 =
-        widget.year2023 ?? theme.sliderTheme.year2023 ?? true;
+    final bool year2023 = switch (theme.useMaterial3) {
+      true => widget.year2023 ?? sliderTheme.year2023 ?? true,
+      false => false,
+    };
 
     final isEnabled = widget.onChanged != null;
 
     final Color activeColor = _getActiveColor(
-      widget: widget, 
-      isEnabled: isEnabled, 
-      theme: theme, 
-      year2023: year2023
+      widget: widget,
+      isEnabled: isEnabled,
+      theme: theme,
+      sliderTheme: sliderTheme,
+      year2023: year2023,
     );
     final Color inactiveColor = _getInactiveColor(
       widget: widget,
       isEnabled: isEnabled,
       theme: theme,
-      year2023: year2023
+      sliderTheme: sliderTheme,
+      year2023: year2023,
     );
     final Color secondaryActiveColor = _getSecondaryActiveColor(
       widget: widget,
       isEnabled: isEnabled,
       theme: theme,
-      year2023: year2023
+      sliderTheme: sliderTheme,
+      year2023: year2023,
     );
     final Color thumbColor = _getThumbColor(
       widget: widget,
       isEnabled: isEnabled,
       theme: theme,
-      year2023: year2023
+      sliderTheme: sliderTheme,
+      year2023: year2023,
     );
 
     final _SliderGeometry geometry = _getSliderGeometry(
       widget: widget,
       theme: theme,
+      sliderTheme: sliderTheme,
       year2023: year2023,
       bounds: attributes.paintBounds,
       scaleX: attributes.scaleX,
       scaleY: attributes.scaleY,
     );
+
+    // Only walk the tree for a background color when we actually need to fake
+    // the gap (M3-2024 / year2023 == false). Round thumbs cover the seam
+    // themselves, so no overpaint is needed.
+    final Color? gapColor =
+        geometry.gap != null ? _findBackgroundColor(element, theme) : null;
 
     final inactiveTrackKey =
         keyGenerator.keyForElement(element, wireframeId: 0);
@@ -113,7 +130,9 @@ class SliderRecorder implements ElementRecorder {
         keyGenerator.keyForElement(element, wireframeId: 1);
     final activeTrackKey =
         keyGenerator.keyForElement(element, wireframeId: 2);
-    final thumbKey = 
+    final gapKey =
+        keyGenerator.keyForElement(element, wireframeId: 4);
+    final thumbKey =
         keyGenerator.keyForElement(element, wireframeId: 3);
 
     final node = SliderNode(
@@ -121,14 +140,17 @@ class SliderRecorder implements ElementRecorder {
       inactiveTrackWireframeId: inactiveTrackKey,
       secondaryActiveTrackWireframeId: secondaryActiveTrackKey,
       activeTrackWireframeId: activeTrackKey,
+      gapWireframeId: gapKey,
       thumbWireframeId: thumbKey,
       inactiveTrackRect: geometry.inactiveTrack.rect,
       activeTrackRect: geometry.activeTrack.rect,
       secondaryActiveTrackRect: geometry.secondaryActiveTrack?.rect,
+      gapRect: geometry.gap,
       thumbRect: geometry.thumb.rect,
       activeColor: activeColor,
       inactiveColor: inactiveColor,
       secondaryActiveColor: secondaryActiveColor,
+      gapColor: gapColor,
       thumbColor: thumbColor,
     );
 
@@ -143,10 +165,11 @@ class SliderRecorder implements ElementRecorder {
     required Slider widget,
     required bool isEnabled,
     required ThemeData theme,
+    required SliderThemeData sliderTheme,
     required bool year2023,
   }) {
-    if (isEnabled) return widget.activeColor ?? theme.sliderTheme.activeTrackColor ?? theme.colorScheme.primary;
-    Color? disabledColor = theme.sliderTheme.disabledActiveTrackColor;
+    if (isEnabled) return widget.activeColor ?? sliderTheme.activeTrackColor ?? theme.colorScheme.primary;
+    Color? disabledColor = sliderTheme.disabledActiveTrackColor;
     if (disabledColor != null) return disabledColor;
     if (theme.useMaterial3) return theme.colorScheme.onSurface.withValues(alpha: 0.38);
     return theme.colorScheme.onSurface.withValues(alpha: 0.32);
@@ -156,10 +179,11 @@ class SliderRecorder implements ElementRecorder {
     required Slider widget,
     required bool isEnabled,
     required ThemeData theme,
+    required SliderThemeData sliderTheme,
     required bool year2023,
   }) {
     if (isEnabled) {
-      Color? inactiveColor = widget.inactiveColor ?? theme.sliderTheme.inactiveTrackColor;
+      Color? inactiveColor = widget.inactiveColor ?? sliderTheme.inactiveTrackColor;
       if (inactiveColor != null) return inactiveColor;
       if (theme.useMaterial3) {
         if (year2023) return theme.colorScheme.surfaceContainerHighest;
@@ -174,14 +198,15 @@ class SliderRecorder implements ElementRecorder {
     required Slider widget,
     required bool isEnabled,
     required ThemeData theme,
+    required SliderThemeData sliderTheme,
     required bool year2023,
   }) {
     if (isEnabled) {
       return widget.secondaryActiveColor ??
-          theme.sliderTheme.secondaryActiveTrackColor ??
+          sliderTheme.secondaryActiveTrackColor ??
           theme.colorScheme.primary.withValues(alpha: 0.54);
     }
-    Color? disabledColor = theme.sliderTheme.disabledSecondaryActiveTrackColor;
+    Color? disabledColor = sliderTheme.disabledSecondaryActiveTrackColor;
     if (disabledColor != null) return disabledColor;
     if (theme.useMaterial3 && !year2023) {
       return theme.colorScheme.onSurface.withValues(alpha: 0.38);
@@ -193,15 +218,16 @@ class SliderRecorder implements ElementRecorder {
     required Slider widget,
     required bool isEnabled,
     required ThemeData theme,
+    required SliderThemeData sliderTheme,
     required bool year2023,
   }) {
     if (isEnabled) {
       return widget.thumbColor ??
           widget.activeColor ??
-          theme.sliderTheme.thumbColor ??
+          sliderTheme.thumbColor ??
           theme.colorScheme.primary;
     }
-    Color? disabledColor = theme.sliderTheme.disabledThumbColor;
+    Color? disabledColor = sliderTheme.disabledThumbColor;
     if (disabledColor != null) return disabledColor;
     if (theme.useMaterial3 && !year2023) {
       return theme.colorScheme.onSurface.withValues(alpha: 0.38);
@@ -215,12 +241,12 @@ class SliderRecorder implements ElementRecorder {
   _SliderGeometry _getSliderGeometry({
     required Slider widget,
     required ThemeData theme,
+    required SliderThemeData sliderTheme,
     required bool year2023,
     required Rect bounds,
     required double scaleX,
     required double scaleY,
   }) {
-    final SliderThemeData sliderTheme = theme.sliderTheme;
     final bool isGapped = theme.useMaterial3 && !year2023;
 
     // Uniform scale preserves circles/pills and ensures dimensions fit within
@@ -246,11 +272,15 @@ class SliderRecorder implements ElementRecorder {
       thumbSize = Size(20.0 * scale, 20.0 * scale);
     }
 
-    // RoundSliderOverlayShape default radius is 24 → 48px diameter.
+    // Round thumbs reserve room for the 48px overlay halo; handle thumbs have
+    // no halo so only the thumb half-width is reserved.
     final double overlayWidth = 48.0 * scale;
-    final double horizontalInset = sliderTheme.padding != null
-        ? 0.0
-        : math.max(thumbSize.width, overlayWidth) / 2;
+    final double horizontalInset;
+    if (sliderTheme.padding != null) {
+      horizontalInset = 0.0;
+    } else {
+      horizontalInset = math.max(thumbSize.width, overlayWidth) / 2;
+    }
 
     final double trackLeft = bounds.left + horizontalInset;
     final double trackRight = bounds.right - horizontalInset;
@@ -258,61 +288,36 @@ class SliderRecorder implements ElementRecorder {
     final double trackBottom = trackTop + trackHeight;
     final double trackWidth = trackRight - trackLeft;
 
+    final Radius trackEndRadius = Radius.circular(trackHeight / 2);
+
     final double range = widget.max - widget.min;
     final double valueRatio = range == 0
         ? 0.0
         : ((widget.value - widget.min) / range).clamp(0.0, 1.0).toDouble();
-    final double thumbCenterX = trackLeft + trackWidth * valueRatio;
+    // The thumb travels across the straight portion of the track only: at min
+    // it sits at trackLeft + trackEndRadius, at max at trackRight - trackEndRadius.
+    final double thumbTravel = trackWidth - 2 * trackEndRadius.x;
+    final double thumbCenterX =
+        trackLeft + trackEndRadius.x + thumbTravel * valueRatio;
 
-    final Radius trackEndRadius = Radius.circular(trackHeight / 2);
-    final Radius trackInsideRadius = Radius.circular(2.0 * scale);
-    final double trackGap =
-        isGapped ? (sliderTheme.trackGap ?? 6.0) * scale : 0.0;
+    // Overlay layout (bottom → top): inactive spans the full track, secondary
+    // overlays from trackLeft to its value, active overlays from trackLeft to
+    // the thumb center, then the thumb sits on top. Z-order alone produces the
+    // correct visible regions — no gap geometry needed.
+    final _SliderTrackSegmentGeometry inactiveTrack = (
+      rect: Rect.fromLTRB(trackLeft, trackTop, trackRight, trackBottom),
+      borderRadius: BorderRadius.all(trackEndRadius),
+    );
 
-    final _SliderTrackSegmentGeometry activeTrack;
-    if (isGapped) {
-      final double activeRight =
-          math.max(trackLeft, thumbCenterX - trackGap);
-      activeTrack = (
-        rect: Rect.fromLTRB(trackLeft, trackTop, activeRight, trackBottom),
-        borderRadius: BorderRadius.only(
-          topLeft: trackEndRadius,
-          bottomLeft: trackEndRadius,
-          topRight: trackInsideRadius,
-          bottomRight: trackInsideRadius,
-        ),
-      );
-    } else {
-      activeTrack = (
-        rect: Rect.fromLTRB(
-          trackLeft,
-          trackTop,
-          thumbCenterX + trackHeight / 2,
-          trackBottom,
-        ),
-        borderRadius: BorderRadius.all(trackEndRadius),
-      );
-    }
-
-    final _SliderTrackSegmentGeometry inactiveTrack;
-    if (isGapped) {
-      final double inactiveLeft =
-          math.min(trackRight, thumbCenterX + trackGap);
-      inactiveTrack = (
-        rect: Rect.fromLTRB(inactiveLeft, trackTop, trackRight, trackBottom),
-        borderRadius: BorderRadius.only(
-          topLeft: trackInsideRadius,
-          bottomLeft: trackInsideRadius,
-          topRight: trackEndRadius,
-          bottomRight: trackEndRadius,
-        ),
-      );
-    } else {
-      inactiveTrack = (
-        rect: Rect.fromLTRB(trackLeft, trackTop, trackRight, trackBottom),
-        borderRadius: BorderRadius.all(trackEndRadius),
-      );
-    }
+    final _SliderTrackSegmentGeometry activeTrack = (
+      rect: Rect.fromLTRB(
+        trackLeft,
+        trackTop,
+        math.max(trackLeft, thumbCenterX),
+        trackBottom,
+      ),
+      borderRadius: BorderRadius.all(trackEndRadius),
+    );
 
     _SliderTrackSegmentGeometry? secondaryActiveTrack;
     final double? secValue = widget.secondaryTrackValue;
@@ -322,26 +327,10 @@ class SliderRecorder implements ElementRecorder {
       final double secRatio =
           range == 0 ? 0.0 : (clampedSec - widget.min) / range;
       final double secX = trackLeft + trackWidth * secRatio;
-      if (isGapped) {
-        final double secLeft = thumbCenterX + trackGap;
-        if (secX > secLeft) {
-          secondaryActiveTrack = (
-            rect: Rect.fromLTRB(secLeft, trackTop, secX, trackBottom),
-            borderRadius: BorderRadius.only(
-              topLeft: trackInsideRadius,
-              bottomLeft: trackInsideRadius,
-              topRight: trackEndRadius,
-              bottomRight: trackEndRadius,
-            ),
-          );
-        }
-      } else if (secX > thumbCenterX) {
+      if (secX > trackLeft) {
         secondaryActiveTrack = (
-          rect: Rect.fromLTRB(thumbCenterX, trackTop, secX, trackBottom),
-          borderRadius: BorderRadius.only(
-            topRight: trackEndRadius,
-            bottomRight: trackEndRadius,
-          ),
+          rect: Rect.fromLTRB(trackLeft, trackTop, secX, trackBottom),
+          borderRadius: BorderRadius.all(trackEndRadius),
         );
       }
     }
@@ -358,12 +347,62 @@ class SliderRecorder implements ElementRecorder {
       style: thumbStyle,
     );
 
+    // M3-2024 gap: a single bg-colored band centered on the thumb that
+    // overpaints the active/inactive tracks to simulate the visual gap. Sized
+    // as thumb.width + 2 * trackGap wide, trackHeight tall. Skipped for round
+    // thumbs (year2023) — the round thumb covers the seam itself.
+    Rect? gap;
+    if (isGapped) {
+      final double trackGap = (sliderTheme.trackGap ?? 6.0) * scale;
+      gap = Rect.fromCenter(
+        center: Offset(thumbCenterX, bounds.center.dy),
+        width: thumbSize.width + 2 * trackGap,
+        height: trackHeight,
+      );
+    }
+
     return (
       thumb: thumb,
       inactiveTrack: inactiveTrack,
       activeTrack: activeTrack,
       secondaryActiveTrack: secondaryActiveTrack,
+      gap: gap,
     );
+  }
+
+  /// Walks up the ancestor chain to find the nearest opaque background color.
+  /// Falls back to [ThemeData.colorScheme.surface] when nothing solid is found
+  /// (e.g., the slider sits on a gradient, image, or transparent stack).
+  Color _findBackgroundColor(Element element, ThemeData theme) {
+    Color? result;
+    element.visitAncestorElements((ancestor) {
+      final w = ancestor.widget;
+      Color? c;
+      if (w is Material && w.type != MaterialType.transparency) {
+        c = w.color ??
+            (w.type == MaterialType.card
+                ? theme.cardColor
+                : theme.canvasColor);
+      } else if (w is ColoredBox) {
+        c = w.color;
+      } else if (w is Container) {
+        final dec = w.decoration;
+        c = dec is BoxDecoration ? dec.color : w.color;
+      } else if (w is DecoratedBox) {
+        final dec = w.decoration;
+        c = dec is BoxDecoration ? dec.color : null;
+      } else if (w is Card) {
+        c = w.color ?? theme.cardColor;
+      } else if (w is Scaffold) {
+        c = w.backgroundColor ?? theme.scaffoldBackgroundColor;
+      }
+      if (c != null && c.a == 1.0) {
+        result = c;
+        return false;
+      }
+      return true;
+    });
+    return result ?? theme.colorScheme.surface;
   }
 }
 
@@ -376,14 +415,17 @@ class SliderNode extends CaptureNode {
   final int inactiveTrackWireframeId;
   final int secondaryActiveTrackWireframeId;
   final int activeTrackWireframeId;
+  final int gapWireframeId;
   final int thumbWireframeId;
   final Rect inactiveTrackRect;
   final Rect activeTrackRect;
   final Rect? secondaryActiveTrackRect;
+  final Rect? gapRect;
   final Rect thumbRect;
   final Color activeColor;
   final Color inactiveColor;
   final Color secondaryActiveColor;
+  final Color? gapColor;
   final Color thumbColor;
 
   const SliderNode(
@@ -391,14 +433,17 @@ class SliderNode extends CaptureNode {
     required this.inactiveTrackWireframeId,
     required this.secondaryActiveTrackWireframeId,
     required this.activeTrackWireframeId,
+    required this.gapWireframeId,
     required this.thumbWireframeId,
     required this.inactiveTrackRect,
     required this.activeTrackRect,
     required this.secondaryActiveTrackRect,
+    required this.gapRect,
     required this.thumbRect,
     required this.activeColor,
     required this.inactiveColor,
     required this.secondaryActiveColor,
+    required this.gapColor,
     required this.thumbColor,
   });
 
@@ -426,6 +471,19 @@ class SliderNode extends CaptureNode {
       color: activeColor,
     ));
 
+    // M3-2024 gap: overpaints the tracks around the thumb in the background
+    // color. Sharp corners (cornerRadius: 0) so the cut against the rounded
+    // track edges produces a clean band.
+    if (gapRect != null && gapColor != null) {
+      wireframes.add(_shape(
+        id: gapWireframeId,
+        rect: gapRect!,
+        color: gapColor!,
+        cornerRadius: 0,
+        borderColor: gapColor!,
+      ));
+    }
+
     wireframes.add(_shape(
       id: thumbWireframeId,
       rect: thumbRect,
@@ -439,6 +497,8 @@ class SliderNode extends CaptureNode {
     required int id,
     required Rect rect,
     required Color color,
+    double? cornerRadius,
+    Color borderColor = Colors.transparent,
   }) {
     return SRShapeWireframe(
       id: id,
@@ -448,8 +508,9 @@ class SliderNode extends CaptureNode {
       height: rect.height.round(),
       shapeStyle: SRShapeStyle(
         backgroundColor: color.toHexString(),
-        cornerRadius: rect.shortestSide / 2,
+        cornerRadius: cornerRadius ?? rect.shortestSide / 2,
       ),
+      border: SRShapeBorder(color: borderColor.toHexString(), width: 1),
     );
   }
 }
