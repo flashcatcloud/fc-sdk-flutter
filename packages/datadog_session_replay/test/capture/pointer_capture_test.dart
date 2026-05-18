@@ -29,6 +29,49 @@ void main() {
     });
 
     group('capturePointer', () {
+      test('rejects pointer events when isCapturing returns false', () {
+        // Given
+        final mockTime = DateTime(2024, 1, 2, 3, 0, 0);
+        when(() => mockTimeProvider.now()).thenReturn(mockTime);
+        final recorder = PointerSnapshotRecorder(
+          mockTimeProvider,
+          isCapturing: () => false,
+        );
+
+        // When
+        recorder.capturePointer(
+          1,
+          SRPointerEventType.down,
+          randomDouble(),
+          randomDouble(),
+        );
+
+        // Then
+        expect(recorder.takeSnapshot(), isNull);
+      });
+
+      test('captures pointer events when isCapturing returns true', () {
+        // Given
+        var capturing = true;
+        final mockTime = DateTime(2024, 1, 2, 3, 0, 0);
+        when(() => mockTimeProvider.now()).thenReturn(mockTime);
+        final recorder = PointerSnapshotRecorder(
+          mockTimeProvider,
+          isCapturing: () => capturing,
+        );
+
+        // When
+        recorder.capturePointer(1, SRPointerEventType.down, 1.0, 2.0);
+        capturing = false;
+        recorder.capturePointer(1, SRPointerEventType.move, 3.0, 4.0);
+
+        // Then
+        final snapshot = recorder.takeSnapshot();
+        expect(snapshot, isNotNull);
+        expect(snapshot!.pointerEvents, hasLength(1));
+        expect(snapshot.pointerEvents[0].eventType, SRPointerEventType.down);
+      });
+
       test('adds pointer event to snapshot', () {
         // Given
         final mockTime = DateTime(2024, 1, 2, 3, 0, 0);

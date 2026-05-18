@@ -159,6 +159,13 @@ class DatadogSessionReplayConfiguration {
 
   String? customEndpoint;
 
+  /// Whether Session Replay should start recording when it is initialized.
+  /// When `false`, call [DatadogSessionReplay.startRecording] to begin
+  /// recording.
+  ///
+  /// Defaults to `true`.
+  bool startRecordingImmediately;
+
   /// Rewrites captured font family strings into web-compatible CSS stacks in
   /// the processor isolate before snapshots are serialized.
   ///
@@ -192,6 +199,7 @@ class DatadogSessionReplayConfiguration {
     this.imagePrivacyLevel = ImagePrivacyLevel.maskAll,
     this.touchPrivacyLevel = TouchPrivacyLevel.hide,
     this.customEndpoint,
+    this.startRecordingImmediately = true,
     this.fontFamilyTransform = const FontFamilyTransformConfig(),
     this.imageDownscaling = ImageDownscaling.disabled,
     this.maxImagePixelBudget = defaultMaxImagePixelBudget,
