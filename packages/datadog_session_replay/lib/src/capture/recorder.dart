@@ -16,7 +16,7 @@ import 'capture_node.dart';
 import 'element_recorders/container_recorder.dart';
 import 'element_recorders/cupertino_widgets/cupertino_checkbox_recorder.dart';
 import 'element_recorders/cupertino_widgets/cupertino_radio_recorder.dart';
-import 'element_recorders/cupertino_widgets/cupertino_slider.dart';
+import 'element_recorders/cupertino_widgets/cupertino_slider_recorder.dart';
 import 'element_recorders/cupertino_widgets/cupertino_switch_recorder.dart';
 import 'element_recorders/custom_paint_recorder.dart';
 import 'element_recorders/editable_text_recorder.dart';
