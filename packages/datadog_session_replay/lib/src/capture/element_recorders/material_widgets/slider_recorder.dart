@@ -33,6 +33,7 @@ typedef _SliderGeometry = ({
   _SliderTrackSegmentGeometry activeTrack,
   _SliderTrackSegmentGeometry? secondaryActiveTrack,
   Rect? gap,
+  Rect? stopIndicator,
 });
 
 /// Detects 'Slider' widgets and places an slider
@@ -132,6 +133,8 @@ class SliderRecorder implements ElementRecorder {
         keyGenerator.keyForElement(element, wireframeId: 2);
     final gapKey =
         keyGenerator.keyForElement(element, wireframeId: 4);
+    final stopIndicatorKey =
+        keyGenerator.keyForElement(element, wireframeId: 5);
     final thumbKey =
         keyGenerator.keyForElement(element, wireframeId: 3);
 
@@ -141,11 +144,13 @@ class SliderRecorder implements ElementRecorder {
       secondaryActiveTrackWireframeId: secondaryActiveTrackKey,
       activeTrackWireframeId: activeTrackKey,
       gapWireframeId: gapKey,
+      stopIndicatorWireframeId: stopIndicatorKey,
       thumbWireframeId: thumbKey,
       inactiveTrackRect: geometry.inactiveTrack.rect,
       activeTrackRect: geometry.activeTrack.rect,
       secondaryActiveTrackRect: geometry.secondaryActiveTrack?.rect,
       gapRect: geometry.gap,
+      stopIndicatorRect: geometry.stopIndicator,
       thumbRect: geometry.thumb.rect,
       activeColor: activeColor,
       inactiveColor: inactiveColor,
@@ -352,12 +357,23 @@ class SliderRecorder implements ElementRecorder {
     // as thumb.width + 2 * trackGap wide, trackHeight tall. Skipped for round
     // thumbs (year2023) — the round thumb covers the seam itself.
     Rect? gap;
+    Rect? stopIndicator;
     if (isGapped) {
       final double trackGap = (sliderTheme.trackGap ?? 6.0) * scale;
       gap = Rect.fromCenter(
         center: Offset(thumbCenterX, bounds.center.dy),
         width: thumbSize.width + 2 * trackGap,
         height: trackHeight,
+      );
+
+      // Stop indicator: a small filled dot centered in the right end cap of
+      // the track (cap center = trackRight - trackEndRadius). Default radius
+      // 2.0. Gets overpainted by the gap when the thumb is near max.
+      final double stopRadius = 2.0 * scale;
+      stopIndicator = Rect.fromCenter(
+        center: Offset(trackRight - trackEndRadius.x, bounds.center.dy),
+        width: stopRadius * 2,
+        height: stopRadius * 2,
       );
     }
 
@@ -367,6 +383,7 @@ class SliderRecorder implements ElementRecorder {
       activeTrack: activeTrack,
       secondaryActiveTrack: secondaryActiveTrack,
       gap: gap,
+      stopIndicator: stopIndicator,
     );
   }
 
@@ -416,11 +433,13 @@ class SliderNode extends CaptureNode {
   final int secondaryActiveTrackWireframeId;
   final int activeTrackWireframeId;
   final int gapWireframeId;
+  final int stopIndicatorWireframeId;
   final int thumbWireframeId;
   final Rect inactiveTrackRect;
   final Rect activeTrackRect;
   final Rect? secondaryActiveTrackRect;
   final Rect? gapRect;
+  final Rect? stopIndicatorRect;
   final Rect thumbRect;
   final Color activeColor;
   final Color inactiveColor;
@@ -434,11 +453,13 @@ class SliderNode extends CaptureNode {
     required this.secondaryActiveTrackWireframeId,
     required this.activeTrackWireframeId,
     required this.gapWireframeId,
+    required this.stopIndicatorWireframeId,
     required this.thumbWireframeId,
     required this.inactiveTrackRect,
     required this.activeTrackRect,
     required this.secondaryActiveTrackRect,
     required this.gapRect,
+    required this.stopIndicatorRect,
     required this.thumbRect,
     required this.activeColor,
     required this.inactiveColor,
@@ -481,6 +502,17 @@ class SliderNode extends CaptureNode {
         color: gapColor!,
         cornerRadius: 0,
         borderColor: gapColor!,
+      ));
+    }
+
+    // Stop indicator: drawn after the gap so it remains visible even when the
+    // thumb is near max. The thumb (drawn last) covers it when the thumb is
+    // exactly at max, which is the desired behavior.
+    if (stopIndicatorRect != null) {
+      wireframes.add(_shape(
+        id: stopIndicatorWireframeId,
+        rect: stopIndicatorRect!,
+        color: activeColor,
       ));
     }
 
