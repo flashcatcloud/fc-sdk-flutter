@@ -6,11 +6,11 @@ import 'dart:math' as math;
 
 import 'package:flutter/cupertino.dart';
 
-import '../../../extensions.dart';
 import '../../../sr_data_models.dart';
 import '../../capture_node.dart';
 import '../../recorder.dart';
 import '../../view_tree_snapshot.dart';
+import '../material_widgets/slider_recorder.dart';
 import '../recording_extensions.dart';
 import 'cupertino_recording_extensions.dart';
 
@@ -191,39 +191,21 @@ class CupertinoSliderNode extends CaptureNode {
   @override
   List<SRWireframe> buildWireframes() {
     return [
-      _shape(
+      ShapeWireframeBuilder.shape(
         id: inactiveTrackWireframeId,
         rect: inactiveTrackRect,
         color: trackColor,
       ),
-      _shape(
+      ShapeWireframeBuilder.shape(
         id: activeTrackWireframeId,
         rect: activeTrackRect,
         color: activeColor,
       ),
-      _shape(
+      ShapeWireframeBuilder.shape(
         id: thumbWireframeId,
         rect: thumbRect,
         color: thumbColor,
       ),
     ];
-  }
-
-  static SRShapeWireframe _shape({
-    required int id,
-    required Rect rect,
-    required Color color,
-  }) {
-    return SRShapeWireframe(
-      id: id,
-      x: rect.left.round(),
-      y: rect.top.round(),
-      width: rect.width.round(),
-      height: rect.height.round(),
-      shapeStyle: SRShapeStyle(
-        backgroundColor: color.toHexString(),
-        cornerRadius: rect.shortestSide / 2,
-      ),
-    );
   }
 }

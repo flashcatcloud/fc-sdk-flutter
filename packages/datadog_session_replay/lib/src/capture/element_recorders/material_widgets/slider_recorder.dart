@@ -139,46 +139,47 @@ class SliderRecorder implements ElementRecorder {
     final Color? gapColor =
         geometry.gap != null ? _findBackgroundColor(element, theme) : null;
 
+    final int tickCount =
+        geometry.activeTickMarks.length + geometry.inactiveTickMarks.length;
+
     final inactiveTrackKey =
         keyGenerator.keyForElement(element, wireframeId: 0);
     final secondaryActiveTrackKey =
         keyGenerator.keyForElement(element, wireframeId: 1);
     final activeTrackKey = keyGenerator.keyForElement(element, wireframeId: 2);
-    final gapKey = keyGenerator.keyForElement(element, wireframeId: 3);
-    final stopIndicatorKey =
-        keyGenerator.keyForElement(element, wireframeId: 4);
-    final thumbKey = keyGenerator.keyForElement(element, wireframeId: 5);
-    final int tickCount =
-        geometry.activeTickMarks.length + geometry.inactiveTickMarks.length;
     final List<int> tickMarkKeys = [
       for (int i = 0; i < tickCount; i++)
-        keyGenerator.keyForElement(element, wireframeId: 6 + i),
+        keyGenerator.keyForElement(element, wireframeId: 3 + i),
     ];
+    final gapKey = keyGenerator.keyForElement(element, wireframeId: 3 + tickCount);
+    final stopIndicatorKey =
+        keyGenerator.keyForElement(element, wireframeId: 4 + tickCount);
+    final thumbKey = keyGenerator.keyForElement(element, wireframeId: 5 + tickCount);
 
     final node = SliderNode(
       attributes,
       inactiveTrackWireframeId: inactiveTrackKey,
       secondaryActiveTrackWireframeId: secondaryActiveTrackKey,
       activeTrackWireframeId: activeTrackKey,
+      tickMarkWireframeIds: tickMarkKeys,
       gapWireframeId: gapKey,
       stopIndicatorWireframeId: stopIndicatorKey,
       thumbWireframeId: thumbKey,
-      tickMarkWireframeIds: tickMarkKeys,
       inactiveTrackRect: geometry.inactiveTrack.rect,
       secondaryActiveTrackRect: geometry.secondaryActiveTrack?.rect,
       activeTrackRect: geometry.activeTrack.rect,
+      activeTickMarkRects: geometry.activeTickMarks,
+      inactiveTickMarkRects: geometry.inactiveTickMarks,
       gapRect: geometry.gap,
       stopIndicatorRect: geometry.stopIndicator,
       thumbRect: geometry.thumb.rect,
-      activeTickMarkRects: geometry.activeTickMarks,
-      inactiveTickMarkRects: geometry.inactiveTickMarks,
       inactiveColor: inactiveColor,
       secondaryActiveColor: secondaryActiveColor,
       activeColor: activeColor,
-      gapColor: gapColor,
-      thumbColor: thumbColor,
       activeTickMarkColor: activeTickMarkColor,
       inactiveTickMarkColor: inactiveTickMarkColor,
+      gapColor: gapColor,
+      thumbColor: thumbColor,
     );
 
     return SpecificElement(
@@ -535,56 +536,56 @@ class SliderNode extends CaptureNode {
   final int inactiveTrackWireframeId;
   final int secondaryActiveTrackWireframeId;
   final int activeTrackWireframeId;
+  final List<int> tickMarkWireframeIds;
   final int gapWireframeId;
   final int stopIndicatorWireframeId;
   final int thumbWireframeId;
-  final List<int> tickMarkWireframeIds;
   final Rect inactiveTrackRect;
   final Rect? secondaryActiveTrackRect;
   final Rect activeTrackRect;
+  final List<Rect> activeTickMarkRects;
+  final List<Rect> inactiveTickMarkRects;
   final Rect? gapRect;
   final Rect? stopIndicatorRect;
   final Rect thumbRect;
-  final List<Rect> activeTickMarkRects;
-  final List<Rect> inactiveTickMarkRects;
   final Color inactiveColor;
   final Color secondaryActiveColor;
   final Color activeColor;
-  final Color? gapColor;
-  final Color thumbColor;
   final Color activeTickMarkColor;
   final Color inactiveTickMarkColor;
+  final Color? gapColor;
+  final Color thumbColor;
 
   const SliderNode(
     super.attributes, {
     required this.inactiveTrackWireframeId,
     required this.secondaryActiveTrackWireframeId,
     required this.activeTrackWireframeId,
+    required this.tickMarkWireframeIds,
     required this.gapWireframeId,
     required this.stopIndicatorWireframeId,
     required this.thumbWireframeId,
-    required this.tickMarkWireframeIds,
     required this.inactiveTrackRect,
     required this.secondaryActiveTrackRect,
     required this.activeTrackRect,
+    required this.activeTickMarkRects,
+    required this.inactiveTickMarkRects,
     required this.gapRect,
     required this.stopIndicatorRect,
     required this.thumbRect,
-    required this.activeTickMarkRects,
-    required this.inactiveTickMarkRects,
     required this.inactiveColor,
     required this.secondaryActiveColor,
     required this.activeColor,
-    required this.gapColor,
-    required this.thumbColor,
     required this.activeTickMarkColor,
     required this.inactiveTickMarkColor,
+    required this.gapColor,
+    required this.thumbColor,
   });
 
   @override
   List<SRWireframe> buildWireframes() {
     final wireframes = <SRWireframe>[
-      _shape(
+      ShapeWireframeBuilder.shape(
         id: inactiveTrackWireframeId,
         rect: inactiveTrackRect,
         color: inactiveColor,
@@ -592,14 +593,14 @@ class SliderNode extends CaptureNode {
     ];
 
     if (secondaryActiveTrackRect != null) {
-      wireframes.add(_shape(
+      wireframes.add(ShapeWireframeBuilder.shape(
         id: secondaryActiveTrackWireframeId,
         rect: secondaryActiveTrackRect!,
         color: secondaryActiveColor,
       ));
     }
 
-    wireframes.add(_shape(
+    wireframes.add(ShapeWireframeBuilder.shape(
       id: activeTrackWireframeId,
       rect: activeTrackRect,
       color: activeColor,
@@ -610,7 +611,7 @@ class SliderNode extends CaptureNode {
     // track) use activeTickMarkColor; inactive ticks use the inactive color.
     int tickIdx = 0;
     for (final rect in activeTickMarkRects) {
-      wireframes.add(_shape(
+      wireframes.add(ShapeWireframeBuilder.shape(
         id: tickMarkWireframeIds[tickIdx],
         rect: rect,
         color: activeTickMarkColor,
@@ -618,7 +619,7 @@ class SliderNode extends CaptureNode {
       tickIdx++;
     }
     for (final rect in inactiveTickMarkRects) {
-      wireframes.add(_shape(
+      wireframes.add(ShapeWireframeBuilder.shape(
         id: tickMarkWireframeIds[tickIdx],
         rect: rect,
         color: inactiveTickMarkColor,
@@ -630,24 +631,23 @@ class SliderNode extends CaptureNode {
     // color. Sharp corners (cornerRadius: 0) so the cut against the rounded
     // track edges produces a clean band.
     if (gapRect != null && gapColor != null) {
-      wireframes.add(_shape(
+      wireframes.add(ShapeWireframeBuilder.shape(
         id: gapWireframeId,
         rect: gapRect!,
         color: gapColor!,
         cornerRadius: 0,
-        borderColor: gapColor!,
       ));
     }
 
     if (stopIndicatorRect != null) {
-      wireframes.add(_shape(
+      wireframes.add(ShapeWireframeBuilder.shape(
         id: stopIndicatorWireframeId,
         rect: stopIndicatorRect!,
         color: activeColor,
       ));
     }
 
-    wireframes.add(_shape(
+    wireframes.add(ShapeWireframeBuilder.shape(
       id: thumbWireframeId,
       rect: thumbRect,
       color: thumbColor,
@@ -656,12 +656,18 @@ class SliderNode extends CaptureNode {
     return wireframes;
   }
 
-  static SRShapeWireframe _shape({
+}
+
+/// Builds [SRShapeWireframe] instances from a [Rect] + [Color]. Shared across
+/// slider recorders (material + cupertino) to avoid duplicated helpers.
+class ShapeWireframeBuilder {
+  const ShapeWireframeBuilder._();
+
+  static SRShapeWireframe shape({
     required int id,
     required Rect rect,
     required Color color,
     double? cornerRadius,
-    Color borderColor = Colors.transparent,
   }) {
     return SRShapeWireframe(
       id: id,
@@ -673,7 +679,6 @@ class SliderNode extends CaptureNode {
         backgroundColor: color.toHexString(),
         cornerRadius: cornerRadius ?? rect.shortestSide / 2,
       ),
-      border: SRShapeBorder(color: borderColor.toHexString(), width: 1),
     );
   }
 }
