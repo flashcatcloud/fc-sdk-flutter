@@ -38,6 +38,10 @@ class DatadogSessionReplay {
 
   int _errorCounter = 0;
   bool _newFrameBuilt = true;
+  Timer? _captureTimer; // When null is idle, otherwise is active
+
+  /// Whether Session Replay is recording.
+  bool get isCapturing => _captureTimer != null;
 
   @internal
   static Future<DatadogSessionReplay> init(
@@ -50,6 +54,12 @@ class DatadogSessionReplay {
     return _instance!;
   }
 
+  @visibleForTesting
+  static void resetInstance() {
+    _instance?.stopRecording();
+    _instance = null;
+  }
+
   DatadogSessionReplay._(this._configuration, this.internalLogger)
       : defaultTouchPrivacyLevel = _configuration.touchPrivacyLevel,
         _recorder = SessionReplayRecorder(
@@ -58,6 +68,8 @@ class DatadogSessionReplay {
             imagePrivacyLevel: _configuration.imagePrivacyLevel,
           ),
           touchPrivacyLevel: _configuration.touchPrivacyLevel,
+          imageDownscaling: _configuration.imageDownscaling,
+          maxImagePixelBudget: _configuration.maxImagePixelBudget,
         );
 
   void addElement(Key key, Element e) {
@@ -72,6 +84,24 @@ class DatadogSessionReplay {
     _recorder.onContextChanged(context);
   }
 
+  /// Begins periodic Session Replay tree capture. Has no effect if recording
+  /// is already in progress.
+  void startRecording() {
+    if (_captureTimer != null) return;
+    _startPeriodicCapture();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Let capture know that a new element tree is available for capture.
+      _newFrameBuilt = true;
+    });
+  }
+
+  /// Stops periodic Session Replay recording . The processor isolate keeps
+  /// running so that [startRecording] can resume without re-initialization.
+  void stopRecording() {
+    _captureTimer?.cancel();
+    _captureTimer = null;
+  }
+
   Future<void> _start() async {
     final platform = DatadogSessionReplayPlatform.instance;
     bool success = false;
@@ -84,11 +114,7 @@ class DatadogSessionReplay {
         fontFamilyTransform: _configuration.fontFamilyTransform,
       );
 
-      _startPeriodicCapture();
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        // Let capture know that a new element tree is available for capture.
-        _newFrameBuilt = true;
-      });
+      if (_configuration.startRecordingImmediately) startRecording();
     }
   }
 
@@ -99,7 +125,7 @@ class DatadogSessionReplay {
     /// Using the timer (instead of as part of addPostFrameCallback) allows
     /// Flutter to schedule this outside of the build phase, which means our
     /// tree capture shouldn't affect tree build time.
-    Timer.periodic(minCaptureTiming, (timer) async {
+    _captureTimer = Timer.periodic(minCaptureTiming, (timer) async {
       bool shouldWatchForNextFrame = true;
       if (_newFrameBuilt) {
         try {
@@ -128,6 +154,7 @@ class DatadogSessionReplay {
             // Too many errors, cancel this periodic timer and don't schedule
             // another post frame callback
             timer.cancel();
+            _captureTimer = null;
             shouldWatchForNextFrame = false;
           }
         }
@@ -135,7 +162,7 @@ class DatadogSessionReplay {
       }
 
       // If we've received too many errors, don't request any more post frame callbacks
-      if (shouldWatchForNextFrame) {
+      if (shouldWatchForNextFrame && _captureTimer != null) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           _newFrameBuilt = true;
         });

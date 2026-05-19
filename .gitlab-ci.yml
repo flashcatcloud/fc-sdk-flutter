@@ -307,8 +307,6 @@ nightly-min-version-test:
   script:
     - !reference [.pre, script]
     - !reference [.pre-ios, script]
-    - brew tap leoafarias/fvm
-    - brew install fvm
     - fvm install $FLUTTER_MIN_VERSION
     - fvm use $FLUTTER_MIN_VERSION
     - fvm exec dart pub global activate melos
@@ -333,8 +331,6 @@ nightly-beta-test:
   script:
     - !reference [.pre, script]
     - !reference [.pre-ios, script]
-    - brew tap leoafarias/fvm
-    - brew install fvm
     - fvm destroy
     - fvm install beta
     - fvm use beta

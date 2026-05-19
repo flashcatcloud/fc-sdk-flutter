@@ -43,8 +43,11 @@ class _SessionReplayCaptureState extends State<SessionReplayCapture> {
   void initState() {
     super.initState();
 
-    // ignore: invalid_use_of_internal_member
-    pointerRecorder = PointerSnapshotRecorder(widget.rum.timeProvider);
+    pointerRecorder = PointerSnapshotRecorder(
+      // ignore: invalid_use_of_internal_member
+      widget.rum.timeProvider,
+      isCapturing: () => widget.sessionReplay.isCapturing,
+    );
   }
 
   @override

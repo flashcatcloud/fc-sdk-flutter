@@ -58,11 +58,17 @@ class PointerSnapshotRecorderProvider extends InheritedWidget {
 
 class PointerSnapshotRecorder {
   final DatadogTimeProvider timeProvider;
+  final bool Function() _isCapturing;
 
   List<PointerCapture> _pointerBuffer = [];
   final Set<int> _hiddenPointers = {};
 
-  PointerSnapshotRecorder(this.timeProvider);
+  PointerSnapshotRecorder(
+    this.timeProvider, {
+    bool Function() isCapturing = _alwaysCapturing,
+  }) : _isCapturing = isCapturing;
+
+  static bool _alwaysCapturing() => true;
 
   void capturePointer(
     int pointerId,
@@ -70,6 +76,8 @@ class PointerSnapshotRecorder {
     double x,
     double y,
   ) {
+    if (!_isCapturing()) return;
+
     final now = timeProvider.now();
 
     if (_hiddenPointers.contains(pointerId)) {
