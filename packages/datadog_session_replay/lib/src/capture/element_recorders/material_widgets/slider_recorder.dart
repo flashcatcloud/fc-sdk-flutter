@@ -14,6 +14,9 @@ import '../../recorder.dart';
 import '../../view_tree_snapshot.dart';
 import '../recording_extensions.dart';
 
+const Size _handleThumbSize = Size(4.0, 44.0);
+const double _roundedThumbDiameter = 20.0;
+
 enum _SliderThumbStyle { round, handle }
 
 typedef _SliderThumbGeometry = ({
@@ -54,6 +57,9 @@ class SliderRecorder implements ElementRecorder {
     CapturedViewAttributes attributes,
     TreeCapturePrivacy capturePrivacy,
   ) {
+    final widget = element.widget;
+    if (widget is! Slider) return null;
+
     // Check for cupertino slider style
     {
       bool isCupertinoAdaptive = false;
@@ -62,9 +68,6 @@ class SliderRecorder implements ElementRecorder {
       });
       if (isCupertinoAdaptive) return null;
     }
-
-    final widget = element.widget;
-    if (widget is! Slider) return null;
 
     // Resolves for privacy settings
     final bool isMasked = capturePrivacy.shouldMaskInputs;
@@ -134,8 +137,9 @@ class SliderRecorder implements ElementRecorder {
       scaleY: attributes.scaleY,
     );
 
-    // Only walk the tree for a background color when we actually need to fake
-    // the gap (M3-2024 / year2023 == false)
+    // We only need the background color to create a fake gap, between the Track and the Thumb,
+    // so we only grab it when geometry.gap is set. This will be true for Material 3, or when
+    // year2023 is false.
     final Color? gapColor =
         geometry.gap != null ? _findBackgroundColor(element, theme) : null;
 
@@ -151,10 +155,12 @@ class SliderRecorder implements ElementRecorder {
       for (int i = 0; i < tickCount; i++)
         keyGenerator.keyForElement(element, wireframeId: 3 + i),
     ];
-    final gapKey = keyGenerator.keyForElement(element, wireframeId: 3 + tickCount);
+    final gapKey =
+        keyGenerator.keyForElement(element, wireframeId: 3 + tickCount);
     final stopIndicatorKey =
         keyGenerator.keyForElement(element, wireframeId: 4 + tickCount);
-    final thumbKey = keyGenerator.keyForElement(element, wireframeId: 5 + tickCount);
+    final thumbKey =
+        keyGenerator.keyForElement(element, wireframeId: 5 + tickCount);
 
     final node = SliderNode(
       attributes,
@@ -183,11 +189,13 @@ class SliderRecorder implements ElementRecorder {
     );
 
     return SpecificElement(
-      subtreeStrategy: CaptureNodeSubtreeStrategy
-          .ignore, // Ignore subtree to prevent CustomPaintRecorder from capturing the inner CustomPaint
+      subtreeStrategy: CaptureNodeSubtreeStrategy.ignore,
       nodes: [node],
     );
   }
+
+  // All color values mirror Flutter’s own implementation,
+  // as declared in package:flutter/src/material/slider.dart.
 
   Color _getActiveColor({
     required Slider widget,
@@ -297,15 +305,15 @@ class SliderRecorder implements ElementRecorder {
     if (isGapped) {
       thumbStyle = _SliderThumbStyle.handle;
       final Size logicalThumbSize =
-          sliderTheme.thumbSize?.resolve(<WidgetState>{}) ??
-              const Size(4.0, 44.0);
+          sliderTheme.thumbSize?.resolve(<WidgetState>{}) ?? _handleThumbSize;
       thumbSize = Size(
         logicalThumbSize.width * scale,
         logicalThumbSize.height * scale,
       );
     } else {
       thumbStyle = _SliderThumbStyle.round;
-      thumbSize = Size(20.0 * scale, 20.0 * scale);
+      thumbSize =
+          Size(_roundedThumbDiameter * scale, _roundedThumbDiameter * scale);
     }
 
     final double overlayWidth = 48.0 * scale;
@@ -327,11 +335,14 @@ class SliderRecorder implements ElementRecorder {
     final double range = widget.max - widget.min;
     // When inputs are masked, anchor the thumb at the center of the track so
     // the recorded replay doesn't leak the actual value.
-    final double valueRatio = isMasked
-        ? 0.5
-        : (range == 0
-            ? 0.0
-            : ((widget.value - widget.min) / range).clamp(0.0, 1.0).toDouble());
+    final double valueRatio;
+    if (isMasked) {
+      valueRatio = 0.5;
+    } else {
+      valueRatio = range == 0
+          ? 0.0
+          : ((widget.value - widget.min) / range).clamp(0.0, 1.0).toDouble();
+    }
     final double thumbTravel = trackWidth - 2 * trackEndRadius.x;
     final double thumbCenterX =
         trackLeft + trackEndRadius.x + thumbTravel * valueRatio;
@@ -354,14 +365,13 @@ class SliderRecorder implements ElementRecorder {
     _SliderTrackSegmentGeometry? secondaryActiveTrack;
     final double? secValue = widget.secondaryTrackValue;
     if (secValue != null) {
-      final double clampedSec =
-          secValue.clamp(widget.min, widget.max).toDouble();
-      final double secRatio =
-          range == 0 ? 0.0 : (clampedSec - widget.min) / range;
-      final double secX = trackLeft + trackWidth * secRatio;
+      final clampedSec = secValue.clamp(widget.min, widget.max);
+      final secRatio = range == 0 ? 0.0 : (clampedSec - widget.min) / range;
+      final secX = trackLeft + trackWidth * secRatio;
       if (secX > trackLeft) {
         secondaryActiveTrack = (
-          rect: Rect.fromLTRB(trackLeft, trackTop, secX, trackBottom),
+          rect:
+              Rect.fromLTRB(trackLeft, trackTop, secX.toDouble(), trackBottom),
           borderRadius: BorderRadius.all(trackEndRadius),
         );
       }
@@ -655,7 +665,6 @@ class SliderNode extends CaptureNode {
 
     return wireframes;
   }
-
 }
 
 /// Builds [SRShapeWireframe] instances from a [Rect] + [Color]. Shared across

@@ -204,8 +204,7 @@ void main() {
     metaTestWidgets(
       'thumb uses widget.thumbColor when set',
       [
-        () => captureSlider(
-            recorder,
+        () => captureSlider(recorder,
             Slider(value: 0.5, onChanged: (_) {}, thumbColor: Colors.red)),
         () => captureSlider(
             recorder,
@@ -222,8 +221,7 @@ void main() {
     metaTestWidgets(
       'active track uses widget.activeColor when set',
       [
-        () => captureSlider(
-            recorder,
+        () => captureSlider(recorder,
             Slider(value: 0.5, onChanged: (_) {}, activeColor: Colors.green)),
         () => captureSlider(
             recorder,
@@ -269,8 +267,8 @@ void main() {
       expect(capture, isNotNull);
       // Order: [0] inactive, [1] secondary, [2] active, [3] thumb.
       final secondary = wireframesOf(capture)[1] as SRShapeWireframe;
-      expect(secondary.shapeStyle!.backgroundColor,
-          Colors.purple.toHexString());
+      expect(
+          secondary.shapeStyle!.backgroundColor, Colors.purple.toHexString());
     });
   });
 
@@ -342,7 +340,8 @@ void main() {
   });
 
   group('material year2023', () {
-    testWidgets('year2023: false produces a handle-style thumb (taller than wide)',
+    testWidgets(
+        'year2023: false produces a handle-style thumb (taller than wide)',
         (tester) async {
       final tree = captureSlider(
         recorder,

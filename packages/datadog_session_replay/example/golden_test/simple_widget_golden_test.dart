@@ -509,6 +509,13 @@ void main() {
                   value: 0.4,
                   onChanged: (_) {},
                 ),
+                Slider(
+                  // ignore: deprecated_member_use
+                  year2023: false,
+                  value: 0.4,
+                  divisions: 5,
+                  onChanged: (_) {},
+                ),
                 // Disabled.
                 Slider(value: 0.5, onChanged: null),
               ],
@@ -571,16 +578,42 @@ void main() {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                // year2023 = true (default M3 round thumb) — min, mid, max.
                 Slider(value: 0.0, onChanged: (_) {}),
                 Slider(value: 0.5, onChanged: (_) {}),
                 Slider(value: 1.0, onChanged: (_) {}),
+                // Custom colors.
+                Slider(
+                  value: 0.5,
+                  onChanged: (_) {},
+                  activeColor: Colors.green,
+                  inactiveColor: Colors.yellow,
+                  thumbColor: Colors.red,
+                ),
+                // With secondary track value.
+                Slider(
+                  value: 0.3,
+                  secondaryTrackValue: 0.7,
+                  onChanged: (_) {},
+                ),
+                // Discrete slider with tick marks.
+                Slider(value: 0.4, divisions: 5, onChanged: (_) {}),
+                // M3-2024 (year2023 = false) — handle thumb + gap + stop indicator.
                 Slider(
                   // ignore: deprecated_member_use
                   year2023: false,
-                  value: 0.9,
+                  value: 0.4,
                   onChanged: (_) {},
                 ),
-                Slider(value: 0.2, divisions: 5, onChanged: (_) {}),
+                Slider(
+                  // ignore: deprecated_member_use
+                  year2023: false,
+                  value: 0.4,
+                  divisions: 5,
+                  onChanged: (_) {},
+                ),
+                // Disabled.
+                Slider(value: 0.5, onChanged: null),
               ],
             ),
           ),
@@ -614,6 +647,13 @@ void main() {
                 CupertinoSlider(value: 0.0, onChanged: (_) {}),
                 CupertinoSlider(value: 0.5, onChanged: (_) {}),
                 CupertinoSlider(value: 1.0, onChanged: (_) {}),
+                CupertinoSlider(
+                  value: 0.5,
+                  onChanged: (_) {},
+                  activeColor: CupertinoColors.systemPurple,
+                  thumbColor: CupertinoColors.systemPurple,
+                ),
+                CupertinoSlider(value: 0.5, onChanged: null),
                 CupertinoSlider(value: 0.5, divisions: 5, onChanged: (_) {}),
               ],
             ),

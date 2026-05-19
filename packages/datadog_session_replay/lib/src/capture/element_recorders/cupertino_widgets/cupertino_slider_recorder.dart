@@ -76,8 +76,7 @@ class CupertinoSliderRecorder implements ElementRecorder {
     );
 
     return SpecificElement(
-      subtreeStrategy: CaptureNodeSubtreeStrategy
-          .ignore, // Ignore subtree to prevent CustomPaintRecorder from capturing the inner CustomPaint
+      subtreeStrategy: CaptureNodeSubtreeStrategy.ignore,
       nodes: [node],
     );
   }
@@ -123,18 +122,18 @@ class CupertinoSliderRecorder implements ElementRecorder {
     final double trackBottom = trackCenterY + trackHalfHeight;
 
     final double range = widget.max - widget.min;
-    final double valueRatio = isMasked
-        ? 0.5
-        : (range == 0
-            ? 0.0
-            : ((widget.value - widget.min) / range)
-                .clamp(0.0, 1.0)
-                .toDouble());
-
+    final double valueRatio;
+    if (isMasked) {
+      valueRatio = 0.5;
+    } else {
+      valueRatio = range == 0
+          ? 0.0
+          : ((widget.value - widget.min) / range).clamp(0.0, 1.0).toDouble();
+    }
     final double thumbTravel = (trackRight - trackLeft) - 2 * thumbRadius;
     final double thumbCenterX =
         trackLeft + thumbRadius + thumbTravel * valueRatio;
-    
+
     final Rect inactiveTrack = Rect.fromLTRB(
       trackLeft,
       trackTop,
