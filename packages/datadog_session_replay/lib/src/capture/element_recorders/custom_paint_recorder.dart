@@ -30,8 +30,17 @@ class CustomPaintRecorder implements ElementRecorder {
     if (widget is! CustomPaint) return null;
 
     // If there's only a foreground painter, this is a decoration
-    // overlay that shouldn't be captured as a placeholder.
+    // overlay that shouldn't be captured as a placeholder. Also
+    // covers the case where neither painter is set.
     if (widget.painter == null) return null;
+
+    // If this CustomPaint exists only to decorate a child subtree (no
+    // explicit size, child takes over layout), the real content lives in
+    // the child. Skip the placeholder and let the recorder pipeline
+    // descend into the child normally
+    if (widget.child != null && widget.size == Size.zero) return null;
+
+    // TODO: Add specific case for DropdownButton background (require visit ancestors)
 
     final elementId = keyGenerator.keyForElement(element);
     return AmbiguousElement(
