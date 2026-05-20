@@ -143,6 +143,7 @@ abstract class DatadogSdkPlatform extends PlatformInterface {
   Future<AttachResponse?> attachToExisting(
     DatadogAttachConfiguration attachConfig,
   );
+  Future<void> flush();
   Future<void> flushAndDeinitialize();
   Future<void> clearAllData();
 

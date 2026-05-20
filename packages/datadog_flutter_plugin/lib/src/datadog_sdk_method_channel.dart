@@ -227,6 +227,11 @@ class DatadogSdkMethodChannel extends DatadogSdkPlatform {
   }
 
   @override
+  Future<void> flush() {
+    return methodChannel.invokeMethod('flush', <String, Object?>{});
+  }
+
+  @override
   Future<void> flushAndDeinitialize() {
     return methodChannel.invokeMethod(
       'flushAndDeinitialize',
