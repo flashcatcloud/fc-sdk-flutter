@@ -12,13 +12,16 @@ import '../../recorder.dart';
 import '../../view_tree_snapshot.dart';
 import '../recording_extensions.dart';
 
-// Characters to represent the checkbox states
-const String _checkmark = '✓';
-const String _dash = '—';
-const String _maskedSymbol = 'x';
+// Material Icons glyphs that represent each checkbox state. Using the same
+// font Flutter ships with means the rendered checkmark/dash/mask matches the
+// real Material stroke weight far better than a generic Unicode character in
+// a fallback sans-serif font.
+const IconData _checkIcon = Icons.check;
+const IconData _dashIcon = Icons.remove;
+const IconData _maskedIcon = Icons.close;
 
 // Scale for the text size within the box
-const double _textScale = 0.7;
+const double _textScale = 0.9;
 
 // Default checkbox size
 const double _edgeSize = Checkbox.width; // 18 px
@@ -277,12 +280,14 @@ class CheckboxNode extends CaptureNode {
   // via shapeStyle/border, and the checkmark symbol is centered as text.
   @override
   List<SRWireframe> buildWireframes() {
-    final symbol = switch ((isMasked, value)) {
-      (true, _) => _maskedSymbol,
-      (_, true) => _checkmark,
-      (_, false) => '',
-      (_, null) => _dash
+    final IconData? symbolIcon = switch ((isMasked, value)) {
+      (true, _) => _maskedIcon,
+      (_, true) => _checkIcon,
+      (_, false) => null,
+      (_, null) => _dashIcon,
     };
+    final String symbol =
+        symbolIcon != null ? String.fromCharCode(symbolIcon.codePoint) : '';
 
     return [
       SRTextWireframe(
@@ -294,7 +299,7 @@ class CheckboxNode extends CaptureNode {
         text: symbol,
         textStyle: SRTextStyle(
           color: symbolColor.toHexString(),
-          family: 'sans-serif',
+          family: symbolIcon?.fontFamily ?? '',
           size: (attributes.height * _textScale).round(),
         ),
         textPosition: SRTextPosition(

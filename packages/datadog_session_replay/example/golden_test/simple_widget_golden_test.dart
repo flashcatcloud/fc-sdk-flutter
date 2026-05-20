@@ -431,6 +431,16 @@ void main() {
               Switch(value: false, onChanged: (_) {}),
               Switch(value: true, onChanged: null),
               Switch(value: false, onChanged: null),
+              Switch(
+                value: true,
+                onChanged: (_) {},
+                thumbIcon: const WidgetStatePropertyAll(Icon(Icons.check)),
+              ),
+              Switch(
+                value: false,
+                onChanged: (_) {},
+                thumbIcon: const WidgetStatePropertyAll(Icon(Icons.close)),
+              ),
               CupertinoSwitch(value: true, onChanged: (_) {}),
               CupertinoSwitch(value: false, onChanged: (_) {}),
               CupertinoSwitch(value: true, onChanged: null),
@@ -462,6 +472,16 @@ void main() {
             children: [
               Switch(value: true, onChanged: (_) {}),
               Switch(value: false, onChanged: (_) {}),
+              Switch(
+                value: true,
+                onChanged: (_) {},
+                thumbIcon: const WidgetStatePropertyAll(Icon(Icons.check)),
+              ),
+              Switch(
+                value: false,
+                onChanged: (_) {},
+                thumbIcon: const WidgetStatePropertyAll(Icon(Icons.close)),
+              ),
               CupertinoSwitch(value: true, onChanged: (_) {}),
               CupertinoSwitch(value: false, onChanged: (_) {}),
             ],
