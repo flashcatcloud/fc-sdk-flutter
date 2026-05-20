@@ -127,8 +127,7 @@ void main() {
     );
   });
 
-  testWidgets('font transform fallback replaces all families',
-      (tester) async {
+  testWidgets('font transform fallback replaces all families', (tester) async {
     final fixture = MaterialApp(
       home: Scaffold(
         appBar: AppBar(
