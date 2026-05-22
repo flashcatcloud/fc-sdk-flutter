@@ -47,6 +47,15 @@ class CapturedBorderStyle {
           width: shape.side.width,
           color: shape.side.color.toHexString(),
         );
+      case final RoundedSuperellipseBorder shape:
+        // CupertinoButton uses RoundedSuperellipseBorder (iOS squircle).
+        // Approximated as a rounded rectangle since SRShapeStyle only
+        // carries a single cornerRadius scalar.
+        return CapturedBorderStyle(
+          cornerRadius: shape.borderRadius.resolve(null).topLeft.x,
+          width: shape.side.width,
+          color: shape.side.color.toHexString(),
+        );
       case final UnderlineInputBorder shape:
         // TODO: Allow per-side borders
         return CapturedBorderStyle(
