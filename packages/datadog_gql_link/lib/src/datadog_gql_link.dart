@@ -80,7 +80,7 @@ class DatadogGqlLink extends Link {
         tracingContext = generateTracingContext(datadogSdk, rum);
       }
 
-      request = _injectTracingHeaders(request);
+      request = _injectTracingHeaders(request, tracingContext);
     } catch (e, st) {
       datadogSdk.internalLogger.sendToDatadog(
         '$DatadogGqlLink encountered an error attempting to create a tracing context; $e',
@@ -229,7 +229,7 @@ class DatadogGqlLink extends Link {
     return resourceId;
   }
 
-  Request _injectTracingHeaders(Request request) {
+  Request _injectTracingHeaders(Request request, TracingContext? outerContext) {
     try {
       final rum = datadogSdk.rum;
       final tracingHeaderTypes = datadogSdk.headerTypesForHost(uri);
@@ -238,8 +238,8 @@ class DatadogGqlLink extends Link {
         return request.updateContextEntry<HttpLinkHeaders>((context) {
           var headers = context?.headers ?? <String, String>{};
 
-          // No tracing context, generate one ourselves
-          final tracingContext = generateTracingContext(datadogSdk, rum);
+          final tracingContext =
+              outerContext ?? generateTracingContext(datadogSdk, rum);
 
           for (final headerType in tracingHeaderTypes) {
             injectTracingHeaders(tracingContext, headerType, headers,

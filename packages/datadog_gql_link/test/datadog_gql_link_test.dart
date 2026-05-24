@@ -1043,7 +1043,72 @@ query UserInfo($id: ID!) {
         verifyHeaders(headersEntry!.headers, headerType, false,
             TraceContextInjection.sampled);
       });
+
+      test('RUM resource trace and span ids match injected wire headers', () {
+        when(() => mockRum.shouldSampleTrace(any(), any())).thenReturn(true);
+        when(() => mockRum.contextInjectionSetting)
+            .thenReturn(TraceContextInjection.sampled);
+        final link =
+            DatadogGqlLink(mockDatadog, Uri.parse('https://test_url/graphql'));
+        final request = Request(
+            operation: Operation(document: query, operationName: 'UserInfo'));
+
+        // When
+        Request? forwardedRequest;
+        link.request(request, (request) {
+          forwardedRequest = request;
+          return const Stream<Response>.empty();
+        });
+
+        // Then
+        final headers =
+            forwardedRequest!.context.entry<HttpLinkHeaders>()!.headers;
+        final capturedAttrs = verify(
+                () => mockRum.startResource(any(), any(), any(), captureAny()))
+            .captured[0] as Map<String, dynamic>;
+        final headerIds = extractTraceAndSpanFromHeaders(headers, headerType);
+        final rumTraceId = BigInt.parse(
+            capturedAttrs[DatadogRumPlatformAttributeKey.traceID] as String,
+            radix: 16);
+        final rumSpanId = BigInt.parse(
+            capturedAttrs[DatadogRumPlatformAttributeKey.spanID] as String);
+        expect(rumTraceId, headerIds.traceId);
+        expect(rumSpanId, headerIds.spanId);
+      });
     });
+  }
+}
+
+({BigInt traceId, BigInt spanId}) extractTraceAndSpanFromHeaders(
+  Map<String, String> headers,
+  TracingHeaderType type,
+) {
+  switch (type) {
+    case TracingHeaderType.datadog:
+      final low = BigInt.parse(headers['x-datadog-trace-id']!);
+      final high =
+          BigInt.parse(headers['x-datadog-tags']!.split('=')[1], radix: 16);
+      return (
+        traceId: (high << 64) | low,
+        spanId: BigInt.parse(headers['x-datadog-parent-id']!),
+      );
+    case TracingHeaderType.b3:
+      final parts = headers['b3']!.split('-');
+      return (
+        traceId: BigInt.parse(parts[0], radix: 16),
+        spanId: BigInt.parse(parts[1], radix: 16),
+      );
+    case TracingHeaderType.b3multi:
+      return (
+        traceId: BigInt.parse(headers['X-B3-TraceId']!, radix: 16),
+        spanId: BigInt.parse(headers['X-B3-SpanId']!, radix: 16),
+      );
+    case TracingHeaderType.tracecontext:
+      final parts = headers['traceparent']!.split('-');
+      return (
+        traceId: BigInt.parse(parts[1], radix: 16),
+        spanId: BigInt.parse(parts[2], radix: 16),
+      );
   }
 }
 
