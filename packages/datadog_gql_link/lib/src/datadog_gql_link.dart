@@ -9,6 +9,7 @@ import 'dart:convert';
 
 import 'package:datadog_flutter_plugin/datadog_flutter_plugin.dart';
 import 'package:datadog_flutter_plugin/datadog_internal.dart';
+import 'package:flutter/foundation.dart';
 import 'package:gql/ast.dart';
 import 'package:gql/language.dart' show printNode;
 import 'package:gql_exec/gql_exec.dart';
@@ -94,6 +95,9 @@ class DatadogGqlLink extends Link {
     final resourceId = _startRumResource(
         request, internalAttributes, tracingContext, userAttributes);
 
+    final capturedRequestHeaders =
+        request.context.entry<HttpLinkHeaders>()?.headers ?? const {};
+
     return forward!(request).transform(StreamTransformer.fromHandlers(
       handleData: (data, sink) {
         listener?.responseReceived(data, userAttributes);
@@ -120,6 +124,11 @@ class DatadogGqlLink extends Link {
           );
         }
 
+        final headerAttributes = _extractHeaderAttributes(
+          capturedRequestHeaders,
+          linkResponseContext?.headers ?? const {},
+        );
+
         datadogSdk.rum?.stopResource(
           resourceId,
           statusCode,
@@ -128,6 +137,7 @@ class DatadogGqlLink extends Link {
           {
             if (errorMap != null) ...errorMap,
             ...userAttributes,
+            ...headerAttributes,
           },
         );
 
@@ -230,6 +240,9 @@ class DatadogGqlLink extends Link {
   }
 
   Request _injectTracingHeaders(Request request) {
+    // On Web the Browser SDK injects tracing headers itself; skipping here
+    // avoids two independent trace contexts ending up on the wire.
+    if (kIsWeb) return request;
     try {
       final rum = datadogSdk.rum;
       final tracingHeaderTypes = datadogSdk.headerTypesForHost(uri);
@@ -258,6 +271,18 @@ class DatadogGqlLink extends Link {
     }
 
     return request;
+  }
+
+  Map<String, Object?> _extractHeaderAttributes(
+    Map<String, String> requestHeaders,
+    Map<String, String> responseHeaders,
+  ) {
+    final extractor = datadogSdk.rum?.resourceHeadersExtractor;
+    if (extractor == null) return const {};
+    return extractor.toResourceAttributes(
+      requestHeaders.map((k, v) => MapEntry(k, [v])),
+      responseHeaders.map((k, v) => MapEntry(k, [v])),
+    );
   }
 
   Map<String, Object>? _serializeResponseErrors(Response response) {
