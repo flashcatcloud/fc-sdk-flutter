@@ -1067,11 +1067,14 @@ query UserInfo($id: ID!) {
                 () => mockRum.startResource(any(), any(), any(), captureAny()))
             .captured[0] as Map<String, dynamic>;
         final headerIds = extractTraceAndSpanFromHeaders(headers, headerType);
-        final rumTraceId = BigInt.parse(
-            capturedAttrs[DatadogRumPlatformAttributeKey.traceID] as String,
-            radix: 16);
-        final rumSpanId = BigInt.parse(
-            capturedAttrs[DatadogRumPlatformAttributeKey.spanID] as String);
+        final rumTraceId = TracingId.fromString(
+                capturedAttrs[DatadogRumPlatformAttributeKey.traceID] as String,
+                TracingIdRepresentation.hex)
+            .value;
+        final rumSpanId = TracingId.fromString(
+                capturedAttrs[DatadogRumPlatformAttributeKey.spanID] as String,
+                TracingIdRepresentation.decimal)
+            .value;
         expect(rumTraceId, headerIds.traceId);
         expect(rumSpanId, headerIds.spanId);
       });
@@ -1085,29 +1088,43 @@ query UserInfo($id: ID!) {
 ) {
   switch (type) {
     case TracingHeaderType.datadog:
-      final low = BigInt.parse(headers['x-datadog-trace-id']!);
-      final high =
-          BigInt.parse(headers['x-datadog-tags']!.split('=')[1], radix: 16);
+      final low = TracingId.fromString(
+              headers['x-datadog-trace-id'], TracingIdRepresentation.decimal)
+          .value;
+      final high = TracingId.fromString(
+              headers['x-datadog-tags']!.split('=')[1],
+              TracingIdRepresentation.hex)
+          .value;
       return (
         traceId: (high << 64) | low,
-        spanId: BigInt.parse(headers['x-datadog-parent-id']!),
+        spanId: TracingId.fromString(
+                headers['x-datadog-parent-id'], TracingIdRepresentation.decimal)
+            .value,
       );
     case TracingHeaderType.b3:
       final parts = headers['b3']!.split('-');
       return (
-        traceId: BigInt.parse(parts[0], radix: 16),
-        spanId: BigInt.parse(parts[1], radix: 16),
+        traceId:
+            TracingId.fromString(parts[0], TracingIdRepresentation.hex).value,
+        spanId:
+            TracingId.fromString(parts[1], TracingIdRepresentation.hex).value,
       );
     case TracingHeaderType.b3multi:
       return (
-        traceId: BigInt.parse(headers['X-B3-TraceId']!, radix: 16),
-        spanId: BigInt.parse(headers['X-B3-SpanId']!, radix: 16),
+        traceId: TracingId.fromString(
+                headers['X-B3-TraceId'], TracingIdRepresentation.hex)
+            .value,
+        spanId: TracingId.fromString(
+                headers['X-B3-SpanId'], TracingIdRepresentation.hex)
+            .value,
       );
     case TracingHeaderType.tracecontext:
       final parts = headers['traceparent']!.split('-');
       return (
-        traceId: BigInt.parse(parts[1], radix: 16),
-        spanId: BigInt.parse(parts[2], radix: 16),
+        traceId:
+            TracingId.fromString(parts[1], TracingIdRepresentation.hex).value,
+        spanId:
+            TracingId.fromString(parts[2], TracingIdRepresentation.hex).value,
       );
   }
 }
