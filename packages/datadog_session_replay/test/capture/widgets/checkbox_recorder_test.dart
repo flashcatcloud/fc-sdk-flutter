@@ -102,7 +102,8 @@ void main() {
       (capture) {
         expect(capture, isNotNull);
         expect(capture!.viewTreeSnapshot.nodes.length, 1);
-        expect(wireframeOf(capture).text, '✓');
+        expect(wireframeOf(capture).text,
+            String.fromCharCode(Icons.check.codePoint));
       },
     );
 
@@ -132,7 +133,8 @@ void main() {
       (capture) {
         expect(capture, isNotNull);
         expect(capture!.viewTreeSnapshot.nodes.length, 1);
-        expect(wireframeOf(capture).text, '—');
+        expect(wireframeOf(capture).text,
+            String.fromCharCode(Icons.remove.codePoint));
       },
     );
   });
@@ -499,7 +501,7 @@ void main() {
 
   group('text style', () {
     metaTestWidgets(
-      'symbol size is 70% of the checkbox height',
+      'symbol size is 90% of the checkbox height',
       [
         () =>
             captureCheckbox(recorder, Checkbox(value: true, onChanged: (_) {})),
@@ -509,7 +511,7 @@ void main() {
       (capture) {
         expect(capture, isNotNull);
         final wire = wireframeOf(capture);
-        expect(wire.textStyle.size, (wire.height * 0.7).round());
+        expect(wire.textStyle.size, (wire.height * 0.9).round());
       },
     );
 
@@ -544,7 +546,7 @@ void main() {
       (capture) {
         expect(capture, isNotNull);
         final wire = wireframeOf(capture);
-        expect(wire.text, 'x');
+        expect(wire.text, String.fromCharCode(Icons.close.codePoint));
         expect(
             wire.shapeStyle!.backgroundColor,
             anyOf(Colors.transparent.toHexString(),
@@ -568,7 +570,7 @@ void main() {
       (capture) {
         expect(capture, isNotNull);
         final wire = wireframeOf(capture);
-        expect(wire.text, 'x');
+        expect(wire.text, String.fromCharCode(Icons.close.codePoint));
         expect(
             wire.shapeStyle!.backgroundColor,
             anyOf(Colors.transparent.toHexString(),
@@ -591,7 +593,8 @@ void main() {
       ],
       (capture) {
         expect(capture, isNotNull);
-        expect(wireframeOf(capture).text, 'x');
+        expect(wireframeOf(capture).text,
+            String.fromCharCode(Icons.close.codePoint));
       },
       beforeEach: () => recorder.defaultTreeCapturePrivacy = TreeCapturePrivacy(
         textAndInputPrivacyLevel: TextAndInputPrivacyLevel.maskAllInputs,
@@ -609,7 +612,8 @@ void main() {
       ],
       (capture) {
         expect(capture, isNotNull);
-        expect(wireframeOf(capture).text, '✓');
+        expect(wireframeOf(capture).text,
+            String.fromCharCode(Icons.check.codePoint));
       },
       beforeEach: () => recorder.defaultTreeCapturePrivacy = TreeCapturePrivacy(
         textAndInputPrivacyLevel: TextAndInputPrivacyLevel.maskSensitiveInputs,

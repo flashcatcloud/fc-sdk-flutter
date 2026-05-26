@@ -69,6 +69,10 @@ class SwitchRecorder implements ElementRecorder {
                 ? 12.0
                 : 8.0)
             : 10.0;
+    final Icon? thumbIcon = hasThumbIcon
+        ? (widget.thumbIcon?.resolve(states) ??
+            theme.switchTheme.thumbIcon?.resolve(states))
+        : null;
 
     final double disabledOpacity =
         (isCupertinoStyle && states.contains(WidgetState.disabled)) ? 0.5 : 1.0;
@@ -78,6 +82,8 @@ class SwitchRecorder implements ElementRecorder {
         states: states,
         isCupertinoStyle: isCupertinoStyle,
         theme: theme);
+    Color thumbIconColor =
+        _getThumbIconColor(thumbIcon: thumbIcon, states: states, theme: theme);
     Color trackColor = _getTrackColor(
         element: element,
         widget: widget,
@@ -98,6 +104,8 @@ class SwitchRecorder implements ElementRecorder {
         color: borderSide.color
             .withValues(alpha: borderSide.color.a * disabledOpacity),
       );
+      thumbIconColor =
+          thumbIconColor.withValues(alpha: thumbIconColor.a * disabledOpacity);
     }
 
     final adjustedBounds = Rect.fromCenter(
@@ -133,6 +141,8 @@ class SwitchRecorder implements ElementRecorder {
       side: borderSide,
       innerRadius: dotRadius,
       isSelected: states.contains(WidgetState.selected),
+      thumbIcon: thumbIcon?.icon,
+      thumbIconColor: thumbIconColor,
     );
 
     return SpecificElement(
@@ -286,6 +296,23 @@ class SwitchRecorder implements ElementRecorder {
     }
   }
 
+  Color _getThumbIconColor({
+    required Icon? thumbIcon,
+    required Set<WidgetState> states,
+    required ThemeData theme,
+  }) {
+    if (thumbIcon?.color case final color?) return color;
+    if (!theme.useMaterial3) return Colors.transparent;
+    if (states.contains(WidgetState.disabled)) {
+      return states.contains(WidgetState.selected)
+          ? theme.colorScheme.onSurface.withValues(alpha: 0.38)
+          : theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.38);
+    }
+    return states.contains(WidgetState.selected)
+        ? theme.colorScheme.onPrimaryContainer
+        : theme.colorScheme.surfaceContainerHighest;
+  }
+
   BorderSide _getBorderSide({
     required Switch widget,
     required Set<WidgetState> states,
@@ -331,6 +358,8 @@ class SwitchNode extends CaptureNode {
   final BorderSide side;
   final double innerRadius;
   final bool isSelected;
+  final IconData? thumbIcon;
+  final Color thumbIconColor;
 
   const SwitchNode(
     super.attributes, {
@@ -341,6 +370,8 @@ class SwitchNode extends CaptureNode {
     required this.side,
     required this.innerRadius,
     required this.isSelected,
+    required this.thumbIcon,
+    required this.thumbIconColor,
   });
 
   // Renders the radio button as two shape wireframes: the outer ring and,
@@ -370,12 +401,25 @@ class SwitchNode extends CaptureNode {
           backgroundColor: trackColor.toHexString(),
         ),
       ),
-      SRShapeWireframe(
+      SRTextWireframe(
         id: thumbWireframeId,
         x: thumbAttributeX,
         y: thumbAttributeY,
         width: dotDiameter,
         height: dotDiameter,
+        text:
+            thumbIcon != null ? String.fromCharCode(thumbIcon!.codePoint) : '',
+        textStyle: SRTextStyle(
+          color: thumbIconColor.toHexString(),
+          family: thumbIcon?.fontFamily ?? '',
+          size: dotDiameter,
+        ),
+        textPosition: SRTextPosition(
+          alignment: SRAlignment(
+            horizontal: SRHorizontalAlignment.center,
+            vertical: SRVerticalAlignment.center,
+          ),
+        ),
         shapeStyle: SRShapeStyle(
           cornerRadius: dotDiameter / 2.0,
           backgroundColor: thumbColor.toHexString(),
