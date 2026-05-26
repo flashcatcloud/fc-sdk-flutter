@@ -69,8 +69,8 @@ void main() {
   SRShapeWireframe trackOf(CaptureResult? capture) =>
       wireframesOf(capture)[0] as SRShapeWireframe;
 
-  SRShapeWireframe thumbOf(CaptureResult? capture) =>
-      wireframesOf(capture)[1] as SRShapeWireframe;
+  SRTextWireframe thumbOf(CaptureResult? capture) =>
+      wireframesOf(capture)[1] as SRTextWireframe;
 
   void metaTestWidgets(
     String testDescription,

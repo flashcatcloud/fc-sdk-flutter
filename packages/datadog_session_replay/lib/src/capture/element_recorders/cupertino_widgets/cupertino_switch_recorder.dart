@@ -95,6 +95,8 @@ class CupertinoSwitchRecorder implements ElementRecorder {
       side: borderSide,
       innerRadius: dotRadius,
       isSelected: states.contains(WidgetState.selected),
+      thumbIcon: null,
+      thumbIconColor: const Color(0x00000000),
     );
 
     return SpecificElement(
