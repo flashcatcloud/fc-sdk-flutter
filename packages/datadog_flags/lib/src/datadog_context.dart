@@ -20,6 +20,7 @@ class DatadogFlagsContext {
   final String env;
   final DatadogFlagsSite site;
   final String? service;
+  final String? version;
   final String? applicationId;
   final String sdkVersion;
   final String source;
@@ -29,6 +30,7 @@ class DatadogFlagsContext {
     required this.env,
     required this.site,
     this.service,
+    this.version,
     this.applicationId,
     this.sdkVersion = 'unknown',
     this.source = 'flutter',
@@ -47,6 +49,7 @@ class DatadogFlagsContext {
       env: configuration.env,
       site: _siteFromSdk(configuration.site),
       service: configuration.service,
+      version: configuration.versionTag,
       applicationId: configuration.rumConfiguration?.applicationId,
       sdkVersion: DatadogSdk.sdkVersion,
     );
@@ -84,6 +87,20 @@ class DatadogFlagsContext {
       DatadogFlagsSite.us1Fed =>
         Uri.parse('https://browser-intake-ddog-gov.com'),
     };
+  }
+
+  Map<String, Object?> evaluationBatchContext() {
+    return removeNullValues({
+      'service': service,
+      'version': version,
+      'env': env,
+      'rum': applicationId == null
+          ? null
+          : {
+              'application': {'id': applicationId},
+              'view': null,
+            },
+    });
   }
 }
 

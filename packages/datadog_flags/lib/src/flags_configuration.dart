@@ -12,6 +12,10 @@ class DatadogFlagsConfiguration {
   final Map<String, String>? customFlagsHeaders;
   final Uri? customExposureEndpoint;
   final bool trackExposures;
+  final Uri? customEvaluationEndpoint;
+  final bool trackEvaluations;
+  final Duration evaluationFlushInterval;
+  final int evaluationMaxBatchSize;
   final http.Client? httpClient;
   final DatadogFlagsContext? datadogContext;
   final bool rumIntegrationEnabled;
@@ -22,6 +26,10 @@ class DatadogFlagsConfiguration {
     this.customFlagsHeaders,
     this.customExposureEndpoint,
     this.trackExposures = true,
+    this.customEvaluationEndpoint,
+    this.trackEvaluations = true,
+    this.evaluationFlushInterval = const Duration(seconds: 10),
+    this.evaluationMaxBatchSize = 1000,
     this.httpClient,
     this.datadogContext,
     this.rumIntegrationEnabled = true,

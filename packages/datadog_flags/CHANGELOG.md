@@ -7,3 +7,4 @@
 - Add typed value/details APIs with in-memory assignment state.
 - Add RUM feature flag reporting for successful typed evaluations.
 - Add exposure logging for successful `doLog` assignments.
+- Add aggregated flagevaluation metric logging with explicit flush support.

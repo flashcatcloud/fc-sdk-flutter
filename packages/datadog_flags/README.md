@@ -73,6 +73,9 @@ final enabled = flags.getBooleanValue(
   available.
 - Successful typed evaluations emit exposure events when the assignment has
   `doLog: true`, deduped by targeting key, flag key, allocation, and variant.
+- Successful, defaulted, and error evaluations are aggregated into
+  flagevaluation metric events and sent on `flush()` or the configured batch
+  boundary.
 
 ## Local Validation
 

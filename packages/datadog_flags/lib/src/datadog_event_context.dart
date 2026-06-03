@@ -16,3 +16,13 @@ Map<String, Object?>? rumContextFor(DatadogFlagsContext context) {
     'view': null,
   };
 }
+
+Map<String, Object?>? ddContextFor(DatadogFlagsContext context) {
+  final ddContext = removeNullValues({
+    'service': context.service,
+    'version': context.version,
+    'env': context.env,
+    'rum': rumContextFor(context),
+  });
+  return ddContext.isEmpty ? null : ddContext;
+}
