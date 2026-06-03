@@ -1,0 +1,16 @@
+name: datadog_flags
+description: Native Dart precompute client for Datadog feature flag assignments.
+version: 0.0.1
+publish_to: none
+repository: https://github.com/DataDog/dd-sdk-flutter
+homepage: https://datadoghq.com
+
+environment:
+  sdk: ">=3.6.0 <4.0.0"
+
+dependencies:
+  http: ^1.0.0
+
+dev_dependencies:
+  lints: ^6.0.0
+  test: ^1.25.0
