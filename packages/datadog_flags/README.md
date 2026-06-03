@@ -76,6 +76,8 @@ final enabled = flags.getBooleanValue(
 - Successful, defaulted, and error evaluations are aggregated into
   flagevaluation metric events and sent on `flush()` or the configured batch
   boundary.
+- Last-known successful assignments are persisted and restored only when the
+  cached context matches the active evaluation context.
 
 ## Local Validation
 

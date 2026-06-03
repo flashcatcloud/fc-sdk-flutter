@@ -15,8 +15,11 @@ import 'package:datadog_flags/src/rum_flag_evaluation_reporter.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   late List<http.Request> requests;
   late DateTime now;
 
@@ -35,6 +38,7 @@ void main() {
       configuration: DatadogFlagsConfiguration(
         datadogContext: datadogContext(),
         httpClient: clientWithResponse(requests, assignmentsResponse()),
+        store: InMemoryDatadogFlagsStore(),
       ),
     );
 
@@ -121,10 +125,11 @@ void main() {
     final first = client.setEvaluationContext(
       const DatadogFlagsEvaluationContext(targetingKey: 'user-first'),
     );
+    await waitUntil(() => responseCompleters.length == 1);
     final second = client.setEvaluationContext(
       const DatadogFlagsEvaluationContext(targetingKey: 'user-second'),
     );
-    await Future<void>.delayed(Duration.zero);
+    await waitUntil(() => responseCompleters.length == 2);
 
     expect(responseCompleters, hasLength(2));
     responseCompleters[1].complete(http.Response(
@@ -163,11 +168,14 @@ void main() {
       trackEvaluations: false,
     );
     final repository = FlagsRepository(
+      clientName: 'rum-test',
       fetcher: FlagAssignmentsFetcher(
         datadogContext: context,
         configuration: config,
         httpClient: httpClient,
       ),
+      store: InMemoryDatadogFlagsStore(),
+      dateProvider: () => now,
     );
     final fakeRum = FakeRumFlagEvaluationReporter();
     final client = DefaultDatadogFlagsClient(
@@ -200,9 +208,11 @@ void main() {
   });
 
   test('reset clears the current assignment state', () async {
+    final store = InMemoryDatadogFlagsStore();
     final client = await createClient(
       requests: requests,
       response: assignmentsResponse(),
+      store: store,
     );
     await client.setEvaluationContext(
       const DatadogFlagsEvaluationContext(targetingKey: 'user-123'),
@@ -219,6 +229,7 @@ void main() {
     );
     expect(details.value, isFalse);
     expect(details.error, FlagEvaluationError.providerNotReady);
+    expect(store.values, isEmpty);
   });
 
   test('counts exposure emissions at the HTTP boundary', () async {
@@ -463,6 +474,182 @@ void main() {
 
     expect(evaluationRequests(requests), hasLength(1));
   });
+
+  test('persists assignments and restores only for the matching context',
+      () async {
+    final store = InMemoryDatadogFlagsStore();
+    final client = await createClient(
+      requests: requests,
+      response: assignmentsResponse(),
+      store: store,
+      trackExposures: false,
+      trackEvaluations: false,
+    );
+    const context = DatadogFlagsEvaluationContext(
+      targetingKey: 'user-123',
+      attributes: {'plan': 'pro'},
+    );
+    await client.setEvaluationContext(context);
+
+    expect(store.values, contains(DatadogFlagsClient.defaultName));
+    await DatadogFlags.disable();
+
+    final responseCompleter = Completer<http.Response>();
+    final restored = await createClient(
+      requests: requests,
+      store: store,
+      trackExposures: false,
+      trackEvaluations: false,
+      httpClient: MockClient((request) {
+        requests.add(request);
+        return responseCompleter.future;
+      }),
+    );
+
+    final refresh = restored.setEvaluationContext(context);
+    await Future<void>.delayed(Duration.zero);
+    expect(
+      restored.getBooleanValue(key: 'show-paywall', defaultValue: false),
+      isTrue,
+    );
+
+    responseCompleter.complete(http.Response(
+      jsonEncode(assignmentsResponse(booleanValue: false)),
+      200,
+    ));
+    await refresh;
+    expect(
+      restored.getBooleanValue(key: 'show-paywall', defaultValue: true),
+      isFalse,
+    );
+  });
+
+  test('ignores cached assignments for a different context', () async {
+    final store = InMemoryDatadogFlagsStore();
+    final client = await createClient(
+      requests: requests,
+      response: assignmentsResponse(),
+      store: store,
+      trackExposures: false,
+      trackEvaluations: false,
+    );
+    await client.setEvaluationContext(
+      const DatadogFlagsEvaluationContext(targetingKey: 'user-123'),
+    );
+    await DatadogFlags.disable();
+
+    final responseCompleter = Completer<http.Response>();
+    final restored = await createClient(
+      requests: requests,
+      store: store,
+      trackExposures: false,
+      trackEvaluations: false,
+      httpClient: MockClient((request) {
+        requests.add(request);
+        return responseCompleter.future;
+      }),
+    );
+
+    final refresh = restored.setEvaluationContext(
+      const DatadogFlagsEvaluationContext(targetingKey: 'user-456'),
+    );
+    await Future<void>.delayed(Duration.zero);
+    final notReady = restored.getBooleanDetails(
+      key: 'show-paywall',
+      defaultValue: false,
+    );
+    expect(notReady.error, FlagEvaluationError.providerNotReady);
+
+    responseCompleter.complete(http.Response(
+      jsonEncode(assignmentsResponse(booleanValue: false)),
+      200,
+    ));
+    await refresh;
+    expect(
+      restored.getBooleanValue(key: 'show-paywall', defaultValue: true),
+      isFalse,
+    );
+  });
+
+  test('overlapping context fetches persist only the latest context', () async {
+    final store = InMemoryDatadogFlagsStore();
+    final responseCompleters = <Completer<http.Response>>[];
+    final client = await createClient(
+      requests: requests,
+      store: store,
+      trackExposures: false,
+      trackEvaluations: false,
+      httpClient: MockClient((request) {
+        requests.add(request);
+        final completer = Completer<http.Response>();
+        responseCompleters.add(completer);
+        return completer.future;
+      }),
+    );
+
+    final first = client.setEvaluationContext(
+      const DatadogFlagsEvaluationContext(targetingKey: 'user-first'),
+    );
+    await waitUntil(() => responseCompleters.length == 1);
+    final second = client.setEvaluationContext(
+      const DatadogFlagsEvaluationContext(targetingKey: 'user-second'),
+    );
+    await waitUntil(() => responseCompleters.length == 2);
+
+    responseCompleters[1].complete(http.Response(
+      jsonEncode(assignmentsResponse(
+        booleanVariationKey: 'second',
+        booleanValue: false,
+      )),
+      200,
+    ));
+    await second;
+
+    responseCompleters[0].complete(http.Response(
+      jsonEncode(assignmentsResponse(
+        booleanVariationKey: 'first',
+        booleanValue: true,
+      )),
+      200,
+    ));
+    await first;
+
+    final persisted = store.values[DatadogFlagsClient.defaultName]!;
+    expect(persisted.context.targetingKey, 'user-second');
+    expect(persisted.flags['show-paywall']!.variationKey, 'second');
+  });
+
+  test('shared preferences store round-trips persisted assignments', () async {
+    SharedPreferences.setMockInitialValues({});
+    final preferences = await SharedPreferences.getInstance();
+    final store = SharedPreferencesDatadogFlagsStore(
+      sharedPreferences: preferences,
+      namespace: 'test_flags',
+    );
+    final data = FlagsData(
+      flags: {
+        'show-paywall': const FlagAssignment(
+          allocationKey: 'allocation-a',
+          variationKey: 'enabled',
+          variationType: FlagVariationType.boolean,
+          variationValue: true,
+          reason: 'TARGETING_MATCH',
+          doLog: true,
+        ),
+      },
+      context: const DatadogFlagsEvaluationContext(targetingKey: 'user-123'),
+      date: now,
+    );
+
+    await store.write('client', data);
+    final restored = await store.read('client');
+
+    expect(restored!.context.targetingKey, 'user-123');
+    expect(restored.flags['show-paywall']!.variationValue, isTrue);
+
+    await store.delete('client');
+    expect(await store.read('client'), isNull);
+  });
 }
 
 Future<DatadogFlagsClient> createClient({
@@ -473,6 +660,7 @@ Future<DatadogFlagsClient> createClient({
   bool trackExposures = true,
   bool trackEvaluations = true,
   int evaluationMaxBatchSize = 1000,
+  DatadogFlagsStore? store,
 }) async {
   await DatadogFlags.enable(
     configuration: DatadogFlagsConfiguration(
@@ -483,6 +671,7 @@ Future<DatadogFlagsClient> createClient({
       trackExposures: trackExposures,
       trackEvaluations: trackEvaluations,
       evaluationMaxBatchSize: evaluationMaxBatchSize,
+      store: store ?? InMemoryDatadogFlagsStore(),
     ),
   );
   return DatadogFlagsClient.create();

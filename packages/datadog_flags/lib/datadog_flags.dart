@@ -15,6 +15,7 @@ export 'src/flags_configuration.dart';
 export 'src/flags_context.dart';
 export 'src/flags_details.dart';
 export 'src/flags_error.dart';
+export 'src/flags_store.dart';
 export 'src/json_value.dart';
 
 typedef FlagsClient = DatadogFlagsClient;

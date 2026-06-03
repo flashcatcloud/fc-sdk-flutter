@@ -8,3 +8,4 @@
 - Add RUM feature flag reporting for successful typed evaluations.
 - Add exposure logging for successful `doLog` assignments.
 - Add aggregated flagevaluation metric logging with explicit flush support.
+- Add last-known assignment persistence scoped to the active evaluation context.

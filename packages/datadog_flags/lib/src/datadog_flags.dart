@@ -5,6 +5,7 @@
 
 import 'package:datadog_flutter_plugin/datadog_flutter_plugin.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'datadog_context.dart';
 import 'default_flags_client.dart';
@@ -15,6 +16,7 @@ import 'flags_client.dart';
 import 'flags_configuration.dart';
 import 'flags_error.dart';
 import 'flags_repository.dart';
+import 'flags_store.dart';
 import 'rum_flag_evaluation_reporter.dart';
 
 class DatadogFlags {
@@ -23,6 +25,7 @@ class DatadogFlags {
   static DatadogFlagsContext? _datadogContext;
   static DatadogSdk? _sdk;
   static http.Client? _httpClient;
+  static DatadogFlagsStore? _store;
   static final Map<String, DatadogFlagsClient> _clients = {};
   static bool _enabled = false;
 
@@ -40,11 +43,16 @@ class DatadogFlags {
     final datadogSdk = sdk ?? DatadogSdk.instance;
     final datadogContext =
         configuration.datadogContext ?? DatadogFlagsContext.fromSdk(datadogSdk);
+    final prefs = configuration.store == null
+        ? await SharedPreferences.getInstance()
+        : null;
 
     _configuration = configuration;
     _datadogContext = datadogContext;
     _sdk = datadogSdk;
     _httpClient = configuration.httpClient ?? http.Client();
+    _store = configuration.store ??
+        SharedPreferencesDatadogFlagsStore(sharedPreferences: prefs!);
     _enabled = true;
     await createClient();
   }
@@ -59,11 +67,14 @@ class DatadogFlags {
 
     final runtime = _runtimeOrThrow();
     final repository = FlagsRepository(
+      clientName: name,
       fetcher: FlagAssignmentsFetcher(
         datadogContext: runtime.datadogContext,
         configuration: runtime.configuration,
         httpClient: runtime.httpClient,
       ),
+      store: runtime.store,
+      dateProvider: runtime.configuration.dateProvider,
     );
 
     final client = DefaultDatadogFlagsClient(
@@ -113,6 +124,7 @@ class DatadogFlags {
     _httpClient?.close();
     _httpClient = null;
     _sdk = null;
+    _store = null;
     _datadogContext = null;
     _enabled = false;
   }
@@ -126,10 +138,12 @@ class DatadogFlags {
     final datadogContext = _datadogContext;
     final httpClient = _httpClient;
     final sdk = _sdk;
+    final store = _store;
     if (!_enabled ||
         datadogContext == null ||
         httpClient == null ||
-        sdk == null) {
+        sdk == null ||
+        store == null) {
       throw FlagsException.clientNotInitialized(
         'Call DatadogFlags.enable() before creating a flags client.',
       );
@@ -140,6 +154,7 @@ class DatadogFlags {
       datadogContext: datadogContext,
       httpClient: httpClient,
       sdk: sdk,
+      store: store,
     );
   }
 }
@@ -149,11 +164,13 @@ class _FlagsRuntime {
   final DatadogFlagsContext datadogContext;
   final http.Client httpClient;
   final DatadogSdk sdk;
+  final DatadogFlagsStore store;
 
   const _FlagsRuntime({
     required this.configuration,
     required this.datadogContext,
     required this.httpClient,
     required this.sdk,
+    required this.store,
   });
 }

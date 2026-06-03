@@ -6,6 +6,7 @@
 import 'package:http/http.dart' as http;
 
 import 'datadog_context.dart';
+import 'flags_store.dart';
 
 class DatadogFlagsConfiguration {
   final Uri? customFlagsEndpoint;
@@ -18,6 +19,7 @@ class DatadogFlagsConfiguration {
   final int evaluationMaxBatchSize;
   final http.Client? httpClient;
   final DatadogFlagsContext? datadogContext;
+  final DatadogFlagsStore? store;
   final bool rumIntegrationEnabled;
   final DateTime Function() dateProvider;
 
@@ -32,6 +34,7 @@ class DatadogFlagsConfiguration {
     this.evaluationMaxBatchSize = 1000,
     this.httpClient,
     this.datadogContext,
+    this.store,
     this.rumIntegrationEnabled = true,
     this.dateProvider = DateTime.now,
   });
