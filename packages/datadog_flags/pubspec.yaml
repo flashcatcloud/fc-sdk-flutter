@@ -3,6 +3,11 @@ description: Datadog Feature Flags and Experimentation SDK for client applicatio
 version: 0.0.1
 repository: https://github.com/DataDog/dd-sdk-flutter
 homepage: https://datadoghq.com
+issue_tracker: https://github.com/DataDog/dd-sdk-flutter/issues
+topics:
+  - datadog
+  - feature-flags
+  - experimentation
 
 environment:
   sdk: ">=3.6.0 <4.0.0"

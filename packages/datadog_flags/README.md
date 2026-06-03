@@ -2,7 +2,10 @@
 
 `datadog_flags` is the native Dart SDK for Datadog Feature Flags and
 Experimentation in client applications. It lets applications evaluate
-Datadog-backed feature flags.
+Datadog-backed feature flags from precomputed assignments, resolve typed values
+locally, and report exposure and flag evaluation events.
+
+This package does not bridge to native iOS or Android flagging SDKs.
 
 ## Typed Evaluation
 
@@ -59,6 +62,10 @@ them independently.
 
 ## Behavior
 
+- Assignments are fetched with `POST /precompute-assignments`.
+- Requests use `Content-Type: application/vnd.api+json` and `dd-client-token`.
+- `dd-application-id` is included only when configured.
+- Gov sites fall back to the US1 flags endpoint, matching the iOS SDK behavior.
 - Unknown or malformed individual flag assignments are ignored so that one
   invalid assignment does not prevent other assignments from loading.
 - Typed evaluations return caller-provided defaults instead of throwing when
@@ -68,3 +75,7 @@ them independently.
 - Successful typed evaluations emit exposure events when exposure tracking is
   enabled and the assignment has `doLog: true`, deduped by targeting key, flag
   key, allocation, and variant.
+- Successful, defaulted, and error evaluations are aggregated into flag
+  evaluation events and sent on `shutdown()` or the configured batch boundary.
+- Last-known successful assignments are restored only when the stored context
+  matches the active evaluation context.
