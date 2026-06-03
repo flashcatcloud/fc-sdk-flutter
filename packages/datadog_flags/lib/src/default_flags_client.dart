@@ -3,7 +3,10 @@
 // developed at Datadog (https://www.datadoghq.com/).
 // Copyright 2019-Present Datadog, Inc.
 
+import 'dart:async';
+
 import 'assignment.dart';
+import 'exposure_logger.dart';
 import 'flags_client.dart';
 import 'flags_context.dart';
 import 'flags_details.dart';
@@ -16,13 +19,16 @@ class DefaultDatadogFlagsClient implements DatadogFlagsClient {
   @override
   final String name;
   final FlagsRepository _repository;
+  final ExposureLogger _exposureLogger;
   final RumFlagEvaluationReporter _rumFlagEvaluationReporter;
 
   DefaultDatadogFlagsClient({
     required this.name,
     required FlagsRepository repository,
+    required ExposureLogger exposureLogger,
     required RumFlagEvaluationReporter rumFlagEvaluationReporter,
   })  : _repository = repository,
+        _exposureLogger = exposureLogger,
         _rumFlagEvaluationReporter = rumFlagEvaluationReporter;
 
   @override
@@ -185,7 +191,7 @@ class DefaultDatadogFlagsClient implements DatadogFlagsClient {
     }
 
     final value = typedValue as T;
-    _trackRumEvaluation(key, value);
+    _trackEvaluation(key, assignment, value, context);
     return FlagDetails(
       key: key,
       value: value,
@@ -194,7 +200,17 @@ class DefaultDatadogFlagsClient implements DatadogFlagsClient {
     );
   }
 
-  void _trackRumEvaluation<T>(String key, T value) {
+  void _trackEvaluation<T>(
+    String key,
+    FlagAssignment assignment,
+    T value,
+    DatadogFlagsEvaluationContext context,
+  ) {
+    unawaited(_exposureLogger.logExposure(
+      flagKey: key,
+      assignment: assignment,
+      evaluationContext: context,
+    ));
     if (value != null) {
       _rumFlagEvaluationReporter.report(key, value as Object);
     }

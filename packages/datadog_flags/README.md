@@ -71,6 +71,8 @@ final enabled = flags.getBooleanValue(
   errors when defaults are used.
 - Successful typed evaluations report RUM feature flag evaluations when RUM is
   available.
+- Successful typed evaluations emit exposure events when the assignment has
+  `doLog: true`, deduped by targeting key, flag key, allocation, and variant.
 
 ## Local Validation
 

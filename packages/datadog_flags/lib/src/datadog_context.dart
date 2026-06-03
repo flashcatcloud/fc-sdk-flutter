@@ -19,13 +19,19 @@ class DatadogFlagsContext {
   final String clientToken;
   final String env;
   final DatadogFlagsSite site;
+  final String? service;
   final String? applicationId;
+  final String sdkVersion;
+  final String source;
 
   const DatadogFlagsContext({
     required this.clientToken,
     required this.env,
     required this.site,
+    this.service,
     this.applicationId,
+    this.sdkVersion = 'unknown',
+    this.source = 'flutter',
   });
 
   factory DatadogFlagsContext.fromSdk(DatadogSdk sdk) {
@@ -40,7 +46,9 @@ class DatadogFlagsContext {
       clientToken: configuration.clientToken,
       env: configuration.env,
       site: _siteFromSdk(configuration.site),
+      service: configuration.service,
       applicationId: configuration.rumConfiguration?.applicationId,
+      sdkVersion: DatadogSdk.sdkVersion,
     );
   }
 
@@ -60,6 +68,27 @@ class DatadogFlagsContext {
         Uri.parse('https://preview.ff-cdn.datadoghq.com'),
     };
   }
+
+  Uri intakeEndpoint() {
+    return switch (site) {
+      DatadogFlagsSite.us1 => Uri.parse('https://browser-intake-datadoghq.com'),
+      DatadogFlagsSite.us3 =>
+        Uri.parse('https://browser-intake-us3-datadoghq.com'),
+      DatadogFlagsSite.us5 =>
+        Uri.parse('https://browser-intake-us5-datadoghq.com'),
+      DatadogFlagsSite.eu1 => Uri.parse('https://browser-intake-datadoghq.eu'),
+      DatadogFlagsSite.ap1 =>
+        Uri.parse('https://browser-intake-ap1-datadoghq.com'),
+      DatadogFlagsSite.ap2 =>
+        Uri.parse('https://browser-intake-ap2-datadoghq.com'),
+      DatadogFlagsSite.us1Fed =>
+        Uri.parse('https://browser-intake-ddog-gov.com'),
+    };
+  }
+}
+
+Map<String, Object?> removeNullValues(Map<String, Object?> input) {
+  return Map.fromEntries(input.entries.where((entry) => entry.value != null));
 }
 
 DatadogFlagsSite _siteFromSdk(DatadogSite site) {

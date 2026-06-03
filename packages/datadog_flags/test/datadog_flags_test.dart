@@ -8,6 +8,7 @@ import 'dart:convert';
 
 import 'package:datadog_flags/datadog_flags.dart';
 import 'package:datadog_flags/src/default_flags_client.dart';
+import 'package:datadog_flags/src/exposure_logger.dart';
 import 'package:datadog_flags/src/flags_repository.dart';
 import 'package:datadog_flags/src/rum_flag_evaluation_reporter.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -16,9 +17,11 @@ import 'package:http/testing.dart';
 
 void main() {
   late List<http.Request> requests;
+  late DateTime now;
 
   setUp(() async {
     requests = [];
+    now = DateTime.fromMillisecondsSinceEpoch(1234567890000);
     await DatadogFlags.disable();
   });
 
@@ -155,6 +158,7 @@ void main() {
     final config = DatadogFlagsConfiguration(
       datadogContext: context,
       httpClient: httpClient,
+      trackExposures: false,
     );
     final repository = FlagsRepository(
       fetcher: FlagAssignmentsFetcher(
@@ -167,6 +171,11 @@ void main() {
     final client = DefaultDatadogFlagsClient(
       name: 'rum-test',
       repository: repository,
+      exposureLogger: ExposureLogger(
+        datadogContext: context,
+        configuration: config,
+        httpClient: httpClient,
+      ),
       rumFlagEvaluationReporter: fakeRum,
     );
 
@@ -204,18 +213,119 @@ void main() {
     expect(details.value, isFalse);
     expect(details.error, FlagEvaluationError.providerNotReady);
   });
+
+  test('counts exposure emissions at the HTTP boundary', () async {
+    final client = await createClient(
+      requests: requests,
+      response: assignmentsResponse(),
+      dateProvider: () => now,
+    );
+
+    client.getBooleanValue(key: 'show-paywall', defaultValue: false);
+    await Future<void>.delayed(Duration.zero);
+    expect(exposureRequests(requests), isEmpty);
+
+    await client.setEvaluationContext(
+      const DatadogFlagsEvaluationContext(
+        targetingKey: 'user-123',
+        attributes: {'plan': 'pro'},
+      ),
+    );
+
+    client.getBooleanValue(key: 'show-paywall', defaultValue: false);
+    await waitUntil(() => exposureRequests(requests).length == 1);
+    client.getBooleanValue(key: 'show-paywall', defaultValue: false);
+    client.getIntegerValue(key: 'show-paywall', defaultValue: 0);
+    client.getBooleanValue(key: 'missing', defaultValue: false);
+    await Future<void>.delayed(Duration.zero);
+
+    expect(exposureRequests(requests), hasLength(1));
+    final request = exposureRequests(requests).single;
+    expect(
+      request.url.toString(),
+      'https://browser-intake-datadoghq.com/api/v2/exposures?ddsource=flutter',
+    );
+    expect(request.headers['Content-Type'], 'text/plain;charset=UTF-8');
+    expect(request.headers['DD-API-KEY'], 'client-token');
+    expect(request.headers['DD-EVP-ORIGIN'], 'flutter');
+    expect(request.headers['DD-EVP-ORIGIN-VERSION'], '9.8.7');
+    expect(request.headers['DD-REQUEST-ID'], isNotEmpty);
+
+    final exposure = jsonDecode(request.body) as Map<String, Object?>;
+    expect(exposure['timestamp'], 1234567890000);
+    expect(exposure['service'], 'flutter-example');
+    expect(exposure['rum'], {
+      'application': {'id': 'rum-app-id'},
+      'view': null,
+    });
+    expect(exposure['flag'], {'key': 'show-paywall'});
+    expect(exposure['allocation'], {'key': 'allocation-a'});
+    expect(exposure['variant'], {'key': 'enabled'});
+    expect(exposure['subject'], {
+      'id': 'user-123',
+      'attributes': {'plan': 'pro'},
+    });
+  });
+
+  test('does not emit exposures when doLog is false', () async {
+    final client = await createClient(
+      requests: requests,
+      response: assignmentsResponse(doLog: false),
+    );
+    await client.setEvaluationContext(
+      const DatadogFlagsEvaluationContext(targetingKey: 'user-123'),
+    );
+
+    client.getBooleanValue(key: 'show-paywall', defaultValue: false);
+    await Future<void>.delayed(Duration.zero);
+
+    expect(exposureRequests(requests), isEmpty);
+  });
+
+  test('retries exposure emission after a failed send', () async {
+    var exposureAttempt = 0;
+    final client = await createClient(
+      requests: requests,
+      httpClient: MockClient((request) async {
+        requests.add(request);
+        if (request.url.path == '/precompute-assignments') {
+          return http.Response(jsonEncode(assignmentsResponse()), 200);
+        }
+        if (request.url.path == '/api/v2/exposures') {
+          exposureAttempt += 1;
+          return http.Response(
+            '{"ok":true}',
+            exposureAttempt == 1 ? 500 : 200,
+          );
+        }
+        return http.Response('{"error":"unexpected"}', 404);
+      }),
+    );
+    await client.setEvaluationContext(
+      const DatadogFlagsEvaluationContext(targetingKey: 'user-123'),
+    );
+
+    client.getBooleanValue(key: 'show-paywall', defaultValue: false);
+    await waitUntil(() => exposureRequests(requests).length == 1);
+    client.getBooleanValue(key: 'show-paywall', defaultValue: false);
+    await waitUntil(() => exposureRequests(requests).length == 2);
+
+    expect(exposureAttempt, 2);
+  });
 }
 
 Future<DatadogFlagsClient> createClient({
   required List<http.Request> requests,
   Object? response,
   http.Client? httpClient,
+  DateTime Function()? dateProvider,
 }) async {
   await DatadogFlags.enable(
     configuration: DatadogFlagsConfiguration(
       datadogContext: datadogContext(),
       httpClient: httpClient ?? clientWithResponse(requests, response!),
       rumIntegrationEnabled: false,
+      dateProvider: dateProvider ?? DateTime.now,
     ),
   );
   return DatadogFlagsClient.create();
@@ -226,7 +336,9 @@ DatadogFlagsContext datadogContext() {
     clientToken: 'client-token',
     env: 'staging',
     site: DatadogFlagsSite.us1,
+    service: 'flutter-example',
     applicationId: 'rum-app-id',
+    sdkVersion: '9.8.7',
   );
 }
 
@@ -305,6 +417,25 @@ Map<String, Object?> assignmentsResponse({
       },
     },
   };
+}
+
+List<http.Request> exposureRequests(List<http.Request> requests) {
+  return requests
+      .where((request) => request.url.path == '/api/v2/exposures')
+      .toList();
+}
+
+Future<void> waitUntil(
+  bool Function() predicate, {
+  Duration timeout = const Duration(seconds: 3),
+}) async {
+  final deadline = DateTime.now().add(timeout);
+  while (!predicate()) {
+    if (DateTime.now().isAfter(deadline)) {
+      fail('Timed out waiting for condition');
+    }
+    await Future<void>.delayed(const Duration(milliseconds: 50));
+  }
 }
 
 class FakeRumFlagEvaluationReporter implements RumFlagEvaluationReporter {

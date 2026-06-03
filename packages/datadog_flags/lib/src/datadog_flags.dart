@@ -8,6 +8,7 @@ import 'package:http/http.dart' as http;
 
 import 'datadog_context.dart';
 import 'default_flags_client.dart';
+import 'exposure_logger.dart';
 import 'flag_assignments_fetcher.dart';
 import 'flags_client.dart';
 import 'flags_configuration.dart';
@@ -67,6 +68,11 @@ class DatadogFlags {
     final client = DefaultDatadogFlagsClient(
       name: name,
       repository: repository,
+      exposureLogger: ExposureLogger(
+        datadogContext: runtime.datadogContext,
+        configuration: runtime.configuration,
+        httpClient: runtime.httpClient,
+      ),
       rumFlagEvaluationReporter: DatadogRumFlagEvaluationReporter(
         rum: runtime.sdk.rum,
         enabled: runtime.configuration.rumIntegrationEnabled,
