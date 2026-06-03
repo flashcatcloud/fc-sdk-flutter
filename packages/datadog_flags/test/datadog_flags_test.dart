@@ -1,0 +1,335 @@
+// Unless explicitly stated otherwise all files in this repository are licensed
+// under the Apache License Version 2.0. This product includes software
+// developed at Datadog (https://www.datadoghq.com/).
+// Copyright 2019-Present Datadog, Inc.
+
+import 'dart:async';
+import 'dart:convert';
+
+import 'package:datadog_flags/datadog_flags.dart';
+import 'package:datadog_flags/src/default_flags_client.dart';
+import 'package:datadog_flags/src/flags_repository.dart';
+import 'package:datadog_flags/src/rum_flag_evaluation_reporter.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
+
+void main() {
+  late List<http.Request> requests;
+
+  setUp(() async {
+    requests = [];
+    await DatadogFlags.disable();
+  });
+
+  tearDown(() async {
+    await DatadogFlags.disable();
+  });
+
+  test('enable creates the default shared client', () async {
+    await DatadogFlags.enable(
+      configuration: DatadogFlagsConfiguration(
+        datadogContext: datadogContext(),
+        httpClient: clientWithResponse(requests, assignmentsResponse()),
+      ),
+    );
+
+    final shared = DatadogFlags.sharedClient();
+
+    expect(shared.name, DatadogFlagsClient.defaultName);
+    expect(DatadogFlags.isEnabled, isTrue);
+  });
+
+  test('returns typed values and drops unknown variation types', () async {
+    final client = await createClient(
+      requests: requests,
+      response: assignmentsResponse(),
+    );
+    await client.setEvaluationContext(
+      const DatadogFlagsEvaluationContext(targetingKey: 'user-123'),
+    );
+
+    expect(
+      client.getBooleanValue(key: 'show-paywall', defaultValue: false),
+      isTrue,
+    );
+    expect(client.getStringValue(key: 'theme', defaultValue: 'light'), 'dark');
+    expect(client.getIntegerValue(key: 'max-items', defaultValue: 1), 3);
+    expect(client.getDoubleValue(key: 'ratio', defaultValue: 1), 0.5);
+    expect(client.getObjectValue(key: 'config', defaultValue: null), {
+      'enabled': true,
+      'labels': ['a', 'b'],
+    });
+
+    final missing = client.getStringDetails(
+      key: 'bad',
+      defaultValue: 'fallback',
+    );
+    expect(missing.value, 'fallback');
+    expect(missing.error, FlagEvaluationError.flagNotFound);
+  });
+
+  test('reports provider readiness, not-found, and type mismatch details',
+      () async {
+    final client = await createClient(
+      requests: requests,
+      response: assignmentsResponse(),
+    );
+
+    final notReady = client.getBooleanDetails(
+      key: 'show-paywall',
+      defaultValue: false,
+    );
+    expect(notReady.value, isFalse);
+    expect(notReady.error, FlagEvaluationError.providerNotReady);
+
+    await client.setEvaluationContext(
+      const DatadogFlagsEvaluationContext(targetingKey: 'user-123'),
+    );
+
+    final missing = client.getBooleanDetails(
+      key: 'missing',
+      defaultValue: false,
+    );
+    expect(missing.value, isFalse);
+    expect(missing.error, FlagEvaluationError.flagNotFound);
+
+    final mismatch = client.getIntegerDetails(
+      key: 'show-paywall',
+      defaultValue: 7,
+    );
+    expect(mismatch.value, 7);
+    expect(mismatch.error, FlagEvaluationError.typeMismatch);
+  });
+
+  test('keeps the latest context when fetches resolve out of order', () async {
+    final responseCompleters = <Completer<http.Response>>[];
+    final client = await createClient(
+      requests: requests,
+      httpClient: MockClient((request) {
+        requests.add(request);
+        final completer = Completer<http.Response>();
+        responseCompleters.add(completer);
+        return completer.future;
+      }),
+    );
+
+    final first = client.setEvaluationContext(
+      const DatadogFlagsEvaluationContext(targetingKey: 'user-first'),
+    );
+    final second = client.setEvaluationContext(
+      const DatadogFlagsEvaluationContext(targetingKey: 'user-second'),
+    );
+    await Future<void>.delayed(Duration.zero);
+
+    expect(responseCompleters, hasLength(2));
+    responseCompleters[1].complete(http.Response(
+      jsonEncode(assignmentsResponse(
+        booleanVariationKey: 'second',
+        booleanValue: false,
+      )),
+      200,
+    ));
+    await second;
+
+    responseCompleters[0].complete(http.Response(
+      jsonEncode(assignmentsResponse(
+        booleanVariationKey: 'first',
+        booleanValue: true,
+      )),
+      200,
+    ));
+    await first;
+
+    final details = client.getBooleanDetails(
+      key: 'show-paywall',
+      defaultValue: true,
+    );
+    expect(details.value, isFalse);
+    expect(details.variant, 'second');
+  });
+
+  test('reports only successful typed evaluations to RUM', () async {
+    final context = datadogContext();
+    final httpClient = clientWithResponse(requests, assignmentsResponse());
+    final config = DatadogFlagsConfiguration(
+      datadogContext: context,
+      httpClient: httpClient,
+    );
+    final repository = FlagsRepository(
+      fetcher: FlagAssignmentsFetcher(
+        datadogContext: context,
+        configuration: config,
+        httpClient: httpClient,
+      ),
+    );
+    final fakeRum = FakeRumFlagEvaluationReporter();
+    final client = DefaultDatadogFlagsClient(
+      name: 'rum-test',
+      repository: repository,
+      rumFlagEvaluationReporter: fakeRum,
+    );
+
+    client.getBooleanValue(key: 'show-paywall', defaultValue: false);
+    await client.setEvaluationContext(
+      const DatadogFlagsEvaluationContext(targetingKey: 'user-123'),
+    );
+    client.getBooleanValue(key: 'show-paywall', defaultValue: false);
+    client.getIntegerValue(key: 'show-paywall', defaultValue: 0);
+    client.getBooleanValue(key: 'missing', defaultValue: false);
+
+    expect(fakeRum.calls, [
+      const RumCall('show-paywall', true),
+    ]);
+  });
+
+  test('reset clears the current assignment state', () async {
+    final client = await createClient(
+      requests: requests,
+      response: assignmentsResponse(),
+    );
+    await client.setEvaluationContext(
+      const DatadogFlagsEvaluationContext(targetingKey: 'user-123'),
+    );
+
+    expect(client.getBooleanValue(key: 'show-paywall', defaultValue: false),
+        isTrue);
+
+    await client.reset();
+
+    final details = client.getBooleanDetails(
+      key: 'show-paywall',
+      defaultValue: false,
+    );
+    expect(details.value, isFalse);
+    expect(details.error, FlagEvaluationError.providerNotReady);
+  });
+}
+
+Future<DatadogFlagsClient> createClient({
+  required List<http.Request> requests,
+  Object? response,
+  http.Client? httpClient,
+}) async {
+  await DatadogFlags.enable(
+    configuration: DatadogFlagsConfiguration(
+      datadogContext: datadogContext(),
+      httpClient: httpClient ?? clientWithResponse(requests, response!),
+      rumIntegrationEnabled: false,
+    ),
+  );
+  return DatadogFlagsClient.create();
+}
+
+DatadogFlagsContext datadogContext() {
+  return const DatadogFlagsContext(
+    clientToken: 'client-token',
+    env: 'staging',
+    site: DatadogFlagsSite.us1,
+    applicationId: 'rum-app-id',
+  );
+}
+
+http.Client clientWithResponse(
+  List<http.Request> requests,
+  Object body, {
+  int statusCode = 200,
+}) {
+  return MockClient((request) async {
+    requests.add(request);
+    return http.Response(jsonEncode(body), statusCode);
+  });
+}
+
+Map<String, Object?> assignmentsResponse({
+  bool doLog = true,
+  String booleanVariationKey = 'enabled',
+  bool booleanValue = true,
+}) {
+  return {
+    'data': {
+      'attributes': {
+        'flags': {
+          'show-paywall': {
+            'allocationKey': 'allocation-a',
+            'variationKey': booleanVariationKey,
+            'variationType': 'boolean',
+            'variationValue': booleanValue,
+            'reason': 'TARGETING_MATCH',
+            'doLog': doLog,
+          },
+          'theme': {
+            'allocationKey': 'allocation-b',
+            'variationKey': 'dark',
+            'variationType': 'string',
+            'variationValue': 'dark',
+            'reason': 'TARGETING_MATCH',
+            'doLog': true,
+          },
+          'max-items': {
+            'allocationKey': 'allocation-c',
+            'variationKey': 'three',
+            'variationType': 'integer',
+            'variationValue': 3,
+            'reason': 'TARGETING_MATCH',
+            'doLog': true,
+          },
+          'ratio': {
+            'allocationKey': 'allocation-d',
+            'variationKey': 'half',
+            'variationType': 'float',
+            'variationValue': 0.5,
+            'reason': 'TARGETING_MATCH',
+            'doLog': true,
+          },
+          'config': {
+            'allocationKey': 'allocation-e',
+            'variationKey': 'object',
+            'variationType': 'object',
+            'variationValue': {
+              'enabled': true,
+              'labels': ['a', 'b'],
+            },
+            'reason': 'TARGETING_MATCH',
+            'doLog': true,
+          },
+          'bad': {
+            'allocationKey': 'allocation-f',
+            'variationKey': 'bad',
+            'variationType': 'unsupported',
+            'variationValue': 'bad',
+            'reason': 'TARGETING_MATCH',
+            'doLog': true,
+          },
+        },
+      },
+    },
+  };
+}
+
+class FakeRumFlagEvaluationReporter implements RumFlagEvaluationReporter {
+  final List<RumCall> calls = [];
+
+  @override
+  void report(String flagKey, Object value) {
+    calls.add(RumCall(flagKey, value));
+  }
+}
+
+class RumCall {
+  final String key;
+  final Object value;
+
+  const RumCall(this.key, this.value);
+
+  @override
+  bool operator ==(Object other) {
+    return other is RumCall && other.key == key && other.value == value;
+  }
+
+  @override
+  int get hashCode => Object.hash(key, value);
+
+  @override
+  String toString() => 'RumCall($key, $value)';
+}

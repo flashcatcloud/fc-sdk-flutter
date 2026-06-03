@@ -12,11 +12,13 @@ class DatadogFlagsConfiguration {
   final Map<String, String>? customFlagsHeaders;
   final http.Client? httpClient;
   final DatadogFlagsContext? datadogContext;
+  final bool rumIntegrationEnabled;
 
   const DatadogFlagsConfiguration({
     this.customFlagsEndpoint,
     this.customFlagsHeaders,
     this.httpClient,
     this.datadogContext,
+    this.rumIntegrationEnabled = true,
   });
 }

@@ -3,6 +3,8 @@
 // developed at Datadog (https://www.datadoghq.com/).
 // Copyright 2019-Present Datadog, Inc.
 
+import 'package:datadog_flutter_plugin/datadog_flutter_plugin.dart';
+
 enum DatadogFlagsSite {
   us1,
   us3,
@@ -26,6 +28,22 @@ class DatadogFlagsContext {
     this.applicationId,
   });
 
+  factory DatadogFlagsContext.fromSdk(DatadogSdk sdk) {
+    final configuration = sdk.configuration;
+    if (configuration == null) {
+      throw StateError(
+        'DatadogSdk must be initialized before enabling DatadogFlags.',
+      );
+    }
+
+    return DatadogFlagsContext(
+      clientToken: configuration.clientToken,
+      env: configuration.env,
+      site: _siteFromSdk(configuration.site),
+      applicationId: configuration.rumConfiguration?.applicationId,
+    );
+  }
+
   Uri flagsEndpoint() {
     return switch (site) {
       DatadogFlagsSite.us1 => Uri.parse('https://preview.ff-cdn.datadoghq.com'),
@@ -42,4 +60,16 @@ class DatadogFlagsContext {
         Uri.parse('https://preview.ff-cdn.datadoghq.com'),
     };
   }
+}
+
+DatadogFlagsSite _siteFromSdk(DatadogSite site) {
+  return switch (site) {
+    DatadogSite.us1 => DatadogFlagsSite.us1,
+    DatadogSite.us3 => DatadogFlagsSite.us3,
+    DatadogSite.us5 => DatadogFlagsSite.us5,
+    DatadogSite.eu1 => DatadogFlagsSite.eu1,
+    DatadogSite.ap1 => DatadogFlagsSite.ap1,
+    DatadogSite.ap2 => DatadogFlagsSite.ap2,
+    DatadogSite.us1Fed => DatadogFlagsSite.us1Fed,
+  };
 }
