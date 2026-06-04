@@ -24,5 +24,5 @@ PrecomputeAttributes _$PrecomputeAttributesFromJson(
           ? null
           : DateTime.parse(json['createdAt'] as String),
       environment: json['environment'] as String?,
-      flags: json['flags'] as Map<String, dynamic>,
+      flags: _flagsFromJson(json['flags'] as Map<String, dynamic>),
     );

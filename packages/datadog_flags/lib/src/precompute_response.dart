@@ -6,6 +6,8 @@
 import 'package:json_annotation/json_annotation.dart';
 import 'package:meta/meta.dart';
 
+import 'assignment.dart';
+
 part 'precompute_response.g.dart';
 
 @immutable
@@ -35,7 +37,8 @@ final class PrecomputeData {
 final class PrecomputeAttributes {
   final DateTime? createdAt;
   final String? environment;
-  final Map<String, Object?> flags;
+  @JsonKey(fromJson: _flagsFromJson)
+  final Map<String, FlagAssignment> flags;
 
   const PrecomputeAttributes({
     this.createdAt,
@@ -45,4 +48,18 @@ final class PrecomputeAttributes {
 
   factory PrecomputeAttributes.fromJson(Map<String, Object?> json) =>
       _$PrecomputeAttributesFromJson(json);
+}
+
+Map<String, FlagAssignment> _flagsFromJson(Map<String, dynamic> json) {
+  final assignments = <String, FlagAssignment>{};
+  for (final entry in json.entries) {
+    try {
+      assignments[entry.key] = FlagAssignment.fromJson(
+        Map<String, Object?>.from(entry.value as Map),
+      );
+    } catch (_) {
+      continue;
+    }
+  }
+  return assignments;
 }

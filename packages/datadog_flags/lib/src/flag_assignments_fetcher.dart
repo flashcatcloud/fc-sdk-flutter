@@ -56,18 +56,8 @@ class FlagAssignmentsFetcher {
         _asObject(jsonDecode(response.body), 'response'),
       );
       final attributes = decoded.data.attributes;
-      final assignments = <String, FlagAssignment>{};
-      for (final entry in attributes.flags.entries) {
-        try {
-          assignments[entry.key] = FlagAssignment.fromJson(
-            _asObject(entry.value, 'flag assignment'),
-          );
-        } catch (_) {
-          continue;
-        }
-      }
       return PrecomputedAssignments(
-        flags: assignments,
+        flags: attributes.flags,
         createdAt: attributes.createdAt,
         environment: attributes.environment,
       );

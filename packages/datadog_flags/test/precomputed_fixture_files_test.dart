@@ -24,28 +24,20 @@ void main() {
       () async {
         final fixture = _fixtureCase(fixtureFileName);
         final assignments = await _fetchAssignments(fixture);
-        final flags = _flagsFrom(fixture);
+        final expectedAssignments = _flagsFrom(fixture);
 
-        for (final entry in flags.entries) {
-          final rawAssignment = entry.value as Map<String, Object?>;
-          final FlagVariationType expectedType;
-          try {
-            expectedType = FlagVariationType.fromWireName(
-              rawAssignment['variationType'] as String?,
-            );
-          } catch (_) {
-            expect(assignments.containsKey(entry.key), isFalse);
-            continue;
-          }
+        expect(assignments.keys, expectedAssignments.keys);
 
+        for (final entry in expectedAssignments.entries) {
           final assignment = assignments[entry.key];
+          final expectedAssignment = entry.value;
           expect(assignment, isNotNull);
-          expect(assignment!.allocationKey, rawAssignment['allocationKey']);
-          expect(assignment.variationKey, rawAssignment['variationKey']);
-          expect(assignment.variationType, expectedType);
-          expect(assignment.variationValue, rawAssignment['variationValue']);
-          expect(assignment.reason, rawAssignment['reason']);
-          expect(assignment.doLog, rawAssignment['doLog']);
+          expect(assignment!.allocationKey, expectedAssignment.allocationKey);
+          expect(assignment.variationKey, expectedAssignment.variationKey);
+          expect(assignment.variationType, expectedAssignment.variationType);
+          expect(assignment.variationValue, expectedAssignment.variationValue);
+          expect(assignment.reason, expectedAssignment.reason);
+          expect(assignment.doLog, expectedAssignment.doLog);
         }
       },
     );
@@ -131,7 +123,7 @@ Future<Map<String, FlagAssignment>> _fetchAssignments(
       .flags;
 }
 
-Map<String, Object?> _flagsFrom(Map<String, Object?> fixture) {
+Map<String, FlagAssignment> _flagsFrom(Map<String, Object?> fixture) {
   final response = PrecomputeResponse.fromJson(
     Map<String, Object?>.from(fixture['response'] as Map),
   );
