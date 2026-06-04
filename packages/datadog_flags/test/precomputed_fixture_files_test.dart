@@ -8,7 +8,6 @@ library;
 
 import 'dart:convert';
 import 'dart:io';
-import 'dart:isolate';
 
 import 'package:datadog_flags/datadog_flags.dart';
 import 'package:datadog_flags/src/assignment.dart';
@@ -22,7 +21,7 @@ void main() {
     test(
       'mirrored canonical precompute fixture $fixtureFileName parses',
       () async {
-        final fixture = await _fixtureCase(fixtureFileName);
+        final fixture = _fixtureCase(fixtureFileName);
         final assignments = await _fetchAssignments(fixture);
         final flags = _flagsFrom(fixture);
 
@@ -57,14 +56,55 @@ const _fixtureFileNames = [
   'defaults-and-emission-gates.json',
 ];
 
-Future<Map<String, Object?>> _fixtureCase(String fileName) async {
-  final packageLib = await Isolate.resolvePackageUri(
-    Uri.parse('package:datadog_flags/datadog_flags.dart'),
-  );
+Map<String, Object?> _fixtureCase(String fileName) {
   final file = File.fromUri(
-    packageLib!.resolve('../test/fixtures/precomputed/cases/$fileName'),
+    _packageRoot().uri.resolve('test/fixtures/precomputed/cases/$fileName'),
   );
-  return jsonDecode(await file.readAsString()) as Map<String, Object?>;
+  return jsonDecode(file.readAsStringSync()) as Map<String, Object?>;
+}
+
+Directory _packageRoot() {
+  if (Platform.script.scheme == 'file') {
+    final scriptRoot = _findPackageRoot(File.fromUri(Platform.script).parent);
+    if (scriptRoot != null) {
+      return scriptRoot;
+    }
+  }
+
+  final currentRoot = _findPackageRoot(Directory.current);
+  if (currentRoot != null) {
+    return currentRoot;
+  }
+
+  throw StateError('Could not find datadog_flags package root.');
+}
+
+Directory? _findPackageRoot(Directory start) {
+  var directory = start.absolute;
+  while (true) {
+    if (_isDatadogFlagsPackage(directory)) {
+      return directory;
+    }
+
+    final nested = Directory.fromUri(
+      directory.uri.resolve('packages/datadog_flags/'),
+    );
+    if (_isDatadogFlagsPackage(nested)) {
+      return nested;
+    }
+
+    final parent = directory.parent;
+    if (parent.path == directory.path) {
+      return null;
+    }
+    directory = parent;
+  }
+}
+
+bool _isDatadogFlagsPackage(Directory directory) {
+  return File.fromUri(directory.uri.resolve('pubspec.yaml')).existsSync() &&
+      File.fromUri(directory.uri.resolve('lib/datadog_flags.dart'))
+          .existsSync();
 }
 
 Future<Map<String, FlagAssignment>> _fetchAssignments(
