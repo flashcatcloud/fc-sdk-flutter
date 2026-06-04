@@ -3,15 +3,7 @@
 // developed at Datadog (https://www.datadoghq.com/).
 // Copyright 2019-Present Datadog, Inc.
 
-enum DatadogFlagsSite {
-  us1,
-  us3,
-  us5,
-  eu1,
-  ap1,
-  ap2,
-  us1Fed,
-}
+import 'flags_site.dart';
 
 class DatadogFlagsContext {
   final String clientToken;
@@ -29,17 +21,22 @@ class DatadogFlagsContext {
   Uri flagsEndpoint() {
     return switch (site) {
       DatadogFlagsSite.us1 => Uri.parse('https://preview.ff-cdn.datadoghq.com'),
-      DatadogFlagsSite.us3 =>
-        Uri.parse('https://preview.ff-cdn.us3.datadoghq.com'),
-      DatadogFlagsSite.us5 =>
-        Uri.parse('https://preview.ff-cdn.us5.datadoghq.com'),
+      DatadogFlagsSite.us1Staging => Uri.parse(
+          'https://preview.ff-cdn.datad0g.com',
+        ),
+      DatadogFlagsSite.us3 => Uri.parse(
+          'https://preview.ff-cdn.us3.datadoghq.com',
+        ),
+      DatadogFlagsSite.us5 => Uri.parse(
+          'https://preview.ff-cdn.us5.datadoghq.com',
+        ),
       DatadogFlagsSite.eu1 => Uri.parse('https://preview.ff-cdn.datadoghq.eu'),
-      DatadogFlagsSite.ap1 =>
-        Uri.parse('https://preview.ff-cdn.ap1.datadoghq.com'),
-      DatadogFlagsSite.ap2 =>
-        Uri.parse('https://preview.ff-cdn.ap2.datadoghq.com'),
-      DatadogFlagsSite.us1Fed =>
-        Uri.parse('https://preview.ff-cdn.datadoghq.com'),
+      DatadogFlagsSite.ap1 => Uri.parse(
+          'https://preview.ff-cdn.ap1.datadoghq.com',
+        ),
+      DatadogFlagsSite.ap2 => Uri.parse(
+          'https://preview.ff-cdn.ap2.datadoghq.com',
+        ),
     };
   }
 }

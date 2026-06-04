@@ -6,19 +6,20 @@
 import 'json_value.dart';
 
 class DatadogFlagsEvaluationContext {
-  static const empty = DatadogFlagsEvaluationContext(targetingKey: '');
+  static const empty = DatadogFlagsEvaluationContext();
 
-  final String targetingKey;
+  final String? targetingKey;
   final Map<String, Object?> attributes;
 
   const DatadogFlagsEvaluationContext({
-    required this.targetingKey,
+    this.targetingKey,
     this.attributes = const {},
   });
 
   factory DatadogFlagsEvaluationContext.fromJson(Map<String, Object?> json) {
+    final targetingKey = json['targetingKey'];
     return DatadogFlagsEvaluationContext(
-      targetingKey: json['targetingKey'] as String,
+      targetingKey: targetingKey is String ? targetingKey : null,
       attributes: Map<String, Object?>.from(
         json['attributes'] as Map<String, Object?>? ?? const {},
       ),
@@ -27,7 +28,7 @@ class DatadogFlagsEvaluationContext {
 
   Map<String, Object?> toJson() {
     return {
-      'targetingKey': targetingKey,
+      if (targetingKey != null) 'targetingKey': targetingKey,
       'attributes': sanitizeJsonValue(attributes),
     };
   }

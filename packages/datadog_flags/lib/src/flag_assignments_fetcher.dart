@@ -29,9 +29,7 @@ class FlagAssignmentsFetcher {
     DatadogFlagsEvaluationContext evaluationContext,
   ) async {
     final endpoint = configuration.customFlagsEndpoint ??
-        datadogContext.flagsEndpoint().replace(
-              path: '/precompute-assignments',
-            );
+        datadogContext.flagsEndpoint().replace(path: '/precompute-assignments');
     final http.Response response;
     try {
       response = await httpClient.post(
@@ -91,19 +89,21 @@ class FlagAssignmentsFetcher {
       'data': {
         'type': 'precompute-assignments-request',
         'attributes': {
-          'env': {
-            'dd_env': datadogContext.env,
-          },
-          'subject': {
+          'env': {'dd_env': datadogContext.env},
+          'subject': _removeNullValues({
             'targeting_key': evaluationContext.targetingKey,
             'targeting_attributes': sanitizeJsonValue(
               evaluationContext.attributes,
             ),
-          },
+          }),
         },
       },
     };
   }
+}
+
+Map<String, Object?> _removeNullValues(Map<String, Object?> input) {
+  return Map.fromEntries(input.entries.where((entry) => entry.value != null));
 }
 
 Map<String, Object?> _asObject(Object? value, String name) {

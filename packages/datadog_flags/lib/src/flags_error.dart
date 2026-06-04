@@ -3,11 +3,7 @@
 // developed at Datadog (https://www.datadoghq.com/).
 // Copyright 2019-Present Datadog, Inc.
 
-enum FlagEvaluationError {
-  providerNotReady,
-  flagNotFound,
-  typeMismatch,
-}
+enum FlagEvaluationError { providerNotReady, flagNotFound, typeMismatch }
 
 enum FlagsErrorType {
   networkError,
@@ -31,10 +27,7 @@ class FlagsException implements Exception {
     return FlagsException(FlagsErrorType.invalidResponse, message, cause);
   }
 
-  factory FlagsException.clientNotInitialized(
-    String message, [
-    Object? cause,
-  ]) {
+  factory FlagsException.clientNotInitialized(String message, [Object? cause]) {
     return FlagsException(FlagsErrorType.clientNotInitialized, message, cause);
   }
 

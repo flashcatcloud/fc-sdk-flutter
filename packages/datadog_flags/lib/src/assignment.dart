@@ -77,7 +77,7 @@ class FlagAssignment {
 
 FlagVariationType normalizeVariationType(String? typeName, Object? value) {
   final normalizedType = typeName?.toLowerCase();
-  if (normalizedType == 'number' || normalizedType == 'numeric') {
+  if (normalizedType == 'number') {
     if (value is int) {
       return FlagVariationType.integer;
     }
@@ -91,14 +91,10 @@ FlagVariationType normalizeVariationType(String? typeName, Object? value) {
 FlagVariationType variationTypeFromString(String? value) {
   return switch (value?.toLowerCase()) {
     'boolean' => FlagVariationType.boolean,
-    'bool' => FlagVariationType.boolean,
     'string' => FlagVariationType.string,
     'integer' => FlagVariationType.integer,
-    'int' => FlagVariationType.integer,
     'float' => FlagVariationType.float,
-    'double' => FlagVariationType.float,
     'object' => FlagVariationType.object,
-    'json' => FlagVariationType.object,
     _ => FlagVariationType.unknown,
   };
 }

@@ -3,6 +3,11 @@
 // developed at Datadog (https://www.datadoghq.com/).
 // Copyright 2019-Present Datadog, Inc.
 
+/// Recursively validates values that will be JSON encoded.
+///
+/// This keeps targeting attributes and object flag values from carrying Dart
+/// objects that `jsonEncode` cannot represent, and normalizes non-integer
+/// numeric values to `double`.
 Object? sanitizeJsonValue(Object? value) {
   if (value == null ||
       value is String ||
@@ -18,7 +23,10 @@ Object? sanitizeJsonValue(Object? value) {
     return value.map((key, value) {
       if (key is! String) {
         throw ArgumentError.value(
-            key, 'key', 'JSON object keys must be String');
+          key,
+          'key',
+          'JSON object keys must be String',
+        );
       }
       return MapEntry(key, sanitizeJsonValue(value));
     });
@@ -27,17 +35,4 @@ Object? sanitizeJsonValue(Object? value) {
     return value.map(sanitizeJsonValue).toList();
   }
   throw ArgumentError.value(value, 'value', 'Unsupported JSON value');
-}
-
-Object? sortedJson(Object? value) {
-  if (value is Map<String, Object?>) {
-    final sortedKeys = value.keys.toList()..sort();
-    return {
-      for (final key in sortedKeys) key: sortedJson(value[key]),
-    };
-  }
-  if (value is List<Object?>) {
-    return value.map(sortedJson).toList();
-  }
-  return value;
 }

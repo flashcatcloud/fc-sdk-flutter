@@ -1,44 +1,28 @@
 # Datadog Flags for Flutter
 
-`datadog_flags` is a Dart-native package for Datadog feature flag assignments.
-This initial package is unpublished and contains the precompute transport layer
-that later stacked PRs will build into a complete Flutter flagging client.
+`datadog_flags` is the native Flutter SDK for Datadog Feature Flags and
+Experimentation. It lets Flutter applications evaluate Datadog-backed feature
+flags without bridging through the native iOS or Android flagging SDKs.
 
 This package does not bridge to native iOS or Android flagging SDKs.
 
-## Precompute Fetching
+## Status
 
-Create a Datadog context, an evaluation context, and fetch assignments from the
-precompute API:
+This package is being introduced in a stack of small reviewable PRs. The first
+stack slice creates the package and internal assignment transport used by the
+SDK, but the public customer API is the flag evaluation client added by the next
+stack slice.
 
-```dart
-final fetcher = FlagAssignmentsFetcher(
-  datadogContext: const DatadogFlagsContext(
-    clientToken: 'pub...',
-    env: 'staging',
-    site: DatadogFlagsSite.us1,
-  ),
-  configuration: const DatadogFlagsConfiguration(),
-  httpClient: http.Client(),
-);
-
-final assignments = await fetcher.fetch(
-  const DatadogFlagsEvaluationContext(
-    targetingKey: 'user-123',
-    attributes: {'plan': 'pro'},
-  ),
-);
-```
+Customer-facing usage documentation will live here once the typed flag
+evaluation API lands.
 
 ## Behavior
 
-- Assignments are fetched with `POST /precompute-assignments`.
-- Requests use `Content-Type: application/vnd.api+json` and
-  `dd-client-token`.
-- `dd-application-id` is included only when configured.
-- Gov sites fall back to the US1 flags endpoint, matching the iOS SDK behavior.
-- Unknown or malformed individual flag assignments are ignored so one bad flag
-  does not prevent other assignments from loading.
+- Native Dart implementation for Flutter applications.
+- No runtime bridge to the native iOS or Android flagging SDKs.
+- Designed for Datadog Feature Flags and Experimentation, including local typed
+  flag evaluation and SDK telemetry in later stack slices.
+- Supports Datadog US1 staging for dogfooding and local validation.
 
 ## Local Validation
 
@@ -47,13 +31,4 @@ From this package:
 ```bash
 dart analyze .
 dart test
-```
-
-The included request example can make a real precompute call:
-
-```bash
-DD_CLIENT_TOKEN=<client-token> \
-DD_ENV=staging \
-DD_TARGETING_KEY=test-subject \
-dart run example/precompute_request.dart
 ```
