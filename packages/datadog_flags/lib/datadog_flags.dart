@@ -3,12 +3,8 @@
 // developed at Datadog (https://www.datadoghq.com/).
 // Copyright 2019-Present Datadog, Inc.
 
-export 'src/datadog_context.dart';
-export 'src/flags_configuration.dart';
-export 'src/flags_context.dart';
-export 'src/flags_error.dart';
-export 'src/flags_site.dart';
-
-import 'src/flags_context.dart';
-
-typedef FlagsEvaluationContext = DatadogFlagsEvaluationContext;
+export 'src/datadog_context.dart' show DatadogFlagsContext, DatadogFlagsSite;
+export 'src/flags_configuration.dart' show DatadogFlagsConfiguration;
+export 'src/flags_context.dart' show FlagsEvaluationContext;
+export 'src/flags_error.dart'
+    show FlagEvaluationError, FlagsErrorType, FlagsException;

@@ -1,6 +1,6 @@
 {
   "name": "defaults-and-emission-gates",
-  "description": "Precomputed assignments that validate exposure gates, unknown variation isolation, and default/error flagevaluation payloads.",
+  "description": "Precomputed assignments that validate exposure gates, unsupported variation isolation, and default/error flagevaluation payloads.",
   "context": {
     "targetingKey": "precomputed-user",
     "attributes": {
@@ -28,9 +28,9 @@
             "reason": "TARGETING_MATCH",
             "doLog": true
           },
-          "flutter.fixture.unknown": {
-            "allocationKey": "allocation-unknown",
-            "variationKey": "unknown-a",
+          "flutter.fixture.unsupported": {
+            "allocationKey": "allocation-unsupported",
+            "variationKey": "unsupported-a",
             "variationType": "unsupported",
             "variationValue": "Ignored",
             "reason": "TARGETING_MATCH",

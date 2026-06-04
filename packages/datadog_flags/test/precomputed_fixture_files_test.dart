@@ -8,6 +8,7 @@ library;
 
 import 'dart:convert';
 import 'dart:io';
+import 'dart:isolate';
 
 import 'package:datadog_flags/datadog_flags.dart';
 import 'package:datadog_flags/src/assignment.dart';
@@ -17,75 +18,53 @@ import 'package:http/testing.dart';
 import 'package:test/test.dart';
 
 void main() {
-  test('mirrored canonical precompute fixture files load as JSON', () {
-    final casesDirectory = [
-      Directory('test/fixtures/precomputed/cases'),
-      Directory('packages/datadog_flags/test/fixtures/precomputed/cases'),
-    ].firstWhere((directory) => directory.existsSync());
-    final files = casesDirectory
-        .listSync()
-        .whereType<File>()
-        .where((file) => file.path.endsWith('.json'))
-        .toList()
-      ..sort((left, right) => left.path.compareTo(right.path));
+  for (final fixtureFileName in _fixtureFileNames) {
+    test(
+      'mirrored canonical precompute fixture $fixtureFileName parses',
+      () async {
+        final fixture = await _fixtureCase(fixtureFileName);
+        final assignments = await _fetchAssignments(fixture);
+        final flags = _flagsFrom(fixture);
 
-    expect(files.map((file) => file.uri.pathSegments.last), [
-      'all-types-success.json',
-      'defaults-and-emission-gates.json',
-    ]);
+        for (final entry in flags.entries) {
+          final rawAssignment = entry.value as Map<String, Object?>;
+          final FlagVariationType expectedType;
+          try {
+            expectedType = FlagVariationType.fromWireName(
+              rawAssignment['variationType'] as String?,
+            );
+          } catch (_) {
+            expect(assignments.containsKey(entry.key), isFalse);
+            continue;
+          }
 
-    for (final file in files) {
-      final decoded = jsonDecode(file.readAsStringSync());
-      expect(decoded, isA<Map<String, Object?>>());
-    }
-  });
-
-  test('mirrored canonical precompute fixtures parse as assignments', () async {
-    for (final fixture in _fixtureCases()) {
-      final assignments = await _fetchAssignments(fixture);
-      final flags = _flagsFrom(fixture);
-
-      for (final entry in flags.entries) {
-        final rawAssignment = entry.value as Map<String, Object?>;
-        final expectedType = normalizeVariationType(
-          rawAssignment['variationType'] as String?,
-          rawAssignment['variationValue'],
-        );
-        if (expectedType == FlagVariationType.unknown) {
-          expect(assignments.containsKey(entry.key), isFalse);
-          continue;
+          final assignment = assignments[entry.key];
+          expect(assignment, isNotNull);
+          expect(assignment!.allocationKey, rawAssignment['allocationKey']);
+          expect(assignment.variationKey, rawAssignment['variationKey']);
+          expect(assignment.variationType, expectedType);
+          expect(assignment.variationValue, rawAssignment['variationValue']);
+          expect(assignment.reason, rawAssignment['reason']);
+          expect(assignment.doLog, rawAssignment['doLog']);
         }
-
-        final assignment = assignments[entry.key];
-        expect(assignment, isNotNull);
-        expect(assignment!.allocationKey, rawAssignment['allocationKey']);
-        expect(assignment.variationKey, rawAssignment['variationKey']);
-        expect(assignment.variationType, expectedType);
-        expect(assignment.variationValue, rawAssignment['variationValue']);
-        expect(assignment.reason, rawAssignment['reason']);
-        expect(assignment.doLog, rawAssignment['doLog']);
-      }
-    }
-  });
+      },
+    );
+  }
 }
 
-List<Map<String, Object?>> _fixtureCases() {
-  final casesDirectory = [
-    Directory('test/fixtures/precomputed/cases'),
-    Directory('packages/datadog_flags/test/fixtures/precomputed/cases'),
-  ].firstWhere((directory) => directory.existsSync());
+const _fixtureFileNames = [
+  'all-types-success.json',
+  'defaults-and-emission-gates.json',
+];
 
-  final files = casesDirectory
-      .listSync()
-      .whereType<File>()
-      .where((file) => file.path.endsWith('.json'))
-      .toList()
-    ..sort((left, right) => left.path.compareTo(right.path));
-
-  return [
-    for (final file in files)
-      jsonDecode(file.readAsStringSync()) as Map<String, Object?>,
-  ];
+Future<Map<String, Object?>> _fixtureCase(String fileName) async {
+  final packageLib = await Isolate.resolvePackageUri(
+    Uri.parse('package:datadog_flags/datadog_flags.dart'),
+  );
+  final file = File.fromUri(
+    packageLib!.resolve('../test/fixtures/precomputed/cases/$fileName'),
+  );
+  return jsonDecode(await file.readAsString()) as Map<String, Object?>;
 }
 
 Future<Map<String, FlagAssignment>> _fetchAssignments(
@@ -103,11 +82,12 @@ Future<Map<String, FlagAssignment>> _fetchAssignments(
     }),
   );
 
-  return fetcher.fetch(
-    DatadogFlagsEvaluationContext.fromJson(
+  return (await fetcher.fetch(
+    FlagsEvaluationContext.fromJson(
       fixture['context'] as Map<String, Object?>,
     ),
-  );
+  ))
+      .flags;
 }
 
 Map<String, Object?> _flagsFrom(Map<String, Object?> fixture) {

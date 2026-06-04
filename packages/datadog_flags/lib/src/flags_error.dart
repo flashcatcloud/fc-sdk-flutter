@@ -12,27 +12,45 @@ enum FlagsErrorType {
   invalidConfiguration,
 }
 
-class FlagsException implements Exception {
+final class FlagsException implements Exception {
   final FlagsErrorType type;
   final String message;
   final Object? cause;
 
-  const FlagsException(this.type, this.message, [this.cause]);
+  const FlagsException(this.type, this.message, {this.cause});
 
-  factory FlagsException.networkError(String message, [Object? cause]) {
-    return FlagsException(FlagsErrorType.networkError, message, cause);
+  factory FlagsException.networkError(String message, {Object? cause}) {
+    return FlagsException(FlagsErrorType.networkError, message, cause: cause);
   }
 
-  factory FlagsException.invalidResponse(String message, [Object? cause]) {
-    return FlagsException(FlagsErrorType.invalidResponse, message, cause);
+  factory FlagsException.invalidResponse(String message, {Object? cause}) {
+    return FlagsException(
+      FlagsErrorType.invalidResponse,
+      message,
+      cause: cause,
+    );
   }
 
-  factory FlagsException.clientNotInitialized(String message, [Object? cause]) {
-    return FlagsException(FlagsErrorType.clientNotInitialized, message, cause);
+  factory FlagsException.clientNotInitialized(
+    String message, {
+    Object? cause,
+  }) {
+    return FlagsException(
+      FlagsErrorType.clientNotInitialized,
+      message,
+      cause: cause,
+    );
   }
 
-  factory FlagsException.invalidConfiguration(String message, [Object? cause]) {
-    return FlagsException(FlagsErrorType.invalidConfiguration, message, cause);
+  factory FlagsException.invalidConfiguration(
+    String message, {
+    Object? cause,
+  }) {
+    return FlagsException(
+      FlagsErrorType.invalidConfiguration,
+      message,
+      cause: cause,
+    );
   }
 
   @override

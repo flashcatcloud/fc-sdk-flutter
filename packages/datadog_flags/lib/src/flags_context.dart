@@ -3,22 +3,25 @@
 // developed at Datadog (https://www.datadoghq.com/).
 // Copyright 2019-Present Datadog, Inc.
 
+import 'package:meta/meta.dart';
+
 import 'json_value.dart';
 
-class DatadogFlagsEvaluationContext {
-  static const empty = DatadogFlagsEvaluationContext();
+@immutable
+final class FlagsEvaluationContext {
+  static const empty = FlagsEvaluationContext();
 
   final String? targetingKey;
   final Map<String, Object?> attributes;
 
-  const DatadogFlagsEvaluationContext({
+  const FlagsEvaluationContext({
     this.targetingKey,
     this.attributes = const {},
   });
 
-  factory DatadogFlagsEvaluationContext.fromJson(Map<String, Object?> json) {
+  factory FlagsEvaluationContext.fromJson(Map<String, Object?> json) {
     final targetingKey = json['targetingKey'];
-    return DatadogFlagsEvaluationContext(
+    return FlagsEvaluationContext(
       targetingKey: targetingKey is String ? targetingKey : null,
       attributes: Map<String, Object?>.from(
         json['attributes'] as Map<String, Object?>? ?? const {},

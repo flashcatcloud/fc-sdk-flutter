@@ -6,8 +6,7 @@
 /// Recursively validates values that will be JSON encoded.
 ///
 /// This keeps targeting attributes and object flag values from carrying Dart
-/// objects that `jsonEncode` cannot represent, and normalizes non-integer
-/// numeric values to `double`.
+/// objects that `jsonEncode` cannot represent.
 Object? sanitizeJsonValue(Object? value) {
   if (value == null ||
       value is String ||
@@ -15,9 +14,6 @@ Object? sanitizeJsonValue(Object? value) {
       value is int ||
       value is double) {
     return value;
-  }
-  if (value is num) {
-    return value.toDouble();
   }
   if (value is Map<Object?, Object?>) {
     return value.map((key, value) {

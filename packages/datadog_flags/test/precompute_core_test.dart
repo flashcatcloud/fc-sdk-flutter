@@ -14,25 +14,32 @@ import 'package:test/test.dart';
 
 void main() {
   group('FlagAssignmentsFetcher', () {
+    final requestFixture = {
+      'context': {
+        'targetingKey': 'precomputed-user',
+        'attributes': {'plan': 'pro', 'platform': 'flutter'},
+      },
+      'response': {'data': _emptyAssignments()},
+    };
+
     test(
       'builds the precompute request expected by canonical fixtures',
       () async {
-        final fixture = _requestFixture();
         final requests = <http.Request>[];
-        final fetcher = _fixtureFetcher(
-          fixture,
-          requests,
+        final fetcher = FlagAssignmentsFetcher(
           datadogContext: const DatadogFlagsContext(
             clientToken: 'client-token',
             env: 'staging',
             site: DatadogFlagsSite.us1,
             applicationId: 'rum-app-id',
           ),
+          configuration: const DatadogFlagsConfiguration(),
+          httpClient: _jsonClient(requests, requestFixture['response']),
         );
 
         await fetcher.fetch(
-          DatadogFlagsEvaluationContext.fromJson(
-            fixture['context'] as Map<String, Object?>,
+          FlagsEvaluationContext.fromJson(
+            requestFixture['context'] as Map<String, Object?>,
           ),
         );
 
@@ -81,7 +88,7 @@ void main() {
         );
 
         await fetcher.fetch(
-          const DatadogFlagsEvaluationContext(targetingKey: 'subject'),
+          const FlagsEvaluationContext(targetingKey: 'subject'),
         );
 
         final request = requests.single;
@@ -101,7 +108,7 @@ void main() {
       );
 
       await fetcher.fetch(
-        const DatadogFlagsEvaluationContext(attributes: {'companyId': '1'}),
+        const FlagsEvaluationContext(attributes: {'companyId': '1'}),
       );
 
       expect(jsonDecode(requests.single.body), {
@@ -117,7 +124,7 @@ void main() {
       });
     });
 
-    test('maps all supported sites including US1 staging', () {
+    test('maps all supported sites', () {
       expect(
         _contextFor(DatadogFlagsSite.us1).flagsEndpoint(),
         Uri.parse('https://preview.ff-cdn.datadoghq.com'),
@@ -149,7 +156,7 @@ void main() {
     });
 
     test(
-      'normalizes canonical number variation names by value shape',
+      'keeps canonical number variation names from the server',
       () async {
         final requests = <http.Request>[];
         final fetcher = FlagAssignmentsFetcher(
@@ -172,9 +179,10 @@ void main() {
           }),
         );
 
-        final assignments = await fetcher.fetch(
-          const DatadogFlagsEvaluationContext(targetingKey: 'subject'),
-        );
+        final assignments = (await fetcher.fetch(
+          const FlagsEvaluationContext(targetingKey: 'subject'),
+        ))
+            .flags;
 
         expect(
           assignments['enabled']!.variationType,
@@ -183,11 +191,24 @@ void main() {
         expect(assignments['title']!.variationType, FlagVariationType.string);
         expect(
           assignments['integer']!.variationType,
-          FlagVariationType.integer,
+          FlagVariationType.number,
         );
-        expect(assignments['float']!.variationType, FlagVariationType.float);
+        expect(assignments['float']!.variationType, FlagVariationType.number);
         expect(assignments['object']!.variationType, FlagVariationType.object);
+        expect(
+          assignments['integer']!.typedValue(FlagVariationType.integer),
+          12,
+        );
+        expect(
+          assignments['integer']!.typedValue(FlagVariationType.float),
+          12.0,
+        );
         expect(assignments['float']!.variationValue, 0.25);
+        expect(
+          assignments['float']!.typedValue(FlagVariationType.integer),
+          isNull,
+        );
+        expect(assignments['float']!.typedValue(FlagVariationType.float), 0.25);
       },
     );
 
@@ -212,13 +233,41 @@ void main() {
           }),
         );
 
-        final assignments = await fetcher.fetch(
-          const DatadogFlagsEvaluationContext(targetingKey: 'subject'),
-        );
+        final assignments = (await fetcher.fetch(
+          const FlagsEvaluationContext(targetingKey: 'subject'),
+        ))
+            .flags;
 
         expect(assignments.keys, ['valid']);
       },
     );
+
+    test('returns response metadata with assignments', () async {
+      final requests = <http.Request>[];
+      final fetcher = FlagAssignmentsFetcher(
+        datadogContext: _contextFor(DatadogFlagsSite.us1),
+        configuration: const DatadogFlagsConfiguration(),
+        httpClient: _jsonClient(requests, {
+          'data': {
+            'attributes': {
+              'createdAt': '2026-06-04T12:00:00.000Z',
+              'environment': 'prod',
+              'flags': {
+                'valid': _assignment('boolean', true),
+              },
+            },
+          },
+        }),
+      );
+
+      final response = await fetcher.fetch(
+        const FlagsEvaluationContext(targetingKey: 'subject'),
+      );
+
+      expect(response.createdAt, DateTime.utc(2026, 6, 4, 12));
+      expect(response.environment, 'prod');
+      expect(response.flags.keys, ['valid']);
+    });
 
     test(
       'throws network errors for non-success status and transport failures',
@@ -231,7 +280,7 @@ void main() {
 
         await expectLater(
           nonSuccessFetcher.fetch(
-            const DatadogFlagsEvaluationContext(targetingKey: 'subject'),
+            const FlagsEvaluationContext(targetingKey: 'subject'),
           ),
           throwsA(
             isA<FlagsException>().having(
@@ -250,7 +299,7 @@ void main() {
 
         await expectLater(
           failingFetcher.fetch(
-            const DatadogFlagsEvaluationContext(targetingKey: 'subject'),
+            const FlagsEvaluationContext(targetingKey: 'subject'),
           ),
           throwsA(
             isA<FlagsException>()
@@ -274,7 +323,7 @@ void main() {
 
       await expectLater(
         fetcher.fetch(
-          const DatadogFlagsEvaluationContext(targetingKey: 'subject'),
+          const FlagsEvaluationContext(targetingKey: 'subject'),
         ),
         throwsA(
           isA<FlagsException>().having(
@@ -286,32 +335,6 @@ void main() {
       );
     });
   });
-}
-
-Map<String, Object?> _requestFixture() {
-  return {
-    'context': {
-      'targetingKey': 'precomputed-user',
-      'attributes': {'plan': 'pro', 'platform': 'flutter'},
-    },
-    'response': {'data': _emptyAssignments()},
-  };
-}
-
-FlagAssignmentsFetcher _fixtureFetcher(
-  Map<String, Object?> fixture,
-  List<http.Request> requests, {
-  DatadogFlagsContext datadogContext = const DatadogFlagsContext(
-    clientToken: 'client-token',
-    env: 'staging',
-    site: DatadogFlagsSite.us1,
-  ),
-}) {
-  return FlagAssignmentsFetcher(
-    datadogContext: datadogContext,
-    configuration: const DatadogFlagsConfiguration(),
-    httpClient: _jsonClient(requests, fixture['response'] as Object),
-  );
 }
 
 DatadogFlagsContext _contextFor(DatadogFlagsSite site) {

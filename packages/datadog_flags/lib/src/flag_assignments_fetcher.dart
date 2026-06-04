@@ -13,6 +13,7 @@ import 'flags_configuration.dart';
 import 'flags_context.dart';
 import 'flags_error.dart';
 import 'json_value.dart';
+import 'precompute_response.dart';
 
 class FlagAssignmentsFetcher {
   final DatadogFlagsContext datadogContext;
@@ -25,8 +26,8 @@ class FlagAssignmentsFetcher {
     required this.httpClient,
   });
 
-  Future<Map<String, FlagAssignment>> fetch(
-    DatadogFlagsEvaluationContext evaluationContext,
+  Future<PrecomputedAssignments> fetch(
+    FlagsEvaluationContext evaluationContext,
   ) async {
     final endpoint = configuration.customFlagsEndpoint ??
         datadogContext.flagsEndpoint().replace(path: '/precompute-assignments');
@@ -40,7 +41,7 @@ class FlagAssignmentsFetcher {
     } catch (error) {
       throw FlagsException.networkError(
         'Failed to fetch flag assignments.',
-        error,
+        cause: error,
       );
     }
 
@@ -51,23 +52,29 @@ class FlagAssignmentsFetcher {
     }
 
     try {
-      final decoded = _asObject(jsonDecode(response.body), 'response');
-      final data = _asObject(decoded['data'], 'data');
-      final attributes = _asObject(data['attributes'], 'attributes');
-      final flags = _asObject(attributes['flags'], 'flags');
+      final decoded = PrecomputeResponse.fromJson(
+        _asObject(jsonDecode(response.body), 'response'),
+      );
+      final attributes = decoded.data.attributes;
       final assignments = <String, FlagAssignment>{};
-      for (final entry in flags.entries) {
-        final assignment = _parseAssignment(entry.value);
-        if (assignment == null ||
-            assignment.variationType == FlagVariationType.unknown) {
+      for (final entry in attributes.flags.entries) {
+        try {
+          assignments[entry.key] = FlagAssignment.fromJson(
+            _asObject(entry.value, 'flag assignment'),
+          );
+        } catch (_) {
           continue;
         }
-        assignments[entry.key] = assignment;
       }
-      return assignments;
+      return PrecomputedAssignments(
+        flags: assignments,
+        createdAt: attributes.createdAt,
+        environment: attributes.environment,
+      );
     } catch (error) {
       throw FlagsException.invalidResponse(
         'Failed to decode flag assignments response: $error',
+        cause: error,
       );
     }
   }
@@ -83,7 +90,7 @@ class FlagAssignmentsFetcher {
   }
 
   Map<String, Object?> _requestBody(
-    DatadogFlagsEvaluationContext evaluationContext,
+    FlagsEvaluationContext evaluationContext,
   ) {
     return {
       'data': {
@@ -111,12 +118,4 @@ Map<String, Object?> _asObject(Object? value, String name) {
     return Map<String, Object?>.from(value);
   }
   throw FormatException('$name must be a JSON object');
-}
-
-FlagAssignment? _parseAssignment(Object? value) {
-  try {
-    return FlagAssignment.fromJson(_asObject(value, 'flag assignment'));
-  } catch (_) {
-    return null;
-  }
 }
