@@ -12,6 +12,7 @@ import 'dart:io';
 import 'package:datadog_flags/datadog_flags.dart';
 import 'package:datadog_flags/src/assignment.dart';
 import 'package:datadog_flags/src/flag_assignments_fetcher.dart';
+import 'package:datadog_flags/src/precompute_response.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:test/test.dart';
@@ -131,8 +132,8 @@ Future<Map<String, FlagAssignment>> _fetchAssignments(
 }
 
 Map<String, Object?> _flagsFrom(Map<String, Object?> fixture) {
-  final response = fixture['response'] as Map<String, Object?>;
-  final data = response['data'] as Map<String, Object?>;
-  final attributes = data['attributes'] as Map<String, Object?>;
-  return attributes['flags'] as Map<String, Object?>;
+  final response = PrecomputeResponse.fromJson(
+    Map<String, Object?>.from(fixture['response'] as Map),
+  );
+  return response.data.attributes.flags;
 }
