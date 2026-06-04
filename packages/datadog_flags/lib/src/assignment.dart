@@ -66,7 +66,7 @@ final class FlagAssignment {
   final String reason;
   final bool doLog;
 
-  const FlagAssignment({
+  const FlagAssignment._({
     required this.allocationKey,
     required this.variationKey,
     required this.variationType,
@@ -81,7 +81,7 @@ final class FlagAssignment {
     final variationType = FlagVariationType.fromWireName(typeName);
     final variationValue = variationType.decodeVariationValue(value);
 
-    return FlagAssignment(
+    return FlagAssignment._(
       allocationKey: json['allocationKey'] as String,
       variationKey: json['variationKey'] as String,
       variationType: variationType,
