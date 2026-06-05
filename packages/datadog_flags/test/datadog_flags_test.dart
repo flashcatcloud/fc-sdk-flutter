@@ -167,6 +167,22 @@ void main() {
     expect(details.error, FlagEvaluationError.providerNotReady);
   });
 
+  test('returns object defaults without validating their JSON shape', () async {
+    final client = await createClient(
+      requests: requests,
+      response: assignmentsResponse(),
+    );
+
+    final defaultValue = Object();
+    final details = client.getObjectDetails(
+      key: 'config',
+      defaultValue: defaultValue,
+    );
+
+    expect(details.value, same(defaultValue));
+    expect(details.error, FlagEvaluationError.providerNotReady);
+  });
+
   test('reset clears the current assignment state', () async {
     final client = await createClient(
       requests: requests,

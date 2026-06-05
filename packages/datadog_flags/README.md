@@ -39,23 +39,3 @@ final enabled = flags.getBooleanValue(
   assignments are unavailable, a flag is missing, or a flag has the wrong type.
 - Typed details include provider-not-ready, flag-not-found, or type-mismatch
   errors when defaults are used.
-
-## Local Validation
-
-From this package:
-
-```bash
-dart analyze .
-dart test
-```
-
-The included typed evaluation example can run against Datadog:
-
-```bash
-DD_CLIENT_TOKEN=<client-token> \
-DD_ENV=staging \
-DD_TARGETING_KEY=test-subject \
-DD_FLAG_KEY=checkout.enabled \
-DD_FLAG_TYPE=boolean \
-dart run example/typed_evaluation.dart
-```

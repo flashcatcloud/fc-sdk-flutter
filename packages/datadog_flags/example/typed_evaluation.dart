@@ -9,7 +9,7 @@ import 'dart:io';
 import 'package:datadog_flags/datadog_flags.dart';
 
 Future<void> main() async {
-  final clientToken = _requiredEnvironment('DD_CLIENT_TOKEN');
+  final clientToken = Platform.environment['DD_CLIENT_TOKEN'] ?? '';
   final flagKey = Platform.environment['DD_FLAG_KEY'] ?? 'checkout.enabled';
   final flagType = Platform.environment['DD_FLAG_TYPE'] ?? 'boolean';
   final targetingKey = Platform.environment['DD_TARGETING_KEY'];
@@ -20,7 +20,7 @@ Future<void> main() async {
       datadogContext: DatadogFlagsContext(
         clientToken: clientToken,
         env: Platform.environment['DD_ENV'] ?? 'staging',
-        site: _siteFromEnvironment(),
+        site: DatadogFlagsSite.us1,
         applicationId: Platform.environment['DD_APPLICATION_ID'],
       ),
     ),
@@ -70,25 +70,10 @@ FlagDetails<Object?> _evaluate(
         key: flagKey,
         defaultValue: null,
       ),
-    _ => throw ArgumentError.value(
-        flagType,
-        'DD_FLAG_TYPE',
-        'Expected boolean, string, integer, double, float, object, or json.',
+    _ => flags.getBooleanDetails(
+        key: flagKey,
+        defaultValue: false,
       ),
-  };
-}
-
-DatadogFlagsSite _siteFromEnvironment() {
-  final site = Platform.environment['DD_SITE'] ?? 'us1';
-  return switch (site.toLowerCase().replaceAll('-', '_')) {
-    'us1' => DatadogFlagsSite.us1,
-    'us1_staging' => DatadogFlagsSite.us1Staging,
-    'us3' => DatadogFlagsSite.us3,
-    'us5' => DatadogFlagsSite.us5,
-    'eu1' => DatadogFlagsSite.eu1,
-    'ap1' => DatadogFlagsSite.ap1,
-    'ap2' => DatadogFlagsSite.ap2,
-    _ => throw ArgumentError.value(site, 'DD_SITE', 'Unsupported site.'),
   };
 }
 
@@ -98,20 +83,14 @@ Map<String, Object?> _targetingAttributes() {
     return const {};
   }
 
-  final decoded = jsonDecode(json);
-  if (decoded is Map) {
-    return Map<String, Object?>.from(decoded);
+  try {
+    final decoded = jsonDecode(json);
+    if (decoded is Map) {
+      return Map<String, Object?>.from(decoded);
+    }
+  } catch (_) {
+    return const {};
   }
 
-  throw const FormatException('DD_TARGETING_ATTRIBUTES must be a JSON object.');
-}
-
-String _requiredEnvironment(String name) {
-  final value = Platform.environment[name];
-  if (value == null || value.isEmpty) {
-    stderr.writeln('Missing required environment variable: $name');
-    exitCode = 64;
-    exit(exitCode);
-  }
-  return value;
+  return const {};
 }

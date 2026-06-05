@@ -9,7 +9,6 @@ import 'flags_context.dart';
 import 'flags_details.dart';
 import 'flags_error.dart';
 import 'flags_repository.dart';
-import 'json_value.dart';
 
 class DefaultDatadogFlagsClient implements DatadogFlagsClient {
   @override
@@ -115,7 +114,7 @@ class DefaultDatadogFlagsClient implements DatadogFlagsClient {
   }) {
     return _getDetails(
       key: key,
-      defaultValue: sanitizeJsonValue(defaultValue),
+      defaultValue: defaultValue,
       requestedType: FlagVariationType.object,
     );
   }
