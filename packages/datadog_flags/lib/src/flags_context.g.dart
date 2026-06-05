@@ -10,9 +10,7 @@ FlagsEvaluationContext _$FlagsEvaluationContextFromJson(
         Map<String, dynamic> json) =>
     FlagsEvaluationContext(
       targetingKey: json['targetingKey'] as String?,
-      attributes: json['attributes'] == null
-          ? const {}
-          : _attributesFromJson(json['attributes']),
+      attributes: json['attributes'] as Map<String, dynamic>? ?? const {},
     );
 
 Map<String, dynamic> _$FlagsEvaluationContextToJson(

@@ -17,7 +17,7 @@ final class FlagsEvaluationContext {
 
   @JsonKey(includeIfNull: false)
   final String? targetingKey;
-  @JsonKey(fromJson: _attributesFromJson, toJson: sanitizeJsonValue)
+  @JsonKey(toJson: sanitizeJsonValue)
   final Map<String, Object?> attributes;
 
   const FlagsEvaluationContext({
@@ -29,14 +29,4 @@ final class FlagsEvaluationContext {
       _$FlagsEvaluationContextFromJson(json);
 
   Map<String, Object?> toJson() => _$FlagsEvaluationContextToJson(this);
-}
-
-Map<String, Object?> _attributesFromJson(Object? value) {
-  if (value == null) {
-    return const {};
-  }
-  if (value is Map) {
-    return Map<String, Object?>.from(value);
-  }
-  throw FormatException('attributes must be a JSON object');
 }

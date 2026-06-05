@@ -42,9 +42,9 @@ enum FlagVariationType {
       _ => throw FormatException('Invalid variation value for $wireName'),
     };
   }
-}
 
-String _variationTypeToJson(FlagVariationType type) => type.wireName;
+  static String toWireName(FlagVariationType type) => type.wireName;
+}
 
 @immutable
 final class PrecomputedAssignments {
@@ -66,7 +66,7 @@ final class FlagAssignment {
   final String variationKey;
   @JsonKey(
     fromJson: FlagVariationType.fromWireName,
-    toJson: _variationTypeToJson,
+    toJson: FlagVariationType.toWireName,
   )
   final FlagVariationType variationType;
   @JsonKey(toJson: sanitizeJsonValue)

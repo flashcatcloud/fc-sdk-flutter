@@ -21,7 +21,7 @@ Map<String, dynamic> _$FlagAssignmentToJson(FlagAssignment instance) =>
     <String, dynamic>{
       'allocationKey': instance.allocationKey,
       'variationKey': instance.variationKey,
-      'variationType': _variationTypeToJson(instance.variationType),
+      'variationType': FlagVariationType.toWireName(instance.variationType),
       'variationValue': sanitizeJsonValue(instance.variationValue),
       'reason': instance.reason,
       'doLog': instance.doLog,
