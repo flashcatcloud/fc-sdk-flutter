@@ -1,35 +1,8 @@
-# Datadog Flags for Flutter
+# Datadog Flags
 
-`datadog_flags` is a Dart-native package for Datadog feature flag assignments.
-This package is unpublished while the stacked MVP is being assembled. It
-currently contains precompute transport, typed local evaluation, and RUM feature
-flag reporting.
-
-This package does not bridge to native iOS or Android flagging SDKs.
-
-## Precompute Fetching
-
-Create a Datadog context, an evaluation context, and fetch assignments from the
-precompute API:
-
-```dart
-final fetcher = FlagAssignmentsFetcher(
-  datadogContext: const DatadogFlagsContext(
-    clientToken: 'pub...',
-    env: 'staging',
-    site: DatadogFlagsSite.us1,
-  ),
-  configuration: const DatadogFlagsConfiguration(),
-  httpClient: http.Client(),
-);
-
-final assignments = await fetcher.fetch(
-  const DatadogFlagsEvaluationContext(
-    targetingKey: 'user-123',
-    attributes: {'plan': 'pro'},
-  ),
-);
-```
+`datadog_flags` is the native Dart SDK for Datadog Feature Flags and
+Experimentation in client applications. It lets applications evaluate
+Datadog-backed feature flags.
 
 ## Typed Evaluation
 
@@ -49,7 +22,7 @@ await DatadogFlags.enable(
 
 final flags = DatadogFlags.sharedClient();
 await flags.setEvaluationContext(
-  const DatadogFlagsEvaluationContext(targetingKey: 'user-123'),
+  const FlagsEvaluationContext(targetingKey: 'user-123'),
 );
 
 final enabled = flags.getBooleanValue(
@@ -60,32 +33,29 @@ final enabled = flags.getBooleanValue(
 
 ## Behavior
 
-- Assignments are fetched with `POST /precompute-assignments`.
-- Requests use `Content-Type: application/vnd.api+json` and
-  `dd-client-token`.
-- `dd-application-id` is included only when configured.
-- Gov sites fall back to the US1 flags endpoint, matching the iOS SDK behavior.
 - Unknown or malformed individual flag assignments are ignored so one bad flag
   does not prevent other assignments from loading.
-- Typed details return provider-not-ready, flag-not-found, or type-mismatch
+- Typed evaluations return caller-provided defaults instead of throwing when
+  assignments are unavailable, a flag is missing, or a flag has the wrong type.
+- Typed details include provider-not-ready, flag-not-found, or type-mismatch
   errors when defaults are used.
-- Successful typed evaluations report RUM feature flag evaluations when RUM is
-  available.
 
 ## Local Validation
 
 From this package:
 
 ```bash
-flutter analyze .
-flutter test test
+dart analyze .
+dart test
 ```
 
-The included request example can make a real precompute call:
+The included typed evaluation example can run against Datadog:
 
 ```bash
 DD_CLIENT_TOKEN=<client-token> \
 DD_ENV=staging \
 DD_TARGETING_KEY=test-subject \
-dart run example/precompute_request.dart
+DD_FLAG_KEY=checkout.enabled \
+DD_FLAG_TYPE=boolean \
+dart run example/typed_evaluation.dart
 ```

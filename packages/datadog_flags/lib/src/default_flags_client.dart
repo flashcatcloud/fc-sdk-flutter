@@ -10,24 +10,20 @@ import 'flags_details.dart';
 import 'flags_error.dart';
 import 'flags_repository.dart';
 import 'json_value.dart';
-import 'rum_flag_evaluation_reporter.dart';
 
 class DefaultDatadogFlagsClient implements DatadogFlagsClient {
   @override
   final String name;
   final FlagsRepository _repository;
-  final RumFlagEvaluationReporter _rumFlagEvaluationReporter;
 
   DefaultDatadogFlagsClient({
     required this.name,
     required FlagsRepository repository,
-    required RumFlagEvaluationReporter rumFlagEvaluationReporter,
-  })  : _repository = repository,
-        _rumFlagEvaluationReporter = rumFlagEvaluationReporter;
+  }) : _repository = repository;
 
   @override
   Future<void> setEvaluationContext(
-    DatadogFlagsEvaluationContext context,
+    FlagsEvaluationContext context,
   ) async {
     await _repository.setEvaluationContext(context);
   }
@@ -175,8 +171,8 @@ class DefaultDatadogFlagsClient implements DatadogFlagsClient {
       );
     }
 
-    final typedValue = assignment.typedValue(requestedType);
-    if (typedValue == null && requestedType != FlagVariationType.object) {
+    final typedValue = _typedValue<T>(assignment, requestedType);
+    if (!typedValue.matched) {
       return FlagDetails(
         key: key,
         value: defaultValue,
@@ -184,19 +180,53 @@ class DefaultDatadogFlagsClient implements DatadogFlagsClient {
       );
     }
 
-    final value = typedValue as T;
-    _trackRumEvaluation(key, value);
     return FlagDetails(
       key: key,
-      value: value,
+      value: typedValue.value as T,
       variant: assignment.variationKey,
       reason: assignment.reason,
     );
   }
 
-  void _trackRumEvaluation<T>(String key, T value) {
-    if (value != null) {
-      _rumFlagEvaluationReporter.report(key, value as Object);
+  ({bool matched, T? value}) _typedValue<T>(
+    FlagAssignment assignment,
+    FlagVariationType requestedType,
+  ) {
+    final variationValue = assignment.variationValue;
+    final assignmentType = assignment.variationType;
+    final Object? value = switch (requestedType) {
+      FlagVariationType.boolean
+          when assignmentType == FlagVariationType.boolean &&
+              variationValue is bool =>
+        variationValue,
+      FlagVariationType.string
+          when assignmentType == FlagVariationType.string &&
+              variationValue is String =>
+        variationValue,
+      FlagVariationType.integer
+          when (assignmentType == FlagVariationType.integer ||
+                  assignmentType == FlagVariationType.number) &&
+              variationValue is int =>
+        variationValue,
+      FlagVariationType.float
+          when (assignmentType == FlagVariationType.float ||
+                  assignmentType == FlagVariationType.number) &&
+              variationValue is num =>
+        variationValue.toDouble(),
+      FlagVariationType.object
+          when assignmentType == FlagVariationType.object =>
+        variationValue,
+      _ => null,
+    };
+
+    if (value == null && requestedType != FlagVariationType.object) {
+      return (matched: false, value: null);
     }
+
+    if (value is! T && !(requestedType == FlagVariationType.object)) {
+      return (matched: false, value: null);
+    }
+
+    return (matched: true, value: value as T?);
   }
 }

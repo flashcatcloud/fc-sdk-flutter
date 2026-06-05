@@ -7,12 +7,9 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:datadog_flags/datadog_flags.dart';
-import 'package:datadog_flags/src/default_flags_client.dart';
-import 'package:datadog_flags/src/flags_repository.dart';
-import 'package:datadog_flags/src/rum_flag_evaluation_reporter.dart';
-import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+import 'package:test/test.dart';
 
 void main() {
   late List<http.Request> requests;
@@ -46,7 +43,7 @@ void main() {
       response: assignmentsResponse(),
     );
     await client.setEvaluationContext(
-      const DatadogFlagsEvaluationContext(targetingKey: 'user-123'),
+      const FlagsEvaluationContext(targetingKey: 'user-123'),
     );
 
     expect(
@@ -84,7 +81,7 @@ void main() {
     expect(notReady.error, FlagEvaluationError.providerNotReady);
 
     await client.setEvaluationContext(
-      const DatadogFlagsEvaluationContext(targetingKey: 'user-123'),
+      const FlagsEvaluationContext(targetingKey: 'user-123'),
     );
 
     final missing = client.getBooleanDetails(
@@ -115,10 +112,10 @@ void main() {
     );
 
     final first = client.setEvaluationContext(
-      const DatadogFlagsEvaluationContext(targetingKey: 'user-first'),
+      const FlagsEvaluationContext(targetingKey: 'user-first'),
     );
     final second = client.setEvaluationContext(
-      const DatadogFlagsEvaluationContext(targetingKey: 'user-second'),
+      const FlagsEvaluationContext(targetingKey: 'user-second'),
     );
     await Future<void>.delayed(Duration.zero);
 
@@ -149,38 +146,25 @@ void main() {
     expect(details.variant, 'second');
   });
 
-  test('reports only successful typed evaluations to RUM', () async {
-    final context = datadogContext();
-    final httpClient = clientWithResponse(requests, assignmentsResponse());
-    final config = DatadogFlagsConfiguration(
-      datadogContext: context,
-      httpClient: httpClient,
-    );
-    final repository = FlagsRepository(
-      fetcher: FlagAssignmentsFetcher(
-        datadogContext: context,
-        configuration: config,
-        httpClient: httpClient,
-      ),
-    );
-    final fakeRum = FakeRumFlagEvaluationReporter();
-    final client = DefaultDatadogFlagsClient(
-      name: 'rum-test',
-      repository: repository,
-      rumFlagEvaluationReporter: fakeRum,
+  test('does not throw when context fetch fails', () async {
+    final client = await createClient(
+      requests: requests,
+      httpClient: MockClient((request) async {
+        requests.add(request);
+        return http.Response('not found', 404);
+      }),
     );
 
-    client.getBooleanValue(key: 'show-paywall', defaultValue: false);
     await client.setEvaluationContext(
-      const DatadogFlagsEvaluationContext(targetingKey: 'user-123'),
+      const FlagsEvaluationContext(targetingKey: 'user-123'),
     );
-    client.getBooleanValue(key: 'show-paywall', defaultValue: false);
-    client.getIntegerValue(key: 'show-paywall', defaultValue: 0);
-    client.getBooleanValue(key: 'missing', defaultValue: false);
 
-    expect(fakeRum.calls, [
-      const RumCall('show-paywall', true),
-    ]);
+    final details = client.getBooleanDetails(
+      key: 'show-paywall',
+      defaultValue: false,
+    );
+    expect(details.value, isFalse);
+    expect(details.error, FlagEvaluationError.providerNotReady);
   });
 
   test('reset clears the current assignment state', () async {
@@ -189,7 +173,7 @@ void main() {
       response: assignmentsResponse(),
     );
     await client.setEvaluationContext(
-      const DatadogFlagsEvaluationContext(targetingKey: 'user-123'),
+      const FlagsEvaluationContext(targetingKey: 'user-123'),
     );
 
     expect(client.getBooleanValue(key: 'show-paywall', defaultValue: false),
@@ -215,7 +199,6 @@ Future<DatadogFlagsClient> createClient({
     configuration: DatadogFlagsConfiguration(
       datadogContext: datadogContext(),
       httpClient: httpClient ?? clientWithResponse(requests, response!),
-      rumIntegrationEnabled: false,
     ),
   );
   return DatadogFlagsClient.create();
@@ -226,7 +209,7 @@ DatadogFlagsContext datadogContext() {
     clientToken: 'client-token',
     env: 'staging',
     site: DatadogFlagsSite.us1,
-    applicationId: 'rum-app-id',
+    applicationId: 'application-id',
   );
 }
 
@@ -305,31 +288,4 @@ Map<String, Object?> assignmentsResponse({
       },
     },
   };
-}
-
-class FakeRumFlagEvaluationReporter implements RumFlagEvaluationReporter {
-  final List<RumCall> calls = [];
-
-  @override
-  void report(String flagKey, Object value) {
-    calls.add(RumCall(flagKey, value));
-  }
-}
-
-class RumCall {
-  final String key;
-  final Object value;
-
-  const RumCall(this.key, this.value);
-
-  @override
-  bool operator ==(Object other) {
-    return other is RumCall && other.key == key && other.value == value;
-  }
-
-  @override
-  int get hashCode => Object.hash(key, value);
-
-  @override
-  String toString() => 'RumCall($key, $value)';
 }

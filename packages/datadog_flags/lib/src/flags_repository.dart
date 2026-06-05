@@ -10,7 +10,7 @@ import 'flags_context.dart';
 class FlagsRepository {
   final FlagAssignmentsFetcher fetcher;
 
-  DatadogFlagsEvaluationContext? _context;
+  FlagsEvaluationContext? _context;
   Map<String, FlagAssignment> _flags = const {};
   int _contextRequestId = 0;
 
@@ -18,21 +18,31 @@ class FlagsRepository {
     required this.fetcher,
   });
 
-  DatadogFlagsEvaluationContext? get context => _context;
+  FlagsEvaluationContext? get context => _context;
 
   FlagAssignment? flagAssignment(String key) => _flags[key];
 
   Future<void> setEvaluationContext(
-    DatadogFlagsEvaluationContext context,
+    FlagsEvaluationContext context,
   ) async {
     final requestId = ++_contextRequestId;
-    final flags = await fetcher.fetch(context);
+    final PrecomputedAssignments assignments;
+    try {
+      assignments = await fetcher.fetch(context);
+    } catch (_) {
+      if (requestId == _contextRequestId) {
+        _context = null;
+        _flags = const {};
+      }
+      return;
+    }
+
     if (requestId != _contextRequestId) {
       return;
     }
 
     _context = context;
-    _flags = flags;
+    _flags = assignments.flags;
   }
 
   Future<void> reset() async {

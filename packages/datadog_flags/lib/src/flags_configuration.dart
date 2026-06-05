@@ -4,21 +4,21 @@
 // Copyright 2019-Present Datadog, Inc.
 
 import 'package:http/http.dart' as http;
+import 'package:meta/meta.dart';
 
 import 'datadog_context.dart';
 
-class DatadogFlagsConfiguration {
+@immutable
+final class DatadogFlagsConfiguration {
   final Uri? customFlagsEndpoint;
   final Map<String, String>? customFlagsHeaders;
   final http.Client? httpClient;
   final DatadogFlagsContext? datadogContext;
-  final bool rumIntegrationEnabled;
 
   const DatadogFlagsConfiguration({
     this.customFlagsEndpoint,
     this.customFlagsHeaders,
     this.httpClient,
     this.datadogContext,
-    this.rumIntegrationEnabled = true,
   });
 }

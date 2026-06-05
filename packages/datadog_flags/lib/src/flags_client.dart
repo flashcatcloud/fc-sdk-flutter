@@ -25,7 +25,7 @@ abstract interface class DatadogFlagsClient {
   }
 
   Future<void> setEvaluationContext(
-    DatadogFlagsEvaluationContext context,
+    FlagsEvaluationContext context,
   );
 
   FlagDetails<bool> getBooleanDetails({

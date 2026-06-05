@@ -3,32 +3,30 @@
 // developed at Datadog (https://www.datadoghq.com/).
 // Copyright 2019-Present Datadog, Inc.
 
+import 'package:json_annotation/json_annotation.dart';
+import 'package:meta/meta.dart';
+
 import 'json_value.dart';
 
-class DatadogFlagsEvaluationContext {
-  static const empty = DatadogFlagsEvaluationContext(targetingKey: '');
+part 'flags_context.g.dart';
 
-  final String targetingKey;
+@immutable
+@JsonSerializable()
+final class FlagsEvaluationContext {
+  static const empty = FlagsEvaluationContext();
+
+  @JsonKey(includeIfNull: false)
+  final String? targetingKey;
+  @JsonKey(toJson: sanitizeJsonValue)
   final Map<String, Object?> attributes;
 
-  const DatadogFlagsEvaluationContext({
-    required this.targetingKey,
+  const FlagsEvaluationContext({
+    this.targetingKey,
     this.attributes = const {},
   });
 
-  factory DatadogFlagsEvaluationContext.fromJson(Map<String, Object?> json) {
-    return DatadogFlagsEvaluationContext(
-      targetingKey: json['targetingKey'] as String,
-      attributes: Map<String, Object?>.from(
-        json['attributes'] as Map<String, Object?>? ?? const {},
-      ),
-    );
-  }
+  factory FlagsEvaluationContext.fromJson(Map<String, Object?> json) =>
+      _$FlagsEvaluationContextFromJson(json);
 
-  Map<String, Object?> toJson() {
-    return {
-      'targetingKey': targetingKey,
-      'attributes': sanitizeJsonValue(attributes),
-    };
-  }
+  Map<String, Object?> toJson() => _$FlagsEvaluationContextToJson(this);
 }
