@@ -6,5 +6,3 @@
 export 'src/datadog_context.dart' show DatadogFlagsContext, DatadogFlagsSite;
 export 'src/flags_configuration.dart' show DatadogFlagsConfiguration;
 export 'src/flags_context.dart' show FlagsEvaluationContext;
-export 'src/flags_error.dart'
-    show FlagEvaluationError, FlagsErrorType, FlagsException;

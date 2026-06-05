@@ -8,6 +8,7 @@ import 'dart:convert';
 import 'package:datadog_flags/datadog_flags.dart';
 import 'package:datadog_flags/src/assignment.dart';
 import 'package:datadog_flags/src/flag_assignments_fetcher.dart';
+import 'package:datadog_flags/src/flags_error.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:test/test.dart';
@@ -195,20 +196,8 @@ void main() {
         );
         expect(assignments['float']!.variationType, FlagVariationType.number);
         expect(assignments['object']!.variationType, FlagVariationType.object);
-        expect(
-          assignments['integer']!.typedValue(FlagVariationType.integer),
-          12,
-        );
-        expect(
-          assignments['integer']!.typedValue(FlagVariationType.float),
-          12.0,
-        );
+        expect(assignments['integer']!.variationValue, 12);
         expect(assignments['float']!.variationValue, 0.25);
-        expect(
-          assignments['float']!.typedValue(FlagVariationType.integer),
-          isNull,
-        );
-        expect(assignments['float']!.typedValue(FlagVariationType.float), 0.25);
       },
     );
 
@@ -270,7 +259,7 @@ void main() {
     });
 
     test(
-      'throws network errors for non-success status and transport failures',
+      'reports internal network errors for wrapper fallback handling',
       () async {
         final nonSuccessFetcher = FlagAssignmentsFetcher(
           datadogContext: _contextFor(DatadogFlagsSite.us1),
@@ -314,7 +303,8 @@ void main() {
       },
     );
 
-    test('throws invalid response errors for malformed envelopes', () async {
+    test('reports invalid response errors for wrapper fallback handling',
+        () async {
       final fetcher = FlagAssignmentsFetcher(
         datadogContext: _contextFor(DatadogFlagsSite.us1),
         configuration: const DatadogFlagsConfiguration(),

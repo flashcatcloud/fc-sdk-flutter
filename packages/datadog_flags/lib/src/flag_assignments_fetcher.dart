@@ -12,7 +12,7 @@ import 'datadog_context.dart';
 import 'flags_configuration.dart';
 import 'flags_context.dart';
 import 'flags_error.dart';
-import 'json_value.dart';
+import 'precompute_request.dart';
 import 'precompute_response.dart';
 
 class FlagAssignmentsFetcher {
@@ -36,7 +36,12 @@ class FlagAssignmentsFetcher {
       response = await httpClient.post(
         endpoint,
         headers: _headers(),
-        body: jsonEncode(_requestBody(evaluationContext)),
+        body: jsonEncode(
+          PrecomputeRequest.fromContext(
+            datadogContext: datadogContext,
+            evaluationContext: evaluationContext,
+          ).toJson(),
+        ),
       );
     } catch (error) {
       throw FlagsException.networkError(
@@ -73,34 +78,11 @@ class FlagAssignmentsFetcher {
     return {
       'Content-Type': 'application/vnd.api+json',
       'dd-client-token': datadogContext.clientToken,
-      if (datadogContext.applicationId != null)
-        'dd-application-id': datadogContext.applicationId!,
+      if (datadogContext.applicationId case final applicationId?)
+        'dd-application-id': applicationId,
       ...?configuration.customFlagsHeaders,
     };
   }
-
-  Map<String, Object?> _requestBody(
-    FlagsEvaluationContext evaluationContext,
-  ) {
-    return {
-      'data': {
-        'type': 'precompute-assignments-request',
-        'attributes': {
-          'env': {'dd_env': datadogContext.env},
-          'subject': _removeNullValues({
-            'targeting_key': evaluationContext.targetingKey,
-            'targeting_attributes': sanitizeJsonValue(
-              evaluationContext.attributes,
-            ),
-          }),
-        },
-      },
-    };
-  }
-}
-
-Map<String, Object?> _removeNullValues(Map<String, Object?> input) {
-  return Map.fromEntries(input.entries.where((entry) => entry.value != null));
 }
 
 Map<String, Object?> _asObject(Object? value, String name) {

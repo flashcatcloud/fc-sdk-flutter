@@ -8,6 +8,7 @@ library;
 
 import 'dart:convert';
 import 'dart:io';
+import 'dart:isolate';
 
 import 'package:datadog_flags/datadog_flags.dart';
 import 'package:datadog_flags/src/assignment.dart';
@@ -22,7 +23,7 @@ void main() {
     test(
       'mirrored canonical precompute fixture $fixtureFileName parses',
       () async {
-        final fixture = _fixtureCase(fixtureFileName);
+        final fixture = await _fixtureCase(fixtureFileName);
         final assignments = await _fetchAssignments(fixture);
         final expectedAssignments = _flagsFrom(fixture);
 
@@ -49,49 +50,43 @@ const _fixtureFileNames = [
   'defaults-and-emission-gates.json',
 ];
 
-Map<String, Object?> _fixtureCase(String fileName) {
+Future<Map<String, Object?>> _fixtureCase(String fileName) async {
   final file = File.fromUri(
-    _packageRoot().uri.resolve('test/fixtures/precomputed/cases/$fileName'),
+    (await _packageRoot()).uri.resolve(
+          'test/fixtures/precomputed/cases/$fileName',
+        ),
   );
   return jsonDecode(file.readAsStringSync()) as Map<String, Object?>;
 }
 
-Directory _packageRoot() {
-  if (Platform.script.scheme == 'file') {
-    final scriptRoot = _findPackageRoot(File.fromUri(Platform.script).parent);
-    if (scriptRoot != null) {
-      return scriptRoot;
+Future<Directory> _packageRoot() async {
+  try {
+    final libraryUri = await Isolate.resolvePackageUri(
+      Uri.parse('package:datadog_flags/datadog_flags.dart'),
+    );
+    if (libraryUri != null) {
+      return File.fromUri(libraryUri).parent.parent;
     }
+  } on UnsupportedError {
+    // Flutter's test runner does not support package URI resolution.
   }
 
-  final currentRoot = _findPackageRoot(Directory.current);
-  if (currentRoot != null) {
-    return currentRoot;
+  return _packageRootFromCurrentDirectory();
+}
+
+Directory _packageRootFromCurrentDirectory() {
+  if (_isDatadogFlagsPackage(Directory.current)) {
+    return Directory.current;
+  }
+
+  final nested = Directory.fromUri(
+    Directory.current.uri.resolve('packages/datadog_flags/'),
+  );
+  if (_isDatadogFlagsPackage(nested)) {
+    return nested;
   }
 
   throw StateError('Could not find datadog_flags package root.');
-}
-
-Directory? _findPackageRoot(Directory start) {
-  var directory = start.absolute;
-  while (true) {
-    if (_isDatadogFlagsPackage(directory)) {
-      return directory;
-    }
-
-    final nested = Directory.fromUri(
-      directory.uri.resolve('packages/datadog_flags/'),
-    );
-    if (_isDatadogFlagsPackage(nested)) {
-      return nested;
-    }
-
-    final parent = directory.parent;
-    if (parent.path == directory.path) {
-      return null;
-    }
-    directory = parent;
-  }
 }
 
 bool _isDatadogFlagsPackage(Directory directory) {
