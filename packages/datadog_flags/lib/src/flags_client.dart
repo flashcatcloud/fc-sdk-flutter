@@ -78,8 +78,6 @@ abstract interface class DatadogFlagsClient {
     required Object? defaultValue,
   });
 
-  Future<void> flush();
-
   Future<void> reset();
 
   Future<void> dispose();

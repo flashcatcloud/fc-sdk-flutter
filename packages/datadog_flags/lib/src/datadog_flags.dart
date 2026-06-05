@@ -85,10 +85,6 @@ class DatadogFlags {
     return client;
   }
 
-  static Future<void> flush() async {
-    await Future.wait(_clients.values.map((client) => client.flush()));
-  }
-
   static Future<void> reset() async {
     await Future.wait(_clients.values.map((client) => client.reset()));
   }

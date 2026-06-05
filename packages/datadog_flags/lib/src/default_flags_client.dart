@@ -128,9 +128,6 @@ class DefaultDatadogFlagsClient implements DatadogFlagsClient {
   }
 
   @override
-  Future<void> flush() async {}
-
-  @override
   Future<void> reset() {
     return _repository.reset();
   }
