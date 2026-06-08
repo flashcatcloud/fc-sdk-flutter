@@ -35,7 +35,7 @@ final enabled = flags.getBooleanValue(
 
 ## Multiple Contexts and Isolates
 
-Use separate clients for separate mobile subjects, such as logged-out and
+Use separate clients for different mobile subjects, such as logged-out and
 logged-in users or org-level and user-level targeting:
 
 ```dart
@@ -52,14 +52,15 @@ await userFlags.setEvaluationContext(
 
 Clients are local to the Dart isolate where they are created. Background
 isolates do not share `DatadogFlags` state or client assignment caches with the
-main isolate, so they must call `DatadogFlags.instance.enable()`, create the
-clients they need, and set evaluation contexts independently.
+main isolate, so each background isolate must call
+`DatadogFlags.instance.enable()`, create the clients it needs, and set
+evaluation contexts independently.
 
 ## Behavior
 
-- Unknown or malformed individual flag assignments are ignored so one bad flag
-  does not prevent other assignments from loading.
+- Unknown or malformed individual flag assignments are ignored so that one
+  invalid assignment does not prevent other assignments from loading.
 - Typed evaluations return caller-provided defaults instead of throwing when
   assignments are unavailable, a flag is missing, or a flag has the wrong type.
 - Typed details include provider-not-ready, flag-not-found, or type-mismatch
-  errors when defaults are used.
+  errors when default values are used.
