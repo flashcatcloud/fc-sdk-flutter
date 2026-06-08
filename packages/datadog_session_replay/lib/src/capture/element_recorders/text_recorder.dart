@@ -48,13 +48,20 @@ class TextElementRecorder implements ElementRecorder {
         capturePrivacy.textAndInputPrivacyLevel,
       );
 
+      final rawFontSize = style?.fontSize;
+      // final baseInt = (rawFontSize != null && rawFontSize.isFinite)
+      //     ? rawFontSize.toInt()
+      //     : 10;
+      final baseInt = rawFontSize?.safeRound(10) ?? 10;
+      final scaledSize = baseInt * attributes.scaleX;
+
       final node = TextElementCaptureNode(
         attributes,
         wireframeId: keyGenerator.keyForElement(element),
         text: stringBuilder.toString(),
         color: style?.color?.toHexString() ?? Colors.black.toHexString(),
         family: style?.fontFamily ?? '',
-        size: ((style?.fontSize?.toInt() ?? 10) * attributes.scaleX).toInt(),
+        size: scaledSize.safeRound(10),
         alignment: alignment,
       );
 
