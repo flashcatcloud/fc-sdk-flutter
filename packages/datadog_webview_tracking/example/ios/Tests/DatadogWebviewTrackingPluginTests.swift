@@ -108,7 +108,11 @@ class MockFlutterPluginRegistrar: NSObject, FlutterPluginRegistrar {
 
     func register(_ factory: any FlutterPlatformViewFactory, withId factoryId: String) {}
 
-    func register(_ factory: any FlutterPlatformViewFactory, withId factoryId: String, gestureRecognizersBlockingPolicy: FlutterPlatformViewGestureRecognizersBlockingPolicy) {}
+    func register(
+        _ factory: any FlutterPlatformViewFactory,
+        withId factoryId: String,
+        gestureRecognizersBlockingPolicy: FlutterPlatformViewGestureRecognizersBlockingPolicy
+    ) {}
 }
 
 class MockFlutterBinaryMessenger: NSObject, FlutterBinaryMessenger {
@@ -120,7 +124,10 @@ class MockFlutterBinaryMessenger: NSObject, FlutterBinaryMessenger {
 
     }
 
-    func setMessageHandlerOnChannel(_ channel: String, binaryMessageHandler handler: FlutterBinaryMessageHandler? = nil) -> FlutterBinaryMessengerConnection {
+    func setMessageHandlerOnChannel(
+        _ channel: String,
+        binaryMessageHandler handler: FlutterBinaryMessageHandler? = nil
+    ) -> FlutterBinaryMessengerConnection {
         return 0
     }
 
