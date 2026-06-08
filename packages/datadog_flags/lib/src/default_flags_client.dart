@@ -10,6 +10,8 @@ import 'flags_error.dart';
 import 'flags_repository.dart';
 
 class DefaultDatadogFlagsClient implements DatadogFlagsClient {
+  static final Object _typeMismatch = Object();
+
   @override
   final String name;
   final FlagsRepository _repository;
@@ -154,46 +156,14 @@ class DefaultDatadogFlagsClient implements DatadogFlagsClient {
       );
     }
 
-    if (requestedType == FlagVariationType.object &&
-        assignment.variationType != FlagVariationType.object) {
-      return FlagDetails(
-        key: key,
-        value: defaultValue,
-        error: FlagEvaluationError.typeMismatch,
-      );
-    }
-
-    final typedValue = _typedValue<T>(assignment, requestedType);
-    if (!typedValue.matched) {
-      return FlagDetails(
-        key: key,
-        value: defaultValue,
-        error: FlagEvaluationError.typeMismatch,
-      );
-    }
-
-    return FlagDetails(
-      key: key,
-      value: typedValue.value as T,
-      variant: assignment.variationKey,
-      reason: assignment.reason,
-    );
-  }
-
-  ({bool matched, T? value}) _typedValue<T>(
-    FlagAssignment assignment,
-    FlagVariationType requestedType,
-  ) {
     final variationValue = assignment.variationValue;
     final assignmentType = assignment.variationType;
-    final Object? value = switch (requestedType) {
+    final resolvedValue = switch (requestedType) {
       FlagVariationType.boolean
-          when assignmentType == FlagVariationType.boolean &&
-              variationValue is bool =>
+          when assignmentType == FlagVariationType.boolean =>
         variationValue,
       FlagVariationType.string
-          when assignmentType == FlagVariationType.string &&
-              variationValue is String =>
+          when assignmentType == FlagVariationType.string =>
         variationValue,
       FlagVariationType.integer
           when (assignmentType == FlagVariationType.integer ||
@@ -208,13 +178,22 @@ class DefaultDatadogFlagsClient implements DatadogFlagsClient {
       FlagVariationType.object
           when assignmentType == FlagVariationType.object =>
         variationValue,
-      _ => null,
+      _ => _typeMismatch,
     };
 
-    if (value == null && requestedType != FlagVariationType.object) {
-      return (matched: false, value: null);
+    if (identical(resolvedValue, _typeMismatch)) {
+      return FlagDetails(
+        key: key,
+        value: defaultValue,
+        error: FlagEvaluationError.typeMismatch,
+      );
     }
 
-    return (matched: true, value: value as T?);
+    return FlagDetails(
+      key: key,
+      value: resolvedValue as T,
+      variant: assignment.variationKey,
+      reason: assignment.reason,
+    );
   }
 }
