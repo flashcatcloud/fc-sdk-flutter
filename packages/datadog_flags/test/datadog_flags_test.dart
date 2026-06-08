@@ -231,7 +231,7 @@ Future<DatadogFlagsClient> _createClient({
       httpClient: httpClient ?? _clientWithResponse(requests, response!),
     ),
   );
-  return datadogFlags.createClient();
+  return datadogFlags.sharedClient();
 }
 
 DatadogFlagsContext _datadogContext() {

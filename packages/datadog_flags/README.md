@@ -39,12 +39,12 @@ Use separate clients for different mobile subjects, such as logged-out and
 logged-in users or org-level and user-level targeting:
 
 ```dart
-final orgFlags = await datadogFlags.createClient(name: 'org');
+final orgFlags = datadogFlags.sharedClient(name: 'org');
 await orgFlags.setEvaluationContext(
   const FlagsEvaluationContext(targetingKey: 'org-123'),
 );
 
-final userFlags = await datadogFlags.createClient(name: 'user');
+final userFlags = datadogFlags.sharedClient(name: 'user');
 await userFlags.setEvaluationContext(
   const FlagsEvaluationContext(targetingKey: 'user-456'),
 );

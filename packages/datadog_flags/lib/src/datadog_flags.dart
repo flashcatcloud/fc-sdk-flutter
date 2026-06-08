@@ -28,37 +28,31 @@ class DatadogFlags {
     return _singleton!;
   }
 
-  DatadogFlagsConfiguration _configuration = const DatadogFlagsConfiguration();
-  DatadogFlagsContext? _datadogContext;
   http.Client? _httpClient;
+  _FlagsRuntime? _runtime;
   final Map<String, DatadogFlagsClient> _clients = {};
-  bool _enabled = false;
 
   DatadogFlags();
 
-  bool get isEnabled => _enabled;
+  bool get isEnabled => _runtime != null;
 
   Future<void> enable({
     DatadogFlagsConfiguration configuration = const DatadogFlagsConfiguration(),
   }) async {
     await disable();
-    _configuration = configuration;
 
     final datadogContext = configuration.datadogContext;
     if (datadogContext == null) {
       return;
     }
 
-    _datadogContext = datadogContext;
     _httpClient = configuration.httpClient ?? http.Client();
-    _enabled = true;
-    await createClient();
-  }
-
-  Future<DatadogFlagsClient> createClient({
-    String name = defaultClientName,
-  }) async {
-    return _client(name);
+    _runtime = _FlagsRuntime(
+      configuration: configuration,
+      datadogContext: datadogContext,
+      httpClient: _httpClient!,
+    );
+    sharedClient();
   }
 
   DatadogFlagsClient sharedClient({
@@ -75,8 +69,7 @@ class DatadogFlags {
     _clients.clear();
     _httpClient?.close();
     _httpClient = null;
-    _datadogContext = null;
-    _enabled = false;
+    _runtime = null;
   }
 
   DatadogFlagsClient _client(String name) {
@@ -106,20 +99,6 @@ class DatadogFlags {
     );
     _clients[name] = client;
     return client;
-  }
-
-  _FlagsRuntime? get _runtime {
-    final datadogContext = _datadogContext;
-    final httpClient = _httpClient;
-    if (!_enabled || datadogContext == null || httpClient == null) {
-      return null;
-    }
-
-    return _FlagsRuntime(
-      configuration: _configuration,
-      datadogContext: datadogContext,
-      httpClient: httpClient,
-    );
   }
 }
 

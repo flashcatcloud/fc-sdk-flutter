@@ -6,22 +6,39 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:args/args.dart';
 import 'package:datadog_flags/datadog_flags.dart';
 
-Future<void> main() async {
-  final clientToken = Platform.environment['DD_CLIENT_TOKEN'] ?? '';
-  final flagKey = Platform.environment['DD_FLAG_KEY'] ?? 'checkout.enabled';
-  final flagType = Platform.environment['DD_FLAG_TYPE'] ?? 'boolean';
-  final targetingKey = Platform.environment['DD_TARGETING_KEY'];
-  final attributes = _targetingAttributes();
+Future<void> main(List<String> arguments) async {
+  final parser = _argumentParser();
+  final ArgResults results;
+  try {
+    results = parser.parse(arguments);
+  } on FormatException catch (error) {
+    stderr.writeln(error.message);
+    stderr.writeln(parser.usage);
+    exitCode = 64;
+    return;
+  }
 
+  if (results.flag('help')) {
+    stdout.writeln(parser.usage);
+    return;
+  }
+
+  final attributes = _targetingAttributes(
+    results.option('targeting-attributes'),
+  );
+  final flagKey = results.option('flag-key')!;
+  final flagType = results.option('flag-type')!;
   final datadogFlags = DatadogFlags.instance;
+
   await datadogFlags.enable(
     configuration: DatadogFlagsConfiguration(
       datadogContext: DatadogFlagsContext(
-        clientToken: clientToken,
-        env: Platform.environment['DD_ENV'] ?? 'staging',
-        site: DatadogFlagsSite.us1,
+        clientToken: Platform.environment['DD_CLIENT_TOKEN'] ?? '',
+        env: results.option('env')!,
+        site: _siteFromOption(results.option('site')!),
         applicationId: Platform.environment['DD_APPLICATION_ID'],
       ),
     ),
@@ -30,7 +47,7 @@ Future<void> main() async {
   final flags = datadogFlags.sharedClient();
   await flags.setEvaluationContext(
     FlagsEvaluationContext(
-      targetingKey: targetingKey,
+      targetingKey: results.option('targeting-key'),
       attributes: attributes,
     ),
   );
@@ -43,6 +60,46 @@ Future<void> main() async {
   stdout.writeln('error: ${details.error?.name ?? '(none)'}');
 
   await datadogFlags.disable();
+}
+
+ArgParser _argumentParser() {
+  return ArgParser()
+    ..addOption(
+      'env',
+      defaultsTo: 'staging',
+      help: 'Datadog environment name.',
+    )
+    ..addOption(
+      'site',
+      defaultsTo: 'us1',
+      allowed: DatadogFlagsSite.values.map((site) => site.name),
+      help: 'Datadog site.',
+    )
+    ..addOption(
+      'flag-key',
+      defaultsTo: 'checkout.enabled',
+      help: 'Feature flag key to evaluate.',
+    )
+    ..addOption(
+      'flag-type',
+      defaultsTo: 'boolean',
+      allowed: ['boolean', 'string', 'integer', 'double', 'float', 'json'],
+      help: 'Expected flag value type.',
+    )
+    ..addOption(
+      'targeting-key',
+      help: 'Optional targeting key for the evaluation subject.',
+    )
+    ..addOption(
+      'targeting-attributes',
+      help: 'Optional JSON object with targeting attributes.',
+    )
+    ..addFlag(
+      'help',
+      abbr: 'h',
+      negatable: false,
+      help: 'Print usage.',
+    );
 }
 
 FlagDetails<Object?> _evaluate(
@@ -67,7 +124,7 @@ FlagDetails<Object?> _evaluate(
         key: flagKey,
         defaultValue: 0,
       ),
-    'object' || 'json' => flags.getObjectDetails(
+    'json' => flags.getObjectDetails(
         key: flagKey,
         defaultValue: null,
       ),
@@ -78,8 +135,7 @@ FlagDetails<Object?> _evaluate(
   };
 }
 
-Map<String, Object?> _targetingAttributes() {
-  final json = Platform.environment['DD_TARGETING_ATTRIBUTES'];
+Map<String, Object?> _targetingAttributes(String? json) {
   if (json == null || json.isEmpty) {
     return const {};
   }
@@ -94,4 +150,8 @@ Map<String, Object?> _targetingAttributes() {
   }
 
   return const {};
+}
+
+DatadogFlagsSite _siteFromOption(String option) {
+  return DatadogFlagsSite.values.firstWhere((site) => site.name == option);
 }

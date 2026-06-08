@@ -19,10 +19,11 @@ dart test --platform chrome
 The typed evaluation example can run against Datadog:
 
 ```bash
+cd example
 DD_CLIENT_TOKEN=<client-token> \
-DD_ENV=staging \
-DD_TARGETING_KEY=test-subject \
-DD_FLAG_KEY=checkout.enabled \
-DD_FLAG_TYPE=boolean \
-dart run example/typed_evaluation.dart
+dart run datadog_flags_example:typed_evaluation \
+  --env staging \
+  --flag-key checkout.enabled \
+  --flag-type boolean \
+  --targeting-key test-subject
 ```
