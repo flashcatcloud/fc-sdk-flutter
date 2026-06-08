@@ -31,6 +31,28 @@ final enabled = flags.getBooleanValue(
 );
 ```
 
+## Multiple Contexts and Isolates
+
+Use separate clients for separate mobile subjects, such as logged-out and
+logged-in users or org-level and user-level targeting:
+
+```dart
+final orgFlags = await DatadogFlags.createClient(name: 'org');
+await orgFlags.setEvaluationContext(
+  const FlagsEvaluationContext(targetingKey: 'org-123'),
+);
+
+final userFlags = await DatadogFlags.createClient(name: 'user');
+await userFlags.setEvaluationContext(
+  const FlagsEvaluationContext(targetingKey: 'user-456'),
+);
+```
+
+Clients are local to the Dart isolate where they are created. Background
+isolates do not share `DatadogFlags` state or client assignment caches with the
+main isolate, so they must call `DatadogFlags.enable()`, create the clients they
+need, and set evaluation contexts independently.
+
 ## Behavior
 
 - Unknown or malformed individual flag assignments are ignored so one bad flag

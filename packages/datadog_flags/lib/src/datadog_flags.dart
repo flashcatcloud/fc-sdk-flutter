@@ -13,6 +13,11 @@ import 'flags_configuration.dart';
 import 'flags_error.dart';
 import 'flags_repository.dart';
 
+/// Entry point for configuring and creating Datadog feature flag clients.
+///
+/// `DatadogFlags` state is local to the current Dart isolate. Background
+/// isolates must call [enable], create any clients they need, and set their own
+/// evaluation contexts before evaluating flags.
 class DatadogFlags {
   static DatadogFlagsConfiguration _configuration =
       const DatadogFlagsConfiguration();

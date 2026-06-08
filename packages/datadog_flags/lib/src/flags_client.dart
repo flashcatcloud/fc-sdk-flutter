@@ -7,6 +7,11 @@ import 'datadog_flags.dart';
 import 'flags_context.dart';
 import 'flags_details.dart';
 
+/// Evaluates feature flags for one current evaluation context.
+///
+/// Create separate clients for separate mobile subjects, such as logged-out and
+/// logged-in users. Clients are local to the Dart isolate where they are
+/// created and must be recreated in background isolates.
 abstract interface class DatadogFlagsClient {
   static const defaultName = 'default';
 
