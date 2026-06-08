@@ -7,10 +7,9 @@ import 'src/flags_client.dart';
 
 export 'src/datadog_context.dart' show DatadogFlagsContext, DatadogFlagsSite;
 export 'src/datadog_flags.dart' show DatadogFlags;
-export 'src/flags_client.dart' show DatadogFlagsClient;
+export 'src/flags_client.dart' show DatadogFlagsClient, FlagDetails;
 export 'src/flags_configuration.dart' show DatadogFlagsConfiguration;
 export 'src/flags_context.dart' show FlagsEvaluationContext;
-export 'src/flags_details.dart' show FlagDetails;
 export 'src/flags_error.dart' show FlagEvaluationError;
 
 typedef FlagsClient = DatadogFlagsClient;

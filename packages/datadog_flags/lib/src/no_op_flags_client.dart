@@ -3,86 +3,110 @@
 // developed at Datadog (https://www.datadoghq.com/).
 // Copyright 2019-Present Datadog, Inc.
 
+import 'flags_client.dart';
 import 'flags_context.dart';
 import 'flags_error.dart';
 
-/// Evaluates feature flags for one current evaluation context.
-///
-/// Create separate clients for separate mobile subjects, such as logged-out and
-/// logged-in users. Clients are local to the Dart isolate where they are
-/// created and must be recreated in background isolates.
-abstract interface class DatadogFlagsClient {
-  String get name;
+class NoOpDatadogFlagsClient implements DatadogFlagsClient {
+  @override
+  final String name;
 
-  Future<void> setEvaluationContext(
-    FlagsEvaluationContext context,
-  );
+  const NoOpDatadogFlagsClient({required this.name});
 
+  @override
+  Future<void> setEvaluationContext(FlagsEvaluationContext context) async {}
+
+  @override
   FlagDetails<bool> getBooleanDetails({
     required String key,
     required bool defaultValue,
-  });
+  }) {
+    return _details(key: key, defaultValue: defaultValue);
+  }
 
+  @override
   bool getBooleanValue({
     required String key,
     required bool defaultValue,
-  });
+  }) {
+    return defaultValue;
+  }
 
+  @override
   FlagDetails<String> getStringDetails({
     required String key,
     required String defaultValue,
-  });
+  }) {
+    return _details(key: key, defaultValue: defaultValue);
+  }
 
+  @override
   String getStringValue({
     required String key,
     required String defaultValue,
-  });
+  }) {
+    return defaultValue;
+  }
 
+  @override
   FlagDetails<int> getIntegerDetails({
     required String key,
     required int defaultValue,
-  });
+  }) {
+    return _details(key: key, defaultValue: defaultValue);
+  }
 
+  @override
   int getIntegerValue({
     required String key,
     required int defaultValue,
-  });
+  }) {
+    return defaultValue;
+  }
 
+  @override
   FlagDetails<double> getDoubleDetails({
     required String key,
     required double defaultValue,
-  });
+  }) {
+    return _details(key: key, defaultValue: defaultValue);
+  }
 
+  @override
   double getDoubleValue({
     required String key,
     required double defaultValue,
-  });
+  }) {
+    return defaultValue;
+  }
 
+  @override
   FlagDetails<Object?> getObjectDetails({
     required String key,
     required Object? defaultValue,
-  });
+  }) {
+    return _details(key: key, defaultValue: defaultValue);
+  }
 
+  @override
   Object? getObjectValue({
     required String key,
     required Object? defaultValue,
-  });
+  }) {
+    return defaultValue;
+  }
 
-  Future<void> reset();
-}
+  @override
+  Future<void> reset() async {}
 
-class FlagDetails<T> {
-  final String key;
-  final T value;
-  final String? variant;
-  final String? reason;
-  final FlagEvaluationError? error;
-
-  const FlagDetails({
-    required this.key,
-    required this.value,
-    this.variant,
-    this.reason,
-    this.error,
-  });
+  FlagDetails<T> _details<T>({
+    required String key,
+    required T defaultValue,
+  }) {
+    return FlagDetails(
+      key: key,
+      value: defaultValue,
+      error: FlagEvaluationError.providerNotReady,
+    );
+  }
 }

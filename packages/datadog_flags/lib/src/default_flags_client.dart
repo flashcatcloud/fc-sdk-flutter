@@ -6,7 +6,6 @@
 import 'assignment.dart';
 import 'flags_client.dart';
 import 'flags_context.dart';
-import 'flags_details.dart';
 import 'flags_error.dart';
 import 'flags_repository.dart';
 
@@ -32,7 +31,7 @@ class DefaultDatadogFlagsClient implements DatadogFlagsClient {
     required String key,
     required bool defaultValue,
   }) {
-    return _getDetails(
+    return getDetails(
       key: key,
       defaultValue: defaultValue,
       requestedType: FlagVariationType.boolean,
@@ -52,7 +51,7 @@ class DefaultDatadogFlagsClient implements DatadogFlagsClient {
     required String key,
     required String defaultValue,
   }) {
-    return _getDetails(
+    return getDetails(
       key: key,
       defaultValue: defaultValue,
       requestedType: FlagVariationType.string,
@@ -72,7 +71,7 @@ class DefaultDatadogFlagsClient implements DatadogFlagsClient {
     required String key,
     required int defaultValue,
   }) {
-    return _getDetails(
+    return getDetails(
       key: key,
       defaultValue: defaultValue,
       requestedType: FlagVariationType.integer,
@@ -92,7 +91,7 @@ class DefaultDatadogFlagsClient implements DatadogFlagsClient {
     required String key,
     required double defaultValue,
   }) {
-    return _getDetails(
+    return getDetails(
       key: key,
       defaultValue: defaultValue,
       requestedType: FlagVariationType.float,
@@ -112,7 +111,7 @@ class DefaultDatadogFlagsClient implements DatadogFlagsClient {
     required String key,
     required Object? defaultValue,
   }) {
-    return _getDetails(
+    return getDetails(
       key: key,
       defaultValue: defaultValue,
       requestedType: FlagVariationType.object,
@@ -132,10 +131,7 @@ class DefaultDatadogFlagsClient implements DatadogFlagsClient {
     return _repository.reset();
   }
 
-  @override
-  Future<void> dispose() async {}
-
-  FlagDetails<T> _getDetails<T>({
+  FlagDetails<T> getDetails<T>({
     required String key,
     required T defaultValue,
     required FlagVariationType requestedType,
@@ -216,10 +212,6 @@ class DefaultDatadogFlagsClient implements DatadogFlagsClient {
     };
 
     if (value == null && requestedType != FlagVariationType.object) {
-      return (matched: false, value: null);
-    }
-
-    if (value is! T && !(requestedType == FlagVariationType.object)) {
       return (matched: false, value: null);
     }
 

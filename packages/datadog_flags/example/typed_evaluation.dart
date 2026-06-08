@@ -15,7 +15,8 @@ Future<void> main() async {
   final targetingKey = Platform.environment['DD_TARGETING_KEY'];
   final attributes = _targetingAttributes();
 
-  await DatadogFlags.enable(
+  final datadogFlags = DatadogFlags.instance;
+  await datadogFlags.enable(
     configuration: DatadogFlagsConfiguration(
       datadogContext: DatadogFlagsContext(
         clientToken: clientToken,
@@ -26,7 +27,7 @@ Future<void> main() async {
     ),
   );
 
-  final flags = DatadogFlags.sharedClient();
+  final flags = datadogFlags.sharedClient();
   await flags.setEvaluationContext(
     FlagsEvaluationContext(
       targetingKey: targetingKey,
@@ -41,7 +42,7 @@ Future<void> main() async {
   stdout.writeln('reason: ${details.reason ?? '(none)'}');
   stdout.writeln('error: ${details.error?.name ?? '(none)'}');
 
-  await DatadogFlags.disable();
+  await datadogFlags.disable();
 }
 
 FlagDetails<Object?> _evaluate(

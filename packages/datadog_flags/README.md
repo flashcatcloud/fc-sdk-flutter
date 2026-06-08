@@ -10,7 +10,9 @@ Enable the client, set an evaluation context, and evaluate typed values from the
 current assignment state:
 
 ```dart
-await DatadogFlags.enable(
+final datadogFlags = DatadogFlags.instance;
+
+await datadogFlags.enable(
   configuration: DatadogFlagsConfiguration(
     datadogContext: const DatadogFlagsContext(
       clientToken: 'pub...',
@@ -20,7 +22,7 @@ await DatadogFlags.enable(
   ),
 );
 
-final flags = DatadogFlags.sharedClient();
+final flags = datadogFlags.sharedClient();
 await flags.setEvaluationContext(
   const FlagsEvaluationContext(targetingKey: 'user-123'),
 );
@@ -37,12 +39,12 @@ Use separate clients for separate mobile subjects, such as logged-out and
 logged-in users or org-level and user-level targeting:
 
 ```dart
-final orgFlags = await DatadogFlags.createClient(name: 'org');
+final orgFlags = await datadogFlags.createClient(name: 'org');
 await orgFlags.setEvaluationContext(
   const FlagsEvaluationContext(targetingKey: 'org-123'),
 );
 
-final userFlags = await DatadogFlags.createClient(name: 'user');
+final userFlags = await datadogFlags.createClient(name: 'user');
 await userFlags.setEvaluationContext(
   const FlagsEvaluationContext(targetingKey: 'user-456'),
 );
@@ -50,8 +52,8 @@ await userFlags.setEvaluationContext(
 
 Clients are local to the Dart isolate where they are created. Background
 isolates do not share `DatadogFlags` state or client assignment caches with the
-main isolate, so they must call `DatadogFlags.enable()`, create the clients they
-need, and set evaluation contexts independently.
+main isolate, so they must call `DatadogFlags.instance.enable()`, create the
+clients they need, and set evaluation contexts independently.
 
 ## Behavior
 

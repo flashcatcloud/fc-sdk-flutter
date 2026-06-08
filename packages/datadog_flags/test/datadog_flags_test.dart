@@ -12,35 +12,43 @@ import 'package:http/testing.dart';
 import 'package:test/test.dart';
 
 void main() {
-  late List<http.Request> requests;
-
-  setUp(() async {
-    requests = [];
-    await DatadogFlags.disable();
-  });
-
-  tearDown(() async {
-    await DatadogFlags.disable();
-  });
-
   test('enable creates the default shared client', () async {
-    await DatadogFlags.enable(
+    final requests = <http.Request>[];
+    final datadogFlags = DatadogFlags();
+    await datadogFlags.enable(
       configuration: DatadogFlagsConfiguration(
-        datadogContext: datadogContext(),
-        httpClient: clientWithResponse(requests, assignmentsResponse()),
+        datadogContext: _datadogContext(),
+        httpClient: _clientWithResponse(requests, _assignmentsResponse()),
       ),
     );
 
-    final shared = DatadogFlags.sharedClient();
+    final shared = datadogFlags.sharedClient();
 
-    expect(shared.name, DatadogFlagsClient.defaultName);
-    expect(DatadogFlags.isEnabled, isTrue);
+    expect(shared.name, DatadogFlags.defaultClientName);
+    expect(datadogFlags.isEnabled, isTrue);
+  });
+
+  test('missing configuration creates a no-op client', () async {
+    final datadogFlags = DatadogFlags();
+
+    await datadogFlags.enable();
+    final flags = datadogFlags.sharedClient();
+
+    expect(datadogFlags.isEnabled, isFalse);
+    expect(flags.getBooleanValue(key: 'show-paywall', defaultValue: false),
+        isFalse);
+    final details = flags.getBooleanDetails(
+      key: 'show-paywall',
+      defaultValue: false,
+    );
+    expect(details.error, FlagEvaluationError.providerNotReady);
   });
 
   test('returns typed values and drops unknown variation types', () async {
-    final client = await createClient(
+    final requests = <http.Request>[];
+    final client = await _createClient(
       requests: requests,
-      response: assignmentsResponse(),
+      response: _assignmentsResponse(),
     );
     await client.setEvaluationContext(
       const FlagsEvaluationContext(targetingKey: 'user-123'),
@@ -68,9 +76,10 @@ void main() {
 
   test('reports provider readiness, not-found, and type mismatch details',
       () async {
-    final client = await createClient(
+    final requests = <http.Request>[];
+    final client = await _createClient(
       requests: requests,
-      response: assignmentsResponse(),
+      response: _assignmentsResponse(),
     );
 
     final notReady = client.getBooleanDetails(
@@ -100,8 +109,9 @@ void main() {
   });
 
   test('keeps the latest context when fetches resolve out of order', () async {
+    final requests = <http.Request>[];
     final responseCompleters = <Completer<http.Response>>[];
-    final client = await createClient(
+    final client = await _createClient(
       requests: requests,
       httpClient: MockClient((request) {
         requests.add(request);
@@ -121,7 +131,7 @@ void main() {
 
     expect(responseCompleters, hasLength(2));
     responseCompleters[1].complete(http.Response(
-      jsonEncode(assignmentsResponse(
+      jsonEncode(_assignmentsResponse(
         booleanVariationKey: 'second',
         booleanValue: false,
       )),
@@ -130,7 +140,7 @@ void main() {
     await second;
 
     responseCompleters[0].complete(http.Response(
-      jsonEncode(assignmentsResponse(
+      jsonEncode(_assignmentsResponse(
         booleanVariationKey: 'first',
         booleanValue: true,
       )),
@@ -147,7 +157,8 @@ void main() {
   });
 
   test('does not throw when context fetch fails', () async {
-    final client = await createClient(
+    final requests = <http.Request>[];
+    final client = await _createClient(
       requests: requests,
       httpClient: MockClient((request) async {
         requests.add(request);
@@ -168,9 +179,10 @@ void main() {
   });
 
   test('returns object defaults without validating their JSON shape', () async {
-    final client = await createClient(
+    final requests = <http.Request>[];
+    final client = await _createClient(
       requests: requests,
-      response: assignmentsResponse(),
+      response: _assignmentsResponse(),
     );
 
     final defaultValue = Object();
@@ -184,9 +196,10 @@ void main() {
   });
 
   test('reset clears the current assignment state', () async {
-    final client = await createClient(
+    final requests = <http.Request>[];
+    final client = await _createClient(
       requests: requests,
-      response: assignmentsResponse(),
+      response: _assignmentsResponse(),
     );
     await client.setEvaluationContext(
       const FlagsEvaluationContext(targetingKey: 'user-123'),
@@ -206,21 +219,22 @@ void main() {
   });
 }
 
-Future<DatadogFlagsClient> createClient({
+Future<DatadogFlagsClient> _createClient({
   required List<http.Request> requests,
   Object? response,
   http.Client? httpClient,
 }) async {
-  await DatadogFlags.enable(
+  final datadogFlags = DatadogFlags();
+  await datadogFlags.enable(
     configuration: DatadogFlagsConfiguration(
-      datadogContext: datadogContext(),
-      httpClient: httpClient ?? clientWithResponse(requests, response!),
+      datadogContext: _datadogContext(),
+      httpClient: httpClient ?? _clientWithResponse(requests, response!),
     ),
   );
-  return DatadogFlagsClient.create();
+  return datadogFlags.createClient();
 }
 
-DatadogFlagsContext datadogContext() {
+DatadogFlagsContext _datadogContext() {
   return const DatadogFlagsContext(
     clientToken: 'client-token',
     env: 'staging',
@@ -229,7 +243,7 @@ DatadogFlagsContext datadogContext() {
   );
 }
 
-http.Client clientWithResponse(
+http.Client _clientWithResponse(
   List<http.Request> requests,
   Object body, {
   int statusCode = 200,
@@ -240,7 +254,7 @@ http.Client clientWithResponse(
   });
 }
 
-Map<String, Object?> assignmentsResponse({
+Map<String, Object?> _assignmentsResponse({
   bool doLog = true,
   String booleanVariationKey = 'enabled',
   bool booleanValue = true,

@@ -25,6 +25,8 @@ class FlagsRepository {
   Future<void> setEvaluationContext(
     FlagsEvaluationContext context,
   ) async {
+    // Multiple context updates can be in flight at once. Only the latest
+    // request is allowed to publish assignments back into the repository.
     final requestId = ++_contextRequestId;
     final PrecomputedAssignments assignments;
     try {
@@ -46,6 +48,7 @@ class FlagsRepository {
   }
 
   Future<void> reset() async {
+    _contextRequestId++;
     _context = null;
     _flags = const {};
   }

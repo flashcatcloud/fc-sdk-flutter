@@ -10,58 +10,88 @@ import 'default_flags_client.dart';
 import 'flag_assignments_fetcher.dart';
 import 'flags_client.dart';
 import 'flags_configuration.dart';
-import 'flags_error.dart';
 import 'flags_repository.dart';
+import 'no_op_flags_client.dart';
 
 /// Entry point for configuring and creating Datadog feature flag clients.
 ///
 /// `DatadogFlags` state is local to the current Dart isolate. Background
-/// isolates must call [enable], create any clients they need, and set their own
-/// evaluation contexts before evaluating flags.
+/// isolates must use their own [DatadogFlags] instance, create any clients they
+/// need, and set their own evaluation contexts before evaluating flags.
 class DatadogFlags {
-  static DatadogFlagsConfiguration _configuration =
-      const DatadogFlagsConfiguration();
-  static DatadogFlagsContext? _datadogContext;
-  static http.Client? _httpClient;
-  static final Map<String, DatadogFlagsClient> _clients = {};
-  static bool _enabled = false;
+  static const defaultClientName = 'default';
 
-  DatadogFlags._();
+  static DatadogFlags? _singleton;
 
-  static bool get isEnabled => _enabled;
+  static DatadogFlags get instance {
+    _singleton ??= DatadogFlags();
+    return _singleton!;
+  }
 
-  static Future<void> enable({
+  DatadogFlagsConfiguration _configuration = const DatadogFlagsConfiguration();
+  DatadogFlagsContext? _datadogContext;
+  http.Client? _httpClient;
+  final Map<String, DatadogFlagsClient> _clients = {};
+  bool _enabled = false;
+
+  DatadogFlags();
+
+  bool get isEnabled => _enabled;
+
+  Future<void> enable({
     DatadogFlagsConfiguration configuration = const DatadogFlagsConfiguration(),
   }) async {
-    await _disposeClients();
-    _httpClient?.close();
-    _httpClient = null;
-    _datadogContext = null;
-    _enabled = false;
+    await disable();
+    _configuration = configuration;
 
     final datadogContext = configuration.datadogContext;
     if (datadogContext == null) {
-      throw FlagsException.invalidConfiguration(
-        'DatadogFlagsConfiguration.datadogContext is required.',
-      );
+      return;
     }
 
-    _configuration = configuration;
     _datadogContext = datadogContext;
     _httpClient = configuration.httpClient ?? http.Client();
     _enabled = true;
     await createClient();
   }
 
-  static Future<DatadogFlagsClient> createClient({
-    String name = DatadogFlagsClient.defaultName,
+  Future<DatadogFlagsClient> createClient({
+    String name = defaultClientName,
   }) async {
+    return _client(name);
+  }
+
+  DatadogFlagsClient sharedClient({
+    String name = defaultClientName,
+  }) {
+    return _client(name);
+  }
+
+  Future<void> reset() async {
+    await Future.wait(_clients.values.map((client) => client.reset()));
+  }
+
+  Future<void> disable() async {
+    _clients.clear();
+    _httpClient?.close();
+    _httpClient = null;
+    _datadogContext = null;
+    _enabled = false;
+  }
+
+  DatadogFlagsClient _client(String name) {
     final existing = _clients[name];
     if (existing != null) {
       return existing;
     }
 
-    final runtime = _runtimeOrThrow();
+    final runtime = _runtime;
+    if (runtime == null) {
+      final client = NoOpDatadogFlagsClient(name: name);
+      _clients[name] = client;
+      return client;
+    }
+
     final repository = FlagsRepository(
       fetcher: FlagAssignmentsFetcher(
         datadogContext: runtime.datadogContext,
@@ -78,42 +108,11 @@ class DatadogFlags {
     return client;
   }
 
-  static DatadogFlagsClient sharedClient({
-    String name = DatadogFlagsClient.defaultName,
-  }) {
-    final client = _clients[name];
-    if (client == null) {
-      throw FlagsException.clientNotInitialized(
-        'DatadogFlagsClient named "$name" has not been created.',
-      );
-    }
-    return client;
-  }
-
-  static Future<void> reset() async {
-    await Future.wait(_clients.values.map((client) => client.reset()));
-  }
-
-  static Future<void> disable() async {
-    await _disposeClients();
-    _httpClient?.close();
-    _httpClient = null;
-    _datadogContext = null;
-    _enabled = false;
-  }
-
-  static Future<void> _disposeClients() async {
-    await Future.wait(_clients.values.map((client) => client.dispose()));
-    _clients.clear();
-  }
-
-  static _FlagsRuntime _runtimeOrThrow() {
+  _FlagsRuntime? get _runtime {
     final datadogContext = _datadogContext;
     final httpClient = _httpClient;
     if (!_enabled || datadogContext == null || httpClient == null) {
-      throw FlagsException.clientNotInitialized(
-        'Call DatadogFlags.enable() before creating a flags client.',
-      );
+      return null;
     }
 
     return _FlagsRuntime(
