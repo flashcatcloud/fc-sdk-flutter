@@ -3,6 +3,6 @@
 // developed at Datadog (https://www.datadoghq.com/).
 // Copyright 2019-Present Datadog, Inc.
 
-export 'src/datadog_context.dart' show DatadogFlagsContext, DatadogFlagsSite;
+export 'src/datadog_flags_config.dart' show DatadogFlagsConfig, DatadogFlagsSite;
 export 'src/flags_configuration.dart' show DatadogFlagsConfiguration;
 export 'src/flags_context.dart' show FlagsEvaluationContext;

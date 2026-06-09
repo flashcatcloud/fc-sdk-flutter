@@ -6,7 +6,7 @@
 import 'package:json_annotation/json_annotation.dart';
 import 'package:meta/meta.dart';
 
-import 'datadog_context.dart';
+import 'datadog_flags_config.dart';
 import 'flags_context.dart';
 import 'json_value.dart';
 
@@ -20,13 +20,13 @@ final class PrecomputeRequest {
   const PrecomputeRequest({required this.data});
 
   factory PrecomputeRequest.fromContext({
-    required DatadogFlagsContext datadogContext,
+    required DatadogFlagsConfig datadogConfig,
     required FlagsEvaluationContext evaluationContext,
   }) {
     return PrecomputeRequest(
       data: PrecomputeRequestData(
         attributes: PrecomputeRequestAttributes(
-          env: PrecomputeRequestEnv(ddEnv: datadogContext.env),
+          env: PrecomputeRequestEnv(ddEnv: datadogConfig.env),
           subject: PrecomputeRequestSubject(
             targetingKey: evaluationContext.targetingKey,
             targetingAttributes: evaluationContext.attributes,

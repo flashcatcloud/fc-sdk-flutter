@@ -22,13 +22,13 @@ enum DatadogFlagsSite {
 }
 
 @immutable
-final class DatadogFlagsContext {
+final class DatadogFlagsConfig {
   final String clientToken;
   final String env;
   final DatadogFlagsSite site;
   final String? applicationId;
 
-  const DatadogFlagsContext({
+  const DatadogFlagsConfig({
     required this.clientToken,
     required this.env,
     required this.site,

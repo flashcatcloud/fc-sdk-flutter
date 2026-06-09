@@ -5,18 +5,18 @@
 
 import 'package:http/http.dart' as http;
 
-import 'datadog_context.dart';
+import 'datadog_flags_config.dart';
 
 class DatadogFlagsConfiguration {
   final Uri? customFlagsEndpoint;
   final Map<String, String>? customFlagsHeaders;
   final http.Client? httpClient;
-  final DatadogFlagsContext? datadogContext;
+  final DatadogFlagsConfig? datadogConfig;
 
   const DatadogFlagsConfiguration({
     this.customFlagsEndpoint,
     this.customFlagsHeaders,
     this.httpClient,
-    this.datadogContext,
+    this.datadogConfig,
   });
 }

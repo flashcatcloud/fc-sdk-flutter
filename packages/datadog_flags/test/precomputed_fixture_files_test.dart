@@ -99,7 +99,7 @@ Future<Map<String, FlagAssignment>> _fetchAssignments(
   Map<String, Object?> fixture,
 ) async {
   final fetcher = FlagAssignmentsFetcher(
-    datadogContext: const DatadogFlagsContext(
+    datadogConfig: const DatadogFlagsConfig(
       clientToken: 'client-token',
       env: 'staging',
       site: DatadogFlagsSite.us1,
