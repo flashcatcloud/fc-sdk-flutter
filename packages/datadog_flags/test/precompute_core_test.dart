@@ -6,95 +6,174 @@
 import 'dart:convert';
 
 import 'package:datadog_flags/datadog_flags.dart';
-import 'package:flutter_test/flutter_test.dart';
+import 'package:datadog_flags/src/assignment.dart';
+import 'package:datadog_flags/src/flag_assignments_fetcher.dart';
+import 'package:datadog_flags/src/flags_error.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+import 'package:test/test.dart';
 
 void main() {
   group('FlagAssignmentsFetcher', () {
-    test('builds the precompute request expected by canonical fixtures',
-        () async {
-      final fixture = _requestFixture();
-      final requests = <http.Request>[];
-      final fetcher = _fixtureFetcher(
-        fixture,
-        requests,
-        datadogContext: const DatadogFlagsContext(
-          clientToken: 'client-token',
-          env: 'staging',
-          site: DatadogFlagsSite.us1,
-          applicationId: 'rum-app-id',
-        ),
-      );
+    final requestFixture = {
+      'context': {
+        'targetingKey': 'precomputed-user',
+        'attributes': {'plan': 'pro', 'platform': 'flutter'},
+      },
+      'response': {'data': _emptyAssignments()},
+    };
 
-      await fetcher.fetch(
-        DatadogFlagsEvaluationContext.fromJson(
-          fixture['context'] as Map<String, Object?>,
-        ),
-      );
+    test(
+      'builds the precompute request expected by canonical fixtures',
+      () async {
+        final requests = <http.Request>[];
+        final fetcher = FlagAssignmentsFetcher(
+          datadogConfig: const DatadogFlagsConfig(
+            clientToken: 'client-token',
+            env: 'staging',
+            site: DatadogFlagsSite.us1,
+            applicationId: 'application-id',
+            sdkVersion: '1.2.3',
+          ),
+          configuration: const DatadogFlagsConfiguration(),
+          httpClient: _jsonClient(requests, requestFixture['response']),
+        );
 
-      expect(requests, hasLength(1));
-      final request = requests.single;
-      expect(
-        request.url,
-        Uri.parse(
-            'https://preview.ff-cdn.datadoghq.com/precompute-assignments'),
-      );
-      expect(request.headers['Content-Type'], 'application/vnd.api+json');
-      expect(request.headers['dd-client-token'], 'client-token');
-      expect(request.headers['dd-application-id'], 'rum-app-id');
-      expect(request.headers.containsKey('X-Use-Cache'), isFalse);
-      expect(
-        jsonDecode(request.body),
-        {
+        await fetcher.fetch(
+          FlagsEvaluationContext.fromJson(
+            requestFixture['context'] as Map<String, Object?>,
+          ),
+        );
+
+        expect(requests, hasLength(1));
+        final request = requests.single;
+        expect(
+          request.url,
+          Uri.parse(
+            'https://preview.ff-cdn.datadoghq.com/precompute-assignments',
+          ),
+        );
+        expect(request.headers['Content-Type'], 'application/vnd.api+json');
+        expect(request.headers['dd-client-token'], 'client-token');
+        expect(request.headers['dd-application-id'], 'application-id');
+        expect(request.headers.containsKey('X-Use-Cache'), isFalse);
+        expect(jsonDecode(request.body), {
           'data': {
             'type': 'precompute-assignments-request',
             'attributes': {
               'env': {'dd_env': 'staging'},
+              'source': {'sdk_name': 'dd-sdk-flutter', 'sdk_version': '1.2.3'},
               'subject': {
                 'targeting_key': 'precomputed-user',
-                'targeting_attributes': {
-                  'plan': 'pro',
-                  'platform': 'flutter',
-                },
+                'targeting_attributes': {'plan': 'pro', 'platform': 'flutter'},
               },
             },
           },
-        },
-      );
-    });
+        });
+      },
+    );
 
-    test('omits application id unless configured and applies custom headers',
-        () async {
+    test(
+      'omits application id unless configured and applies custom headers',
+      () async {
+        final requests = <http.Request>[];
+        final fetcher = FlagAssignmentsFetcher(
+          datadogConfig: const DatadogFlagsConfig(
+            clientToken: 'token',
+            env: 'dev',
+            site: DatadogFlagsSite.us1,
+          ),
+          configuration: DatadogFlagsConfiguration(
+            customFlagsEndpoint: Uri.parse('https://example.com/precompute'),
+            customFlagsHeaders: const {'x-test-header': '1'},
+          ),
+          httpClient: _jsonClient(requests, {'data': _emptyAssignments()}),
+        );
+
+        await fetcher.fetch(
+          const FlagsEvaluationContext(targetingKey: 'subject'),
+        );
+
+        final request = requests.single;
+        expect(request.url, Uri.parse('https://example.com/precompute'));
+        expect(request.headers['dd-client-token'], 'token');
+        expect(request.headers.containsKey('dd-application-id'), isFalse);
+        expect(request.headers['x-test-header'], '1');
+      },
+    );
+
+    test('omits targeting key when none is configured', () async {
       final requests = <http.Request>[];
       final fetcher = FlagAssignmentsFetcher(
-        datadogContext: const DatadogFlagsContext(
-          clientToken: 'token',
-          env: 'dev',
-          site: DatadogFlagsSite.us1,
-        ),
-        configuration: DatadogFlagsConfiguration(
-          customFlagsEndpoint: Uri.parse('https://example.com/precompute'),
-          customFlagsHeaders: const {'x-test-header': '1'},
-        ),
+        datadogConfig: _contextFor(DatadogFlagsSite.us1),
+        configuration: const DatadogFlagsConfiguration(),
         httpClient: _jsonClient(requests, {'data': _emptyAssignments()}),
       );
 
       await fetcher.fetch(
-        const DatadogFlagsEvaluationContext(targetingKey: 'subject'),
+        const FlagsEvaluationContext(attributes: {'companyId': '1'}),
       );
 
-      final request = requests.single;
-      expect(request.url, Uri.parse('https://example.com/precompute'));
-      expect(request.headers['dd-client-token'], 'token');
-      expect(request.headers.containsKey('dd-application-id'), isFalse);
-      expect(request.headers['x-test-header'], '1');
+      expect(jsonDecode(requests.single.body), {
+        'data': {
+          'type': 'precompute-assignments-request',
+          'attributes': {
+            'env': {'dd_env': 'dev'},
+            'source': {'sdk_name': 'dd-sdk-flutter', 'sdk_version': '0.0.1'},
+            'subject': {
+              'targeting_attributes': {'companyId': '1'},
+            },
+          },
+        },
+      });
     });
 
-    test('maps all supported sites and falls back to US1 for gov', () {
+    test('serializes targeting attributes as scalar values', () async {
+      final requests = <http.Request>[];
+      final fetcher = FlagAssignmentsFetcher(
+        datadogConfig: _contextFor(DatadogFlagsSite.us1),
+        configuration: const DatadogFlagsConfiguration(),
+        httpClient: _jsonClient(requests, {'data': _emptyAssignments()}),
+      );
+
+      await fetcher.fetch(
+        const FlagsEvaluationContext(
+          targetingKey: 'subject',
+          attributes: {
+            'string': 'value',
+            'integer': 42,
+            'double': 0.5,
+            'boolean': true,
+            'null': null,
+            'object': {'nested': 'value'},
+            'list': ['a', 1],
+          },
+        ),
+      );
+
+      final body = jsonDecode(requests.single.body) as Map<String, Object?>;
+      final data = body['data'] as Map<String, Object?>;
+      final attributes = data['attributes'] as Map<String, Object?>;
+      final subject = attributes['subject'] as Map<String, Object?>;
+      expect(subject['targeting_attributes'], {
+        'string': 'value',
+        'integer': 42,
+        'double': 0.5,
+        'boolean': true,
+        'null': null,
+        'object': '{"nested":"value"}',
+        'list': '["a",1]',
+      });
+    });
+
+    test('maps all supported sites', () {
       expect(
         _contextFor(DatadogFlagsSite.us1).flagsEndpoint(),
         Uri.parse('https://preview.ff-cdn.datadoghq.com'),
+      );
+      expect(
+        _contextFor(DatadogFlagsSite.us1Staging).flagsEndpoint(),
+        Uri.parse('https://preview.ff-cdn.datad0g.com'),
       );
       expect(
         _contextFor(DatadogFlagsSite.us3).flagsEndpoint(),
@@ -116,26 +195,22 @@ void main() {
         _contextFor(DatadogFlagsSite.ap2).flagsEndpoint(),
         Uri.parse('https://preview.ff-cdn.ap2.datadoghq.com'),
       );
-      expect(
-        _contextFor(DatadogFlagsSite.us1Fed).flagsEndpoint(),
-        Uri.parse('https://preview.ff-cdn.datadoghq.com'),
-      );
     });
 
-    test('normalizes uppercase, json, and numeric variation names', () async {
+    test('keeps canonical number variation names from the server', () async {
       final requests = <http.Request>[];
       final fetcher = FlagAssignmentsFetcher(
-        datadogContext: _contextFor(DatadogFlagsSite.us1),
+        datadogConfig: _contextFor(DatadogFlagsSite.us1),
         configuration: const DatadogFlagsConfiguration(),
         httpClient: _jsonClient(requests, {
           'data': {
             'attributes': {
               'flags': {
-                'enabled': _assignment('BOOLEAN', true),
-                'title': _assignment('STRING', 'Hello'),
-                'integer': _assignment('NUMERIC', 12),
+                'enabled': _assignment('boolean', true),
+                'title': _assignment('string', 'Hello'),
+                'integer': _assignment('number', 12),
                 'float': _assignment('number', 0.25),
-                'json': _assignment('JSON', {
+                'object': _assignment('object', {
                   'nested': ['value'],
                 }),
               },
@@ -144,93 +219,130 @@ void main() {
         }),
       );
 
-      final assignments = await fetcher.fetch(
-        const DatadogFlagsEvaluationContext(targetingKey: 'subject'),
-      );
+      final assignments = (await fetcher.fetch(
+        const FlagsEvaluationContext(targetingKey: 'subject'),
+      ))
+          .flags;
 
       expect(assignments['enabled']!.variationType, FlagVariationType.boolean);
       expect(assignments['title']!.variationType, FlagVariationType.string);
-      expect(assignments['integer']!.variationType, FlagVariationType.integer);
-      expect(assignments['float']!.variationType, FlagVariationType.float);
-      expect(assignments['json']!.variationType, FlagVariationType.object);
+      expect(assignments['integer']!.variationType, FlagVariationType.number);
+      expect(assignments['float']!.variationType, FlagVariationType.number);
+      expect(assignments['object']!.variationType, FlagVariationType.object);
+      expect(assignments['integer']!.variationValue, 12);
       expect(assignments['float']!.variationValue, 0.25);
     });
 
-    test('ignores malformed flag entries without dropping valid assignments',
-        () async {
+    test(
+      'ignores malformed flag entries without dropping valid assignments',
+      () async {
+        final requests = <http.Request>[];
+        final fetcher = FlagAssignmentsFetcher(
+          datadogConfig: _contextFor(DatadogFlagsSite.us1),
+          configuration: const DatadogFlagsConfiguration(),
+          httpClient: _jsonClient(requests, {
+            'data': {
+              'attributes': {
+                'flags': {
+                  'valid': _assignment('boolean', true),
+                  'not-object': 'bad',
+                  'missing-fields': {'variationType': 'boolean'},
+                  'null-value': _assignment('string', null),
+                  'unsupported': _assignment('unsupported', 'ignored'),
+                },
+              },
+            },
+          }),
+        );
+
+        final assignments = (await fetcher.fetch(
+          const FlagsEvaluationContext(targetingKey: 'subject'),
+        ))
+            .flags;
+
+        expect(assignments.keys, ['valid']);
+      },
+    );
+
+    test('returns response metadata with assignments', () async {
       final requests = <http.Request>[];
       final fetcher = FlagAssignmentsFetcher(
-        datadogContext: _contextFor(DatadogFlagsSite.us1),
+        datadogConfig: _contextFor(DatadogFlagsSite.us1),
         configuration: const DatadogFlagsConfiguration(),
         httpClient: _jsonClient(requests, {
           'data': {
             'attributes': {
-              'flags': {
-                'valid': _assignment('boolean', true),
-                'not-object': 'bad',
-                'missing-fields': {'variationType': 'boolean'},
-                'unsupported': _assignment('unsupported', 'ignored'),
-              },
+              'createdAt': '2026-06-04T12:00:00.000Z',
+              'environment': 'prod',
+              'flags': {'valid': _assignment('boolean', true)},
             },
           },
         }),
       );
 
-      final assignments = await fetcher.fetch(
-        const DatadogFlagsEvaluationContext(targetingKey: 'subject'),
+      final response = await fetcher.fetch(
+        const FlagsEvaluationContext(targetingKey: 'subject'),
       );
 
-      expect(assignments.keys, ['valid']);
+      expect(response.createdAt, DateTime.utc(2026, 6, 4, 12));
+      expect(response.environment, 'prod');
+      expect(response.flags.keys, ['valid']);
     });
 
-    test('throws network errors for non-success status and transport failures',
-        () async {
-      final nonSuccessFetcher = FlagAssignmentsFetcher(
-        datadogContext: _contextFor(DatadogFlagsSite.us1),
-        configuration: const DatadogFlagsConfiguration(),
-        httpClient: MockClient((_) async => http.Response('nope', 500)),
-      );
+    test(
+      'reports internal network errors for wrapper fallback handling',
+      () async {
+        final nonSuccessFetcher = FlagAssignmentsFetcher(
+          datadogConfig: _contextFor(DatadogFlagsSite.us1),
+          configuration: const DatadogFlagsConfiguration(),
+          httpClient: MockClient((_) async => http.Response('nope', 500)),
+        );
 
-      await expectLater(
-        nonSuccessFetcher.fetch(
-          const DatadogFlagsEvaluationContext(targetingKey: 'subject'),
-        ),
-        throwsA(
-          isA<FlagsException>().having(
-              (error) => error.type, 'type', FlagsErrorType.networkError),
-        ),
-      );
+        await expectLater(
+          nonSuccessFetcher.fetch(
+            const FlagsEvaluationContext(targetingKey: 'subject'),
+          ),
+          throwsA(
+            isA<FlagsException>().having(
+              (error) => error.type,
+              'type',
+              FlagsErrorType.networkError,
+            ),
+          ),
+        );
 
-      final failingFetcher = FlagAssignmentsFetcher(
-        datadogContext: _contextFor(DatadogFlagsSite.us1),
-        configuration: const DatadogFlagsConfiguration(),
-        httpClient: MockClient((_) async => throw StateError('offline')),
-      );
+        final failingFetcher = FlagAssignmentsFetcher(
+          datadogConfig: _contextFor(DatadogFlagsSite.us1),
+          configuration: const DatadogFlagsConfiguration(),
+          httpClient: MockClient((_) async => throw StateError('offline')),
+        );
 
-      await expectLater(
-        failingFetcher.fetch(
-          const DatadogFlagsEvaluationContext(targetingKey: 'subject'),
-        ),
-        throwsA(
-          isA<FlagsException>()
-              .having(
-                  (error) => error.type, 'type', FlagsErrorType.networkError)
-              .having((error) => error.cause, 'cause', isA<StateError>()),
-        ),
-      );
-    });
+        await expectLater(
+          failingFetcher.fetch(
+            const FlagsEvaluationContext(targetingKey: 'subject'),
+          ),
+          throwsA(
+            isA<FlagsException>()
+                .having(
+                  (error) => error.type,
+                  'type',
+                  FlagsErrorType.networkError,
+                )
+                .having((error) => error.cause, 'cause', isA<StateError>()),
+          ),
+        );
+      },
+    );
 
-    test('throws invalid response errors for malformed envelopes', () async {
+    test('reports invalid response errors for malformed envelopes', () async {
       final fetcher = FlagAssignmentsFetcher(
-        datadogContext: _contextFor(DatadogFlagsSite.us1),
+        datadogConfig: _contextFor(DatadogFlagsSite.us1),
         configuration: const DatadogFlagsConfiguration(),
         httpClient: MockClient((_) async => http.Response('{"data":[]}', 200)),
       );
 
       await expectLater(
-        fetcher.fetch(
-          const DatadogFlagsEvaluationContext(targetingKey: 'subject'),
-        ),
+        fetcher.fetch(const FlagsEvaluationContext(targetingKey: 'subject')),
         throwsA(
           isA<FlagsException>().having(
             (error) => error.type,
@@ -243,41 +355,8 @@ void main() {
   });
 }
 
-Map<String, Object?> _requestFixture() {
-  return {
-    'context': {
-      'targetingKey': 'precomputed-user',
-      'attributes': {
-        'plan': 'pro',
-        'platform': 'flutter',
-      },
-    },
-    'response': {'data': _emptyAssignments()},
-  };
-}
-
-FlagAssignmentsFetcher _fixtureFetcher(
-  Map<String, Object?> fixture,
-  List<http.Request> requests, {
-  DatadogFlagsContext datadogContext = const DatadogFlagsContext(
-    clientToken: 'client-token',
-    env: 'staging',
-    site: DatadogFlagsSite.us1,
-  ),
-}) {
-  return FlagAssignmentsFetcher(
-    datadogContext: datadogContext,
-    configuration: const DatadogFlagsConfiguration(),
-    httpClient: _jsonClient(requests, fixture['response'] as Object),
-  );
-}
-
-DatadogFlagsContext _contextFor(DatadogFlagsSite site) {
-  return DatadogFlagsContext(
-    clientToken: 'token',
-    env: 'dev',
-    site: site,
-  );
+DatadogFlagsConfig _contextFor(DatadogFlagsSite site) {
+  return DatadogFlagsConfig(clientToken: 'token', env: 'dev', site: site);
 }
 
 http.Client _jsonClient(List<http.Request> requests, Object? body) {

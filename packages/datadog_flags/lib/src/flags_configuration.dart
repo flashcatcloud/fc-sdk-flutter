@@ -4,17 +4,18 @@
 // Copyright 2019-Present Datadog, Inc.
 
 import 'package:http/http.dart' as http;
+import 'package:meta/meta.dart';
 
-import 'datadog_context.dart';
+import 'datadog_flags_config.dart';
 
-class DatadogFlagsConfiguration {
+@immutable
+final class DatadogFlagsConfiguration {
   final Uri? customFlagsEndpoint;
   final Map<String, String>? customFlagsHeaders;
   final Uri? customExposureEndpoint;
   final bool trackExposures;
   final http.Client? httpClient;
-  final DatadogFlagsContext? datadogContext;
-  final bool rumIntegrationEnabled;
+  final DatadogFlagsConfig? datadogConfig;
   final DateTime Function() dateProvider;
 
   const DatadogFlagsConfiguration({
@@ -23,8 +24,7 @@ class DatadogFlagsConfiguration {
     this.customExposureEndpoint,
     this.trackExposures = true,
     this.httpClient,
-    this.datadogContext,
-    this.rumIntegrationEnabled = true,
+    this.datadogConfig,
     this.dateProvider = DateTime.now,
   });
 }

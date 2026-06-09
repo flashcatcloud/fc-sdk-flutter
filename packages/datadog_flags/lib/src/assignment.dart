@@ -3,19 +3,78 @@
 // developed at Datadog (https://www.datadoghq.com/).
 // Copyright 2019-Present Datadog, Inc.
 
+import 'package:json_annotation/json_annotation.dart';
+import 'package:meta/meta.dart';
+
 import 'json_value.dart';
 
-enum FlagVariationType { boolean, string, integer, float, object, unknown }
+part 'assignment.g.dart';
 
-class FlagAssignment {
+enum FlagVariationType {
+  boolean('boolean'),
+  string('string'),
+  integer('integer'),
+  float('float'),
+  number('number'),
+  object('object');
+
+  final String wireName;
+
+  const FlagVariationType(this.wireName);
+
+  factory FlagVariationType.fromWireName(String name) {
+    for (final type in values) {
+      if (type.wireName == name) {
+        return type;
+      }
+    }
+    throw FormatException('Unsupported flag variation type: $name');
+  }
+
+  Object decodeVariationValue(Object value) {
+    return switch (this) {
+      FlagVariationType.boolean when value is bool => value,
+      FlagVariationType.string when value is String => value,
+      FlagVariationType.integer when value is int => value,
+      FlagVariationType.float when value is num => value.toDouble(),
+      FlagVariationType.number when value is num => value,
+      FlagVariationType.object => sanitizeJsonValue(value)!,
+      _ => throw FormatException('Invalid variation value for $wireName'),
+    };
+  }
+
+  static String toWireName(FlagVariationType type) => type.wireName;
+}
+
+@immutable
+final class PrecomputedAssignments {
+  final Map<String, FlagAssignment> flags;
+  final DateTime? createdAt;
+  final String? environment;
+
+  const PrecomputedAssignments({
+    required this.flags,
+    this.createdAt,
+    this.environment,
+  });
+}
+
+@immutable
+@JsonSerializable(constructor: '_')
+final class FlagAssignment {
   final String allocationKey;
   final String variationKey;
+  @JsonKey(
+    fromJson: FlagVariationType.fromWireName,
+    toJson: FlagVariationType.toWireName,
+  )
   final FlagVariationType variationType;
-  final Object? variationValue;
+  @JsonKey(toJson: sanitizeJsonValue)
+  final Object variationValue;
   final String reason;
   final bool doLog;
 
-  const FlagAssignment({
+  const FlagAssignment._({
     required this.allocationKey,
     required this.variationKey,
     required this.variationType,
@@ -25,100 +84,20 @@ class FlagAssignment {
   });
 
   factory FlagAssignment.fromJson(Map<String, Object?> json) {
-    final typeName = json['variationType'] as String?;
-    final value = json['variationValue'];
-    final variationType = normalizeVariationType(typeName, value);
+    final assignment = _$FlagAssignmentFromJson(json);
+    final variationValue = assignment.variationType.decodeVariationValue(
+      assignment.variationValue,
+    );
 
-    return FlagAssignment(
-      allocationKey: json['allocationKey'] as String,
-      variationKey: json['variationKey'] as String,
-      variationType: variationType,
-      variationValue: _decodeVariationValue(variationType, value),
-      reason: json['reason'] as String,
-      doLog: json['doLog'] as bool,
+    return FlagAssignment._(
+      allocationKey: assignment.allocationKey,
+      variationKey: assignment.variationKey,
+      variationType: assignment.variationType,
+      variationValue: variationValue,
+      reason: assignment.reason,
+      doLog: assignment.doLog,
     );
   }
 
-  Map<String, Object?> toJson() {
-    return {
-      'allocationKey': allocationKey,
-      'variationKey': variationKey,
-      'variationType': variationTypeToString(variationType),
-      'variationValue': sanitizeJsonValue(variationValue),
-      'reason': reason,
-      'doLog': doLog,
-    };
-  }
-
-  Object? typedValue(FlagVariationType requestedType) {
-    if (variationType != requestedType) {
-      return null;
-    }
-
-    return switch (requestedType) {
-      FlagVariationType.boolean when variationValue is bool => variationValue,
-      FlagVariationType.string when variationValue is String => variationValue,
-      FlagVariationType.integer when variationValue is int => variationValue,
-      FlagVariationType.float when variationValue is double => variationValue,
-      FlagVariationType.object => variationValue,
-      _ => null,
-    };
-  }
-
-  static const defaultAssignment = FlagAssignment(
-    allocationKey: '',
-    variationKey: '',
-    variationType: FlagVariationType.unknown,
-    variationValue: null,
-    reason: 'DEFAULT',
-    doLog: false,
-  );
-}
-
-FlagVariationType normalizeVariationType(String? typeName, Object? value) {
-  final normalizedType = typeName?.toLowerCase();
-  if (normalizedType == 'number' || normalizedType == 'numeric') {
-    if (value is int) {
-      return FlagVariationType.integer;
-    }
-    if (value is num) {
-      return FlagVariationType.float;
-    }
-  }
-  return variationTypeFromString(typeName);
-}
-
-FlagVariationType variationTypeFromString(String? value) {
-  return switch (value?.toLowerCase()) {
-    'boolean' => FlagVariationType.boolean,
-    'bool' => FlagVariationType.boolean,
-    'string' => FlagVariationType.string,
-    'integer' => FlagVariationType.integer,
-    'int' => FlagVariationType.integer,
-    'float' => FlagVariationType.float,
-    'double' => FlagVariationType.float,
-    'object' => FlagVariationType.object,
-    'json' => FlagVariationType.object,
-    _ => FlagVariationType.unknown,
-  };
-}
-
-String variationTypeToString(FlagVariationType type) {
-  return switch (type) {
-    FlagVariationType.boolean => 'boolean',
-    FlagVariationType.string => 'string',
-    FlagVariationType.integer => 'integer',
-    FlagVariationType.float => 'float',
-    FlagVariationType.object => 'object',
-    FlagVariationType.unknown => 'unknown',
-  };
-}
-
-Object? _decodeVariationValue(FlagVariationType type, Object? value) {
-  return switch (type) {
-    FlagVariationType.integer when value is int => value,
-    FlagVariationType.float when value is num => value.toDouble(),
-    FlagVariationType.object => sanitizeJsonValue(value),
-    _ => value,
-  };
+  Map<String, Object?> toJson() => _$FlagAssignmentToJson(this);
 }
