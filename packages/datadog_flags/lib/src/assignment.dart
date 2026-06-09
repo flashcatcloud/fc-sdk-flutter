@@ -31,14 +31,14 @@ enum FlagVariationType {
     throw FormatException('Unsupported flag variation type: $name');
   }
 
-  Object? decodeVariationValue(Object? value) {
+  Object decodeVariationValue(Object value) {
     return switch (this) {
       FlagVariationType.boolean when value is bool => value,
       FlagVariationType.string when value is String => value,
       FlagVariationType.integer when value is int => value,
       FlagVariationType.float when value is num => value.toDouble(),
       FlagVariationType.number when value is num => value,
-      FlagVariationType.object => sanitizeJsonValue(value),
+      FlagVariationType.object => sanitizeJsonValue(value)!,
       _ => throw FormatException('Invalid variation value for $wireName'),
     };
   }
@@ -70,7 +70,7 @@ final class FlagAssignment {
   )
   final FlagVariationType variationType;
   @JsonKey(toJson: sanitizeJsonValue)
-  final Object? variationValue;
+  final Object variationValue;
   final String reason;
   final bool doLog;
 

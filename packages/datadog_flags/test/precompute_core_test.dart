@@ -215,6 +215,7 @@ void main() {
                   'valid': _assignment('boolean', true),
                   'not-object': 'bad',
                   'missing-fields': {'variationType': 'boolean'},
+                  'null-value': _assignment('string', null),
                   'unsupported': _assignment('unsupported', 'ignored'),
                 },
               },
