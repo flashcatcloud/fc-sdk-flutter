@@ -32,7 +32,7 @@ void main() {
             clientToken: 'client-token',
             env: 'staging',
             site: DatadogFlagsSite.us1,
-            applicationId: 'rum-app-id',
+            applicationId: 'application-id',
             sdkVersion: '1.2.3',
           ),
           configuration: const DatadogFlagsConfiguration(),
@@ -55,7 +55,7 @@ void main() {
         );
         expect(request.headers['Content-Type'], 'application/vnd.api+json');
         expect(request.headers['dd-client-token'], 'client-token');
-        expect(request.headers['dd-application-id'], 'rum-app-id');
+        expect(request.headers['dd-application-id'], 'application-id');
         expect(request.headers.containsKey('X-Use-Cache'), isFalse);
         expect(jsonDecode(request.body), {
           'data': {
@@ -351,8 +351,7 @@ void main() {
       },
     );
 
-    test('reports invalid response errors for wrapper fallback handling',
-        () async {
+    test('reports invalid response errors for malformed envelopes', () async {
       final fetcher = FlagAssignmentsFetcher(
         datadogConfig: _contextFor(DatadogFlagsSite.us1),
         configuration: const DatadogFlagsConfiguration(),

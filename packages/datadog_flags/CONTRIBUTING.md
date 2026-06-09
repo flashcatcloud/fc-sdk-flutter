@@ -13,4 +13,17 @@ From this package, the focused local checks are:
 ```bash
 dart analyze .
 dart test
+dart test --platform chrome
+```
+
+The typed evaluation example can run against Datadog:
+
+```bash
+cd example
+DD_CLIENT_TOKEN=<client-token> \
+dart run datadog_flags_example:typed_evaluation \
+  --env staging \
+  --flag-key checkout.enabled \
+  --flag-type boolean \
+  --targeting-key test-subject
 ```

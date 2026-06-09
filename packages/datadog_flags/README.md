@@ -4,13 +4,64 @@
 Experimentation in client applications. It lets applications evaluate
 Datadog-backed feature flags.
 
-## Status
+## Typed Evaluation
 
-This package is being introduced in a stack of small reviewable PRs. The
-customer-facing flag evaluation API will be documented here when it is ready.
+Enable Datadog Flags, initialize a client with an evaluation context, and
+evaluate typed details from the current assignment state:
 
-## Features
+```dart
+final datadogFlags = DatadogFlags.instance;
 
-- Native Dart implementation for Datadog Feature Flags and Experimentation.
-- Local typed flag evaluation, SDK telemetry, and client-side persistence will
-  be added in later stack slices.
+await datadogFlags.enable(
+  configuration: DatadogFlagsConfiguration(
+    datadogConfig: const DatadogFlagsConfig(
+      clientToken: 'pub...',
+      env: 'staging',
+      site: DatadogFlagsSite.us1,
+    ),
+  ),
+);
+
+final flags = datadogFlags.sharedClient();
+await flags.initialize(
+  const FlagsEvaluationContext(targetingKey: 'user-123'),
+);
+
+final details = flags.getBooleanDetails(
+  key: 'checkout.enabled',
+  defaultValue: false,
+);
+final enabled = details.value;
+```
+
+## Multiple Contexts and Isolates
+
+Use separate clients for different mobile subjects, such as logged-out and
+logged-in users or org-level and user-level targeting:
+
+```dart
+final orgFlags = datadogFlags.sharedClient(name: 'org');
+await orgFlags.initialize(
+  const FlagsEvaluationContext(targetingKey: 'org-123'),
+);
+
+final userFlags = datadogFlags.sharedClient(name: 'user');
+await userFlags.initialize(
+  const FlagsEvaluationContext(targetingKey: 'user-456'),
+);
+```
+
+Clients are local to the Dart isolate where they are created. Background
+isolates do not share `DatadogFlags` state or client assignment caches with the
+main isolate, so each background isolate must call
+`DatadogFlags.instance.enable()`, create the clients it needs, and initialize
+them independently.
+
+## Behavior
+
+- Unknown or malformed individual flag assignments are ignored so that one
+  invalid assignment does not prevent other assignments from loading.
+- Typed evaluations return caller-provided defaults instead of throwing when
+  assignments are unavailable, a flag is missing, or a flag has the wrong type.
+- Typed details include provider-not-ready, flag-not-found, or type-mismatch
+  errors when default values are used.

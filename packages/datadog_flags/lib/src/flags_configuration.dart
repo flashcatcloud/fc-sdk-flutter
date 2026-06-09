@@ -4,10 +4,12 @@
 // Copyright 2019-Present Datadog, Inc.
 
 import 'package:http/http.dart' as http;
+import 'package:meta/meta.dart';
 
 import 'datadog_flags_config.dart';
 
-class DatadogFlagsConfiguration {
+@immutable
+final class DatadogFlagsConfiguration {
   final Uri? customFlagsEndpoint;
   final Map<String, String>? customFlagsHeaders;
   final http.Client? httpClient;

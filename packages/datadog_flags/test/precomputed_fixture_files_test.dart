@@ -68,7 +68,7 @@ Future<Directory> _packageRoot() async {
       return File.fromUri(libraryUri).parent.parent;
     }
   } on UnsupportedError {
-    // Flutter's test runner does not support package URI resolution.
+    // Some runners do not support package URI resolution.
   }
 
   return _packageRootFromCurrentDirectory();
