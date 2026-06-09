@@ -49,11 +49,7 @@ class TextElementRecorder implements ElementRecorder {
       );
 
       final rawFontSize = style?.fontSize;
-      // final baseInt = (rawFontSize != null && rawFontSize.isFinite)
-      //     ? rawFontSize.toInt()
-      //     : 10;
-      final baseInt = rawFontSize?.safeRound(10) ?? 10;
-      final scaledSize = baseInt * attributes.scaleX;
+      final scaledSize = ((rawFontSize ?? 10) * attributes.scaleX).safeRound(10);
 
       final node = TextElementCaptureNode(
         attributes,
@@ -61,7 +57,7 @@ class TextElementRecorder implements ElementRecorder {
         text: stringBuilder.toString(),
         color: style?.color?.toHexString() ?? Colors.black.toHexString(),
         family: style?.fontFamily ?? '',
-        size: scaledSize.safeRound(10),
+        size: scaledSize,
         alignment: alignment,
       );
 

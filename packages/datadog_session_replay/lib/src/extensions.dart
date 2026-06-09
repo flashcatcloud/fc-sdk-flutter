@@ -22,9 +22,8 @@ extension HexColor on Color {
 }
 
 extension SafeDouble on double {
-  int safeRound([int fallback = 2000]) {
+  int safeRound([int fallback = 0]) {
     if (isFinite) {
-      // print('datadog isNan: $isNaN | isInfinite: $isInfinite');
       return round();
     }
     return fallback;

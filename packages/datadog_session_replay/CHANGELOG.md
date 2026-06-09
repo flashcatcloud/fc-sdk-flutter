@@ -1,14 +1,5 @@
 # Changelog
 
-## Unreleased
-
-* Guard against non-finite (`NaN`/`Infinity`) values when computing element
-  sizes and layout scales during recording. Such values (from degenerate
-  layouts) previously threw `Unsupported operation: Infinity or NaN toInt` and
-  could crash Session Replay capture or emit invalid replay data. Adds a
-  `SafeDouble.safeRound()` helper and a finite layout-scale guard, and clamps
-  `SRShapeStyle.cornerRadius` to a finite value.
-
 ## 1.0.0-preview.12
 
 * Add support for `Switch` and `CupertinoSwitch`.
