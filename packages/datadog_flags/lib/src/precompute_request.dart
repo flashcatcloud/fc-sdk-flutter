@@ -27,6 +27,10 @@ final class PrecomputeRequest {
       data: PrecomputeRequestData(
         attributes: PrecomputeRequestAttributes(
           env: PrecomputeRequestEnv(ddEnv: datadogConfig.env),
+          source: PrecomputeRequestSource(
+            sdkName: DatadogFlagsConfig.defaultSdkName,
+            sdkVersion: datadogConfig.sdkVersion,
+          ),
           subject: PrecomputeRequestSubject(
             targetingKey: evaluationContext.targetingKey,
             targetingAttributes: evaluationContext.attributes,
@@ -57,10 +61,12 @@ final class PrecomputeRequestData {
 @JsonSerializable(createFactory: false, explicitToJson: true)
 final class PrecomputeRequestAttributes {
   final PrecomputeRequestEnv env;
+  final PrecomputeRequestSource source;
   final PrecomputeRequestSubject subject;
 
   const PrecomputeRequestAttributes({
     required this.env,
+    required this.source,
     required this.subject,
   });
 
@@ -76,6 +82,22 @@ final class PrecomputeRequestEnv {
   const PrecomputeRequestEnv({required this.ddEnv});
 
   Map<String, Object?> toJson() => _$PrecomputeRequestEnvToJson(this);
+}
+
+@immutable
+@JsonSerializable(createFactory: false)
+final class PrecomputeRequestSource {
+  @JsonKey(name: 'sdk_name')
+  final String sdkName;
+  @JsonKey(name: 'sdk_version')
+  final String sdkVersion;
+
+  const PrecomputeRequestSource({
+    required this.sdkName,
+    required this.sdkVersion,
+  });
+
+  Map<String, Object?> toJson() => _$PrecomputeRequestSourceToJson(this);
 }
 
 @immutable
