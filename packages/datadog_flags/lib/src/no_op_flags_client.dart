@@ -3,8 +3,8 @@
 // developed at Datadog (https://www.datadoghq.com/).
 // Copyright 2019-Present Datadog, Inc.
 
-import 'flags_client.dart';
 import 'evaluation_context.dart';
+import 'flags_client.dart';
 import 'flags_error.dart';
 
 class NoOpDatadogFlagsClient implements DatadogFlagsClient {

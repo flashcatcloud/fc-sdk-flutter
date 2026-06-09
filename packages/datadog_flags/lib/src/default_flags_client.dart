@@ -4,10 +4,10 @@
 // Copyright 2019-Present Datadog, Inc.
 
 import 'assignment.dart';
-import 'flags_client.dart';
 import 'evaluation_context.dart';
-import 'flags_error.dart';
 import 'flag_assignments_fetcher.dart';
+import 'flags_client.dart';
+import 'flags_error.dart';
 
 class DefaultDatadogFlagsClient implements DatadogFlagsClient {
   static final Object _typeMismatch = Object();
