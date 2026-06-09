@@ -45,7 +45,7 @@ Future<void> main(List<String> arguments) async {
   );
 
   final flags = datadogFlags.sharedClient();
-  await flags.setEvaluationContext(
+  await flags.initialize(
     FlagsEvaluationContext(
       targetingKey: results.option('targeting-key'),
       attributes: attributes,

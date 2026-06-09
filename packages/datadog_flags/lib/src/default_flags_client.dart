@@ -7,25 +7,48 @@ import 'assignment.dart';
 import 'flags_client.dart';
 import 'evaluation_context.dart';
 import 'flags_error.dart';
-import 'flags_repository.dart';
+import 'flag_assignments_fetcher.dart';
 
 class DefaultDatadogFlagsClient implements DatadogFlagsClient {
   static final Object _typeMismatch = Object();
 
   @override
   final String name;
-  final FlagsRepository _repository;
+  final FlagAssignmentsFetcher _fetcher;
+
+  FlagsEvaluationContext? _context;
+  Map<String, FlagAssignment> _flags = const {};
+  int _contextRequestId = 0;
 
   DefaultDatadogFlagsClient({
     required this.name,
-    required FlagsRepository repository,
-  }) : _repository = repository;
+    required FlagAssignmentsFetcher fetcher,
+  }) : _fetcher = fetcher;
 
   @override
-  Future<void> setEvaluationContext(
+  Future<void> initialize(
     FlagsEvaluationContext context,
   ) async {
-    await _repository.setEvaluationContext(context);
+    // Multiple initialize calls can be in flight at once. Only the latest
+    // request is allowed to publish assignments back into this client.
+    final requestId = ++_contextRequestId;
+    final PrecomputedAssignments assignments;
+    try {
+      assignments = await _fetcher.fetch(context);
+    } catch (_) {
+      if (requestId == _contextRequestId) {
+        _context = null;
+        _flags = const {};
+      }
+      return;
+    }
+
+    if (requestId != _contextRequestId) {
+      return;
+    }
+
+    _context = context;
+    _flags = assignments.flags;
   }
 
   @override
@@ -41,14 +64,6 @@ class DefaultDatadogFlagsClient implements DatadogFlagsClient {
   }
 
   @override
-  bool getBooleanValue({
-    required String key,
-    required bool defaultValue,
-  }) {
-    return getBooleanDetails(key: key, defaultValue: defaultValue).value;
-  }
-
-  @override
   FlagDetails<String> getStringDetails({
     required String key,
     required String defaultValue,
@@ -58,14 +73,6 @@ class DefaultDatadogFlagsClient implements DatadogFlagsClient {
       defaultValue: defaultValue,
       requestedType: FlagVariationType.string,
     );
-  }
-
-  @override
-  String getStringValue({
-    required String key,
-    required String defaultValue,
-  }) {
-    return getStringDetails(key: key, defaultValue: defaultValue).value;
   }
 
   @override
@@ -81,14 +88,6 @@ class DefaultDatadogFlagsClient implements DatadogFlagsClient {
   }
 
   @override
-  int getIntegerValue({
-    required String key,
-    required int defaultValue,
-  }) {
-    return getIntegerDetails(key: key, defaultValue: defaultValue).value;
-  }
-
-  @override
   FlagDetails<double> getDoubleDetails({
     required String key,
     required double defaultValue,
@@ -98,14 +97,6 @@ class DefaultDatadogFlagsClient implements DatadogFlagsClient {
       defaultValue: defaultValue,
       requestedType: FlagVariationType.float,
     );
-  }
-
-  @override
-  double getDoubleValue({
-    required String key,
-    required double defaultValue,
-  }) {
-    return getDoubleDetails(key: key, defaultValue: defaultValue).value;
   }
 
   @override
@@ -121,16 +112,10 @@ class DefaultDatadogFlagsClient implements DatadogFlagsClient {
   }
 
   @override
-  Object? getObjectValue({
-    required String key,
-    required Object? defaultValue,
-  }) {
-    return getObjectDetails(key: key, defaultValue: defaultValue).value;
-  }
-
-  @override
-  Future<void> reset() {
-    return _repository.reset();
+  Future<void> shutdown() async {
+    _contextRequestId++;
+    _context = null;
+    _flags = const {};
   }
 
   FlagDetails<T> getDetails<T>({
@@ -138,7 +123,7 @@ class DefaultDatadogFlagsClient implements DatadogFlagsClient {
     required T defaultValue,
     required FlagVariationType requestedType,
   }) {
-    final context = _repository.context;
+    final context = _context;
     if (context == null) {
       return FlagDetails(
         key: key,
@@ -147,7 +132,7 @@ class DefaultDatadogFlagsClient implements DatadogFlagsClient {
       );
     }
 
-    final assignment = _repository.flagAssignment(key);
+    final assignment = _flags[key];
     if (assignment == null) {
       return FlagDetails(
         key: key,

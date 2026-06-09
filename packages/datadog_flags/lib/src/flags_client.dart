@@ -14,16 +14,11 @@ import 'flags_error.dart';
 abstract interface class DatadogFlagsClient {
   String get name;
 
-  Future<void> setEvaluationContext(
+  Future<void> initialize(
     FlagsEvaluationContext context,
   );
 
   FlagDetails<bool> getBooleanDetails({
-    required String key,
-    required bool defaultValue,
-  });
-
-  bool getBooleanValue({
     required String key,
     required bool defaultValue,
   });
@@ -33,17 +28,7 @@ abstract interface class DatadogFlagsClient {
     required String defaultValue,
   });
 
-  String getStringValue({
-    required String key,
-    required String defaultValue,
-  });
-
   FlagDetails<int> getIntegerDetails({
-    required String key,
-    required int defaultValue,
-  });
-
-  int getIntegerValue({
     required String key,
     required int defaultValue,
   });
@@ -53,22 +38,12 @@ abstract interface class DatadogFlagsClient {
     required double defaultValue,
   });
 
-  double getDoubleValue({
-    required String key,
-    required double defaultValue,
-  });
-
   FlagDetails<Object?> getObjectDetails({
     required String key,
     required Object? defaultValue,
   });
 
-  Object? getObjectValue({
-    required String key,
-    required Object? defaultValue,
-  });
-
-  Future<void> reset();
+  Future<void> shutdown();
 }
 
 class FlagDetails<T> {

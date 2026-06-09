@@ -14,7 +14,7 @@ class NoOpDatadogFlagsClient implements DatadogFlagsClient {
   const NoOpDatadogFlagsClient({required this.name});
 
   @override
-  Future<void> setEvaluationContext(FlagsEvaluationContext context) async {}
+  Future<void> initialize(FlagsEvaluationContext context) async {}
 
   @override
   FlagDetails<bool> getBooleanDetails({
@@ -22,14 +22,6 @@ class NoOpDatadogFlagsClient implements DatadogFlagsClient {
     required bool defaultValue,
   }) {
     return _details(key: key, defaultValue: defaultValue);
-  }
-
-  @override
-  bool getBooleanValue({
-    required String key,
-    required bool defaultValue,
-  }) {
-    return defaultValue;
   }
 
   @override
@@ -41,27 +33,11 @@ class NoOpDatadogFlagsClient implements DatadogFlagsClient {
   }
 
   @override
-  String getStringValue({
-    required String key,
-    required String defaultValue,
-  }) {
-    return defaultValue;
-  }
-
-  @override
   FlagDetails<int> getIntegerDetails({
     required String key,
     required int defaultValue,
   }) {
     return _details(key: key, defaultValue: defaultValue);
-  }
-
-  @override
-  int getIntegerValue({
-    required String key,
-    required int defaultValue,
-  }) {
-    return defaultValue;
   }
 
   @override
@@ -73,14 +49,6 @@ class NoOpDatadogFlagsClient implements DatadogFlagsClient {
   }
 
   @override
-  double getDoubleValue({
-    required String key,
-    required double defaultValue,
-  }) {
-    return defaultValue;
-  }
-
-  @override
   FlagDetails<Object?> getObjectDetails({
     required String key,
     required Object? defaultValue,
@@ -89,15 +57,7 @@ class NoOpDatadogFlagsClient implements DatadogFlagsClient {
   }
 
   @override
-  Object? getObjectValue({
-    required String key,
-    required Object? defaultValue,
-  }) {
-    return defaultValue;
-  }
-
-  @override
-  Future<void> reset() async {}
+  Future<void> shutdown() async {}
 
   FlagDetails<T> _details<T>({
     required String key,

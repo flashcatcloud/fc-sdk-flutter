@@ -10,14 +10,13 @@ import 'default_flags_client.dart';
 import 'flag_assignments_fetcher.dart';
 import 'flags_client.dart';
 import 'flags_configuration.dart';
-import 'flags_repository.dart';
 import 'no_op_flags_client.dart';
 
 /// Entry point for configuring and creating Datadog feature flag clients.
 ///
 /// `DatadogFlags` state is local to the current Dart isolate. Background
 /// isolates must use their own [DatadogFlags] instance, create any clients they
-/// need, and set their own evaluation contexts before evaluating flags.
+/// need, and initialize each client before evaluating flags.
 class DatadogFlags {
   static const defaultClientName = 'default';
 
@@ -62,7 +61,7 @@ class DatadogFlags {
   }
 
   Future<void> reset() async {
-    await Future.wait(_clients.values.map((client) => client.reset()));
+    await Future.wait(_clients.values.map((client) => client.shutdown()));
   }
 
   Future<void> disable() async {
@@ -85,17 +84,15 @@ class DatadogFlags {
       return client;
     }
 
-    final repository = FlagsRepository(
-      fetcher: FlagAssignmentsFetcher(
-        datadogConfig: runtime.datadogConfig,
-        configuration: runtime.configuration,
-        httpClient: runtime.httpClient,
-      ),
+    final fetcher = FlagAssignmentsFetcher(
+      datadogConfig: runtime.datadogConfig,
+      configuration: runtime.configuration,
+      httpClient: runtime.httpClient,
     );
 
     final client = DefaultDatadogFlagsClient(
       name: name,
-      repository: repository,
+      fetcher: fetcher,
     );
     _clients[name] = client;
     return client;

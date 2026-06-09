@@ -35,33 +35,53 @@ void main() {
     final flags = datadogFlags.sharedClient();
 
     expect(datadogFlags.isEnabled, isFalse);
-    expect(flags.getBooleanValue(key: 'show-paywall', defaultValue: false),
-        isFalse);
     final details = flags.getBooleanDetails(
       key: 'show-paywall',
       defaultValue: false,
     );
+    expect(details.value, isFalse);
     expect(details.error, FlagEvaluationError.providerNotReady);
   });
 
-  test('returns typed values and drops unknown variation types', () async {
+  test('returns typed details and drops unknown variation types', () async {
     final requests = <http.Request>[];
     final client = await _createClient(
       requests: requests,
       response: _assignmentsResponse(),
     );
-    await client.setEvaluationContext(
+    await client.initialize(
       const FlagsEvaluationContext(targetingKey: 'user-123'),
     );
 
-    expect(
-      client.getBooleanValue(key: 'show-paywall', defaultValue: false),
-      isTrue,
+    final booleanDetails = client.getBooleanDetails(
+      key: 'show-paywall',
+      defaultValue: false,
     );
-    expect(client.getStringValue(key: 'theme', defaultValue: 'light'), 'dark');
-    expect(client.getIntegerValue(key: 'max-items', defaultValue: 1), 3);
-    expect(client.getDoubleValue(key: 'ratio', defaultValue: 1), 0.5);
-    expect(client.getObjectValue(key: 'config', defaultValue: null), {
+    expect(booleanDetails.value, isTrue);
+
+    final stringDetails = client.getStringDetails(
+      key: 'theme',
+      defaultValue: 'light',
+    );
+    expect(stringDetails.value, 'dark');
+
+    final integerDetails = client.getIntegerDetails(
+      key: 'max-items',
+      defaultValue: 1,
+    );
+    expect(integerDetails.value, 3);
+
+    final doubleDetails = client.getDoubleDetails(
+      key: 'ratio',
+      defaultValue: 1,
+    );
+    expect(doubleDetails.value, 0.5);
+
+    final objectDetails = client.getObjectDetails(
+      key: 'config',
+      defaultValue: null,
+    );
+    expect(objectDetails.value, {
       'enabled': true,
       'labels': ['a', 'b'],
     });
@@ -89,7 +109,7 @@ void main() {
     expect(notReady.value, isFalse);
     expect(notReady.error, FlagEvaluationError.providerNotReady);
 
-    await client.setEvaluationContext(
+    await client.initialize(
       const FlagsEvaluationContext(targetingKey: 'user-123'),
     );
 
@@ -121,10 +141,10 @@ void main() {
       }),
     );
 
-    final first = client.setEvaluationContext(
+    final first = client.initialize(
       const FlagsEvaluationContext(targetingKey: 'user-first'),
     );
-    final second = client.setEvaluationContext(
+    final second = client.initialize(
       const FlagsEvaluationContext(targetingKey: 'user-second'),
     );
     await Future<void>.delayed(Duration.zero);
@@ -166,7 +186,7 @@ void main() {
       }),
     );
 
-    await client.setEvaluationContext(
+    await client.initialize(
       const FlagsEvaluationContext(targetingKey: 'user-123'),
     );
 
@@ -195,20 +215,22 @@ void main() {
     expect(details.error, FlagEvaluationError.providerNotReady);
   });
 
-  test('reset clears the current assignment state', () async {
+  test('shutdown clears the current assignment state', () async {
     final requests = <http.Request>[];
     final client = await _createClient(
       requests: requests,
       response: _assignmentsResponse(),
     );
-    await client.setEvaluationContext(
+    await client.initialize(
       const FlagsEvaluationContext(targetingKey: 'user-123'),
     );
 
-    expect(client.getBooleanValue(key: 'show-paywall', defaultValue: false),
-        isTrue);
+    expect(
+      client.getBooleanDetails(key: 'show-paywall', defaultValue: false).value,
+      isTrue,
+    );
 
-    await client.reset();
+    await client.shutdown();
 
     final details = client.getBooleanDetails(
       key: 'show-paywall',
