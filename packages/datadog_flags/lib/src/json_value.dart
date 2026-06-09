@@ -3,6 +3,8 @@
 // developed at Datadog (https://www.datadoghq.com/).
 // Copyright 2019-Present Datadog, Inc.
 
+import 'dart:convert';
+
 /// Recursively validates values that will be JSON encoded.
 ///
 /// This keeps targeting attributes and object flag values from carrying Dart
@@ -31,4 +33,22 @@ Object? sanitizeJsonValue(Object? value) {
     return value.map(sanitizeJsonValue).toList();
   }
   throw ArgumentError.value(value, 'value', 'Unsupported JSON value');
+}
+
+Map<String, Object?> sanitizeJsonScalarObject(Map<String, Object?> value) {
+  return value.map((key, value) {
+    return MapEntry(key, sanitizeJsonScalarValue(value));
+  });
+}
+
+Object? sanitizeJsonScalarValue(Object? value) {
+  final sanitized = sanitizeJsonValue(value);
+  if (sanitized == null ||
+      sanitized is String ||
+      sanitized is bool ||
+      sanitized is int ||
+      sanitized is double) {
+    return sanitized;
+  }
+  return jsonEncode(sanitized);
 }

@@ -134,6 +134,44 @@ void main() {
       });
     });
 
+    test('serializes targeting attributes as scalar values', () async {
+      final requests = <http.Request>[];
+      final fetcher = FlagAssignmentsFetcher(
+        datadogConfig: _contextFor(DatadogFlagsSite.us1),
+        configuration: const DatadogFlagsConfiguration(),
+        httpClient: _jsonClient(requests, {'data': _emptyAssignments()}),
+      );
+
+      await fetcher.fetch(
+        const FlagsEvaluationContext(
+          targetingKey: 'subject',
+          attributes: {
+            'string': 'value',
+            'integer': 42,
+            'double': 0.5,
+            'boolean': true,
+            'null': null,
+            'object': {'nested': 'value'},
+            'list': ['a', 1],
+          },
+        ),
+      );
+
+      final body = jsonDecode(requests.single.body) as Map<String, Object?>;
+      final data = body['data'] as Map<String, Object?>;
+      final attributes = data['attributes'] as Map<String, Object?>;
+      final subject = attributes['subject'] as Map<String, Object?>;
+      expect(subject['targeting_attributes'], {
+        'string': 'value',
+        'integer': 42,
+        'double': 0.5,
+        'boolean': true,
+        'null': null,
+        'object': '{"nested":"value"}',
+        'list': '["a",1]',
+      });
+    });
+
     test('maps all supported sites', () {
       expect(
         _contextFor(DatadogFlagsSite.us1).flagsEndpoint(),

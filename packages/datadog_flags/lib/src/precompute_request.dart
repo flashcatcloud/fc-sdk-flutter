@@ -105,7 +105,7 @@ final class PrecomputeRequestSource {
 final class PrecomputeRequestSubject {
   @JsonKey(name: 'targeting_key', includeIfNull: false)
   final String? targetingKey;
-  @JsonKey(name: 'targeting_attributes', toJson: sanitizeJsonValue)
+  @JsonKey(name: 'targeting_attributes', toJson: sanitizeJsonScalarObject)
   final Map<String, Object?> targetingAttributes;
 
   const PrecomputeRequestSubject({
