@@ -7,19 +7,19 @@ part of 'precompute_request.dart';
 // **************************************************************************
 
 Map<String, dynamic> _$PrecomputeRequestToJson(PrecomputeRequest instance) =>
-    <String, dynamic>{'data': instance.data.toJson()};
+    <String, dynamic>{
+      'data': instance.data.toJson(),
+    };
 
 Map<String, dynamic> _$PrecomputeRequestDataToJson(
-  PrecomputeRequestData instance,
-) =>
+        PrecomputeRequestData instance) =>
     <String, dynamic>{
       'type': instance.type,
       'attributes': instance.attributes.toJson(),
     };
 
 Map<String, dynamic> _$PrecomputeRequestAttributesToJson(
-  PrecomputeRequestAttributes instance,
-) =>
+        PrecomputeRequestAttributes instance) =>
     <String, dynamic>{
       'env': instance.env.toJson(),
       'source': instance.source.toJson(),
@@ -27,24 +27,22 @@ Map<String, dynamic> _$PrecomputeRequestAttributesToJson(
     };
 
 Map<String, dynamic> _$PrecomputeRequestEnvToJson(
-  PrecomputeRequestEnv instance,
-) =>
-    <String, dynamic>{'dd_env': instance.ddEnv};
+        PrecomputeRequestEnv instance) =>
+    <String, dynamic>{
+      'dd_env': instance.ddEnv,
+    };
 
 Map<String, dynamic> _$PrecomputeRequestSourceToJson(
-  PrecomputeRequestSource instance,
-) =>
+        PrecomputeRequestSource instance) =>
     <String, dynamic>{
       'sdk_name': instance.sdkName,
       'sdk_version': instance.sdkVersion,
     };
 
 Map<String, dynamic> _$PrecomputeRequestSubjectToJson(
-  PrecomputeRequestSubject instance,
-) =>
+        PrecomputeRequestSubject instance) =>
     <String, dynamic>{
       if (instance.targetingKey case final value?) 'targeting_key': value,
-      'targeting_attributes': sanitizeJsonScalarObject(
-        instance.targetingAttributes,
-      ),
+      'targeting_attributes':
+          sanitizeJsonScalarObject(instance.targetingAttributes),
     };

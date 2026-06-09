@@ -14,13 +14,11 @@ PrecomputeResponse _$PrecomputeResponseFromJson(Map<String, dynamic> json) =>
 PrecomputeData _$PrecomputeDataFromJson(Map<String, dynamic> json) =>
     PrecomputeData(
       attributes: PrecomputeAttributes.fromJson(
-        json['attributes'] as Map<String, dynamic>,
-      ),
+          json['attributes'] as Map<String, dynamic>),
     );
 
 PrecomputeAttributes _$PrecomputeAttributesFromJson(
-  Map<String, dynamic> json,
-) =>
+        Map<String, dynamic> json) =>
     PrecomputeAttributes(
       createdAt: json['createdAt'] == null
           ? null

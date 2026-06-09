@@ -91,9 +91,8 @@ Directory _packageRootFromCurrentDirectory() {
 
 bool _isDatadogFlagsPackage(Directory directory) {
   return File.fromUri(directory.uri.resolve('pubspec.yaml')).existsSync() &&
-      File.fromUri(
-        directory.uri.resolve('lib/datadog_flags.dart'),
-      ).existsSync();
+      File.fromUri(directory.uri.resolve('lib/datadog_flags.dart'))
+          .existsSync();
 }
 
 Future<Map<String, FlagAssignment>> _fetchAssignments(
@@ -112,7 +111,9 @@ Future<Map<String, FlagAssignment>> _fetchAssignments(
   );
 
   return (await fetcher.fetch(
-    FlagsEvaluationContext.fromJson(fixture['context'] as Map<String, Object?>),
+    FlagsEvaluationContext.fromJson(
+      fixture['context'] as Map<String, Object?>,
+    ),
   ))
       .flags;
 }

@@ -14,7 +14,9 @@ import 'flags_error.dart';
 abstract interface class DatadogFlagsClient {
   String get name;
 
-  Future<void> initialize(FlagsEvaluationContext context);
+  Future<void> initialize(
+    FlagsEvaluationContext context,
+  );
 
   FlagDetails<bool> getBooleanDetails({
     required String key,

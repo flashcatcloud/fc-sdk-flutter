@@ -31,7 +31,10 @@ final class FlagsException implements Exception {
     );
   }
 
-  factory FlagsException.clientNotInitialized(String message, {Object? cause}) {
+  factory FlagsException.clientNotInitialized(
+    String message, {
+    Object? cause,
+  }) {
     return FlagsException(
       FlagsErrorType.clientNotInitialized,
       message,
@@ -39,7 +42,10 @@ final class FlagsException implements Exception {
     );
   }
 
-  factory FlagsException.invalidConfiguration(String message, {Object? cause}) {
+  factory FlagsException.invalidConfiguration(
+    String message, {
+    Object? cause,
+  }) {
     return FlagsException(
       FlagsErrorType.invalidConfiguration,
       message,

@@ -20,7 +20,10 @@ final class FlagsEvaluationContext {
   @JsonKey(toJson: sanitizeJsonValue)
   final Map<String, Object?> attributes;
 
-  const FlagsEvaluationContext({this.targetingKey, this.attributes = const {}});
+  const FlagsEvaluationContext({
+    this.targetingKey,
+    this.attributes = const {},
+  });
 
   factory FlagsEvaluationContext.fromJson(Map<String, Object?> json) =>
       _$FlagsEvaluationContextFromJson(json);
