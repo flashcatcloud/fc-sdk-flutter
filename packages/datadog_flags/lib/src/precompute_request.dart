@@ -7,7 +7,7 @@ import 'package:json_annotation/json_annotation.dart';
 import 'package:meta/meta.dart';
 
 import 'datadog_flags_config.dart';
-import 'flags_context.dart';
+import 'evaluation_context.dart';
 import 'json_value.dart';
 
 part 'precompute_request.g.dart';

@@ -8,7 +8,7 @@ import 'package:meta/meta.dart';
 
 import 'json_value.dart';
 
-part 'flags_context.g.dart';
+part 'evaluation_context.g.dart';
 
 @immutable
 @JsonSerializable()

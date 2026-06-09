@@ -10,7 +10,7 @@ import 'package:http/http.dart' as http;
 import 'assignment.dart';
 import 'datadog_flags_config.dart';
 import 'flags_configuration.dart';
-import 'flags_context.dart';
+import 'evaluation_context.dart';
 import 'flags_error.dart';
 import 'precompute_request.dart';
 import 'precompute_response.dart';

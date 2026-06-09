@@ -5,4 +5,4 @@
 
 export 'src/datadog_flags_config.dart' show DatadogFlagsConfig, DatadogFlagsSite;
 export 'src/flags_configuration.dart' show DatadogFlagsConfiguration;
-export 'src/flags_context.dart' show FlagsEvaluationContext;
+export 'src/evaluation_context.dart' show FlagsEvaluationContext;

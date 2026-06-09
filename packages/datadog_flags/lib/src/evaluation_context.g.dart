@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'flags_context.dart';
+part of 'evaluation_context.dart';
 
 // **************************************************************************
 // JsonSerializableGenerator
