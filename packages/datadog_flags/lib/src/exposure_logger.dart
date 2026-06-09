@@ -5,32 +5,25 @@
 
 import 'dart:convert';
 
-import 'package:http/http.dart' as http;
 import 'package:uuid/uuid.dart';
 
 import 'assignment.dart';
-import 'datadog_flags_config.dart';
 import 'evaluation_context.dart';
-import 'flags_configuration.dart';
+import 'flags_runtime.dart';
 import 'json_value.dart';
 
 class ExposureLogger {
-  final DatadogFlagsConfig datadogConfig;
-  final DatadogFlagsConfiguration configuration;
-  final http.Client httpClient;
+  final FlagsRuntime runtime;
   final Set<String> _loggedExposures = {};
 
-  ExposureLogger({
-    required this.datadogConfig,
-    required this.configuration,
-    required this.httpClient,
-  });
+  ExposureLogger(this.runtime);
 
   Future<void> logExposure({
     required String flagKey,
     required FlagAssignment assignment,
     required FlagsEvaluationContext evaluationContext,
   }) async {
+    final configuration = runtime.configuration;
     if (!configuration.trackExposures || !assignment.doLog) {
       return;
     }
@@ -58,13 +51,13 @@ class ExposureLogger {
         'variant': {'key': assignment.variationKey},
         'subject': subject,
       };
-      final response = await httpClient.post(
+      final response = await runtime.httpClient.post(
         endpoint,
         headers: {
           'Content-Type': 'text/plain;charset=UTF-8',
-          'DD-API-KEY': datadogConfig.clientToken,
-          'DD-EVP-ORIGIN': datadogConfig.source,
-          'DD-EVP-ORIGIN-VERSION': datadogConfig.sdkVersion,
+          'DD-API-KEY': runtime.datadogConfig.clientToken,
+          'DD-EVP-ORIGIN': runtime.datadogConfig.source,
+          'DD-EVP-ORIGIN-VERSION': runtime.datadogConfig.sdkVersion,
           'DD-REQUEST-ID': const Uuid().v4(),
         },
         body: jsonEncode(event),
@@ -78,7 +71,8 @@ class ExposureLogger {
   }
 
   Uri _exposureEndpoint() {
-    final endpoint = configuration.customExposureEndpoint ??
+    final datadogConfig = runtime.datadogConfig;
+    final endpoint = runtime.configuration.customExposureEndpoint ??
         datadogConfig.intakeEndpoint().replace(path: '/api/v2/exposures');
     return endpoint.replace(
       queryParameters: {

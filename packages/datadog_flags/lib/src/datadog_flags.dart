@@ -5,12 +5,12 @@
 
 import 'package:http/http.dart' as http;
 
-import 'datadog_flags_config.dart';
 import 'default_flags_client.dart';
 import 'exposure_logger.dart';
 import 'flag_assignments_fetcher.dart';
 import 'flags_client.dart';
 import 'flags_configuration.dart';
+import 'flags_runtime.dart';
 import 'no_op_flags_client.dart';
 
 /// Entry point for configuring and creating Datadog feature flag clients.
@@ -29,7 +29,7 @@ class DatadogFlags {
   }
 
   http.Client? _httpClient;
-  _FlagsRuntime? _runtime;
+  FlagsRuntime? _runtime;
   final Map<String, DatadogFlagsClient> _clients = {};
 
   DatadogFlags();
@@ -47,7 +47,7 @@ class DatadogFlags {
     }
 
     _httpClient = configuration.httpClient ?? http.Client();
-    _runtime = _FlagsRuntime(
+    _runtime = FlagsRuntime(
       configuration: configuration,
       datadogConfig: datadogConfig,
       httpClient: _httpClient!,
@@ -92,25 +92,9 @@ class DatadogFlags {
     final client = DefaultDatadogFlagsClient(
       name: name,
       fetcher: fetcher,
-      exposureLogger: ExposureLogger(
-        datadogConfig: runtime.datadogConfig,
-        configuration: runtime.configuration,
-        httpClient: runtime.httpClient,
-      ),
+      exposureLogger: ExposureLogger(runtime),
     );
     _clients[name] = client;
     return client;
   }
-}
-
-class _FlagsRuntime {
-  final DatadogFlagsConfiguration configuration;
-  final DatadogFlagsConfig datadogConfig;
-  final http.Client httpClient;
-
-  const _FlagsRuntime({
-    required this.configuration,
-    required this.datadogConfig,
-    required this.httpClient,
-  });
 }
