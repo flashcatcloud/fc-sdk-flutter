@@ -6,8 +6,8 @@
 import 'package:json_annotation/json_annotation.dart';
 import 'package:meta/meta.dart';
 
-import 'datadog_context.dart';
-import 'flags_context.dart';
+import 'datadog_flags_config.dart';
+import 'evaluation_context.dart';
 import 'json_value.dart';
 
 part 'precompute_request.g.dart';
@@ -20,13 +20,17 @@ final class PrecomputeRequest {
   const PrecomputeRequest({required this.data});
 
   factory PrecomputeRequest.fromContext({
-    required DatadogFlagsContext datadogContext,
+    required DatadogFlagsConfig datadogConfig,
     required FlagsEvaluationContext evaluationContext,
   }) {
     return PrecomputeRequest(
       data: PrecomputeRequestData(
         attributes: PrecomputeRequestAttributes(
-          env: PrecomputeRequestEnv(ddEnv: datadogContext.env),
+          env: PrecomputeRequestEnv(ddEnv: datadogConfig.env),
+          source: PrecomputeRequestSource(
+            sdkName: DatadogFlagsConfig.defaultSdkName,
+            sdkVersion: datadogConfig.sdkVersion,
+          ),
           subject: PrecomputeRequestSubject(
             targetingKey: evaluationContext.targetingKey,
             targetingAttributes: evaluationContext.attributes,
@@ -57,10 +61,12 @@ final class PrecomputeRequestData {
 @JsonSerializable(createFactory: false, explicitToJson: true)
 final class PrecomputeRequestAttributes {
   final PrecomputeRequestEnv env;
+  final PrecomputeRequestSource source;
   final PrecomputeRequestSubject subject;
 
   const PrecomputeRequestAttributes({
     required this.env,
+    required this.source,
     required this.subject,
   });
 
@@ -80,10 +86,26 @@ final class PrecomputeRequestEnv {
 
 @immutable
 @JsonSerializable(createFactory: false)
+final class PrecomputeRequestSource {
+  @JsonKey(name: 'sdk_name')
+  final String sdkName;
+  @JsonKey(name: 'sdk_version')
+  final String sdkVersion;
+
+  const PrecomputeRequestSource({
+    required this.sdkName,
+    required this.sdkVersion,
+  });
+
+  Map<String, Object?> toJson() => _$PrecomputeRequestSourceToJson(this);
+}
+
+@immutable
+@JsonSerializable(createFactory: false)
 final class PrecomputeRequestSubject {
   @JsonKey(name: 'targeting_key', includeIfNull: false)
   final String? targetingKey;
-  @JsonKey(name: 'targeting_attributes', toJson: sanitizeJsonValue)
+  @JsonKey(name: 'targeting_attributes', toJson: sanitizeJsonScalarObject)
   final Map<String, Object?> targetingAttributes;
 
   const PrecomputeRequestSubject({

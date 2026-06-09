@@ -17,7 +17,7 @@ void main() {
     final datadogFlags = DatadogFlags();
     await datadogFlags.enable(
       configuration: DatadogFlagsConfiguration(
-        datadogContext: _datadogContext(),
+        datadogConfig: _datadogConfig(),
         httpClient: _clientWithResponse(requests, _assignmentsResponse()),
       ),
     );
@@ -227,15 +227,15 @@ Future<DatadogFlagsClient> _createClient({
   final datadogFlags = DatadogFlags();
   await datadogFlags.enable(
     configuration: DatadogFlagsConfiguration(
-      datadogContext: _datadogContext(),
+      datadogConfig: _datadogConfig(),
       httpClient: httpClient ?? _clientWithResponse(requests, response!),
     ),
   );
   return datadogFlags.sharedClient();
 }
 
-DatadogFlagsContext _datadogContext() {
-  return const DatadogFlagsContext(
+DatadogFlagsConfig _datadogConfig() {
+  return const DatadogFlagsConfig(
     clientToken: 'client-token',
     env: 'staging',
     site: DatadogFlagsSite.us1,

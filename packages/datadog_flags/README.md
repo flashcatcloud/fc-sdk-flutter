@@ -14,7 +14,7 @@ final datadogFlags = DatadogFlags.instance;
 
 await datadogFlags.enable(
   configuration: DatadogFlagsConfiguration(
-    datadogContext: const DatadogFlagsContext(
+    datadogConfig: const DatadogFlagsConfig(
       clientToken: 'pub...',
       env: 'staging',
       site: DatadogFlagsSite.us1,

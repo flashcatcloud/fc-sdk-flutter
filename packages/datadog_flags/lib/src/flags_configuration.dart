@@ -6,19 +6,19 @@
 import 'package:http/http.dart' as http;
 import 'package:meta/meta.dart';
 
-import 'datadog_context.dart';
+import 'datadog_flags_config.dart';
 
 @immutable
 final class DatadogFlagsConfiguration {
   final Uri? customFlagsEndpoint;
   final Map<String, String>? customFlagsHeaders;
   final http.Client? httpClient;
-  final DatadogFlagsContext? datadogContext;
+  final DatadogFlagsConfig? datadogConfig;
 
   const DatadogFlagsConfiguration({
     this.customFlagsEndpoint,
     this.customFlagsHeaders,
     this.httpClient,
-    this.datadogContext,
+    this.datadogConfig,
   });
 }

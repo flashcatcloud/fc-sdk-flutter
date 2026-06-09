@@ -8,20 +8,20 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 import 'assignment.dart';
-import 'datadog_context.dart';
+import 'datadog_flags_config.dart';
 import 'flags_configuration.dart';
-import 'flags_context.dart';
+import 'evaluation_context.dart';
 import 'flags_error.dart';
 import 'precompute_request.dart';
 import 'precompute_response.dart';
 
 class FlagAssignmentsFetcher {
-  final DatadogFlagsContext datadogContext;
+  final DatadogFlagsConfig datadogConfig;
   final DatadogFlagsConfiguration configuration;
   final http.Client httpClient;
 
   FlagAssignmentsFetcher({
-    required this.datadogContext,
+    required this.datadogConfig,
     required this.configuration,
     required this.httpClient,
   });
@@ -30,7 +30,7 @@ class FlagAssignmentsFetcher {
     FlagsEvaluationContext evaluationContext,
   ) async {
     final endpoint = configuration.customFlagsEndpoint ??
-        datadogContext.flagsEndpoint().replace(path: '/precompute-assignments');
+        datadogConfig.flagsEndpoint().replace(path: '/precompute-assignments');
     final http.Response response;
     try {
       response = await httpClient.post(
@@ -38,7 +38,7 @@ class FlagAssignmentsFetcher {
         headers: _headers(),
         body: jsonEncode(
           PrecomputeRequest.fromContext(
-            datadogContext: datadogContext,
+            datadogConfig: datadogConfig,
             evaluationContext: evaluationContext,
           ).toJson(),
         ),
@@ -77,8 +77,8 @@ class FlagAssignmentsFetcher {
   Map<String, String> _headers() {
     return {
       'Content-Type': 'application/vnd.api+json',
-      'dd-client-token': datadogContext.clientToken,
-      if (datadogContext.applicationId case final applicationId?)
+      'dd-client-token': datadogConfig.clientToken,
+      if (datadogConfig.applicationId case final applicationId?)
         'dd-application-id': applicationId,
       ...?configuration.customFlagsHeaders,
     };

@@ -3,7 +3,7 @@
 // developed at Datadog (https://www.datadoghq.com/).
 // Copyright 2019-Present Datadog, Inc.
 
-import 'flags_context.dart';
+import 'evaluation_context.dart';
 import 'flags_error.dart';
 
 /// Evaluates feature flags for one current evaluation context.

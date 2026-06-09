@@ -5,7 +5,7 @@
 
 import 'package:http/http.dart' as http;
 
-import 'datadog_context.dart';
+import 'datadog_flags_config.dart';
 import 'default_flags_client.dart';
 import 'flag_assignments_fetcher.dart';
 import 'flags_client.dart';
@@ -41,15 +41,15 @@ class DatadogFlags {
   }) async {
     await disable();
 
-    final datadogContext = configuration.datadogContext;
-    if (datadogContext == null) {
+    final datadogConfig = configuration.datadogConfig;
+    if (datadogConfig == null) {
       return;
     }
 
     _httpClient = configuration.httpClient ?? http.Client();
     _runtime = _FlagsRuntime(
       configuration: configuration,
-      datadogContext: datadogContext,
+      datadogConfig: datadogConfig,
       httpClient: _httpClient!,
     );
     sharedClient();
@@ -87,7 +87,7 @@ class DatadogFlags {
 
     final repository = FlagsRepository(
       fetcher: FlagAssignmentsFetcher(
-        datadogContext: runtime.datadogContext,
+        datadogConfig: runtime.datadogConfig,
         configuration: runtime.configuration,
         httpClient: runtime.httpClient,
       ),
@@ -104,12 +104,12 @@ class DatadogFlags {
 
 class _FlagsRuntime {
   final DatadogFlagsConfiguration configuration;
-  final DatadogFlagsContext datadogContext;
+  final DatadogFlagsConfig datadogConfig;
   final http.Client httpClient;
 
   const _FlagsRuntime({
     required this.configuration,
-    required this.datadogContext,
+    required this.datadogConfig,
     required this.httpClient,
   });
 }

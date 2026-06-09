@@ -35,7 +35,7 @@ Future<void> main(List<String> arguments) async {
 
   await datadogFlags.enable(
     configuration: DatadogFlagsConfiguration(
-      datadogContext: DatadogFlagsContext(
+      datadogConfig: DatadogFlagsConfig(
         clientToken: Platform.environment['DD_CLIENT_TOKEN'] ?? '',
         env: results.option('env')!,
         site: _siteFromOption(results.option('site')!),

@@ -12,7 +12,7 @@ FlagAssignment _$FlagAssignmentFromJson(Map<String, dynamic> json) =>
       variationKey: json['variationKey'] as String,
       variationType:
           FlagVariationType.fromWireName(json['variationType'] as String),
-      variationValue: json['variationValue'],
+      variationValue: json['variationValue'] as Object,
       reason: json['reason'] as String,
       doLog: json['doLog'] as bool,
     );

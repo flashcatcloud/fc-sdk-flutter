@@ -4,7 +4,7 @@
 // Copyright 2019-Present Datadog, Inc.
 
 import 'flags_client.dart';
-import 'flags_context.dart';
+import 'evaluation_context.dart';
 import 'flags_error.dart';
 
 class NoOpDatadogFlagsClient implements DatadogFlagsClient {

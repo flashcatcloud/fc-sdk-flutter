@@ -5,7 +5,7 @@
 
 import 'assignment.dart';
 import 'flag_assignments_fetcher.dart';
-import 'flags_context.dart';
+import 'evaluation_context.dart';
 
 class FlagsRepository {
   final FlagAssignmentsFetcher fetcher;
