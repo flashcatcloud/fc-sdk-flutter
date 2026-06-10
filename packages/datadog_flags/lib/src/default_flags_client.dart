@@ -117,6 +117,7 @@ class DefaultDatadogFlagsClient implements DatadogFlagsClient {
 
   @override
   Future<void> shutdown() async {
+    await _exposureLogger.flush();
     _contextRequestId++;
     _context = null;
     _flags = const {};

@@ -3,6 +3,7 @@
 // developed at Datadog (https://www.datadoghq.com/).
 // Copyright 2019-Present Datadog, Inc.
 
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:uuid/uuid.dart';
@@ -14,7 +15,9 @@ import 'json_value.dart';
 
 class ExposureLogger {
   final FlagsRuntime runtime;
-  final Set<String> _loggedExposures = {};
+  final Set<_ExposureKey> _loggedExposures = {};
+  final List<Map<String, Object?>> _pendingExposures = [];
+  Timer? _flushTimer;
 
   ExposureLogger(this.runtime);
 
@@ -28,31 +31,40 @@ class ExposureLogger {
       return;
     }
 
-    final exposureKey = [
-      evaluationContext.targetingKey,
-      flagKey,
-      assignment.allocationKey,
-      assignment.variationKey,
-    ].join('|');
+    final exposureKey = _ExposureKey(
+      targetingKey: evaluationContext.targetingKey,
+      flagKey: flagKey,
+      allocationKey: assignment.allocationKey,
+      variationKey: assignment.variationKey,
+    );
     if (!_loggedExposures.add(exposureKey)) {
       return;
     }
 
+    _pendingExposures.add(
+      _buildExposureEvent(
+        flagKey: flagKey,
+        assignment: assignment,
+        evaluationContext: evaluationContext,
+      ),
+    );
+    _scheduleFlush();
+  }
+
+  Future<void> flush({bool rescheduleOnFailure = false}) async {
+    _flushTimer?.cancel();
+    _flushTimer = null;
+
+    if (_pendingExposures.isEmpty) {
+      return;
+    }
+
+    final exposures = List<Map<String, Object?>>.from(_pendingExposures);
+    _pendingExposures.clear();
+
     try {
-      final endpoint = _exposureEndpoint();
-      final subject = _removeNullValues({
-        'id': evaluationContext.targetingKey,
-        'attributes': sanitizeJsonValue(evaluationContext.attributes),
-      });
-      final event = {
-        'timestamp': configuration.dateProvider().millisecondsSinceEpoch,
-        'allocation': {'key': assignment.allocationKey},
-        'flag': {'key': flagKey},
-        'variant': {'key': assignment.variationKey},
-        'subject': subject,
-      };
       final response = await runtime.httpClient.post(
-        endpoint,
+        _exposureEndpoint(),
         headers: {
           'Content-Type': 'text/plain;charset=UTF-8',
           'DD-API-KEY': runtime.datadogConfig.clientToken,
@@ -60,14 +72,49 @@ class ExposureLogger {
           'DD-EVP-ORIGIN-VERSION': runtime.datadogConfig.sdkVersion,
           'DD-REQUEST-ID': const Uuid().v4(),
         },
-        body: jsonEncode(event),
+        body: exposures.map(jsonEncode).join('\n'),
       );
       if (response.statusCode < 200 || response.statusCode >= 300) {
-        _loggedExposures.remove(exposureKey);
+        _restore(exposures, reschedule: rescheduleOnFailure);
       }
     } catch (_) {
-      _loggedExposures.remove(exposureKey);
+      _restore(exposures, reschedule: rescheduleOnFailure);
     }
+  }
+
+  Map<String, Object?> _buildExposureEvent({
+    required String flagKey,
+    required FlagAssignment assignment,
+    required FlagsEvaluationContext evaluationContext,
+  }) {
+    final subject = _removeNullValues({
+      'id': evaluationContext.targetingKey,
+      'attributes': sanitizeJsonValue(evaluationContext.attributes),
+    });
+    return {
+      'timestamp': runtime.configuration.dateProvider().millisecondsSinceEpoch,
+      'allocation': {'key': assignment.allocationKey},
+      'flag': {'key': flagKey},
+      'variant': {'key': assignment.variationKey},
+      'subject': subject,
+    };
+  }
+
+  void _restore(
+    List<Map<String, Object?>> exposures, {
+    required bool reschedule,
+  }) {
+    _pendingExposures.insertAll(0, exposures);
+    if (reschedule) {
+      _scheduleFlush();
+    }
+  }
+
+  void _scheduleFlush() {
+    _flushTimer ??= Timer(_exposureFlushDelay, () {
+      _flushTimer = null;
+      unawaited(flush(rescheduleOnFailure: true));
+    });
   }
 
   Uri _exposureEndpoint() {
@@ -82,6 +129,36 @@ class ExposureLogger {
     );
   }
 }
+
+final class _ExposureKey {
+  final String? targetingKey;
+  final String flagKey;
+  final String allocationKey;
+  final String variationKey;
+
+  const _ExposureKey({
+    required this.targetingKey,
+    required this.flagKey,
+    required this.allocationKey,
+    required this.variationKey,
+  });
+
+  @override
+  bool operator ==(Object other) {
+    return other is _ExposureKey &&
+        other.targetingKey == targetingKey &&
+        other.flagKey == flagKey &&
+        other.allocationKey == allocationKey &&
+        other.variationKey == variationKey;
+  }
+
+  @override
+  int get hashCode {
+    return Object.hash(targetingKey, flagKey, allocationKey, variationKey);
+  }
+}
+
+const _exposureFlushDelay = Duration(seconds: 10);
 
 Map<String, Object?> _removeNullValues(Map<String, Object?> input) {
   return Map.fromEntries(input.entries.where((entry) => entry.value != null));

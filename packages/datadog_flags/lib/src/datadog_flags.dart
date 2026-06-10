@@ -64,6 +64,7 @@ class DatadogFlags {
   }
 
   Future<void> disable() async {
+    await Future.wait(_clients.values.map((client) => client.shutdown()));
     _clients.clear();
     _httpClient?.close();
     _httpClient = null;
