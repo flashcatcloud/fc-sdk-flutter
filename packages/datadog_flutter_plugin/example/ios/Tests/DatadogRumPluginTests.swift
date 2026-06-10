@@ -711,10 +711,12 @@ class DatadogRumPluginTests: XCTestCase {
             resultStatus = ResultStatus.called(value: result)
         }
 
-        let command = mock.commands.first as? RUMAddLongTaskCommand
-        XCTAssertNotNil(command)
-        XCTAssertEqual(command?.time.timeIntervalSince1970, startTimeInterval, accuracy: 0.001)
-        XCTAssertEqual(command?.duration, TimeInterval(Double(duration) / 1000.0), accuracy: 0.0001)
+        guard let command = mock.commands.first as? RUMAddLongTaskCommand else {
+            XCTFail("Expected RUMAddLongTaskCommand")
+            return
+        }
+        XCTAssertEqual(command.time.timeIntervalSince1970, startTimeInterval, accuracy: 0.001)
+        XCTAssertEqual(command.duration, TimeInterval(Double(duration) / 1000.0), accuracy: 0.0001)
         XCTAssertEqual(resultStatus, .called(value: nil))
     }
 
