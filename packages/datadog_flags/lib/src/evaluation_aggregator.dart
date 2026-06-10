@@ -6,31 +6,22 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:http/http.dart' as http;
 import 'package:uuid/uuid.dart';
 
 import 'assignment.dart';
-import 'datadog_context.dart';
-import 'datadog_event_context.dart';
-import 'flags_configuration.dart';
-import 'flags_context.dart';
+import 'evaluation_context.dart';
+import 'flags_runtime.dart';
 import 'json_value.dart';
 
 class EvaluationAggregator {
-  final DatadogFlagsContext datadogContext;
-  final DatadogFlagsConfiguration configuration;
-  final http.Client httpClient;
+  final FlagsRuntime runtime;
   final Map<String, _AggregatedEvaluation> _aggregations = {};
   Timer? _flushTimer;
 
-  EvaluationAggregator({
-    required this.datadogContext,
-    required this.configuration,
-    required this.httpClient,
-  }) {
-    if (configuration.trackEvaluations) {
+  EvaluationAggregator(this.runtime) {
+    if (runtime.configuration.trackEvaluations) {
       _flushTimer = Timer.periodic(
-        configuration.evaluationFlushInterval,
+        runtime.configuration.evaluationFlushInterval,
         (_) => unawaited(flush()),
       );
     }
@@ -38,19 +29,21 @@ class EvaluationAggregator {
 
   void recordEvaluation({
     required String flagKey,
-    required FlagAssignment assignment,
-    required DatadogFlagsEvaluationContext evaluationContext,
+    required FlagAssignment? assignment,
+    required FlagsEvaluationContext evaluationContext,
     required String? error,
   }) {
+    final configuration = runtime.configuration;
     if (!configuration.trackEvaluations) {
       return;
     }
 
     final now = configuration.dateProvider().millisecondsSinceEpoch;
-    final ddContext = ddContextFor(datadogContext);
+    final ddContext = _datadogContext();
     final key = _aggregationKey(
       flagKey: flagKey,
-      assignment: assignment,
+      allocationKey: assignment?.allocationKey,
+      variantKey: assignment?.variationKey,
       evaluationContext: evaluationContext,
       ddContext: ddContext,
       error: error,
@@ -62,11 +55,12 @@ class EvaluationAggregator {
       return;
     }
 
-    final runtimeDefaultUsed = assignment.reason == 'DEFAULT' || error != null;
+    final runtimeDefaultUsed = assignment == null || error != null;
     _aggregations[key] = _AggregatedEvaluation(
+      aggregationKey: key,
       flagKey: flagKey,
-      variantKey: assignment.variationKey,
-      allocationKey: assignment.allocationKey,
+      variantKey: assignment?.variationKey,
+      allocationKey: assignment?.allocationKey,
       targetingKey: evaluationContext.targetingKey,
       error: error,
       attributes: evaluationContext.attributes,
@@ -83,6 +77,7 @@ class EvaluationAggregator {
   }
 
   Future<void> flush() async {
+    final configuration = runtime.configuration;
     if (!configuration.trackEvaluations || _aggregations.isEmpty) {
       return;
     }
@@ -90,24 +85,20 @@ class EvaluationAggregator {
     final evaluations = List<_AggregatedEvaluation>.from(_aggregations.values);
     _aggregations.clear();
 
-    final endpoint = configuration.customEvaluationEndpoint ??
-        datadogContext.intakeEndpoint().replace(
-          path: '/api/v2/flagevaluation',
-          queryParameters: {'ddsource': datadogContext.source},
-        );
+    final endpoint = _evaluationEndpoint();
     final body = jsonEncode({
-      'context': datadogContext.evaluationBatchContext(),
+      'context': _datadogContext(),
       'flagEvaluations': evaluations.map((e) => e.toJson()).toList(),
     });
 
     try {
-      final response = await httpClient.post(
+      final response = await runtime.httpClient.post(
         endpoint,
         headers: {
           'Content-Type': 'application/json',
-          'DD-API-KEY': datadogContext.clientToken,
-          'DD-EVP-ORIGIN': datadogContext.source,
-          'DD-EVP-ORIGIN-VERSION': datadogContext.sdkVersion,
+          'DD-API-KEY': runtime.datadogConfig.clientToken,
+          'DD-EVP-ORIGIN': runtime.datadogConfig.source,
+          'DD-EVP-ORIGIN-VERSION': runtime.datadogConfig.sdkVersion,
           'DD-REQUEST-ID': const Uuid().v4(),
         },
         body: body,
@@ -127,59 +118,85 @@ class EvaluationAggregator {
 
   void _restore(List<_AggregatedEvaluation> evaluations) {
     for (final evaluation in evaluations) {
-      _aggregations[_aggregationKey(
-        flagKey: evaluation.flagKey,
-        assignment: FlagAssignment(
-          allocationKey: evaluation.allocationKey,
-          variationKey: evaluation.variantKey,
-          variationType: FlagVariationType.unknown,
-          variationValue: null,
-          reason: evaluation.runtimeDefaultUsed ? 'DEFAULT' : '',
-          doLog: false,
-        ),
-        evaluationContext: DatadogFlagsEvaluationContext(
-          targetingKey: evaluation.targetingKey,
-          attributes: evaluation.attributes,
-        ),
-        ddContext: evaluation.ddContext,
-        error: evaluation.error,
-      )] = evaluation;
+      final existing = _aggregations[evaluation.aggregationKey];
+      if (existing == null) {
+        _aggregations[evaluation.aggregationKey] = evaluation;
+        continue;
+      }
+
+      existing.firstEvaluation =
+          existing.firstEvaluation < evaluation.firstEvaluation
+              ? existing.firstEvaluation
+              : evaluation.firstEvaluation;
+      existing.lastEvaluation =
+          existing.lastEvaluation > evaluation.lastEvaluation
+              ? existing.lastEvaluation
+              : evaluation.lastEvaluation;
+      existing.evaluationCount += evaluation.evaluationCount;
     }
+  }
+
+  Uri _evaluationEndpoint() {
+    final datadogConfig = runtime.datadogConfig;
+    final endpoint = runtime.configuration.customEvaluationEndpoint ??
+        datadogConfig.intakeEndpoint().replace(path: '/api/v2/flagevaluation');
+    return endpoint.replace(
+      queryParameters: {
+        ...endpoint.queryParameters,
+        'ddsource': datadogConfig.source,
+      },
+    );
+  }
+
+  Map<String, Object?> _datadogContext() {
+    final applicationId = runtime.datadogConfig.applicationId;
+    return _removeNullValues({
+      'env': runtime.datadogConfig.env,
+      'rum': applicationId == null
+          ? null
+          : {
+              'application': {'id': applicationId},
+              'view': null,
+            },
+    });
   }
 }
 
 String _aggregationKey({
   required String flagKey,
-  required FlagAssignment assignment,
-  required DatadogFlagsEvaluationContext evaluationContext,
+  required String? allocationKey,
+  required String? variantKey,
+  required FlagsEvaluationContext evaluationContext,
   required Map<String, Object?>? ddContext,
   required String? error,
 }) {
   return jsonEncode({
     'flagKey': flagKey,
-    'variantKey': assignment.variationKey,
-    'allocationKey': assignment.allocationKey,
+    'variantKey': variantKey,
+    'allocationKey': allocationKey,
     'targetingKey': evaluationContext.targetingKey,
     'error': error,
-    'context': sortedJson(evaluationContext.attributes),
-    'dd': sortedJson(ddContext),
+    'context': _sortedJson(evaluationContext.attributes),
+    'dd': _sortedJson(ddContext),
   });
 }
 
 class _AggregatedEvaluation {
+  final String aggregationKey;
   final String flagKey;
-  final String variantKey;
-  final String allocationKey;
-  final String targetingKey;
+  final String? variantKey;
+  final String? allocationKey;
+  final String? targetingKey;
   final String? error;
   final Map<String, Object?> attributes;
   final Map<String, Object?>? ddContext;
-  final int firstEvaluation;
+  int firstEvaluation;
   int lastEvaluation;
   int evaluationCount;
   final bool runtimeDefaultUsed;
 
   _AggregatedEvaluation({
+    required this.aggregationKey,
     required this.flagKey,
     required this.variantKey,
     required this.allocationKey,
@@ -194,19 +211,21 @@ class _AggregatedEvaluation {
   });
 
   Map<String, Object?> toJson() {
-    final eventContext = removeNullValues({
+    final includeAssignment =
+        !runtimeDefaultUsed && variantKey != null && allocationKey != null;
+    final eventContext = _removeNullValues({
       'evaluation': attributes.isEmpty ? null : sanitizeJsonValue(attributes),
       'dd': ddContext,
     });
 
-    return removeNullValues({
+    return _removeNullValues({
       'timestamp': firstEvaluation,
       'flag': {'key': flagKey},
       'first_evaluation': firstEvaluation,
       'last_evaluation': lastEvaluation,
       'evaluation_count': evaluationCount,
-      'variant': runtimeDefaultUsed ? null : {'key': variantKey},
-      'allocation': runtimeDefaultUsed ? null : {'key': allocationKey},
+      'variant': includeAssignment ? {'key': variantKey} : null,
+      'allocation': includeAssignment ? {'key': allocationKey} : null,
       'targeting_rule': null,
       'targeting_key': targetingKey,
       'runtime_default_used': runtimeDefaultUsed ? true : null,
@@ -214,4 +233,23 @@ class _AggregatedEvaluation {
       'context': eventContext.isEmpty ? null : eventContext,
     });
   }
+}
+
+Map<String, Object?> _removeNullValues(Map<String, Object?> input) {
+  return Map.fromEntries(input.entries.where((entry) => entry.value != null));
+}
+
+Object? _sortedJson(Object? value) {
+  if (value is Map<Object?, Object?>) {
+    final entries = value.entries.toList()
+      ..sort((a, b) => a.key.toString().compareTo(b.key.toString()));
+    return {
+      for (final entry in entries)
+        entry.key.toString(): _sortedJson(entry.value),
+    };
+  }
+  if (value is Iterable<Object?>) {
+    return value.map(_sortedJson).toList();
+  }
+  return value;
 }

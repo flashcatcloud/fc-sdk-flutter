@@ -4,10 +4,12 @@
 // Copyright 2019-Present Datadog, Inc.
 
 import 'package:http/http.dart' as http;
+import 'package:meta/meta.dart';
 
-import 'datadog_context.dart';
+import 'datadog_flags_config.dart';
 
-class DatadogFlagsConfiguration {
+@immutable
+final class DatadogFlagsConfiguration {
   final Uri? customFlagsEndpoint;
   final Map<String, String>? customFlagsHeaders;
   final Uri? customExposureEndpoint;
@@ -17,8 +19,7 @@ class DatadogFlagsConfiguration {
   final Duration evaluationFlushInterval;
   final int evaluationMaxBatchSize;
   final http.Client? httpClient;
-  final DatadogFlagsContext? datadogContext;
-  final bool rumIntegrationEnabled;
+  final DatadogFlagsConfig? datadogConfig;
   final DateTime Function() dateProvider;
 
   const DatadogFlagsConfiguration({
@@ -31,8 +32,7 @@ class DatadogFlagsConfiguration {
     this.evaluationFlushInterval = const Duration(seconds: 10),
     this.evaluationMaxBatchSize = 1000,
     this.httpClient,
-    this.datadogContext,
-    this.rumIntegrationEnabled = true,
+    this.datadogConfig,
     this.dateProvider = DateTime.now,
   });
 }

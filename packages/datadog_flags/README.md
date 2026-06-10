@@ -1,45 +1,20 @@
-# Datadog Flags for Flutter
+# Datadog Flags
 
-`datadog_flags` is a Dart-native package for Datadog feature flag assignments.
-This package is unpublished while the stacked MVP is being assembled. It
-currently contains precompute transport, typed local evaluation, and RUM feature
-flag reporting.
-
-This package does not bridge to native iOS or Android flagging SDKs.
-
-## Precompute Fetching
-
-Create a Datadog context, an evaluation context, and fetch assignments from the
-precompute API:
-
-```dart
-final fetcher = FlagAssignmentsFetcher(
-  datadogContext: const DatadogFlagsContext(
-    clientToken: 'pub...',
-    env: 'staging',
-    site: DatadogFlagsSite.us1,
-  ),
-  configuration: const DatadogFlagsConfiguration(),
-  httpClient: http.Client(),
-);
-
-final assignments = await fetcher.fetch(
-  const DatadogFlagsEvaluationContext(
-    targetingKey: 'user-123',
-    attributes: {'plan': 'pro'},
-  ),
-);
-```
+`datadog_flags` is the native Dart SDK for Datadog Feature Flags and
+Experimentation in client applications. It lets applications evaluate
+Datadog-backed feature flags.
 
 ## Typed Evaluation
 
-Enable the client, set an evaluation context, and evaluate typed values from the
-current assignment state:
+Enable Datadog Flags, initialize a client with an evaluation context, and
+evaluate typed details from the current assignment state:
 
 ```dart
-await DatadogFlags.enable(
+final datadogFlags = DatadogFlags.instance;
+
+await datadogFlags.enable(
   configuration: DatadogFlagsConfiguration(
-    datadogContext: const DatadogFlagsContext(
+    datadogConfig: const DatadogFlagsConfig(
       clientToken: 'pub...',
       env: 'staging',
       site: DatadogFlagsSite.us1,
@@ -47,50 +22,51 @@ await DatadogFlags.enable(
   ),
 );
 
-final flags = DatadogFlags.sharedClient();
-await flags.setEvaluationContext(
-  const DatadogFlagsEvaluationContext(targetingKey: 'user-123'),
+final flags = datadogFlags.sharedClient();
+await flags.initialize(
+  const FlagsEvaluationContext(targetingKey: 'user-123'),
 );
 
-final enabled = flags.getBooleanValue(
+final details = flags.getBooleanDetails(
   key: 'checkout.enabled',
   defaultValue: false,
 );
+final enabled = details.value;
 ```
+
+## Multiple Contexts and Isolates
+
+Use separate clients for different mobile subjects, such as logged-out and
+logged-in users or org-level and user-level targeting:
+
+```dart
+final orgFlags = datadogFlags.sharedClient(name: 'org');
+await orgFlags.initialize(
+  const FlagsEvaluationContext(targetingKey: 'org-123'),
+);
+
+final userFlags = datadogFlags.sharedClient(name: 'user');
+await userFlags.initialize(
+  const FlagsEvaluationContext(targetingKey: 'user-456'),
+);
+```
+
+Clients are local to the Dart isolate where they are created. Background
+isolates do not share `DatadogFlags` state or client assignment caches with the
+main isolate, so each background isolate must call
+`DatadogFlags.instance.enable()`, create the clients it needs, and initialize
+them independently.
 
 ## Behavior
 
-- Assignments are fetched with `POST /precompute-assignments`.
-- Requests use `Content-Type: application/vnd.api+json` and
-  `dd-client-token`.
-- `dd-application-id` is included only when configured.
-- Gov sites fall back to the US1 flags endpoint, matching the iOS SDK behavior.
-- Unknown or malformed individual flag assignments are ignored so one bad flag
-  does not prevent other assignments from loading.
-- Typed details return provider-not-ready, flag-not-found, or type-mismatch
-  errors when defaults are used.
-- Successful typed evaluations report RUM feature flag evaluations when RUM is
-  available.
-- Successful typed evaluations emit exposure events when the assignment has
-  `doLog: true`, deduped by targeting key, flag key, allocation, and variant.
-- Successful, defaulted, and error evaluations are aggregated into
-  flagevaluation metric events and sent on `flush()` or the configured batch
-  boundary.
-
-## Local Validation
-
-From this package:
-
-```bash
-flutter analyze .
-flutter test test
-```
-
-The included request example can make a real precompute call:
-
-```bash
-DD_CLIENT_TOKEN=<client-token> \
-DD_ENV=staging \
-DD_TARGETING_KEY=test-subject \
-dart run example/precompute_request.dart
-```
+- Unknown or malformed individual flag assignments are ignored so that one
+  invalid assignment does not prevent other assignments from loading.
+- Typed evaluations return caller-provided defaults instead of throwing when
+  assignments are unavailable, a flag is missing, or a flag has the wrong type.
+- Typed details include provider-not-ready, flag-not-found, or type-mismatch
+  errors when default values are used.
+- Successful typed evaluations emit exposure events when exposure tracking is
+  enabled and the assignment has `doLog: true`, deduped by targeting key, flag
+  key, allocation, and variant.
+- Typed evaluations are aggregated into flag-evaluation events, including
+  defaulted evaluations, and sent internally on batch boundaries or shutdown.
