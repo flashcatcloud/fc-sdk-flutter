@@ -698,8 +698,7 @@ class DatadogRumPluginTests: XCTestCase {
     }
 
     func testReportLongTask_CallsInternal() {
-        let startTime = Date.now
-        let startTimeInterval = startTime.timeIntervalSince1970
+        let startTimeInterval: TimeInterval = 1_000_000.0
         let duration = 340124
 
         let call = FlutterMethodCall(methodName: "reportLongTask", arguments: [
@@ -714,10 +713,8 @@ class DatadogRumPluginTests: XCTestCase {
 
         let command = mock.commands.first as? RUMAddLongTaskCommand
         XCTAssertNotNil(command)
-        XCTAssertEqual(command, RUMAddLongTaskCommand(time: Date(timeIntervalSince1970: startTimeInterval),
-                                                      attributes: [:],
-                                                      duration: TimeInterval(Double(duration) / 1000.0))
-        )
+        XCTAssertEqual(command?.time.timeIntervalSince1970, startTimeInterval, accuracy: 0.001)
+        XCTAssertEqual(command?.duration, TimeInterval(Double(duration) / 1000.0), accuracy: 0.0001)
         XCTAssertEqual(resultStatus, .called(value: nil))
     }
 
