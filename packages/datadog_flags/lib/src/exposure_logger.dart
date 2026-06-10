@@ -15,7 +15,7 @@ import 'json_value.dart';
 
 class ExposureLogger {
   final FlagsRuntime runtime;
-  final Set<_ExposureKey> _loggedExposures = {};
+  final Map<_ExposureCacheKey, _ExposureCacheValue> _loggedAssignments = {};
   final List<Map<String, Object?>> _pendingExposures = [];
   Timer? _flushTimer;
 
@@ -31,15 +31,18 @@ class ExposureLogger {
       return;
     }
 
-    final exposureKey = _ExposureKey(
+    final cacheKey = _ExposureCacheKey(
       targetingKey: evaluationContext.targetingKey,
       flagKey: flagKey,
+    );
+    final cacheValue = _ExposureCacheValue(
       allocationKey: assignment.allocationKey,
       variationKey: assignment.variationKey,
     );
-    if (!_loggedExposures.add(exposureKey)) {
+    if (_loggedAssignments[cacheKey] == cacheValue) {
       return;
     }
+    _loggedAssignments[cacheKey] = cacheValue;
 
     _pendingExposures.add(
       _buildExposureEvent(
@@ -130,31 +133,47 @@ class ExposureLogger {
   }
 }
 
-final class _ExposureKey {
+final class _ExposureCacheKey {
   final String? targetingKey;
   final String flagKey;
+
+  const _ExposureCacheKey({
+    required this.targetingKey,
+    required this.flagKey,
+  });
+
+  @override
+  bool operator ==(Object other) {
+    return other is _ExposureCacheKey &&
+        other.targetingKey == targetingKey &&
+        other.flagKey == flagKey;
+  }
+
+  @override
+  int get hashCode {
+    return Object.hash(targetingKey, flagKey);
+  }
+}
+
+final class _ExposureCacheValue {
   final String allocationKey;
   final String variationKey;
 
-  const _ExposureKey({
-    required this.targetingKey,
-    required this.flagKey,
+  const _ExposureCacheValue({
     required this.allocationKey,
     required this.variationKey,
   });
 
   @override
   bool operator ==(Object other) {
-    return other is _ExposureKey &&
-        other.targetingKey == targetingKey &&
-        other.flagKey == flagKey &&
+    return other is _ExposureCacheValue &&
         other.allocationKey == allocationKey &&
         other.variationKey == variationKey;
   }
 
   @override
   int get hashCode {
-    return Object.hash(targetingKey, flagKey, allocationKey, variationKey);
+    return Object.hash(allocationKey, variationKey);
   }
 }
 

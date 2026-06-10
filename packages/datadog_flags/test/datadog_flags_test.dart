@@ -393,7 +393,7 @@ void main() {
     expect(request.body.split('\n'), hasLength(2));
   });
 
-  test('deduplicates exposures by the mobile assignment tuple', () async {
+  test('deduplicates repeated exposures for the same assignment', () async {
     final requests = <http.Request>[];
     final client = await _createClient(
       requests: requests,
@@ -469,7 +469,7 @@ void main() {
     );
   });
 
-  test('logs another exposure when the assignment changes', () async {
+  test('logs another exposure when the assignment cycles', () async {
     final requests = <http.Request>[];
     var precomputeRequestCount = 0;
     final client = await _createClient(
@@ -483,8 +483,8 @@ void main() {
             jsonEncode(
               _assignmentsResponse(
                 booleanVariationKey:
-                    precomputeRequestCount == 1 ? 'enabled' : 'disabled',
-                booleanValue: precomputeRequestCount == 1,
+                    precomputeRequestCount.isOdd ? 'enabled' : 'disabled',
+                booleanValue: precomputeRequestCount.isOdd,
               ),
             ),
             200,
@@ -502,12 +502,16 @@ void main() {
       const FlagsEvaluationContext(targetingKey: 'user-123'),
     );
     client.getBooleanDetails(key: 'show-paywall', defaultValue: false);
+    await client.initialize(
+      const FlagsEvaluationContext(targetingKey: 'user-123'),
+    );
+    client.getBooleanDetails(key: 'show-paywall', defaultValue: false);
     await client.shutdown();
 
     final events = _exposureEvents(_exposureRequests(requests).single);
     expect(
       events.map((event) => (event['variant'] as Map<String, Object?>)['key']),
-      ['enabled', 'disabled'],
+      ['enabled', 'disabled', 'enabled'],
     );
   });
 }
