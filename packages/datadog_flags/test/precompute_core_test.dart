@@ -62,7 +62,7 @@ void main() {
             'attributes': {
               'env': {'dd_env': 'staging'},
               'source': {
-                'sdk_name': 'dd-sdk-flutter',
+                'sdk_name': 'dart-client',
                 'sdk_version': '0.0.1',
               },
               'subject': {
@@ -122,7 +122,7 @@ void main() {
           'attributes': {
             'env': {'dd_env': 'dev'},
             'source': {
-              'sdk_name': 'dd-sdk-flutter',
+              'sdk_name': 'dart-client',
               'sdk_version': '0.0.1',
             },
             'subject': {

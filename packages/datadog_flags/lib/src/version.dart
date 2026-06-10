@@ -3,8 +3,4 @@
 // developed at Datadog (https://www.datadoghq.com/).
 // Copyright 2019-Present Datadog, Inc.
 
-import 'version.dart' show ddPackageVersion;
-
-const datadogFlagsSdkName = 'dart-client';
-const datadogFlagsSdkVersion = ddPackageVersion;
-const datadogFlagsSource = 'dart-client';
+const ddPackageVersion = '0.0.1';

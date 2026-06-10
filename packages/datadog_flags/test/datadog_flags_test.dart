@@ -283,11 +283,11 @@ void main() {
       final request = _exposureRequests(requests).single;
       expect(
         request.url.toString(),
-        'https://browser-intake-datadoghq.com/api/v2/exposures?ddsource=flutter',
+        'https://browser-intake-datadoghq.com/api/v2/exposures?ddsource=dart-client',
       );
       expect(request.headers['Content-Type'], 'text/plain;charset=UTF-8');
       expect(request.headers['DD-API-KEY'], 'client-token');
-      expect(request.headers['DD-EVP-ORIGIN'], 'flutter');
+      expect(request.headers['DD-EVP-ORIGIN'], 'dart-client');
       expect(request.headers['DD-EVP-ORIGIN-VERSION'], '0.0.1');
       expect(request.headers['DD-REQUEST-ID'], isNotEmpty);
 
