@@ -5,6 +5,6 @@
 
 import 'version.dart' show ddPackageVersion;
 
-const datadogFlagsSdkName = 'dart-client';
+const datadogFlagsSdkName = 'dd-sdk-dart';
 const datadogFlagsSdkVersion = ddPackageVersion;
 const datadogFlagsSource = 'dart-client';
