@@ -3,8 +3,6 @@
 // developed at Datadog (https://www.datadoghq.com/).
 // Copyright 2019-Present Datadog, Inc.
 
-import 'dart:async';
-
 import 'assignment.dart';
 import 'evaluation_context.dart';
 import 'exposure_logger.dart';
@@ -179,12 +177,10 @@ class DefaultDatadogFlagsClient implements DatadogFlagsClient {
       );
     }
 
-    unawaited(
-      _exposureLogger.logExposure(
-        flagKey: key,
-        assignment: assignment,
-        evaluationContext: context,
-      ),
+    _exposureLogger.logExposure(
+      flagKey: key,
+      assignment: assignment,
+      evaluationContext: context,
     );
 
     return FlagDetails(

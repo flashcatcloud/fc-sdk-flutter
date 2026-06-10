@@ -368,6 +368,49 @@ void main() {
     expect(exposureAttempt, 2);
   });
 
+  test('waits for an in-flight exposure flush', () async {
+    final requests = <http.Request>[];
+    final exposureStarted = Completer<void>();
+    final exposureResponse = Completer<http.Response>();
+    final client = await _createClient(
+      requests: requests,
+      trackExposures: true,
+      httpClient: MockClient((request) async {
+        requests.add(request);
+        if (request.url.path == '/precompute-assignments') {
+          return http.Response(jsonEncode(_assignmentsResponse()), 200);
+        }
+        if (request.url.path == '/api/v2/exposures') {
+          exposureStarted.complete();
+          return exposureResponse.future;
+        }
+        return http.Response('{"error":"unexpected"}', 404);
+      }),
+    );
+    await client.initialize(
+      const FlagsEvaluationContext(targetingKey: 'user-123'),
+    );
+    client.getBooleanDetails(key: 'show-paywall', defaultValue: false);
+
+    final firstFlush = client.shutdown();
+    await exposureStarted.future;
+
+    var secondFlushCompleted = false;
+    final secondFlush = client.shutdown().then((_) {
+      secondFlushCompleted = true;
+    });
+    await Future<void>.delayed(Duration.zero);
+
+    expect(secondFlushCompleted, isFalse);
+
+    exposureResponse.complete(http.Response('{"ok":true}', 200));
+    await firstFlush;
+    await secondFlush;
+
+    expect(secondFlushCompleted, isTrue);
+    expect(_exposureRequests(requests), hasLength(1));
+  });
+
   test('batches unique exposure events in one request body', () async {
     final requests = <http.Request>[];
     final client = await _createClient(

@@ -18,11 +18,12 @@ class ExposureLogger {
   final FlagsRuntime runtime;
   final Map<_ExposureCacheKey, _ExposureCacheValue> _loggedAssignments = {};
   final List<Map<String, Object?>> _pendingExposures = [];
+  Future<void>? _flushInFlight;
   Timer? _flushTimer;
 
   ExposureLogger(this.runtime);
 
-  Future<void> logExposure({
+  void logExposure({
     required String flagKey,
     required FlagAssignment assignment,
     required FlagsEvaluationContext evaluationContext,
@@ -59,6 +60,25 @@ class ExposureLogger {
     _flushTimer?.cancel();
     _flushTimer = null;
 
+    final inFlight = _flushInFlight;
+    if (inFlight != null) {
+      await inFlight;
+      return flush(rescheduleOnFailure: rescheduleOnFailure);
+    }
+
+    late final Future<void> flushOperation;
+    flushOperation = _flushOnce(
+      rescheduleOnFailure: rescheduleOnFailure,
+    ).whenComplete(() {
+      if (identical(_flushInFlight, flushOperation)) {
+        _flushInFlight = null;
+      }
+    });
+    _flushInFlight = flushOperation;
+    await flushOperation;
+  }
+
+  Future<void> _flushOnce({required bool rescheduleOnFailure}) async {
     if (_pendingExposures.isEmpty) {
       return;
     }
