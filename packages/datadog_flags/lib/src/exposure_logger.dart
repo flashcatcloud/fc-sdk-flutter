@@ -12,6 +12,7 @@ import 'assignment.dart';
 import 'evaluation_context.dart';
 import 'flags_runtime.dart';
 import 'json_value.dart';
+import 'sdk_metadata.dart';
 
 class ExposureLogger {
   final FlagsRuntime runtime;
@@ -71,8 +72,8 @@ class ExposureLogger {
         headers: {
           'Content-Type': 'text/plain;charset=UTF-8',
           'DD-API-KEY': runtime.datadogConfig.clientToken,
-          'DD-EVP-ORIGIN': runtime.datadogConfig.source,
-          'DD-EVP-ORIGIN-VERSION': runtime.datadogConfig.sdkVersion,
+          'DD-EVP-ORIGIN': datadogFlagsSource,
+          'DD-EVP-ORIGIN-VERSION': datadogFlagsSdkVersion,
           'DD-REQUEST-ID': const Uuid().v4(),
         },
         body: exposures.map(jsonEncode).join('\n'),
@@ -127,7 +128,7 @@ class ExposureLogger {
     return endpoint.replace(
       queryParameters: {
         ...endpoint.queryParameters,
-        'ddsource': datadogConfig.source,
+        'ddsource': datadogFlagsSource,
       },
     );
   }

@@ -288,7 +288,7 @@ void main() {
       expect(request.headers['Content-Type'], 'text/plain;charset=UTF-8');
       expect(request.headers['DD-API-KEY'], 'client-token');
       expect(request.headers['DD-EVP-ORIGIN'], 'flutter');
-      expect(request.headers['DD-EVP-ORIGIN-VERSION'], '9.8.7');
+      expect(request.headers['DD-EVP-ORIGIN-VERSION'], '0.0.1');
       expect(request.headers['DD-REQUEST-ID'], isNotEmpty);
 
       final exposure = _exposureEvents(request).single;
@@ -541,7 +541,6 @@ DatadogFlagsConfig _datadogConfig() {
     env: 'staging',
     site: DatadogFlagsSite.us1,
     applicationId: 'application-id',
-    sdkVersion: '9.8.7',
   );
 }
 
