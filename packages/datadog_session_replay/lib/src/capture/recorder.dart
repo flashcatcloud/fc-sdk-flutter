@@ -32,7 +32,8 @@ import 'view_tree_snapshot.dart';
 
 /// Scale from transformed paint bounds vs local bounds; must stay finite for
 /// recorders that multiply by [scaleX]/[scaleY] and call [num.toInt].
-double _finiteLayoutScale(double numerator, double denominator) {
+@visibleForTesting
+double finiteLayoutScale(double numerator, double denominator) {
   if (denominator == 0.0 ||
       (!numerator.isFinite && !denominator.isFinite) ||
       !numerator.isFinite) {
@@ -401,11 +402,11 @@ class SessionReplayRecorder {
           renderObject.paintBounds,
         );
 
-        final scaleX = _finiteLayoutScale(
+        final scaleX = finiteLayoutScale(
           paintBounds.width,
           untransformedPaintBounds.width,
         );
-        final scaleY = _finiteLayoutScale(
+        final scaleY = finiteLayoutScale(
           paintBounds.height,
           untransformedPaintBounds.height,
         );
