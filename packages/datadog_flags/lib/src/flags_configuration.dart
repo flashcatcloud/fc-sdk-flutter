@@ -10,14 +10,17 @@ import 'datadog_flags_config.dart';
 
 @immutable
 final class DatadogFlagsConfiguration {
+  static const defaultEvaluationFlushInterval = Duration(seconds: 10);
+  static const minEvaluationFlushInterval = Duration(seconds: 1);
+  static const maxEvaluationFlushInterval = Duration(seconds: 60);
+
   final Uri? customFlagsEndpoint;
   final Map<String, String>? customFlagsHeaders;
   final Uri? customExposureEndpoint;
   final bool trackExposures;
   final Uri? customEvaluationEndpoint;
   final bool trackEvaluations;
-  final Duration evaluationFlushInterval;
-  final int evaluationMaxBatchSize;
+  final Duration _evaluationFlushInterval;
   final http.Client? httpClient;
   final DatadogFlagsConfig? datadogConfig;
   final DateTime Function() dateProvider;
@@ -29,10 +32,21 @@ final class DatadogFlagsConfiguration {
     this.trackExposures = true,
     this.customEvaluationEndpoint,
     this.trackEvaluations = true,
-    this.evaluationFlushInterval = const Duration(seconds: 10),
-    this.evaluationMaxBatchSize = 1000,
+    Duration evaluationFlushInterval = defaultEvaluationFlushInterval,
     this.httpClient,
     this.datadogConfig,
     this.dateProvider = DateTime.now,
-  });
+  }) : _evaluationFlushInterval = evaluationFlushInterval;
+
+  /// Flush interval coerced to the same 1s-60s bounds used by the iOS and
+  /// Android Flags SDKs.
+  Duration get evaluationFlushInterval {
+    if (_evaluationFlushInterval < minEvaluationFlushInterval) {
+      return minEvaluationFlushInterval;
+    }
+    if (_evaluationFlushInterval > maxEvaluationFlushInterval) {
+      return maxEvaluationFlushInterval;
+    }
+    return _evaluationFlushInterval;
+  }
 }

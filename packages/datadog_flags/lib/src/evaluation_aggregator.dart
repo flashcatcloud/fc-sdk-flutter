@@ -6,6 +6,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:meta/meta.dart';
 import 'package:uuid/uuid.dart';
 
 import 'assignment.dart';
@@ -15,6 +16,15 @@ import 'json_value.dart';
 import 'sdk_metadata.dart';
 
 class EvaluationAggregator {
+  static const int defaultMaxBatchSize = 1000;
+  static const Duration defaultUploadTimeout = Duration(seconds: 15);
+
+  @visibleForTesting
+  static int maxBatchSize = defaultMaxBatchSize;
+
+  @visibleForTesting
+  static Duration uploadTimeout = defaultUploadTimeout;
+
   final FlagsRuntime runtime;
   final Map<String, _AggregatedEvaluation> _aggregations = {};
   Future<bool>? _uploadInFlight;
@@ -74,7 +84,7 @@ class EvaluationAggregator {
       runtimeDefaultUsed: runtimeDefaultUsed,
     );
 
-    if (_aggregations.length >= configuration.evaluationMaxBatchSize) {
+    if (_aggregations.length >= maxBatchSize) {
       unawaited(_flushPendingEvaluations(rescheduleOnFailure: true));
     }
   }
@@ -125,6 +135,9 @@ class EvaluationAggregator {
     required bool rescheduleOnFailure,
   }) async {
     if (_uploadInFlight != null) {
+      if (rescheduleOnFailure) {
+        _scheduleRetryFlush();
+      }
       return;
     }
 
@@ -166,17 +179,19 @@ class EvaluationAggregator {
     });
 
     try {
-      final response = await runtime.httpClient.post(
-        endpoint,
-        headers: {
-          'Content-Type': 'application/json',
-          'DD-API-KEY': runtime.datadogConfig.clientToken,
-          'DD-EVP-ORIGIN': datadogFlagsSource,
-          'DD-EVP-ORIGIN-VERSION': datadogFlagsSdkVersion,
-          'DD-REQUEST-ID': const Uuid().v4(),
-        },
-        body: body,
-      );
+      final response = await runtime.httpClient
+          .post(
+            endpoint,
+            headers: {
+              'Content-Type': 'application/json',
+              'DD-API-KEY': runtime.datadogConfig.clientToken,
+              'DD-EVP-ORIGIN': datadogFlagsSource,
+              'DD-EVP-ORIGIN-VERSION': datadogFlagsSdkVersion,
+              'DD-REQUEST-ID': const Uuid().v4(),
+            },
+            body: body,
+          )
+          .timeout(uploadTimeout);
       if (response.statusCode < 200 || response.statusCode >= 300) {
         _restore(evaluations, reschedule: rescheduleOnFailure);
         return false;
