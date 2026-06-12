@@ -3,43 +3,35 @@
 // developed at Datadog (https://www.datadoghq.com/).
 // Copyright 2019-Present Datadog, Inc.
 
-import 'dart:async';
-
 import 'assignment.dart';
 import 'evaluation_aggregator.dart';
+import 'evaluation_context.dart';
 import 'exposure_logger.dart';
 import 'flags_client.dart';
-import 'flags_context.dart';
-import 'flags_details.dart';
 import 'flags_error.dart';
 import 'flags_repository.dart';
-import 'json_value.dart';
-import 'rum_flag_evaluation_reporter.dart';
 
 class DefaultDatadogFlagsClient implements DatadogFlagsClient {
+  static final Object _typeMismatch = Object();
+
   @override
   final String name;
   final FlagsRepository _repository;
   final ExposureLogger _exposureLogger;
   final EvaluationAggregator _evaluationAggregator;
-  final RumFlagEvaluationReporter _rumFlagEvaluationReporter;
 
   DefaultDatadogFlagsClient({
     required this.name,
     required FlagsRepository repository,
     required ExposureLogger exposureLogger,
     required EvaluationAggregator evaluationAggregator,
-    required RumFlagEvaluationReporter rumFlagEvaluationReporter,
   })  : _repository = repository,
         _exposureLogger = exposureLogger,
-        _evaluationAggregator = evaluationAggregator,
-        _rumFlagEvaluationReporter = rumFlagEvaluationReporter;
+        _evaluationAggregator = evaluationAggregator;
 
   @override
-  Future<void> setEvaluationContext(
-    DatadogFlagsEvaluationContext context,
-  ) async {
-    await _repository.setEvaluationContext(context);
+  Future<void> initialize(FlagsEvaluationContext context) async {
+    await _repository.initialize(context);
   }
 
   @override
@@ -47,7 +39,7 @@ class DefaultDatadogFlagsClient implements DatadogFlagsClient {
     required String key,
     required bool defaultValue,
   }) {
-    return _getDetails(
+    return getDetails(
       key: key,
       defaultValue: defaultValue,
       requestedType: FlagVariationType.boolean,
@@ -55,19 +47,11 @@ class DefaultDatadogFlagsClient implements DatadogFlagsClient {
   }
 
   @override
-  bool getBooleanValue({
-    required String key,
-    required bool defaultValue,
-  }) {
-    return getBooleanDetails(key: key, defaultValue: defaultValue).value;
-  }
-
-  @override
   FlagDetails<String> getStringDetails({
     required String key,
     required String defaultValue,
   }) {
-    return _getDetails(
+    return getDetails(
       key: key,
       defaultValue: defaultValue,
       requestedType: FlagVariationType.string,
@@ -75,19 +59,11 @@ class DefaultDatadogFlagsClient implements DatadogFlagsClient {
   }
 
   @override
-  String getStringValue({
-    required String key,
-    required String defaultValue,
-  }) {
-    return getStringDetails(key: key, defaultValue: defaultValue).value;
-  }
-
-  @override
   FlagDetails<int> getIntegerDetails({
     required String key,
     required int defaultValue,
   }) {
-    return _getDetails(
+    return getDetails(
       key: key,
       defaultValue: defaultValue,
       requestedType: FlagVariationType.integer,
@@ -95,19 +71,11 @@ class DefaultDatadogFlagsClient implements DatadogFlagsClient {
   }
 
   @override
-  int getIntegerValue({
-    required String key,
-    required int defaultValue,
-  }) {
-    return getIntegerDetails(key: key, defaultValue: defaultValue).value;
-  }
-
-  @override
   FlagDetails<double> getDoubleDetails({
     required String key,
     required double defaultValue,
   }) {
-    return _getDetails(
+    return getDetails(
       key: key,
       defaultValue: defaultValue,
       requestedType: FlagVariationType.float,
@@ -115,49 +83,32 @@ class DefaultDatadogFlagsClient implements DatadogFlagsClient {
   }
 
   @override
-  double getDoubleValue({
-    required String key,
-    required double defaultValue,
-  }) {
-    return getDoubleDetails(key: key, defaultValue: defaultValue).value;
-  }
-
-  @override
   FlagDetails<Object?> getObjectDetails({
     required String key,
     required Object? defaultValue,
   }) {
-    return _getDetails(
+    return getDetails(
       key: key,
-      defaultValue: sanitizeJsonValue(defaultValue),
+      defaultValue: defaultValue,
       requestedType: FlagVariationType.object,
     );
   }
 
   @override
-  Object? getObjectValue({
-    required String key,
-    required Object? defaultValue,
-  }) {
-    return getObjectDetails(key: key, defaultValue: defaultValue).value;
+  Future<void> shutdown() async {
+    await Future.wait([
+      _evaluationAggregator.shutdown(),
+      _exposureLogger.shutdown(),
+    ]);
+    await _repository.clearMemory();
   }
 
-  @override
-  Future<void> flush() {
-    return _evaluationAggregator.flush();
+  Future<void> reset() async {
+    await shutdown();
+    await _repository.reset();
   }
 
-  @override
-  Future<void> reset() {
-    return _repository.reset();
-  }
-
-  @override
-  Future<void> dispose() async {
-    _evaluationAggregator.dispose();
-  }
-
-  FlagDetails<T> _getDetails<T>({
+  FlagDetails<T> getDetails<T>({
     required String key,
     required T defaultValue,
     required FlagVariationType requestedType,
@@ -166,9 +117,9 @@ class DefaultDatadogFlagsClient implements DatadogFlagsClient {
     if (context == null) {
       _evaluationAggregator.recordEvaluation(
         flagKey: key,
-        assignment: FlagAssignment.defaultAssignment,
-        evaluationContext: DatadogFlagsEvaluationContext.empty,
-        error: _EvaluationErrorCode.providerNotReady,
+        assignment: null,
+        evaluationContext: FlagsEvaluationContext.empty,
+        error: FlagEvaluationError.providerNotReady.name,
       );
       return FlagDetails(
         key: key,
@@ -181,9 +132,9 @@ class DefaultDatadogFlagsClient implements DatadogFlagsClient {
     if (assignment == null) {
       _evaluationAggregator.recordEvaluation(
         flagKey: key,
-        assignment: FlagAssignment.defaultAssignment,
+        assignment: null,
         evaluationContext: context,
-        error: _EvaluationErrorCode.flagNotFound,
+        error: FlagEvaluationError.flagNotFound.name,
       );
       return FlagDetails(
         key: key,
@@ -192,13 +143,37 @@ class DefaultDatadogFlagsClient implements DatadogFlagsClient {
       );
     }
 
-    if (requestedType == FlagVariationType.object &&
-        assignment.variationType != FlagVariationType.object) {
+    final variationValue = assignment.variationValue;
+    final assignmentType = assignment.variationType;
+    final resolvedValue = switch (requestedType) {
+      FlagVariationType.boolean
+          when assignmentType == FlagVariationType.boolean =>
+        variationValue,
+      FlagVariationType.string
+          when assignmentType == FlagVariationType.string =>
+        variationValue,
+      FlagVariationType.integer
+          when (assignmentType == FlagVariationType.integer ||
+                  assignmentType == FlagVariationType.number) &&
+              variationValue is int =>
+        variationValue,
+      FlagVariationType.float
+          when (assignmentType == FlagVariationType.float ||
+                  assignmentType == FlagVariationType.number) &&
+              variationValue is num =>
+        variationValue.toDouble(),
+      FlagVariationType.object
+          when assignmentType == FlagVariationType.object =>
+        variationValue,
+      _ => _typeMismatch,
+    };
+
+    if (identical(resolvedValue, _typeMismatch)) {
       _evaluationAggregator.recordEvaluation(
         flagKey: key,
         assignment: assignment,
         evaluationContext: context,
-        error: _EvaluationErrorCode.typeMismatch,
+        error: FlagEvaluationError.typeMismatch.name,
       );
       return FlagDetails(
         key: key,
@@ -207,58 +182,24 @@ class DefaultDatadogFlagsClient implements DatadogFlagsClient {
       );
     }
 
-    final typedValue = assignment.typedValue(requestedType);
-    if (typedValue == null && requestedType != FlagVariationType.object) {
-      _evaluationAggregator.recordEvaluation(
-        flagKey: key,
-        assignment: assignment,
-        evaluationContext: context,
-        error: _EvaluationErrorCode.typeMismatch,
-      );
-      return FlagDetails(
-        key: key,
-        value: defaultValue,
-        error: FlagEvaluationError.typeMismatch,
-      );
-    }
-
-    final value = typedValue as T;
-    _trackEvaluation(key, assignment, value, context);
-    return FlagDetails(
-      key: key,
-      value: value,
-      variant: assignment.variationKey,
-      reason: assignment.reason,
-    );
-  }
-
-  void _trackEvaluation<T>(
-    String key,
-    FlagAssignment assignment,
-    T value,
-    DatadogFlagsEvaluationContext context,
-  ) {
-    unawaited(_exposureLogger.logExposure(
+    _exposureLogger.logExposure(
       flagKey: key,
       assignment: assignment,
       evaluationContext: context,
-    ));
+    );
+
     _evaluationAggregator.recordEvaluation(
       flagKey: key,
       assignment: assignment,
       evaluationContext: context,
       error: null,
     );
-    if (value != null) {
-      _rumFlagEvaluationReporter.report(key, value as Object);
-    }
+
+    return FlagDetails(
+      key: key,
+      value: resolvedValue as T,
+      variant: assignment.variationKey,
+      reason: assignment.reason,
+    );
   }
-}
-
-class _EvaluationErrorCode {
-  static const providerNotReady = 'PROVIDER_NOT_READY';
-  static const flagNotFound = 'FLAG_NOT_FOUND';
-  static const typeMismatch = 'TYPE_MISMATCH';
-
-  _EvaluationErrorCode._();
 }

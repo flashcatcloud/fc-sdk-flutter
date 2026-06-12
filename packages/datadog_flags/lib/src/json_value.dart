@@ -3,6 +3,12 @@
 // developed at Datadog (https://www.datadoghq.com/).
 // Copyright 2019-Present Datadog, Inc.
 
+import 'dart:convert';
+
+/// Recursively validates values that will be JSON encoded.
+///
+/// This keeps targeting attributes and object flag values from carrying Dart
+/// objects that `jsonEncode` cannot represent.
 Object? sanitizeJsonValue(Object? value) {
   if (value == null ||
       value is String ||
@@ -11,14 +17,14 @@ Object? sanitizeJsonValue(Object? value) {
       value is double) {
     return value;
   }
-  if (value is num) {
-    return value.toDouble();
-  }
   if (value is Map<Object?, Object?>) {
     return value.map((key, value) {
       if (key is! String) {
         throw ArgumentError.value(
-            key, 'key', 'JSON object keys must be String');
+          key,
+          'key',
+          'JSON object keys must be String',
+        );
       }
       return MapEntry(key, sanitizeJsonValue(value));
     });
@@ -29,15 +35,20 @@ Object? sanitizeJsonValue(Object? value) {
   throw ArgumentError.value(value, 'value', 'Unsupported JSON value');
 }
 
-Object? sortedJson(Object? value) {
-  if (value is Map<String, Object?>) {
-    final sortedKeys = value.keys.toList()..sort();
-    return {
-      for (final key in sortedKeys) key: sortedJson(value[key]),
-    };
+Map<String, Object?> sanitizeJsonScalarObject(Map<String, Object?> value) {
+  return value.map((key, value) {
+    return MapEntry(key, sanitizeJsonScalarValue(value));
+  });
+}
+
+Object? sanitizeJsonScalarValue(Object? value) {
+  final sanitized = sanitizeJsonValue(value);
+  if (sanitized == null ||
+      sanitized is String ||
+      sanitized is bool ||
+      sanitized is int ||
+      sanitized is double) {
+    return sanitized;
   }
-  if (value is List<Object?>) {
-    return value.map(sortedJson).toList();
-  }
-  return value;
+  return jsonEncode(sanitized);
 }

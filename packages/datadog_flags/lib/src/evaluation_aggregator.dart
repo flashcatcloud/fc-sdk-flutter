@@ -6,31 +6,37 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:http/http.dart' as http;
+import 'package:meta/meta.dart';
 import 'package:uuid/uuid.dart';
 
 import 'assignment.dart';
-import 'datadog_context.dart';
-import 'datadog_event_context.dart';
-import 'flags_configuration.dart';
-import 'flags_context.dart';
+import 'evaluation_context.dart';
+import 'flags_runtime.dart';
 import 'json_value.dart';
+import 'sdk_metadata.dart';
 
 class EvaluationAggregator {
-  final DatadogFlagsContext datadogContext;
-  final DatadogFlagsConfiguration configuration;
-  final http.Client httpClient;
-  final Map<String, _AggregatedEvaluation> _aggregations = {};
-  Timer? _flushTimer;
+  static const int defaultMaxBatchSize = 1000;
+  static const Duration defaultUploadTimeout = Duration(seconds: 15);
 
-  EvaluationAggregator({
-    required this.datadogContext,
-    required this.configuration,
-    required this.httpClient,
-  }) {
-    if (configuration.trackEvaluations) {
-      _flushTimer = Timer.periodic(
-        configuration.evaluationFlushInterval,
+  @visibleForTesting
+  static int maxBatchSize = defaultMaxBatchSize;
+
+  @visibleForTesting
+  static Duration uploadTimeout = defaultUploadTimeout;
+
+  final FlagsRuntime runtime;
+  final Map<String, _AggregatedEvaluation> _aggregations = {};
+  Future<bool>? _uploadInFlight;
+  Future<void>? _shutdownInFlight;
+  Timer? _periodicFlushTimer;
+  Timer? _retryFlushTimer;
+  bool _shutdownDrainActive = false;
+
+  EvaluationAggregator(this.runtime) {
+    if (runtime.configuration.trackEvaluations) {
+      _periodicFlushTimer = Timer.periodic(
+        runtime.configuration.evaluationFlushInterval,
         (_) => unawaited(flush()),
       );
     }
@@ -38,21 +44,21 @@ class EvaluationAggregator {
 
   void recordEvaluation({
     required String flagKey,
-    required FlagAssignment assignment,
-    required DatadogFlagsEvaluationContext evaluationContext,
+    required FlagAssignment? assignment,
+    required FlagsEvaluationContext evaluationContext,
     required String? error,
   }) {
+    final configuration = runtime.configuration;
     if (!configuration.trackEvaluations) {
       return;
     }
 
     final now = configuration.dateProvider().millisecondsSinceEpoch;
-    final ddContext = ddContextFor(datadogContext);
     final key = _aggregationKey(
       flagKey: flagKey,
-      assignment: assignment,
+      allocationKey: assignment?.allocationKey,
+      variantKey: assignment?.variationKey,
       evaluationContext: evaluationContext,
-      ddContext: ddContext,
       error: error,
     );
     final existing = _aggregations[key];
@@ -62,131 +68,247 @@ class EvaluationAggregator {
       return;
     }
 
-    final runtimeDefaultUsed = assignment.reason == 'DEFAULT' || error != null;
+    final runtimeDefaultUsed =
+        assignment == null || assignment.reason == 'DEFAULT' || error != null;
     _aggregations[key] = _AggregatedEvaluation(
+      aggregationKey: key,
       flagKey: flagKey,
-      variantKey: assignment.variationKey,
-      allocationKey: assignment.allocationKey,
+      variantKey: assignment?.variationKey,
+      allocationKey: assignment?.allocationKey,
       targetingKey: evaluationContext.targetingKey,
       error: error,
       attributes: evaluationContext.attributes,
-      ddContext: ddContext,
       firstEvaluation: now,
       lastEvaluation: now,
       evaluationCount: 1,
       runtimeDefaultUsed: runtimeDefaultUsed,
     );
 
-    if (_aggregations.length >= configuration.evaluationMaxBatchSize) {
-      unawaited(flush());
+    if (_aggregations.length >= maxBatchSize) {
+      unawaited(_flushPendingEvaluations(rescheduleOnFailure: true));
     }
   }
 
-  Future<void> flush() async {
-    if (!configuration.trackEvaluations || _aggregations.isEmpty) {
+  Future<void> flush() {
+    return _flushPendingEvaluations(rescheduleOnFailure: true);
+  }
+
+  Future<void> shutdown() {
+    _periodicFlushTimer?.cancel();
+    _periodicFlushTimer = null;
+    _retryFlushTimer?.cancel();
+    _retryFlushTimer = null;
+
+    final shutdownInFlight = _shutdownInFlight;
+    if (shutdownInFlight != null) {
+      return shutdownInFlight;
+    }
+
+    late final Future<void> shutdownOperation;
+    shutdownOperation = _shutdownDrain().whenComplete(() {
+      if (identical(_shutdownInFlight, shutdownOperation)) {
+        _shutdownInFlight = null;
+      }
+    });
+    _shutdownInFlight = shutdownOperation;
+    return shutdownOperation;
+  }
+
+  Future<void> _shutdownDrain() async {
+    _shutdownDrainActive = true;
+    try {
+      final activeUpload = _uploadInFlight;
+      if (activeUpload != null) {
+        final succeeded = await activeUpload;
+        if (!succeeded) {
+          return;
+        }
+      }
+
+      await _uploadPendingEvaluations(rescheduleOnFailure: false);
+    } finally {
+      _shutdownDrainActive = false;
+    }
+  }
+
+  Future<void> _flushPendingEvaluations({
+    required bool rescheduleOnFailure,
+  }) async {
+    if (_uploadInFlight != null) {
+      if (rescheduleOnFailure) {
+        _scheduleRetryFlush();
+      }
       return;
+    }
+
+    await _uploadPendingEvaluations(rescheduleOnFailure: rescheduleOnFailure);
+  }
+
+  Future<bool> _uploadPendingEvaluations({
+    required bool rescheduleOnFailure,
+  }) {
+    final configuration = runtime.configuration;
+    if (!configuration.trackEvaluations || _aggregations.isEmpty) {
+      return Future.value(true);
     }
 
     final evaluations = List<_AggregatedEvaluation>.from(_aggregations.values);
     _aggregations.clear();
 
-    final endpoint = configuration.customEvaluationEndpoint ??
-        datadogContext.intakeEndpoint().replace(
-          path: '/api/v2/flagevaluation',
-          queryParameters: {'ddsource': datadogContext.source},
-        );
+    late final Future<bool> uploadOperation;
+    uploadOperation = _sendEvaluations(
+      evaluations,
+      rescheduleOnFailure: rescheduleOnFailure,
+    ).whenComplete(() {
+      if (identical(_uploadInFlight, uploadOperation)) {
+        _uploadInFlight = null;
+      }
+    });
+    _uploadInFlight = uploadOperation;
+    return uploadOperation;
+  }
+
+  Future<bool> _sendEvaluations(
+    List<_AggregatedEvaluation> evaluations, {
+    required bool rescheduleOnFailure,
+  }) async {
+    final endpoint = _evaluationEndpoint();
     final body = jsonEncode({
-      'context': datadogContext.evaluationBatchContext(),
+      'context': _datadogContext(),
       'flagEvaluations': evaluations.map((e) => e.toJson()).toList(),
     });
 
     try {
-      final response = await httpClient.post(
-        endpoint,
-        headers: {
-          'Content-Type': 'application/json',
-          'DD-API-KEY': datadogContext.clientToken,
-          'DD-EVP-ORIGIN': datadogContext.source,
-          'DD-EVP-ORIGIN-VERSION': datadogContext.sdkVersion,
-          'DD-REQUEST-ID': const Uuid().v4(),
-        },
-        body: body,
-      );
+      final response = await runtime.httpClient
+          .post(
+            endpoint,
+            headers: {
+              'Content-Type': 'application/json',
+              'DD-API-KEY': runtime.datadogConfig.clientToken,
+              'DD-EVP-ORIGIN': datadogFlagsSource,
+              'DD-EVP-ORIGIN-VERSION': datadogFlagsSdkVersion,
+              'DD-REQUEST-ID': const Uuid().v4(),
+            },
+            body: body,
+          )
+          .timeout(uploadTimeout);
       if (response.statusCode < 200 || response.statusCode >= 300) {
-        _restore(evaluations);
+        _restore(evaluations, reschedule: rescheduleOnFailure);
+        return false;
       }
+      return true;
     } catch (_) {
-      _restore(evaluations);
+      _restore(evaluations, reschedule: rescheduleOnFailure);
+      return false;
     }
   }
 
   void dispose() {
-    _flushTimer?.cancel();
-    _flushTimer = null;
+    unawaited(shutdown());
   }
 
-  void _restore(List<_AggregatedEvaluation> evaluations) {
+  void _restore(
+    List<_AggregatedEvaluation> evaluations, {
+    required bool reschedule,
+  }) {
     for (final evaluation in evaluations) {
-      _aggregations[_aggregationKey(
-        flagKey: evaluation.flagKey,
-        assignment: FlagAssignment(
-          allocationKey: evaluation.allocationKey,
-          variationKey: evaluation.variantKey,
-          variationType: FlagVariationType.unknown,
-          variationValue: null,
-          reason: evaluation.runtimeDefaultUsed ? 'DEFAULT' : '',
-          doLog: false,
-        ),
-        evaluationContext: DatadogFlagsEvaluationContext(
-          targetingKey: evaluation.targetingKey,
-          attributes: evaluation.attributes,
-        ),
-        ddContext: evaluation.ddContext,
-        error: evaluation.error,
-      )] = evaluation;
+      final existing = _aggregations[evaluation.aggregationKey];
+      if (existing == null) {
+        _aggregations[evaluation.aggregationKey] = evaluation;
+        continue;
+      }
+
+      existing.firstEvaluation =
+          existing.firstEvaluation < evaluation.firstEvaluation
+              ? existing.firstEvaluation
+              : evaluation.firstEvaluation;
+      existing.lastEvaluation =
+          existing.lastEvaluation > evaluation.lastEvaluation
+              ? existing.lastEvaluation
+              : evaluation.lastEvaluation;
+      existing.evaluationCount += evaluation.evaluationCount;
     }
+
+    if (reschedule && !_shutdownDrainActive) {
+      _scheduleRetryFlush();
+    }
+  }
+
+  Uri _evaluationEndpoint() {
+    final datadogConfig = runtime.datadogConfig;
+    final endpoint = runtime.configuration.customEvaluationEndpoint ??
+        datadogConfig.intakeEndpoint().replace(path: '/api/v2/flagevaluation');
+    return endpoint.replace(
+      queryParameters: {
+        ...endpoint.queryParameters,
+        'ddsource': datadogFlagsSource,
+      },
+    );
+  }
+
+  Map<String, Object?> _datadogContext() {
+    final applicationId = runtime.datadogConfig.applicationId;
+    return _removeNullValues({
+      'env': runtime.datadogConfig.env,
+      'rum': applicationId == null
+          ? null
+          : {
+              'application': {'id': applicationId},
+              'view': null,
+            },
+    });
+  }
+
+  void _scheduleRetryFlush() {
+    if (_retryFlushTimer != null) {
+      return;
+    }
+
+    _retryFlushTimer = Timer(_evaluationFlushRetryDelay, () {
+      _retryFlushTimer = null;
+      unawaited(_flushPendingEvaluations(rescheduleOnFailure: true));
+    });
   }
 }
 
 String _aggregationKey({
   required String flagKey,
-  required FlagAssignment assignment,
-  required DatadogFlagsEvaluationContext evaluationContext,
-  required Map<String, Object?>? ddContext,
+  required String? allocationKey,
+  required String? variantKey,
+  required FlagsEvaluationContext evaluationContext,
   required String? error,
 }) {
   return jsonEncode({
     'flagKey': flagKey,
-    'variantKey': assignment.variationKey,
-    'allocationKey': assignment.allocationKey,
+    'variantKey': variantKey,
+    'allocationKey': allocationKey,
     'targetingKey': evaluationContext.targetingKey,
     'error': error,
-    'context': sortedJson(evaluationContext.attributes),
-    'dd': sortedJson(ddContext),
+    'context': _sortedJson(evaluationContext.attributes),
   });
 }
 
 class _AggregatedEvaluation {
+  final String aggregationKey;
   final String flagKey;
-  final String variantKey;
-  final String allocationKey;
-  final String targetingKey;
+  final String? variantKey;
+  final String? allocationKey;
+  final String? targetingKey;
   final String? error;
   final Map<String, Object?> attributes;
-  final Map<String, Object?>? ddContext;
-  final int firstEvaluation;
+  int firstEvaluation;
   int lastEvaluation;
   int evaluationCount;
   final bool runtimeDefaultUsed;
 
   _AggregatedEvaluation({
+    required this.aggregationKey,
     required this.flagKey,
     required this.variantKey,
     required this.allocationKey,
     required this.targetingKey,
     required this.error,
     required this.attributes,
-    required this.ddContext,
     required this.firstEvaluation,
     required this.lastEvaluation,
     required this.evaluationCount,
@@ -194,19 +316,20 @@ class _AggregatedEvaluation {
   });
 
   Map<String, Object?> toJson() {
-    final eventContext = removeNullValues({
+    final includeAssignment =
+        !runtimeDefaultUsed && variantKey != null && allocationKey != null;
+    final eventContext = _removeNullValues({
       'evaluation': attributes.isEmpty ? null : sanitizeJsonValue(attributes),
-      'dd': ddContext,
     });
 
-    return removeNullValues({
+    return _removeNullValues({
       'timestamp': firstEvaluation,
       'flag': {'key': flagKey},
       'first_evaluation': firstEvaluation,
       'last_evaluation': lastEvaluation,
       'evaluation_count': evaluationCount,
-      'variant': runtimeDefaultUsed ? null : {'key': variantKey},
-      'allocation': runtimeDefaultUsed ? null : {'key': allocationKey},
+      'variant': includeAssignment ? {'key': variantKey} : null,
+      'allocation': includeAssignment ? {'key': allocationKey} : null,
       'targeting_rule': null,
       'targeting_key': targetingKey,
       'runtime_default_used': runtimeDefaultUsed ? true : null,
@@ -214,4 +337,25 @@ class _AggregatedEvaluation {
       'context': eventContext.isEmpty ? null : eventContext,
     });
   }
+}
+
+Map<String, Object?> _removeNullValues(Map<String, Object?> input) {
+  return Map.fromEntries(input.entries.where((entry) => entry.value != null));
+}
+
+const _evaluationFlushRetryDelay = Duration(milliseconds: 500);
+
+Object? _sortedJson(Object? value) {
+  if (value is Map<Object?, Object?>) {
+    final entries = value.entries.toList()
+      ..sort((a, b) => a.key.toString().compareTo(b.key.toString()));
+    return {
+      for (final entry in entries)
+        entry.key.toString(): _sortedJson(entry.value),
+    };
+  }
+  if (value is Iterable<Object?>) {
+    return value.map(_sortedJson).toList();
+  }
+  return value;
 }

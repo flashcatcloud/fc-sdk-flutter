@@ -4,15 +4,14 @@
 // Copyright 2019-Present Datadog, Inc.
 
 import 'assignment.dart';
+import 'evaluation_context.dart';
 import 'flag_assignments_fetcher.dart';
-import 'flags_context.dart';
 import 'flags_store.dart';
-import 'json_value.dart';
 
 class FlagsRepository {
   final String clientName;
   final FlagAssignmentsFetcher fetcher;
-  final DatadogFlagsStore store;
+  final DatadogFlagsStore? store;
   final DateTime Function() dateProvider;
 
   FlagsData? _state;
@@ -21,50 +20,101 @@ class FlagsRepository {
   FlagsRepository({
     required this.clientName,
     required this.fetcher,
-    required this.store,
+    this.store,
     required this.dateProvider,
   });
 
-  DatadogFlagsEvaluationContext? get context => _state?.context;
+  FlagsEvaluationContext? get context => _state?.context;
 
   FlagAssignment? flagAssignment(String key) => _state?.flags[key];
 
-  Future<void> setEvaluationContext(
-    DatadogFlagsEvaluationContext context,
-  ) async {
+  Future<void> initialize(FlagsEvaluationContext context) async {
     final requestId = ++_contextRequestId;
-    final cached = await store.read(clientName);
+    final cached = await _readCached();
     if (requestId != _contextRequestId) {
       return;
     }
+    var restoredCachedAssignments = false;
     if (cached != null && _contextsMatch(cached.context, context)) {
       _state = cached;
+      restoredCachedAssignments = true;
     }
 
-    final flags = await fetcher.fetch(context);
+    final PrecomputedAssignments assignments;
+    try {
+      assignments = await fetcher.fetch(context);
+    } catch (_) {
+      if (!restoredCachedAssignments && requestId == _contextRequestId) {
+        _state = null;
+      }
+      return;
+    }
+
     if (requestId != _contextRequestId) {
       return;
     }
 
     _state = FlagsData(
-      flags: flags,
+      flags: assignments.flags,
       context: context,
       date: dateProvider(),
     );
-    await store.write(clientName, _state!);
+    await _writeCached(_state!);
+  }
+
+  Future<void> clearMemory() async {
+    _contextRequestId++;
+    _state = null;
   }
 
   Future<void> reset() async {
-    _state = null;
-    await store.delete(clientName);
+    await clearMemory();
+    await _deleteCached();
+  }
+
+  Future<FlagsData?> _readCached() async {
+    try {
+      final encoded = await store?.read(clientName);
+      return encoded == null ? null : FlagsData.fromJson(encoded);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<void> _writeCached(FlagsData data) async {
+    try {
+      await store?.write(clientName, data.toJson());
+    } catch (_) {
+      return;
+    }
+  }
+
+  Future<void> _deleteCached() async {
+    try {
+      await store?.delete(clientName);
+    } catch (_) {
+      return;
+    }
   }
 }
 
-bool _contextsMatch(
-  DatadogFlagsEvaluationContext left,
-  DatadogFlagsEvaluationContext right,
-) {
+bool _contextsMatch(FlagsEvaluationContext left, FlagsEvaluationContext right) {
   return left.targetingKey == right.targetingKey &&
-      sortedJson(left.attributes).toString() ==
-          sortedJson(right.attributes).toString();
+      _sortedJson(left.attributes).toString() ==
+          _sortedJson(right.attributes).toString();
+}
+
+Object? _sortedJson(Object? value) {
+  if (value is Map<Object?, Object?>) {
+    final entries = value.entries.toList()
+      ..sort((a, b) => a.key.toString().compareTo(b.key.toString()));
+    return {
+      for (final entry in entries)
+        entry.key.toString(): _sortedJson(entry.value),
+    };
+  }
+  if (value is Iterable<Object?>) {
+    return value.map(_sortedJson).toList();
+  }
+  return value;
 }

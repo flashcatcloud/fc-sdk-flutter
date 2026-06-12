@@ -133,12 +133,11 @@ scripts:
       set -euxo pipefail &&
       xcodebuild test -workspace example/ios/Runner.xcworkspace -scheme Runner -destination "platform=iOS Simulator,name=$IOS_SIMULATOR,OS=latest" | xcbeautify
     packageFilters:
-      dirExists: 
+      dirExists:
         - 'ios'
         - 'example/ios'
       # TODO: These packages should probably have platform unit tests
-      ignore: 
-        - 'datadog_webview_tracking'
+      ignore:
         - 'datadog_inappwebview_tracking'
 
   unit_test:android:
@@ -146,16 +145,15 @@ scripts:
       concurrency: 1
     run: cd example/android && ./gradlew --stacktrace --console=plain test
     packageFilters:
-      dirExists: 
+      dirExists:
         - 'android'
         - 'example/android'
       ignore:
-        - 'datadog_webview_tracking'
         - 'datadog_inappwebview_tracking'
 
   integration_test:ios:
     run: melos integration_test:ios:main && melos integration_test:ios:other
-  
+
   integration_test:ios:other:
     exec:
       concurrency: 1
@@ -170,7 +168,6 @@ scripts:
       dirExists:  'example/integration_test'
       ignore: 
         - 'datadog_flutter_plugin'
-        - 'datadog_webview_tracking'
 
   # Because the main package (datadog_flutter_plugin) is set up weird for integration tests,
   # have a separate target just for it that is called by `integration_test:ios``

@@ -4,23 +4,27 @@
 // Copyright 2019-Present Datadog, Inc.
 
 import 'package:http/http.dart' as http;
+import 'package:meta/meta.dart';
 
-import 'datadog_context.dart';
+import 'datadog_flags_config.dart';
 import 'flags_store.dart';
 
-class DatadogFlagsConfiguration {
+@immutable
+final class DatadogFlagsConfiguration {
+  static const defaultEvaluationFlushInterval = Duration(seconds: 10);
+  static const minEvaluationFlushInterval = Duration(seconds: 1);
+  static const maxEvaluationFlushInterval = Duration(seconds: 60);
+
   final Uri? customFlagsEndpoint;
   final Map<String, String>? customFlagsHeaders;
   final Uri? customExposureEndpoint;
   final bool trackExposures;
   final Uri? customEvaluationEndpoint;
   final bool trackEvaluations;
-  final Duration evaluationFlushInterval;
-  final int evaluationMaxBatchSize;
+  final Duration _evaluationFlushInterval;
   final http.Client? httpClient;
-  final DatadogFlagsContext? datadogContext;
+  final DatadogFlagsConfig? datadogConfig;
   final DatadogFlagsStore? store;
-  final bool rumIntegrationEnabled;
   final DateTime Function() dateProvider;
 
   const DatadogFlagsConfiguration({
@@ -30,12 +34,22 @@ class DatadogFlagsConfiguration {
     this.trackExposures = true,
     this.customEvaluationEndpoint,
     this.trackEvaluations = true,
-    this.evaluationFlushInterval = const Duration(seconds: 10),
-    this.evaluationMaxBatchSize = 1000,
+    Duration evaluationFlushInterval = defaultEvaluationFlushInterval,
     this.httpClient,
-    this.datadogContext,
+    this.datadogConfig,
     this.store,
-    this.rumIntegrationEnabled = true,
     this.dateProvider = DateTime.now,
-  });
+  }) : _evaluationFlushInterval = evaluationFlushInterval;
+
+  /// Flush interval coerced to the same 1s-60s bounds used by the iOS and
+  /// Android Flags SDKs.
+  Duration get evaluationFlushInterval {
+    if (_evaluationFlushInterval < minEvaluationFlushInterval) {
+      return minEvaluationFlushInterval;
+    }
+    if (_evaluationFlushInterval > maxEvaluationFlushInterval) {
+      return maxEvaluationFlushInterval;
+    }
+    return _evaluationFlushInterval;
+  }
 }

@@ -3,22 +3,21 @@
 // developed at Datadog (https://www.datadoghq.com/).
 // Copyright 2019-Present Datadog, Inc.
 
-import 'dart:convert';
-
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:meta/meta.dart';
 
 import 'assignment.dart';
-import 'flags_context.dart';
+import 'evaluation_context.dart';
 
 abstract class DatadogFlagsStore {
-  Future<FlagsData?> read(String clientName);
-  Future<void> write(String clientName, FlagsData data);
+  Future<Map<String, Object?>?> read(String clientName);
+  Future<void> write(String clientName, Map<String, Object?> data);
   Future<void> delete(String clientName);
 }
 
+@immutable
 class FlagsData {
   final Map<String, FlagAssignment> flags;
-  final DatadogFlagsEvaluationContext context;
+  final FlagsEvaluationContext context;
   final DateTime date;
 
   const FlagsData({
@@ -36,7 +35,7 @@ class FlagsData {
           FlagAssignment.fromJson(Map<String, Object?>.from(value as Map)),
         );
       }),
-      context: DatadogFlagsEvaluationContext.fromJson(
+      context: FlagsEvaluationContext.fromJson(
         Map<String, Object?>.from(json['context'] as Map),
       ),
       date: DateTime.parse(json['date'] as String),
@@ -52,50 +51,18 @@ class FlagsData {
   }
 }
 
-class SharedPreferencesDatadogFlagsStore implements DatadogFlagsStore {
-  final SharedPreferences sharedPreferences;
-  final String namespace;
-
-  SharedPreferencesDatadogFlagsStore({
-    required this.sharedPreferences,
-    this.namespace = 'datadog_flags',
-  });
-
-  @override
-  Future<FlagsData?> read(String clientName) async {
-    final encoded = sharedPreferences.getString(_key(clientName));
-    if (encoded == null) {
-      return null;
-    }
-    final decoded = jsonDecode(encoded) as Map<String, Object?>;
-    return FlagsData.fromJson(decoded);
-  }
-
-  @override
-  Future<void> write(String clientName, FlagsData data) {
-    return sharedPreferences.setString(
-      _key(clientName),
-      jsonEncode(data.toJson()),
-    );
-  }
-
-  @override
-  Future<void> delete(String clientName) {
-    return sharedPreferences.remove(_key(clientName));
-  }
-
-  String _key(String clientName) => '$namespace.$clientName';
-}
-
 class InMemoryDatadogFlagsStore implements DatadogFlagsStore {
-  final Map<String, FlagsData> values = {};
+  final Map<String, Map<String, Object?>> values = {};
 
   @override
-  Future<FlagsData?> read(String clientName) async => values[clientName];
+  Future<Map<String, Object?>?> read(String clientName) async {
+    final value = values[clientName];
+    return value == null ? null : Map<String, Object?>.from(value);
+  }
 
   @override
-  Future<void> write(String clientName, FlagsData data) async {
-    values[clientName] = data;
+  Future<void> write(String clientName, Map<String, Object?> data) async {
+    values[clientName] = Map<String, Object?>.from(data);
   }
 
   @override

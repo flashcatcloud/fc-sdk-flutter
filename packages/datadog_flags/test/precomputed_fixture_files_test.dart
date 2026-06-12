@@ -8,89 +8,98 @@ library;
 
 import 'dart:convert';
 import 'dart:io';
+import 'dart:isolate';
 
 import 'package:datadog_flags/datadog_flags.dart';
-import 'package:flutter_test/flutter_test.dart';
+import 'package:datadog_flags/src/assignment.dart';
+import 'package:datadog_flags/src/flag_assignments_fetcher.dart';
+import 'package:datadog_flags/src/precompute_response.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+import 'package:test/test.dart';
 
 void main() {
-  test('mirrored canonical precompute fixture files load as JSON', () {
-    final casesDirectory = [
-      Directory('test/fixtures/precomputed/cases'),
-      Directory('packages/datadog_flags/test/fixtures/precomputed/cases'),
-    ].firstWhere((directory) => directory.existsSync());
-    final files = casesDirectory
-        .listSync()
-        .whereType<File>()
-        .where((file) => file.path.endsWith('.json'))
-        .toList()
-      ..sort((left, right) => left.path.compareTo(right.path));
+  for (final fixtureFileName in _fixtureFileNames) {
+    test(
+      'mirrored canonical precompute fixture $fixtureFileName parses',
+      () async {
+        final fixture = await _fixtureCase(fixtureFileName);
+        final assignments = await _fetchAssignments(fixture);
+        final expectedAssignments = _flagsFrom(fixture);
 
-    expect(files.map((file) => file.uri.pathSegments.last), [
-      'all-types-success.json',
-      'defaults-and-emission-gates.json',
-    ]);
+        expect(assignments.keys, expectedAssignments.keys);
 
-    for (final file in files) {
-      final decoded = jsonDecode(file.readAsStringSync());
-      expect(decoded, isA<Map<String, Object?>>());
-    }
-  });
-
-  test('mirrored canonical precompute fixtures parse as assignments', () async {
-    for (final fixture in _fixtureCases()) {
-      final assignments = await _fetchAssignments(fixture);
-      final flags = _flagsFrom(fixture);
-
-      for (final entry in flags.entries) {
-        final rawAssignment = entry.value as Map<String, Object?>;
-        final expectedType = normalizeVariationType(
-          rawAssignment['variationType'] as String?,
-          rawAssignment['variationValue'],
-        );
-        if (expectedType == FlagVariationType.unknown) {
-          expect(assignments.containsKey(entry.key), isFalse);
-          continue;
+        for (final entry in expectedAssignments.entries) {
+          final assignment = assignments[entry.key];
+          final expectedAssignment = entry.value;
+          expect(assignment, isNotNull);
+          expect(assignment!.allocationKey, expectedAssignment.allocationKey);
+          expect(assignment.variationKey, expectedAssignment.variationKey);
+          expect(assignment.variationType, expectedAssignment.variationType);
+          expect(assignment.variationValue, expectedAssignment.variationValue);
+          expect(assignment.reason, expectedAssignment.reason);
+          expect(assignment.doLog, expectedAssignment.doLog);
         }
-
-        final assignment = assignments[entry.key];
-        expect(assignment, isNotNull);
-        expect(assignment!.allocationKey, rawAssignment['allocationKey']);
-        expect(assignment.variationKey, rawAssignment['variationKey']);
-        expect(assignment.variationType, expectedType);
-        expect(assignment.variationValue, rawAssignment['variationValue']);
-        expect(assignment.reason, rawAssignment['reason']);
-        expect(assignment.doLog, rawAssignment['doLog']);
-      }
-    }
-  });
+      },
+    );
+  }
 }
 
-List<Map<String, Object?>> _fixtureCases() {
-  final casesDirectory = [
-    Directory('test/fixtures/precomputed/cases'),
-    Directory('packages/datadog_flags/test/fixtures/precomputed/cases'),
-  ].firstWhere((directory) => directory.existsSync());
+const _fixtureFileNames = [
+  'all-types-success.json',
+  'defaults-and-emission-gates.json',
+];
 
-  final files = casesDirectory
-      .listSync()
-      .whereType<File>()
-      .where((file) => file.path.endsWith('.json'))
-      .toList()
-    ..sort((left, right) => left.path.compareTo(right.path));
+Future<Map<String, Object?>> _fixtureCase(String fileName) async {
+  final file = File.fromUri(
+    (await _packageRoot()).uri.resolve(
+          'test/fixtures/precomputed/cases/$fileName',
+        ),
+  );
+  return jsonDecode(file.readAsStringSync()) as Map<String, Object?>;
+}
 
-  return [
-    for (final file in files)
-      jsonDecode(file.readAsStringSync()) as Map<String, Object?>,
-  ];
+Future<Directory> _packageRoot() async {
+  try {
+    final libraryUri = await Isolate.resolvePackageUri(
+      Uri.parse('package:datadog_flags/datadog_flags.dart'),
+    );
+    if (libraryUri != null) {
+      return File.fromUri(libraryUri).parent.parent;
+    }
+  } on UnsupportedError {
+    // Some runners do not support package URI resolution.
+  }
+
+  return _packageRootFromCurrentDirectory();
+}
+
+Directory _packageRootFromCurrentDirectory() {
+  if (_isDatadogFlagsPackage(Directory.current)) {
+    return Directory.current;
+  }
+
+  final nested = Directory.fromUri(
+    Directory.current.uri.resolve('packages/datadog_flags/'),
+  );
+  if (_isDatadogFlagsPackage(nested)) {
+    return nested;
+  }
+
+  throw StateError('Could not find datadog_flags package root.');
+}
+
+bool _isDatadogFlagsPackage(Directory directory) {
+  return File.fromUri(directory.uri.resolve('pubspec.yaml')).existsSync() &&
+      File.fromUri(directory.uri.resolve('lib/datadog_flags.dart'))
+          .existsSync();
 }
 
 Future<Map<String, FlagAssignment>> _fetchAssignments(
   Map<String, Object?> fixture,
 ) async {
   final fetcher = FlagAssignmentsFetcher(
-    datadogContext: const DatadogFlagsContext(
+    datadogConfig: const DatadogFlagsConfig(
       clientToken: 'client-token',
       env: 'staging',
       site: DatadogFlagsSite.us1,
@@ -101,16 +110,17 @@ Future<Map<String, FlagAssignment>> _fetchAssignments(
     }),
   );
 
-  return fetcher.fetch(
-    DatadogFlagsEvaluationContext.fromJson(
+  return (await fetcher.fetch(
+    FlagsEvaluationContext.fromJson(
       fixture['context'] as Map<String, Object?>,
     ),
-  );
+  ))
+      .flags;
 }
 
-Map<String, Object?> _flagsFrom(Map<String, Object?> fixture) {
-  final response = fixture['response'] as Map<String, Object?>;
-  final data = response['data'] as Map<String, Object?>;
-  final attributes = data['attributes'] as Map<String, Object?>;
-  return attributes['flags'] as Map<String, Object?>;
+Map<String, FlagAssignment> _flagsFrom(Map<String, Object?> fixture) {
+  final response = PrecomputeResponse.fromJson(
+    Map<String, Object?>.from(fixture['response'] as Map),
+  );
+  return response.data.attributes.flags;
 }
