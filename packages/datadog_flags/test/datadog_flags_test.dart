@@ -7,6 +7,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:datadog_flags/datadog_flags.dart';
+import 'package:datadog_flags/src/exposure_logger.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:test/test.dart';
@@ -368,7 +369,7 @@ void main() {
     expect(exposureAttempt, 2);
   });
 
-  test('waits for an in-flight exposure flush', () async {
+  test('waits for an in-flight exposure upload during shutdown', () async {
     final requests = <http.Request>[];
     final exposureStarted = Completer<void>();
     final exposureResponse = Completer<http.Response>();
@@ -408,6 +409,85 @@ void main() {
     await secondFlush;
 
     expect(secondFlushCompleted, isTrue);
+    expect(_exposureRequests(requests), hasLength(1));
+  });
+
+  test('coalesces concurrent shutdown exposure drains after failure', () async {
+    final requests = <http.Request>[];
+    final exposureStarted = Completer<void>();
+    final exposureResponse = Completer<http.Response>();
+    var exposureAttempt = 0;
+    final client = await _createClient(
+      requests: requests,
+      trackExposures: true,
+      httpClient: MockClient((request) async {
+        requests.add(request);
+        if (request.url.path == '/precompute-assignments') {
+          return http.Response(jsonEncode(_assignmentsResponse()), 200);
+        }
+        if (request.url.path == '/api/v2/exposures') {
+          exposureAttempt += 1;
+          if (exposureAttempt == 1) {
+            exposureStarted.complete();
+            return exposureResponse.future;
+          }
+          return http.Response('{"ok":false}', 500);
+        }
+        return http.Response('{"error":"unexpected"}', 404);
+      }),
+    );
+    await client.initialize(
+      const FlagsEvaluationContext(targetingKey: 'user-123'),
+    );
+    client.getBooleanDetails(key: 'show-paywall', defaultValue: false);
+
+    final firstShutdown = client.shutdown();
+    await exposureStarted.future;
+    final secondShutdown = client.shutdown();
+    await Future<void>.delayed(Duration.zero);
+
+    expect(exposureAttempt, 1);
+
+    exposureResponse.complete(http.Response('{"ok":false}', 500));
+    await Future.wait([firstShutdown, secondShutdown]);
+
+    expect(exposureAttempt, 1);
+    expect(_exposureRequests(requests), hasLength(1));
+  });
+
+  test('bounds shutdown when an exposure upload does not complete', () async {
+    addTearDown(() {
+      ExposureLogger.uploadTimeout = ExposureLogger.defaultUploadTimeout;
+    });
+    ExposureLogger.uploadTimeout = const Duration(milliseconds: 1);
+
+    final requests = <http.Request>[];
+    final exposureResponse = Completer<http.Response>();
+    final client = await _createClient(
+      requests: requests,
+      trackExposures: true,
+      httpClient: MockClient((request) async {
+        requests.add(request);
+        if (request.url.path == '/precompute-assignments') {
+          return http.Response(jsonEncode(_assignmentsResponse()), 200);
+        }
+        if (request.url.path == '/api/v2/exposures') {
+          return exposureResponse.future;
+        }
+        return http.Response('{"error":"unexpected"}', 404);
+      }),
+    );
+    await client.initialize(
+      const FlagsEvaluationContext(targetingKey: 'user-123'),
+    );
+    client.getBooleanDetails(key: 'show-paywall', defaultValue: false);
+
+    await expectLater(
+      client.shutdown().timeout(const Duration(seconds: 1)),
+      completes,
+    );
+
+    expect(exposureResponse.isCompleted, isFalse);
     expect(_exposureRequests(requests), hasLength(1));
   });
 
