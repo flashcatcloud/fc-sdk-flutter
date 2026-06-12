@@ -65,3 +65,6 @@ them independently.
   assignments are unavailable, a flag is missing, or a flag has the wrong type.
 - Typed details include provider-not-ready, flag-not-found, or type-mismatch
   errors when default values are used.
+- Successful typed evaluations emit exposure events when exposure tracking is
+  enabled and the assignment has `doLog: true`, deduped by targeting key, flag
+  key, allocation, and variant.

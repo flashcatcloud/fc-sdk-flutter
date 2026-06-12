@@ -5,6 +5,7 @@
 
 import 'assignment.dart';
 import 'evaluation_context.dart';
+import 'exposure_logger.dart';
 import 'flag_assignments_fetcher.dart';
 import 'flags_client.dart';
 import 'flags_error.dart';
@@ -15,6 +16,7 @@ class DefaultDatadogFlagsClient implements DatadogFlagsClient {
   @override
   final String name;
   final FlagAssignmentsFetcher _fetcher;
+  final ExposureLogger _exposureLogger;
 
   FlagsEvaluationContext? _context;
   Map<String, FlagAssignment> _flags = const {};
@@ -23,12 +25,12 @@ class DefaultDatadogFlagsClient implements DatadogFlagsClient {
   DefaultDatadogFlagsClient({
     required this.name,
     required FlagAssignmentsFetcher fetcher,
-  }) : _fetcher = fetcher;
+    required ExposureLogger exposureLogger,
+  })  : _fetcher = fetcher,
+        _exposureLogger = exposureLogger;
 
   @override
-  Future<void> initialize(
-    FlagsEvaluationContext context,
-  ) async {
+  Future<void> initialize(FlagsEvaluationContext context) async {
     // Multiple initialize calls can be in flight at once. Only the latest
     // request is allowed to publish assignments back into this client.
     final requestId = ++_contextRequestId;
@@ -113,6 +115,7 @@ class DefaultDatadogFlagsClient implements DatadogFlagsClient {
 
   @override
   Future<void> shutdown() async {
+    await _exposureLogger.shutdown();
     _contextRequestId++;
     _context = null;
     _flags = const {};
@@ -173,6 +176,12 @@ class DefaultDatadogFlagsClient implements DatadogFlagsClient {
         error: FlagEvaluationError.typeMismatch,
       );
     }
+
+    _exposureLogger.logExposure(
+      flagKey: key,
+      assignment: assignment,
+      evaluationContext: context,
+    );
 
     return FlagDetails(
       key: key,

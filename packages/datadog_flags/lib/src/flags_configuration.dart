@@ -12,13 +12,19 @@ import 'datadog_flags_config.dart';
 final class DatadogFlagsConfiguration {
   final Uri? customFlagsEndpoint;
   final Map<String, String>? customFlagsHeaders;
+  final Uri? customExposureEndpoint;
+  final bool trackExposures;
   final http.Client? httpClient;
   final DatadogFlagsConfig? datadogConfig;
+  final DateTime Function() dateProvider;
 
   const DatadogFlagsConfiguration({
     this.customFlagsEndpoint,
     this.customFlagsHeaders,
+    this.customExposureEndpoint,
+    this.trackExposures = true,
     this.httpClient,
     this.datadogConfig,
+    this.dateProvider = DateTime.now,
   });
 }

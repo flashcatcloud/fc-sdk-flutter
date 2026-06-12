@@ -9,6 +9,7 @@ import 'package:meta/meta.dart';
 import 'datadog_flags_config.dart';
 import 'evaluation_context.dart';
 import 'json_value.dart';
+import 'sdk_metadata.dart';
 
 part 'precompute_request.g.dart';
 
@@ -28,8 +29,8 @@ final class PrecomputeRequest {
         attributes: PrecomputeRequestAttributes(
           env: PrecomputeRequestEnv(ddEnv: datadogConfig.env),
           source: PrecomputeRequestSource(
-            sdkName: DatadogFlagsConfig.defaultSdkName,
-            sdkVersion: datadogConfig.sdkVersion,
+            sdkName: datadogFlagsSdkName,
+            sdkVersion: datadogFlagsSdkVersion,
           ),
           subject: PrecomputeRequestSubject(
             targetingKey: evaluationContext.targetingKey,

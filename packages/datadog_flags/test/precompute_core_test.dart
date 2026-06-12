@@ -33,7 +33,6 @@ void main() {
             env: 'staging',
             site: DatadogFlagsSite.us1,
             applicationId: 'application-id',
-            sdkVersion: '1.2.3',
           ),
           configuration: const DatadogFlagsConfiguration(),
           httpClient: _jsonClient(requests, requestFixture['response']),
@@ -63,8 +62,8 @@ void main() {
             'attributes': {
               'env': {'dd_env': 'staging'},
               'source': {
-                'sdk_name': 'dd-sdk-flutter',
-                'sdk_version': '1.2.3',
+                'sdk_name': 'dd-sdk-dart',
+                'sdk_version': '0.0.1',
               },
               'subject': {
                 'targeting_key': 'precomputed-user',
@@ -123,7 +122,7 @@ void main() {
           'attributes': {
             'env': {'dd_env': 'dev'},
             'source': {
-              'sdk_name': 'dd-sdk-flutter',
+              'sdk_name': 'dd-sdk-dart',
               'sdk_version': '0.0.1',
             },
             'subject': {
