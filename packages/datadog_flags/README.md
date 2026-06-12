@@ -68,5 +68,3 @@ them independently.
 - Successful typed evaluations emit exposure events when exposure tracking is
   enabled and the assignment has `doLog: true`, deduped by targeting key, flag
   key, allocation, and variant.
-- Typed evaluations are aggregated into flag-evaluation events, including
-  defaulted evaluations, and sent internally on batch boundaries or shutdown.
