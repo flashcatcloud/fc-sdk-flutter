@@ -3,8 +3,6 @@
 // developed at Datadog (https://www.datadoghq.com/).
 // Copyright 2019-Present Datadog, Inc.
 
-import 'dart:async';
-
 import 'assignment.dart';
 import 'evaluation_aggregator.dart';
 import 'evaluation_context.dart';
@@ -121,15 +119,13 @@ class DefaultDatadogFlagsClient implements DatadogFlagsClient {
 
   @override
   Future<void> shutdown() async {
-    await _evaluationAggregator.flush();
-    _evaluationAggregator.dispose();
+    await Future.wait([
+      _evaluationAggregator.shutdown(),
+      _exposureLogger.shutdown(),
+    ]);
     _contextRequestId++;
     _context = null;
     _flags = const {};
-  }
-
-  Future<void> dispose() async {
-    await shutdown();
   }
 
   FlagDetails<T> getDetails<T>({
@@ -206,12 +202,10 @@ class DefaultDatadogFlagsClient implements DatadogFlagsClient {
       );
     }
 
-    unawaited(
-      _exposureLogger.logExposure(
-        flagKey: key,
-        assignment: assignment,
-        evaluationContext: context,
-      ),
+    _exposureLogger.logExposure(
+      flagKey: key,
+      assignment: assignment,
+      evaluationContext: context,
     );
 
     _evaluationAggregator.recordEvaluation(

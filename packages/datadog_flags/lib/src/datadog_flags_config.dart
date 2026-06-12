@@ -46,24 +46,16 @@ enum DatadogFlagsSite {
 
 @immutable
 final class DatadogFlagsConfig {
-  static const defaultSdkName = 'dd-sdk-flutter';
-  static const defaultSdkVersion = '0.0.1';
-  static const defaultSource = 'flutter';
-
   final String clientToken;
   final String env;
   final DatadogFlagsSite site;
   final String? applicationId;
-  final String sdkVersion;
-  final String source;
 
   const DatadogFlagsConfig({
     required this.clientToken,
     required this.env,
     required this.site,
     this.applicationId,
-    this.sdkVersion = DatadogFlagsConfig.defaultSdkVersion,
-    this.source = DatadogFlagsConfig.defaultSource,
   });
 
   Uri flagsEndpoint() => site.flagsEndpoint;
