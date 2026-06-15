@@ -33,7 +33,7 @@ final class PrecomputeRequest {
             sdkVersion: datadogFlagsSdkVersion,
           ),
           subject: PrecomputeRequestSubject(
-            targetingKey: evaluationContext.targetingKey,
+            targetingKey: evaluationContext.targetingKey ?? '',
             targetingAttributes: evaluationContext.attributes,
           ),
         ),
@@ -104,13 +104,13 @@ final class PrecomputeRequestSource {
 @immutable
 @JsonSerializable(createFactory: false)
 final class PrecomputeRequestSubject {
-  @JsonKey(name: 'targeting_key', includeIfNull: false)
-  final String? targetingKey;
+  @JsonKey(name: 'targeting_key')
+  final String targetingKey;
   @JsonKey(name: 'targeting_attributes', toJson: sanitizeJsonScalarObject)
   final Map<String, Object?> targetingAttributes;
 
   const PrecomputeRequestSubject({
-    this.targetingKey,
+    required this.targetingKey,
     required this.targetingAttributes,
   });
 
