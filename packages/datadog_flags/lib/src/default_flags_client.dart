@@ -139,7 +139,7 @@ class DefaultDatadogFlagsClient implements DatadogFlagsClient {
         flagKey: key,
         assignment: null,
         evaluationContext: FlagsEvaluationContext.empty,
-        error: FlagEvaluationError.providerNotReady.name,
+        error: FlagEvaluationError.providerNotReady.code,
       );
       return FlagDetails(
         key: key,
@@ -154,7 +154,7 @@ class DefaultDatadogFlagsClient implements DatadogFlagsClient {
         flagKey: key,
         assignment: null,
         evaluationContext: context,
-        error: FlagEvaluationError.flagNotFound.name,
+        error: FlagEvaluationError.flagNotFound.code,
       );
       return FlagDetails(
         key: key,
@@ -193,7 +193,7 @@ class DefaultDatadogFlagsClient implements DatadogFlagsClient {
         flagKey: key,
         assignment: assignment,
         evaluationContext: context,
-        error: FlagEvaluationError.typeMismatch.name,
+        error: FlagEvaluationError.typeMismatch.code,
       );
       return FlagDetails(
         key: key,

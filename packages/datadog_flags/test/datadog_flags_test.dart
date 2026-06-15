@@ -736,11 +736,11 @@ void main() {
       final mismatch = _evaluation(
         evaluations,
         flagKey: 'show-paywall',
-        error: FlagEvaluationError.typeMismatch.name,
+        error: FlagEvaluationError.typeMismatch.code,
       );
       expect(mismatch['runtime_default_used'], isTrue);
       expect(mismatch['error'], {
-        'message': FlagEvaluationError.typeMismatch.name,
+        'message': FlagEvaluationError.typeMismatch.code,
       });
       expect(mismatch.containsKey('variant'), isFalse);
       expect(mismatch.containsKey('allocation'), isFalse);
@@ -748,11 +748,11 @@ void main() {
       final missing = _evaluation(
         evaluations,
         flagKey: 'missing',
-        error: FlagEvaluationError.flagNotFound.name,
+        error: FlagEvaluationError.flagNotFound.code,
       );
       expect(missing['runtime_default_used'], isTrue);
       expect(missing['error'], {
-        'message': FlagEvaluationError.flagNotFound.name,
+        'message': FlagEvaluationError.flagNotFound.code,
       });
       expect(missing['targeting_key'], 'user-123');
     },
@@ -779,7 +779,7 @@ void main() {
     expect(evaluation['flag'], {'key': 'show-paywall'});
     expect(evaluation['runtime_default_used'], isTrue);
     expect(evaluation['error'], {
-      'message': FlagEvaluationError.providerNotReady.name,
+      'message': FlagEvaluationError.providerNotReady.code,
     });
     expect(evaluation.containsKey('targeting_key'), isFalse);
   });
@@ -978,6 +978,8 @@ DatadogFlagsConfig _datadogConfig() {
     env: 'staging',
     site: DatadogFlagsSite.us1,
     applicationId: 'application-id',
+    service: 'shopping-cart',
+    version: '1.2.3',
   );
 }
 
@@ -1101,9 +1103,10 @@ List<Map<String, Object?>> _exposureEvents(http.Request request) {
 Map<String, Object?> _datadogEventContext() {
   return {
     'env': 'staging',
+    'service': 'shopping-cart',
+    'version': '1.2.3',
     'rum': {
       'application': {'id': 'application-id'},
-      'view': null,
     },
   };
 }

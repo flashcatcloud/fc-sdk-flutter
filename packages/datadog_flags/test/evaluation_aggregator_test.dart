@@ -103,7 +103,7 @@ void main() {
       evaluationContext: const FlagsEvaluationContext(
         targetingKey: 'user-123',
       ),
-      error: FlagEvaluationError.typeMismatch.name,
+      error: FlagEvaluationError.typeMismatch.code,
     );
 
     await aggregator.flush();
@@ -116,7 +116,7 @@ void main() {
     );
     expect(
       evaluations.map((evaluation) => evaluation['error']),
-      contains(equals({'message': FlagEvaluationError.typeMismatch.name})),
+      contains(equals({'message': FlagEvaluationError.typeMismatch.code})),
     );
   });
 
@@ -267,6 +267,8 @@ DatadogFlagsConfig _datadogConfig() {
     env: 'staging',
     site: DatadogFlagsSite.us1,
     applicationId: 'application-id',
+    service: 'shopping-cart',
+    version: '1.2.3',
   );
 }
 

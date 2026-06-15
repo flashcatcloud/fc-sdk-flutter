@@ -250,11 +250,12 @@ class EvaluationAggregator {
     final applicationId = runtime.datadogConfig.applicationId;
     return _removeNullValues({
       'env': runtime.datadogConfig.env,
+      'service': runtime.datadogConfig.service,
+      'version': runtime.datadogConfig.version,
       'rum': applicationId == null
           ? null
           : {
               'application': {'id': applicationId},
-              'view': null,
             },
     });
   }
@@ -340,7 +341,27 @@ class _AggregatedEvaluation {
 }
 
 Map<String, Object?> _removeNullValues(Map<String, Object?> input) {
-  return Map.fromEntries(input.entries.where((entry) => entry.value != null));
+  return Map.fromEntries(
+    input.entries.where((entry) => entry.value != null).map(
+        (entry) => MapEntry(entry.key, _removeNestedNullValues(entry.value))),
+  );
+}
+
+Object? _removeNestedNullValues(Object? value) {
+  if (value is Map<Object?, Object?>) {
+    return Map.fromEntries(
+      value.entries.where((entry) => entry.value != null).map((entry) {
+        return MapEntry(
+          entry.key.toString(),
+          _removeNestedNullValues(entry.value),
+        );
+      }),
+    );
+  }
+  if (value is Iterable<Object?>) {
+    return value.map(_removeNestedNullValues).toList();
+  }
+  return value;
 }
 
 const _evaluationFlushRetryDelay = Duration(milliseconds: 500);
