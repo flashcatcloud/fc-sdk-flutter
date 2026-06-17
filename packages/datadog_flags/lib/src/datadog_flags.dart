@@ -104,8 +104,6 @@ class DatadogFlags {
       clientName: name,
       fetcher: fetcher,
       store: runtime.configuration.store,
-      storedAssignmentFallbackDelay:
-          runtime.configuration.storedAssignmentFallbackDelay,
       dateProvider: runtime.configuration.dateProvider,
     );
 

@@ -15,7 +15,6 @@ class FlagsRepository {
   final String clientName;
   final FlagAssignmentsFetcher fetcher;
   final DatadogFlagsStore? store;
-  final Duration storedAssignmentFallbackDelay;
   final DateTime Function() dateProvider;
 
   FlagsData? _state;
@@ -26,7 +25,6 @@ class FlagsRepository {
     required this.clientName,
     required this.fetcher,
     this.store,
-    required this.storedAssignmentFallbackDelay,
     required this.dateProvider,
   });
 
@@ -44,39 +42,16 @@ class FlagsRepository {
         cached != null && _contextsMatch(cached.context, context)
             ? cached
             : null;
-    final liveAssignments = fetcher.fetch(context);
-
-    if (matchingCached == null) {
-      await _publishLiveAssignments(
-        requestId: requestId,
-        context: context,
-        liveAssignments: liveAssignments,
-        clearOnFailure: true,
-      );
-      return;
-    }
-
-    try {
-      await _publishAssignments(
-        requestId: requestId,
-        context: context,
-        assignments: await liveAssignments.timeout(
-          storedAssignmentFallbackDelay,
-        ),
-      );
-    } on TimeoutException {
-      _publishStoredAssignments(requestId, matchingCached);
-      unawaited(
-        _publishLiveAssignments(
-          requestId: requestId,
-          context: context,
-          liveAssignments: liveAssignments,
-          clearOnFailure: false,
-        ),
-      );
-    } catch (_) {
+    if (matchingCached != null) {
       _publishStoredAssignments(requestId, matchingCached);
     }
+
+    await _publishLiveAssignments(
+      requestId: requestId,
+      context: context,
+      liveAssignments: fetcher.fetch(context),
+      clearOnFailure: matchingCached == null,
+    );
   }
 
   Future<void> _publishLiveAssignments({
@@ -126,7 +101,9 @@ class FlagsRepository {
 
   bool _isOlderThanCurrentState(FlagsData data) {
     final current = _state;
-    return current != null && data.date.isBefore(current.date);
+    return current != null &&
+        _contextsMatch(current.context, data.context) &&
+        data.date.isBefore(current.date);
   }
 
   DateTime _nextStateDate() {

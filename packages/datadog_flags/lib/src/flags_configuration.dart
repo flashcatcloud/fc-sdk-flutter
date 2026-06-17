@@ -14,9 +14,6 @@ final class DatadogFlagsConfiguration {
   static const defaultEvaluationFlushInterval = Duration(seconds: 10);
   static const minEvaluationFlushInterval = Duration(seconds: 1);
   static const maxEvaluationFlushInterval = Duration(seconds: 60);
-  static const defaultStoredAssignmentFallbackDelay = Duration(
-    milliseconds: 1500,
-  );
 
   final Uri? customFlagsEndpoint;
   final Map<String, String>? customFlagsHeaders;
@@ -28,7 +25,6 @@ final class DatadogFlagsConfiguration {
   final http.Client? httpClient;
   final DatadogFlagsConfig? datadogConfig;
   final DatadogFlagsStore? store;
-  final Duration storedAssignmentFallbackDelay;
   final DateTime Function() dateProvider;
 
   const DatadogFlagsConfiguration({
@@ -42,7 +38,6 @@ final class DatadogFlagsConfiguration {
     this.httpClient,
     this.datadogConfig,
     this.store,
-    this.storedAssignmentFallbackDelay = defaultStoredAssignmentFallbackDelay,
     this.dateProvider = DateTime.now,
   }) : _evaluationFlushInterval = evaluationFlushInterval;
 
