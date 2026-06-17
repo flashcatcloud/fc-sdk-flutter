@@ -68,6 +68,3 @@ them independently.
 - Successful typed evaluations emit exposure events when exposure tracking is
   enabled and the assignment has `doLog: true`, deduped by targeting key, flag
   key, allocation, and variant.
-- If a `DatadogFlagsStore` is configured, successful assignments are persisted
-  and restored only when the cached context matches the active evaluation
-  context.
