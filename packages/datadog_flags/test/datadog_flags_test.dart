@@ -939,7 +939,7 @@ void main() {
     },
   );
 
-  test('restores persisted assignments for a matching context', () async {
+  test('keeps defaults before stored assignment fallback delay', () async {
     final store = InMemoryDatadogFlagsStore();
     final requests = <http.Request>[];
     final datadogFlags = DatadogFlags();
@@ -950,6 +950,7 @@ void main() {
         trackEvaluations: false,
         httpClient: _clientWithResponse(requests, _assignmentsResponse()),
         store: store,
+        storedAssignmentFallbackDelay: const Duration(hours: 1),
       ),
     );
     final client = datadogFlags.sharedClient();
@@ -977,18 +978,18 @@ void main() {
           return refreshResponse.future;
         }),
         store: store,
+        storedAssignmentFallbackDelay: const Duration(hours: 1),
       ),
     );
     final restored = restoredFlags.sharedClient();
 
     final refresh = restored.initialize(context);
     await Future<void>.delayed(Duration.zero);
-    expect(
-      restored
-          .getBooleanDetails(key: 'show-paywall', defaultValue: false)
-          .value,
-      isTrue,
+    final beforeFallback = restored.getBooleanDetails(
+      key: 'show-paywall',
+      defaultValue: false,
     );
+    expect(beforeFallback.error, FlagEvaluationError.providerNotReady);
 
     refreshResponse.complete(
       http.Response(jsonEncode(_assignmentsResponse(booleanValue: false)), 200),
@@ -1000,6 +1001,114 @@ void main() {
     );
     expect(restoredRequests, hasLength(1));
     await restoredFlags.disable();
+  });
+
+  test('uses persisted assignments after fallback delay while refresh runs',
+      () async {
+    final store = InMemoryDatadogFlagsStore();
+    final requests = <http.Request>[];
+    final datadogFlags = DatadogFlags();
+    await datadogFlags.enable(
+      configuration: DatadogFlagsConfiguration(
+        datadogConfig: _datadogConfig(),
+        trackExposures: false,
+        trackEvaluations: false,
+        httpClient: _clientWithResponse(requests, _assignmentsResponse()),
+        store: store,
+        storedAssignmentFallbackDelay: const Duration(milliseconds: 1),
+      ),
+    );
+    final client = datadogFlags.sharedClient();
+    const context = FlagsEvaluationContext(
+      targetingKey: 'user-123',
+      attributes: {'plan': 'pro'},
+    );
+    await client.initialize(context);
+    await datadogFlags.disable();
+
+    final refreshResponse = Completer<http.Response>();
+    final restoredFlags = DatadogFlags();
+    await restoredFlags.enable(
+      configuration: DatadogFlagsConfiguration(
+        datadogConfig: _datadogConfig(),
+        trackExposures: false,
+        trackEvaluations: false,
+        httpClient: MockClient((_) => refreshResponse.future),
+        store: store,
+        storedAssignmentFallbackDelay: const Duration(milliseconds: 1),
+      ),
+    );
+    final restored = restoredFlags.sharedClient();
+
+    await restored.initialize(context);
+    expect(
+      restored
+          .getBooleanDetails(key: 'show-paywall', defaultValue: false)
+          .value,
+      isTrue,
+    );
+
+    refreshResponse.complete(
+      http.Response(jsonEncode(_assignmentsResponse(booleanValue: false)), 200),
+    );
+    await _waitUntil(() {
+      return restored
+              .getBooleanDetails(key: 'show-paywall', defaultValue: true)
+              .value ==
+          false;
+    });
+    await restoredFlags.disable();
+  });
+
+  test('does not restore older persisted assignments over newer memory',
+      () async {
+    final store = InMemoryDatadogFlagsStore();
+    final responses = [
+      _assignmentsResponse(booleanValue: false),
+      _assignmentsResponse(booleanValue: true),
+      null,
+    ];
+    final dates = [
+      DateTime.utc(2026),
+      DateTime.utc(2026, 1, 2),
+    ];
+    final client = await _createClient(
+      requests: <http.Request>[],
+      trackExposures: false,
+      trackEvaluations: false,
+      store: store,
+      dateProvider: () => dates.removeAt(0),
+      storedAssignmentFallbackDelay: const Duration(milliseconds: 1),
+      httpClient: MockClient((_) async {
+        final response = responses.removeAt(0);
+        if (response == null) {
+          return http.Response('{"error":"network"}', 500);
+        }
+        return http.Response(jsonEncode(response), 200);
+      }),
+    );
+    const context = FlagsEvaluationContext(targetingKey: 'user-123');
+
+    await client.initialize(context);
+    final olderStoredAssignments = await store.read(
+      DatadogFlags.defaultClientName,
+    );
+    await client.initialize(context);
+    expect(
+      client.getBooleanDetails(key: 'show-paywall', defaultValue: false).value,
+      isTrue,
+    );
+
+    await store.write(
+      DatadogFlags.defaultClientName,
+      olderStoredAssignments!,
+    );
+    await client.initialize(context);
+
+    expect(
+      client.getBooleanDetails(key: 'show-paywall', defaultValue: false).value,
+      isTrue,
+    );
   });
 
   test('ignores persisted assignments for a different context', () async {
@@ -1125,6 +1234,8 @@ Future<DatadogFlagsClient> _createClient({
   bool trackEvaluations = false,
   DateTime Function()? dateProvider,
   DatadogFlagsStore? store,
+  Duration storedAssignmentFallbackDelay =
+      DatadogFlagsConfiguration.defaultStoredAssignmentFallbackDelay,
 }) async {
   final datadogFlags = DatadogFlags();
   await datadogFlags.enable(
@@ -1136,6 +1247,7 @@ Future<DatadogFlagsClient> _createClient({
       httpClient: httpClient ?? _clientWithResponse(requests, response!),
       dateProvider: dateProvider ?? DateTime.now,
       store: store,
+      storedAssignmentFallbackDelay: storedAssignmentFallbackDelay,
     ),
   );
   return datadogFlags.sharedClient();

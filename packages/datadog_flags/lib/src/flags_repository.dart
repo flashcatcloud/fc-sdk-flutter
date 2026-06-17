@@ -3,6 +3,7 @@
 // developed at Datadog (https://www.datadoghq.com/).
 // Copyright 2019-Present Datadog, Inc.
 
+import 'dart:async';
 import 'dart:convert';
 
 import 'assignment.dart';
@@ -14,6 +15,7 @@ class FlagsRepository {
   final String clientName;
   final FlagAssignmentsFetcher fetcher;
   final DatadogFlagsStore? store;
+  final Duration storedAssignmentFallbackDelay;
   final DateTime Function() dateProvider;
 
   FlagsData? _state;
@@ -24,6 +26,7 @@ class FlagsRepository {
     required this.clientName,
     required this.fetcher,
     this.store,
+    required this.storedAssignmentFallbackDelay,
     required this.dateProvider,
   });
 
@@ -37,32 +40,102 @@ class FlagsRepository {
     if (requestId != _contextRequestId) {
       return;
     }
-    var restoredCachedAssignments = false;
-    if (cached != null && _contextsMatch(cached.context, context)) {
-      _state = cached;
-      restoredCachedAssignments = true;
-    }
+    final matchingCached =
+        cached != null && _contextsMatch(cached.context, context)
+            ? cached
+            : null;
+    final liveAssignments = fetcher.fetch(context);
 
-    final PrecomputedAssignments assignments;
-    try {
-      assignments = await fetcher.fetch(context);
-    } catch (_) {
-      if (!restoredCachedAssignments && requestId == _contextRequestId) {
-        _state = null;
-      }
+    if (matchingCached == null) {
+      await _publishLiveAssignments(
+        requestId: requestId,
+        context: context,
+        liveAssignments: liveAssignments,
+        clearOnFailure: true,
+      );
       return;
     }
 
+    try {
+      await _publishAssignments(
+        requestId: requestId,
+        context: context,
+        assignments: await liveAssignments.timeout(
+          storedAssignmentFallbackDelay,
+        ),
+      );
+    } on TimeoutException {
+      _publishStoredAssignments(requestId, matchingCached);
+      unawaited(
+        _publishLiveAssignments(
+          requestId: requestId,
+          context: context,
+          liveAssignments: liveAssignments,
+          clearOnFailure: false,
+        ),
+      );
+    } catch (_) {
+      _publishStoredAssignments(requestId, matchingCached);
+    }
+  }
+
+  Future<void> _publishLiveAssignments({
+    required int requestId,
+    required FlagsEvaluationContext context,
+    required Future<PrecomputedAssignments> liveAssignments,
+    required bool clearOnFailure,
+  }) async {
+    try {
+      await _publishAssignments(
+        requestId: requestId,
+        context: context,
+        assignments: await liveAssignments,
+      );
+    } catch (_) {
+      if (clearOnFailure && requestId == _contextRequestId) {
+        _state = null;
+      }
+    }
+  }
+
+  Future<void> _publishAssignments({
+    required int requestId,
+    required FlagsEvaluationContext context,
+    required PrecomputedAssignments assignments,
+  }) async {
     if (requestId != _contextRequestId) {
       return;
     }
 
-    _state = FlagsData(
+    final data = FlagsData(
       flags: assignments.flags,
       context: context,
-      date: dateProvider(),
+      date: _nextStateDate(),
     );
-    await _writeCached(_state!);
+    _state = data;
+    await _writeCached(data);
+  }
+
+  void _publishStoredAssignments(int requestId, FlagsData data) {
+    if (requestId != _contextRequestId || _isOlderThanCurrentState(data)) {
+      return;
+    }
+
+    _state = data;
+  }
+
+  bool _isOlderThanCurrentState(FlagsData data) {
+    final current = _state;
+    return current != null && data.date.isBefore(current.date);
+  }
+
+  DateTime _nextStateDate() {
+    final now = dateProvider();
+    final current = _state?.date;
+    if (current != null && !now.isAfter(current)) {
+      return current.add(const Duration(microseconds: 1));
+    }
+    return now;
   }
 
   Future<void> clearMemory() async {
