@@ -185,10 +185,10 @@ void main() {
     final second = client.initialize(
       const FlagsEvaluationContext(targetingKey: 'user-second'),
     );
-    await Future<void>.delayed(Duration.zero);
+    await _waitUntil(() => responseCompleters.length == 1);
 
-    expect(responseCompleters, hasLength(2));
-    responseCompleters[1].complete(
+    expect(responseCompleters, hasLength(1));
+    responseCompleters.single.complete(
       http.Response(
         jsonEncode(
           _assignmentsResponse(
@@ -200,18 +200,6 @@ void main() {
       ),
     );
     await second;
-
-    responseCompleters[0].complete(
-      http.Response(
-        jsonEncode(
-          _assignmentsResponse(
-            booleanVariationKey: 'first',
-            booleanValue: true,
-          ),
-        ),
-        200,
-      ),
-    );
     await first;
 
     final details = client.getBooleanDetails(
@@ -910,43 +898,222 @@ void main() {
     expect(secondEvaluations.single['flag'], {'key': 'theme'});
   });
 
-  test('bounds shutdown when a flag evaluation upload does not complete',
-      () async {
-    addTearDown(() {
-      EvaluationAggregator.uploadTimeout =
-          EvaluationAggregator.defaultUploadTimeout;
-    });
-    EvaluationAggregator.uploadTimeout = const Duration(milliseconds: 1);
+  test(
+    'bounds shutdown when a flag evaluation upload does not complete',
+    () async {
+      addTearDown(() {
+        EvaluationAggregator.uploadTimeout =
+            EvaluationAggregator.defaultUploadTimeout;
+      });
+      EvaluationAggregator.uploadTimeout = const Duration(milliseconds: 1);
 
+      final requests = <http.Request>[];
+      final evaluationResponse = Completer<http.Response>();
+      final client = await _createClient(
+        requests: requests,
+        trackExposures: false,
+        trackEvaluations: true,
+        httpClient: MockClient((request) async {
+          requests.add(request);
+          if (request.url.path == '/precompute-assignments') {
+            return http.Response(jsonEncode(_assignmentsResponse()), 200);
+          }
+          if (request.url.path == '/api/v2/flagevaluation') {
+            return evaluationResponse.future;
+          }
+          return http.Response('{"error":"unexpected"}', 404);
+        }),
+      );
+      await client.initialize(
+        const FlagsEvaluationContext(targetingKey: 'user-123'),
+      );
+      client.getBooleanDetails(key: 'show-paywall', defaultValue: false);
+
+      await expectLater(
+        client.shutdown().timeout(const Duration(seconds: 1)),
+        completes,
+      );
+
+      expect(evaluationResponse.isCompleted, isFalse);
+      expect(_evaluationRequests(requests), hasLength(1));
+    },
+  );
+
+  test('restores persisted assignments for a matching context', () async {
+    final store = InMemoryDatadogFlagsStore();
     final requests = <http.Request>[];
-    final evaluationResponse = Completer<http.Response>();
+    final datadogFlags = DatadogFlags();
+    await datadogFlags.enable(
+      configuration: DatadogFlagsConfiguration(
+        datadogConfig: _datadogConfig(),
+        trackExposures: false,
+        trackEvaluations: false,
+        httpClient: _clientWithResponse(requests, _assignmentsResponse()),
+        store: store,
+      ),
+    );
+    final client = datadogFlags.sharedClient();
+    const context = FlagsEvaluationContext(
+      targetingKey: 'user-123',
+      attributes: {'plan': 'pro'},
+    );
+    await client.initialize(context);
+    expect(
+      client.getBooleanDetails(key: 'show-paywall', defaultValue: false).value,
+      isTrue,
+    );
+    await datadogFlags.disable();
+
+    final refreshResponse = Completer<http.Response>();
+    final restoredRequests = <http.Request>[];
+    final restoredFlags = DatadogFlags();
+    await restoredFlags.enable(
+      configuration: DatadogFlagsConfiguration(
+        datadogConfig: _datadogConfig(),
+        trackExposures: false,
+        trackEvaluations: false,
+        httpClient: MockClient((request) {
+          restoredRequests.add(request);
+          return refreshResponse.future;
+        }),
+        store: store,
+      ),
+    );
+    final restored = restoredFlags.sharedClient();
+
+    final refresh = restored.initialize(context);
+    await Future<void>.delayed(Duration.zero);
+    expect(
+      restored
+          .getBooleanDetails(key: 'show-paywall', defaultValue: false)
+          .value,
+      isTrue,
+    );
+
+    refreshResponse.complete(
+      http.Response(jsonEncode(_assignmentsResponse(booleanValue: false)), 200),
+    );
+    await refresh;
+    expect(
+      restored.getBooleanDetails(key: 'show-paywall', defaultValue: true).value,
+      isFalse,
+    );
+    expect(restoredRequests, hasLength(1));
+    await restoredFlags.disable();
+  });
+
+  test('ignores persisted assignments for a different context', () async {
+    final store = InMemoryDatadogFlagsStore();
+    final requests = <http.Request>[];
     final client = await _createClient(
       requests: requests,
+      response: _assignmentsResponse(),
       trackExposures: false,
-      trackEvaluations: true,
-      httpClient: MockClient((request) async {
-        requests.add(request);
-        if (request.url.path == '/precompute-assignments') {
-          return http.Response(jsonEncode(_assignmentsResponse()), 200);
-        }
-        if (request.url.path == '/api/v2/flagevaluation') {
-          return evaluationResponse.future;
-        }
-        return http.Response('{"error":"unexpected"}', 404);
-      }),
+      trackEvaluations: false,
+      store: store,
     );
     await client.initialize(
       const FlagsEvaluationContext(targetingKey: 'user-123'),
     );
-    client.getBooleanDetails(key: 'show-paywall', defaultValue: false);
 
-    await expectLater(
-      client.shutdown().timeout(const Duration(seconds: 1)),
-      completes,
+    final response = Completer<http.Response>();
+    final restoredRequests = <http.Request>[];
+    final restoredFlags = DatadogFlags();
+    await restoredFlags.enable(
+      configuration: DatadogFlagsConfiguration(
+        datadogConfig: _datadogConfig(),
+        trackExposures: false,
+        trackEvaluations: false,
+        httpClient: MockClient((request) {
+          restoredRequests.add(request);
+          return response.future;
+        }),
+        store: store,
+      ),
+    );
+    final restored = restoredFlags.sharedClient();
+
+    final refresh = restored.initialize(
+      const FlagsEvaluationContext(targetingKey: 'user-456'),
+    );
+    await Future<void>.delayed(Duration.zero);
+
+    final notReady = restored.getBooleanDetails(
+      key: 'show-paywall',
+      defaultValue: false,
+    );
+    expect(notReady.error, FlagEvaluationError.providerNotReady);
+
+    response.complete(
+      http.Response(jsonEncode(_assignmentsResponse(booleanValue: false)), 200),
+    );
+    await refresh;
+    expect(
+      restored.getBooleanDetails(key: 'show-paywall', defaultValue: true).value,
+      isFalse,
+    );
+    expect(restoredRequests, hasLength(1));
+    await restoredFlags.disable();
+  });
+
+  test('reset clears in-memory and persisted assignments', () async {
+    final store = InMemoryDatadogFlagsStore();
+    final requests = <http.Request>[];
+    final datadogFlags = DatadogFlags();
+    await datadogFlags.enable(
+      configuration: DatadogFlagsConfiguration(
+        datadogConfig: _datadogConfig(),
+        trackExposures: false,
+        trackEvaluations: false,
+        httpClient: _clientWithResponse(requests, _assignmentsResponse()),
+        store: store,
+      ),
+    );
+    final client = datadogFlags.sharedClient();
+    await client.initialize(
+      const FlagsEvaluationContext(targetingKey: 'user-123'),
+    );
+    expect(await store.read(DatadogFlags.defaultClientName), isNotNull);
+
+    await datadogFlags.reset();
+
+    expect(await store.read(DatadogFlags.defaultClientName), isNull);
+    final details = client.getBooleanDetails(
+      key: 'show-paywall',
+      defaultValue: false,
+    );
+    expect(details.error, FlagEvaluationError.providerNotReady);
+    await datadogFlags.disable();
+  });
+
+  test('reset clears persisted assignments while cache write is pending',
+      () async {
+    final store = _DelayedWriteStore();
+    final requests = <http.Request>[];
+    final datadogFlags = DatadogFlags();
+    await datadogFlags.enable(
+      configuration: DatadogFlagsConfiguration(
+        datadogConfig: _datadogConfig(),
+        trackExposures: false,
+        trackEvaluations: false,
+        httpClient: _clientWithResponse(requests, _assignmentsResponse()),
+        store: store,
+      ),
+    );
+    final client = datadogFlags.sharedClient();
+    final initialize = client.initialize(
+      const FlagsEvaluationContext(targetingKey: 'user-123'),
     );
 
-    expect(evaluationResponse.isCompleted, isFalse);
-    expect(_evaluationRequests(requests), hasLength(1));
+    await store.writeStarted.future;
+    final reset = datadogFlags.reset();
+    store.allowWrite.complete();
+
+    await initialize;
+    await reset;
+
+    expect(await store.read(DatadogFlags.defaultClientName), isNull);
+    await datadogFlags.disable();
   });
 }
 
@@ -957,6 +1124,7 @@ Future<DatadogFlagsClient> _createClient({
   bool trackExposures = false,
   bool trackEvaluations = false,
   DateTime Function()? dateProvider,
+  DatadogFlagsStore? store,
 }) async {
   final datadogFlags = DatadogFlags();
   await datadogFlags.enable(
@@ -967,6 +1135,7 @@ Future<DatadogFlagsClient> _createClient({
       evaluationFlushInterval: const Duration(hours: 1),
       httpClient: httpClient ?? _clientWithResponse(requests, response!),
       dateProvider: dateProvider ?? DateTime.now,
+      store: store,
     ),
   );
   return datadogFlags.sharedClient();
@@ -1133,5 +1302,30 @@ Future<void> _waitUntil(
       fail('Timed out waiting for condition');
     }
     await Future<void>.delayed(const Duration(milliseconds: 50));
+  }
+}
+
+class _DelayedWriteStore implements DatadogFlagsStore {
+  final InMemoryDatadogFlagsStore _delegate = InMemoryDatadogFlagsStore();
+  final Completer<void> writeStarted = Completer<void>();
+  final Completer<void> allowWrite = Completer<void>();
+
+  @override
+  Future<Map<String, Object?>?> read(String clientName) {
+    return _delegate.read(clientName);
+  }
+
+  @override
+  Future<void> write(String clientName, Map<String, Object?> data) async {
+    if (!writeStarted.isCompleted) {
+      writeStarted.complete();
+    }
+    await allowWrite.future;
+    await _delegate.write(clientName, data);
+  }
+
+  @override
+  Future<void> delete(String clientName) {
+    return _delegate.delete(clientName);
   }
 }

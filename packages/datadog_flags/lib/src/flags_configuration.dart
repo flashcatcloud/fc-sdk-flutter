@@ -7,6 +7,7 @@ import 'package:http/http.dart' as http;
 import 'package:meta/meta.dart';
 
 import 'datadog_flags_config.dart';
+import 'flags_store.dart';
 
 @immutable
 final class DatadogFlagsConfiguration {
@@ -23,6 +24,7 @@ final class DatadogFlagsConfiguration {
   final Duration _evaluationFlushInterval;
   final http.Client? httpClient;
   final DatadogFlagsConfig? datadogConfig;
+  final DatadogFlagsStore? store;
   final DateTime Function() dateProvider;
 
   const DatadogFlagsConfiguration({
@@ -35,6 +37,7 @@ final class DatadogFlagsConfiguration {
     Duration evaluationFlushInterval = defaultEvaluationFlushInterval,
     this.httpClient,
     this.datadogConfig,
+    this.store,
     this.dateProvider = DateTime.now,
   }) : _evaluationFlushInterval = evaluationFlushInterval;
 

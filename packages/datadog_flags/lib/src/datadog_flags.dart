@@ -11,6 +11,7 @@ import 'exposure_logger.dart';
 import 'flag_assignments_fetcher.dart';
 import 'flags_client.dart';
 import 'flags_configuration.dart';
+import 'flags_repository.dart';
 import 'flags_runtime.dart';
 import 'no_op_flags_client.dart';
 
@@ -61,7 +62,15 @@ class DatadogFlags {
   }
 
   Future<void> reset() async {
-    await Future.wait(_clients.values.map((client) => client.shutdown()));
+    await Future.wait(
+      _clients.values.map((client) async {
+        if (client is DefaultDatadogFlagsClient) {
+          await client.reset();
+        } else {
+          await client.shutdown();
+        }
+      }),
+    );
   }
 
   Future<void> disable() async {
@@ -91,9 +100,16 @@ class DatadogFlags {
       httpClient: runtime.httpClient,
     );
 
+    final repository = FlagsRepository(
+      clientName: name,
+      fetcher: fetcher,
+      store: runtime.configuration.store,
+      dateProvider: runtime.configuration.dateProvider,
+    );
+
     final client = DefaultDatadogFlagsClient(
       name: name,
-      fetcher: fetcher,
+      repository: repository,
       exposureLogger: ExposureLogger(runtime),
       evaluationAggregator: EvaluationAggregator(runtime),
     );
