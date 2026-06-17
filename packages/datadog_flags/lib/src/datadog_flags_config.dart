@@ -50,12 +50,16 @@ final class DatadogFlagsConfig {
   final String env;
   final DatadogFlagsSite site;
   final String? applicationId;
+  final String? service;
+  final String? version;
 
   const DatadogFlagsConfig({
     required this.clientToken,
     required this.env,
     required this.site,
     this.applicationId,
+    this.service,
+    this.version,
   });
 
   Uri flagsEndpoint() => site.flagsEndpoint;

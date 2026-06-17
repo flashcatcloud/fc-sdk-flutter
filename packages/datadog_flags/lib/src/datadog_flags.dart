@@ -6,6 +6,7 @@
 import 'package:http/http.dart' as http;
 
 import 'default_flags_client.dart';
+import 'evaluation_aggregator.dart';
 import 'exposure_logger.dart';
 import 'flag_assignments_fetcher.dart';
 import 'flags_client.dart';
@@ -94,6 +95,7 @@ class DatadogFlags {
       name: name,
       fetcher: fetcher,
       exposureLogger: ExposureLogger(runtime),
+      evaluationAggregator: EvaluationAggregator(runtime),
     );
     _clients[name] = client;
     return client;

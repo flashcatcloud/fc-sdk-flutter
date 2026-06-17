@@ -42,7 +42,7 @@ Map<String, dynamic> _$PrecomputeRequestSourceToJson(
 Map<String, dynamic> _$PrecomputeRequestSubjectToJson(
         PrecomputeRequestSubject instance) =>
     <String, dynamic>{
-      if (instance.targetingKey case final value?) 'targeting_key': value,
+      'targeting_key': instance.targetingKey,
       'targeting_attributes':
           sanitizeJsonScalarObject(instance.targetingAttributes),
     };

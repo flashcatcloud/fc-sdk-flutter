@@ -104,7 +104,7 @@ void main() {
       },
     );
 
-    test('omits targeting key when none is configured', () async {
+    test('sends empty targeting key when none is configured', () async {
       final requests = <http.Request>[];
       final fetcher = FlagAssignmentsFetcher(
         datadogConfig: _contextFor(DatadogFlagsSite.us1),
@@ -126,6 +126,7 @@ void main() {
               'sdk_version': '0.0.1',
             },
             'subject': {
+              'targeting_key': '',
               'targeting_attributes': {'companyId': '1'},
             },
           },

@@ -4,6 +4,7 @@
 // Copyright 2019-Present Datadog, Inc.
 
 import 'assignment.dart';
+import 'evaluation_aggregator.dart';
 import 'evaluation_context.dart';
 import 'exposure_logger.dart';
 import 'flag_assignments_fetcher.dart';
@@ -17,6 +18,7 @@ class DefaultDatadogFlagsClient implements DatadogFlagsClient {
   final String name;
   final FlagAssignmentsFetcher _fetcher;
   final ExposureLogger _exposureLogger;
+  final EvaluationAggregator _evaluationAggregator;
 
   FlagsEvaluationContext? _context;
   Map<String, FlagAssignment> _flags = const {};
@@ -26,8 +28,10 @@ class DefaultDatadogFlagsClient implements DatadogFlagsClient {
     required this.name,
     required FlagAssignmentsFetcher fetcher,
     required ExposureLogger exposureLogger,
+    required EvaluationAggregator evaluationAggregator,
   })  : _fetcher = fetcher,
-        _exposureLogger = exposureLogger;
+        _exposureLogger = exposureLogger,
+        _evaluationAggregator = evaluationAggregator;
 
   @override
   Future<void> initialize(FlagsEvaluationContext context) async {
@@ -115,7 +119,10 @@ class DefaultDatadogFlagsClient implements DatadogFlagsClient {
 
   @override
   Future<void> shutdown() async {
-    await _exposureLogger.shutdown();
+    await Future.wait([
+      _evaluationAggregator.shutdown(),
+      _exposureLogger.shutdown(),
+    ]);
     _contextRequestId++;
     _context = null;
     _flags = const {};
@@ -128,6 +135,12 @@ class DefaultDatadogFlagsClient implements DatadogFlagsClient {
   }) {
     final context = _context;
     if (context == null) {
+      _evaluationAggregator.recordEvaluation(
+        flagKey: key,
+        assignment: null,
+        evaluationContext: FlagsEvaluationContext.empty,
+        error: FlagEvaluationError.providerNotReady.code,
+      );
       return FlagDetails(
         key: key,
         value: defaultValue,
@@ -137,6 +150,12 @@ class DefaultDatadogFlagsClient implements DatadogFlagsClient {
 
     final assignment = _flags[key];
     if (assignment == null) {
+      _evaluationAggregator.recordEvaluation(
+        flagKey: key,
+        assignment: null,
+        evaluationContext: context,
+        error: FlagEvaluationError.flagNotFound.code,
+      );
       return FlagDetails(
         key: key,
         value: defaultValue,
@@ -170,6 +189,12 @@ class DefaultDatadogFlagsClient implements DatadogFlagsClient {
     };
 
     if (identical(resolvedValue, _typeMismatch)) {
+      _evaluationAggregator.recordEvaluation(
+        flagKey: key,
+        assignment: assignment,
+        evaluationContext: context,
+        error: FlagEvaluationError.typeMismatch.code,
+      );
       return FlagDetails(
         key: key,
         value: defaultValue,
@@ -181,6 +206,13 @@ class DefaultDatadogFlagsClient implements DatadogFlagsClient {
       flagKey: key,
       assignment: assignment,
       evaluationContext: context,
+    );
+
+    _evaluationAggregator.recordEvaluation(
+      flagKey: key,
+      assignment: assignment,
+      evaluationContext: context,
+      error: null,
     );
 
     return FlagDetails(

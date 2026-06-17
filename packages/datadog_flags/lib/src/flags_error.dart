@@ -3,7 +3,15 @@
 // developed at Datadog (https://www.datadoghq.com/).
 // Copyright 2019-Present Datadog, Inc.
 
-enum FlagEvaluationError { providerNotReady, flagNotFound, typeMismatch }
+enum FlagEvaluationError {
+  providerNotReady('PROVIDER_NOT_READY'),
+  flagNotFound('FLAG_NOT_FOUND'),
+  typeMismatch('TYPE_MISMATCH');
+
+  final String code;
+
+  const FlagEvaluationError(this.code);
+}
 
 enum FlagsErrorType {
   networkError,

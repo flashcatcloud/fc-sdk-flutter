@@ -104,7 +104,7 @@ class ExposureLogger {
     required bool rescheduleOnFailure,
   }) async {
     if (_uploadInFlight != null) {
-      _scheduleFlush(delay: _exposureFlushRetryDelay);
+      _scheduleRetryFlush();
       return;
     }
 
@@ -194,18 +194,26 @@ class ExposureLogger {
   }) {
     _pendingExposures.insertAll(0, exposures);
     if (reschedule && !_shutdownDrainActive) {
-      _scheduleFlush(delay: _exposureFlushRetryDelay);
+      _scheduleRetryFlush();
     }
   }
 
-  void _scheduleFlush({Duration delay = _exposureFlushDelay}) {
+  void _scheduleFlush() {
+    _scheduleFlushAfter(
+      _uploadInFlight == null ? _exposureFlushDelay : _exposureFlushRetryDelay,
+    );
+  }
+
+  void _scheduleRetryFlush() {
+    _scheduleFlushAfter(_exposureFlushRetryDelay);
+  }
+
+  void _scheduleFlushAfter(Duration delay) {
     if (_shutdownDrainActive || _flushTimer != null) {
       return;
     }
 
-    final flushDelay =
-        _uploadInFlight == null ? delay : _exposureFlushRetryDelay;
-    _flushTimer = Timer(flushDelay, () {
+    _flushTimer = Timer(delay, () {
       _flushTimer = null;
       unawaited(_flushPendingExposures(rescheduleOnFailure: true));
     });
