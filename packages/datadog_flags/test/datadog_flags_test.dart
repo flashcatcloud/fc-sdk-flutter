@@ -9,6 +9,8 @@ import 'dart:convert';
 import 'package:datadog_flags/datadog_flags.dart';
 import 'package:datadog_flags/src/evaluation_aggregator.dart';
 import 'package:datadog_flags/src/exposure_logger.dart';
+import 'package:datadog_flags/src/flags_repository.dart';
+import 'package:datadog_flags/src/flags_store.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:test/test.dart';
@@ -1010,6 +1012,85 @@ void main() {
     await restoredFlags.disable();
   });
 
+  test('starts live refresh before delayed store read completes', () async {
+    addTearDown(() {
+      FlagsRepository.storeReadTimeout =
+          FlagsRepository.defaultStoreReadTimeout;
+    });
+    FlagsRepository.storeReadTimeout = const Duration(seconds: 30);
+
+    final store = _DelayedReadStore();
+    final refreshResponse = Completer<http.Response>();
+    final requests = <http.Request>[];
+    final datadogFlags = DatadogFlags();
+    await datadogFlags.enable(
+      configuration: DatadogFlagsConfiguration(
+        datadogConfig: _datadogConfig(),
+        trackExposures: false,
+        trackEvaluations: false,
+        httpClient: MockClient((request) {
+          requests.add(request);
+          return refreshResponse.future;
+        }),
+        store: store,
+      ),
+    );
+    final client = datadogFlags.sharedClient();
+    var initialized = false;
+
+    final initialize = client
+        .initialize(const FlagsEvaluationContext(targetingKey: 'user-123'))
+        .then((_) {
+      initialized = true;
+    });
+
+    await _waitUntil(() => requests.length == 1);
+    expect(initialized, isFalse);
+
+    store.completeRead(null);
+    refreshResponse.complete(
+      http.Response(jsonEncode(_assignmentsResponse()), 200),
+    );
+    await initialize;
+
+    expect(initialized, isTrue);
+    expect(
+      client.getBooleanDetails(key: 'show-paywall', defaultValue: false).value,
+      isTrue,
+    );
+    await datadogFlags.disable();
+  });
+
+  test('uses live assignments when store read times out', () async {
+    addTearDown(() {
+      FlagsRepository.storeReadTimeout =
+          FlagsRepository.defaultStoreReadTimeout;
+    });
+    FlagsRepository.storeReadTimeout = const Duration(milliseconds: 1);
+
+    final requests = <http.Request>[];
+    final client = await _createClient(
+      requests: requests,
+      response: _assignmentsResponse(),
+      trackExposures: false,
+      trackEvaluations: false,
+      store: _DelayedReadStore(),
+    );
+
+    await expectLater(
+      client
+          .initialize(const FlagsEvaluationContext(targetingKey: 'user-123'))
+          .timeout(const Duration(seconds: 1)),
+      completes,
+    );
+
+    expect(requests, hasLength(1));
+    expect(
+      client.getBooleanDetails(key: 'show-paywall', defaultValue: false).value,
+      isTrue,
+    );
+  });
+
   test('keeps same-context stored assignments when refresh fails', () async {
     final store = InMemoryDatadogFlagsStore();
     final requests = <http.Request>[];
@@ -1441,6 +1522,32 @@ class _DelayedWriteStore implements DatadogFlagsStore {
     }
     await allowWrite.future;
     await _delegate.write(clientName, data);
+  }
+
+  @override
+  Future<void> delete(String clientName) {
+    return _delegate.delete(clientName);
+  }
+}
+
+class _DelayedReadStore implements DatadogFlagsStore {
+  final InMemoryDatadogFlagsStore _delegate = InMemoryDatadogFlagsStore();
+  final Completer<Map<String, Object?>?> _read = Completer();
+
+  void completeRead(Map<String, Object?>? data) {
+    if (!_read.isCompleted) {
+      _read.complete(data);
+    }
+  }
+
+  @override
+  Future<Map<String, Object?>?> read(String clientName) {
+    return _read.future;
+  }
+
+  @override
+  Future<void> write(String clientName, Map<String, Object?> data) {
+    return _delegate.write(clientName, data);
   }
 
   @override

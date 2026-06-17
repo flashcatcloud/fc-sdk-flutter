@@ -6,12 +6,19 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:meta/meta.dart';
+
 import 'assignment.dart';
 import 'evaluation_context.dart';
 import 'flag_assignments_fetcher.dart';
 import 'flags_store.dart';
 
 class FlagsRepository {
+  static const defaultStoreReadTimeout = Duration(milliseconds: 1500);
+
+  @visibleForTesting
+  static Duration storeReadTimeout = defaultStoreReadTimeout;
+
   final String clientName;
   final FlagAssignmentsFetcher fetcher;
   final DatadogFlagsStore? store;
@@ -34,6 +41,8 @@ class FlagsRepository {
 
   Future<void> initialize(FlagsEvaluationContext context) async {
     final requestId = ++_contextRequestId;
+    final eagerLiveAssignments =
+        store == null ? null : _fetchLiveAssignments(context);
     final cached = await _readCached();
     if (requestId != _contextRequestId) {
       return;
@@ -49,27 +58,40 @@ class FlagsRepository {
     await _publishLiveAssignments(
       requestId: requestId,
       context: context,
-      liveAssignments: fetcher.fetch(context),
+      liveAssignments: eagerLiveAssignments ?? _fetchLiveAssignments(context),
       clearOnFailure: matchingCached == null,
     );
+  }
+
+  Future<({PrecomputedAssignments? assignments})> _fetchLiveAssignments(
+    FlagsEvaluationContext context,
+  ) async {
+    try {
+      return (assignments: await fetcher.fetch(context));
+    } catch (_) {
+      return (assignments: null);
+    }
   }
 
   Future<void> _publishLiveAssignments({
     required int requestId,
     required FlagsEvaluationContext context,
-    required Future<PrecomputedAssignments> liveAssignments,
+    required Future<({PrecomputedAssignments? assignments})> liveAssignments,
     required bool clearOnFailure,
   }) async {
-    try {
+    final result = await liveAssignments;
+    final assignments = result.assignments;
+    if (assignments != null) {
       await _publishAssignments(
         requestId: requestId,
         context: context,
-        assignments: await liveAssignments,
+        assignments: assignments,
       );
-    } catch (_) {
-      if (clearOnFailure && requestId == _contextRequestId) {
-        _state = null;
-      }
+      return;
+    }
+
+    if (clearOnFailure && requestId == _contextRequestId) {
+      _state = null;
     }
   }
 
@@ -126,8 +148,16 @@ class FlagsRepository {
   }
 
   Future<FlagsData?> _readCached() async {
+    final store = this.store;
+    if (store == null) {
+      return null;
+    }
+
     try {
-      final encoded = await store?.read(clientName);
+      final encoded = await store.read(clientName).timeout(
+            storeReadTimeout,
+            onTimeout: () => null,
+          );
       return encoded == null ? null : FlagsData.fromJson(encoded);
     } catch (_) {
       return null;

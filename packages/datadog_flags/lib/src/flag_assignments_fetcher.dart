@@ -11,7 +11,6 @@ import 'assignment.dart';
 import 'datadog_flags_config.dart';
 import 'flags_configuration.dart';
 import 'evaluation_context.dart';
-import 'flags_error.dart';
 import 'precompute_request.dart';
 import 'precompute_response.dart';
 
@@ -44,14 +43,11 @@ class FlagAssignmentsFetcher {
         ),
       );
     } catch (error) {
-      throw FlagsException.networkError(
-        'Failed to fetch flag assignments.',
-        cause: error,
-      );
+      throw Exception('Failed to fetch flag assignments: $error');
     }
 
     if (response.statusCode < 200 || response.statusCode >= 300) {
-      throw FlagsException.networkError(
+      throw Exception(
         'Unexpected flag assignments response status ${response.statusCode}.',
       );
     }
@@ -67,10 +63,8 @@ class FlagAssignmentsFetcher {
         environment: attributes.environment,
       );
     } catch (error) {
-      throw FlagsException.invalidResponse(
-        'Failed to decode flag assignments response: $error',
-        cause: error,
-      );
+      throw FormatException(
+          'Failed to decode flag assignments response: $error');
     }
   }
 

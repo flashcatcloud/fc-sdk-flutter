@@ -12,7 +12,6 @@ import 'flag_assignments_fetcher.dart';
 import 'flags_client.dart';
 import 'flags_configuration.dart';
 import 'flags_repository.dart';
-import 'flags_runtime.dart';
 import 'no_op_flags_client.dart';
 
 /// Entry point for configuring and creating Datadog feature flag clients.
@@ -31,12 +30,12 @@ class DatadogFlags {
   }
 
   http.Client? _httpClient;
-  FlagsRuntime? _runtime;
+  DatadogFlagsConfiguration? _configuration;
   final Map<String, DatadogFlagsClient> _clients = {};
 
   DatadogFlags();
 
-  bool get isEnabled => _runtime != null;
+  bool get isEnabled => _configuration != null;
 
   Future<void> enable({
     DatadogFlagsConfiguration configuration = const DatadogFlagsConfiguration(),
@@ -49,11 +48,7 @@ class DatadogFlags {
     }
 
     _httpClient = configuration.httpClient ?? http.Client();
-    _runtime = FlagsRuntime(
-      configuration: configuration,
-      datadogConfig: datadogConfig,
-      httpClient: _httpClient!,
-    );
+    _configuration = configuration;
     sharedClient();
   }
 
@@ -78,7 +73,7 @@ class DatadogFlags {
     _clients.clear();
     _httpClient?.close();
     _httpClient = null;
-    _runtime = null;
+    _configuration = null;
   }
 
   DatadogFlagsClient _client(String name) {
@@ -87,32 +82,42 @@ class DatadogFlags {
       return existing;
     }
 
-    final runtime = _runtime;
-    if (runtime == null) {
+    final configuration = _configuration;
+    final datadogConfig = configuration?.datadogConfig;
+    final httpClient = _httpClient;
+    if (configuration == null || datadogConfig == null || httpClient == null) {
       final client = NoOpDatadogFlagsClient(name: name);
       _clients[name] = client;
       return client;
     }
 
     final fetcher = FlagAssignmentsFetcher(
-      datadogConfig: runtime.datadogConfig,
-      configuration: runtime.configuration,
-      httpClient: runtime.httpClient,
+      datadogConfig: datadogConfig,
+      configuration: configuration,
+      httpClient: httpClient,
     );
 
     final repository = FlagsRepository(
       clientName: name,
       fetcher: fetcher,
-      store: runtime.configuration.store,
-      dateProvider: runtime.configuration.dateProvider,
+      store: configuration.store,
+      dateProvider: configuration.dateProvider,
     );
 
     final client = DefaultDatadogFlagsClient(
       name: name,
       repository: repository,
-      exposureLogger: ExposureLogger(runtime),
-      evaluationAggregator: runtime.configuration.trackEvaluations
-          ? EvaluationAggregator(runtime)
+      exposureLogger: ExposureLogger(
+        configuration: configuration,
+        datadogConfig: datadogConfig,
+        httpClient: httpClient,
+      ),
+      evaluationAggregator: configuration.trackEvaluations
+          ? EvaluationAggregator(
+              configuration: configuration,
+              datadogConfig: datadogConfig,
+              httpClient: httpClient,
+            )
           : null,
     );
     _clients[name] = client;

@@ -6,12 +6,14 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:http/http.dart' as http;
 import 'package:meta/meta.dart';
 import 'package:uuid/uuid.dart';
 
 import 'assignment.dart';
+import 'datadog_flags_config.dart';
 import 'evaluation_context.dart';
-import 'flags_runtime.dart';
+import 'flags_configuration.dart';
 import 'json_value.dart';
 import 'sdk_metadata.dart';
 
@@ -29,16 +31,22 @@ class EvaluationAggregator {
   @visibleForTesting
   static Duration retryDelay = defaultRetryDelay;
 
-  final FlagsRuntime runtime;
+  final DatadogFlagsConfiguration configuration;
+  final DatadogFlagsConfig datadogConfig;
+  final http.Client httpClient;
   final Map<String, _AggregatedEvaluation> _aggregations = {};
   Future<bool>? _uploadInFlight;
   Future<void>? _shutdownInFlight;
   Timer? _periodicFlushTimer;
   bool _shutdownDrainActive = false;
 
-  EvaluationAggregator(this.runtime) {
+  EvaluationAggregator({
+    required this.configuration,
+    required this.datadogConfig,
+    required this.httpClient,
+  }) {
     _periodicFlushTimer = Timer.periodic(
-      runtime.configuration.evaluationFlushInterval,
+      configuration.evaluationFlushInterval,
       (_) => unawaited(flush()),
     );
   }
@@ -49,7 +57,6 @@ class EvaluationAggregator {
     required FlagsEvaluationContext evaluationContext,
     required String? error,
   }) {
-    final configuration = runtime.configuration;
     final now = configuration.dateProvider().millisecondsSinceEpoch;
     final key = _aggregationKey(
       flagKey: flagKey,
@@ -194,12 +201,12 @@ class EvaluationAggregator {
     });
 
     try {
-      final response = await runtime.httpClient
+      final response = await httpClient
           .post(
             endpoint,
             headers: {
               'Content-Type': 'application/json',
-              'DD-API-KEY': runtime.datadogConfig.clientToken,
+              'DD-API-KEY': datadogConfig.clientToken,
               'DD-EVP-ORIGIN': datadogFlagsSource,
               'DD-EVP-ORIGIN-VERSION': datadogFlagsSdkVersion,
               'DD-REQUEST-ID': const Uuid().v4(),
@@ -241,8 +248,7 @@ class EvaluationAggregator {
   }
 
   Uri _evaluationEndpoint() {
-    final datadogConfig = runtime.datadogConfig;
-    final endpoint = runtime.configuration.customEvaluationEndpoint ??
+    final endpoint = configuration.customEvaluationEndpoint ??
         datadogConfig.intakeEndpoint().replace(path: '/api/v2/flagevaluation');
     return endpoint.replace(
       queryParameters: {
@@ -253,11 +259,11 @@ class EvaluationAggregator {
   }
 
   Map<String, Object?> _datadogContext() {
-    final applicationId = runtime.datadogConfig.applicationId;
+    final applicationId = datadogConfig.applicationId;
     return _removeNullValues({
-      'env': runtime.datadogConfig.env,
-      'service': runtime.datadogConfig.service,
-      'version': runtime.datadogConfig.version,
+      'env': datadogConfig.env,
+      'service': datadogConfig.service,
+      'version': datadogConfig.version,
       'rum': applicationId == null
           ? null
           : {

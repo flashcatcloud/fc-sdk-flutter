@@ -9,7 +9,6 @@ import 'dart:convert';
 import 'package:datadog_flags/datadog_flags.dart';
 import 'package:datadog_flags/src/assignment.dart';
 import 'package:datadog_flags/src/evaluation_aggregator.dart';
-import 'package:datadog_flags/src/flags_runtime.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:test/test.dart';
@@ -259,16 +258,14 @@ EvaluationAggregator _aggregator({
 }) {
   final client = httpClient ?? _successClient(requests);
   return EvaluationAggregator(
-    FlagsRuntime(
-      configuration: DatadogFlagsConfiguration(
-        datadogConfig: _datadogConfig(),
-        evaluationFlushInterval: const Duration(hours: 1),
-        httpClient: client,
-        dateProvider: dateProvider ?? DateTime.now,
-      ),
+    configuration: DatadogFlagsConfiguration(
       datadogConfig: _datadogConfig(),
+      evaluationFlushInterval: const Duration(hours: 1),
       httpClient: client,
+      dateProvider: dateProvider ?? DateTime.now,
     ),
+    datadogConfig: _datadogConfig(),
+    httpClient: client,
   );
 }
 
