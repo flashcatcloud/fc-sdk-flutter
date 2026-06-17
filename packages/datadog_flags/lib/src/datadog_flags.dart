@@ -111,7 +111,9 @@ class DatadogFlags {
       name: name,
       repository: repository,
       exposureLogger: ExposureLogger(runtime),
-      evaluationAggregator: EvaluationAggregator(runtime),
+      evaluationAggregator: runtime.configuration.trackEvaluations
+          ? EvaluationAggregator(runtime)
+          : null,
     );
     _clients[name] = client;
     return client;

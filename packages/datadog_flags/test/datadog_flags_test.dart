@@ -816,6 +816,14 @@ void main() {
   });
 
   test('retries flag evaluation emission after a failed send', () async {
+    addTearDown(() {
+      EvaluationAggregator.maxBatchSize =
+          EvaluationAggregator.defaultMaxBatchSize;
+      EvaluationAggregator.retryDelay = EvaluationAggregator.defaultRetryDelay;
+    });
+    EvaluationAggregator.maxBatchSize = 1;
+    EvaluationAggregator.retryDelay = const Duration(milliseconds: 1);
+
     final requests = <http.Request>[];
     var evaluationAttempt = 0;
     final client = await _createClient(
@@ -842,7 +850,7 @@ void main() {
     );
 
     client.getBooleanDetails(key: 'show-paywall', defaultValue: false);
-    await client.shutdown();
+    await _waitUntil(() => evaluationAttempt == 2);
     await client.shutdown();
 
     expect(evaluationAttempt, 2);
