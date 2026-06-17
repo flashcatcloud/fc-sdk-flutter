@@ -1012,7 +1012,7 @@ void main() {
     await restoredFlags.disable();
   });
 
-  test('starts live refresh before delayed store read completes', () async {
+  test('waits for delayed store read before starting live refresh', () async {
     addTearDown(() {
       FlagsRepository.storeReadTimeout =
           FlagsRepository.defaultStoreReadTimeout;
@@ -1044,10 +1044,12 @@ void main() {
       initialized = true;
     });
 
-    await _waitUntil(() => requests.length == 1);
+    await Future<void>.delayed(Duration.zero);
+    expect(requests, isEmpty);
     expect(initialized, isFalse);
 
     store.completeRead(null);
+    await _waitUntil(() => requests.length == 1);
     refreshResponse.complete(
       http.Response(jsonEncode(_assignmentsResponse()), 200),
     );

@@ -14,7 +14,7 @@ import 'flag_assignments_fetcher.dart';
 import 'flags_store.dart';
 
 class FlagsRepository {
-  static const defaultStoreReadTimeout = Duration(milliseconds: 1500);
+  static const defaultStoreReadTimeout = Duration(milliseconds: 100);
 
   @visibleForTesting
   static Duration storeReadTimeout = defaultStoreReadTimeout;
@@ -41,8 +41,6 @@ class FlagsRepository {
 
   Future<void> initialize(FlagsEvaluationContext context) async {
     final requestId = ++_contextRequestId;
-    final eagerLiveAssignments =
-        store == null ? null : _fetchLiveAssignments(context);
     final cached = await _readCached();
     if (requestId != _contextRequestId) {
       return;
@@ -58,7 +56,7 @@ class FlagsRepository {
     await _publishLiveAssignments(
       requestId: requestId,
       context: context,
-      liveAssignments: eagerLiveAssignments ?? _fetchLiveAssignments(context),
+      liveAssignments: _fetchLiveAssignments(context),
       clearOnFailure: matchingCached == null,
     );
   }
