@@ -9,5 +9,5 @@ export 'src/datadog_flags.dart' show DatadogFlags;
 export 'src/flags_client.dart' show DatadogFlagsClient, FlagDetails;
 export 'src/flags_configuration.dart' show DatadogFlagsConfiguration;
 export 'src/flags_error.dart' show FlagEvaluationError;
-export 'src/flags_store.dart' show DatadogFlagsStore;
+export 'src/flags_store.dart' show DatadogFlagsStore, FlagsData;
 export 'src/evaluation_context.dart' show FlagsEvaluationContext;

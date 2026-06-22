@@ -186,10 +186,10 @@ void main() {
     final second = client.initialize(
       const FlagsEvaluationContext(targetingKey: 'user-second'),
     );
-    await _waitUntil(() => responseCompleters.length == 1);
+    await _waitUntil(() => responseCompleters.length == 2);
 
-    expect(responseCompleters, hasLength(1));
-    responseCompleters.single.complete(
+    expect(responseCompleters, hasLength(2));
+    responseCompleters[1].complete(
       http.Response(
         jsonEncode(
           _assignmentsResponse(
@@ -201,6 +201,18 @@ void main() {
       ),
     );
     await second;
+
+    responseCompleters[0].complete(
+      http.Response(
+        jsonEncode(
+          _assignmentsResponse(
+            booleanVariationKey: 'first',
+            booleanValue: true,
+          ),
+        ),
+        200,
+      ),
+    );
     await first;
 
     final details = client.getBooleanDetails(
@@ -952,11 +964,15 @@ void main() {
         store: store,
       ),
     );
-    const context = FlagsEvaluationContext(
+    const cachedContext = FlagsEvaluationContext(
       targetingKey: 'user-123',
-      attributes: {'plan': 'pro'},
+      attributes: {
+        'plan': 'pro',
+        'config': {'b': 2, 'a': 1},
+        'cohorts': ['beta', 'paid'],
+      },
     );
-    await datadogFlags.sharedClient().initialize(context);
+    await datadogFlags.sharedClient().initialize(cachedContext);
     await datadogFlags.disable();
 
     final refreshResponse = Completer<http.Response>();
@@ -975,7 +991,16 @@ void main() {
     );
     final restored = datadogFlags.sharedClient();
 
-    final refresh = restored.initialize(context);
+    final refresh = restored.initialize(
+      const FlagsEvaluationContext(
+        targetingKey: 'user-123',
+        attributes: {
+          'cohorts': ['beta', 'paid'],
+          'config': {'a': 1, 'b': 2},
+          'plan': 'pro',
+        },
+      ),
+    );
     await _waitUntil(() => restoredRequests.length == 1);
     expect(
       restored
@@ -1336,12 +1361,12 @@ class _DelayedWriteStore implements DatadogFlagsStore {
   final Completer<void> allowWrite = Completer<void>();
 
   @override
-  Future<Map<String, Object?>?> read(String clientName) {
+  Future<FlagsData?> read(String clientName) {
     return _delegate.read(clientName);
   }
 
   @override
-  Future<void> write(String clientName, Map<String, Object?> data) async {
+  Future<void> write(String clientName, FlagsData data) async {
     if (!writeStarted.isCompleted) {
       writeStarted.complete();
     }

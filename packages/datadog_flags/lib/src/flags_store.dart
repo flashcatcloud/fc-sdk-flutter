@@ -3,16 +3,14 @@
 // developed at Datadog (https://www.datadoghq.com/).
 // Copyright 2019-Present Datadog, Inc.
 
-import 'dart:convert';
-
 import 'package:meta/meta.dart';
 
 import 'assignment.dart';
 import 'evaluation_context.dart';
 
 abstract class DatadogFlagsStore {
-  Future<Map<String, Object?>?> read(String clientName);
-  Future<void> write(String clientName, Map<String, Object?> data);
+  Future<FlagsData?> read(String clientName);
+  Future<void> write(String clientName, FlagsData data);
   Future<void> delete(String clientName);
 }
 
@@ -54,17 +52,17 @@ class FlagsData {
 }
 
 class InMemoryDatadogFlagsStore implements DatadogFlagsStore {
-  final Map<String, Map<String, Object?>> _values = {};
+  final Map<String, FlagsData> _values = {};
 
   @override
-  Future<Map<String, Object?>?> read(String clientName) async {
+  Future<FlagsData?> read(String clientName) async {
     final value = _values[clientName];
-    return value == null ? null : _cloneJsonObject(value);
+    return value == null ? null : _cloneFlagsData(value);
   }
 
   @override
-  Future<void> write(String clientName, Map<String, Object?> data) async {
-    _values[clientName] = _cloneJsonObject(data);
+  Future<void> write(String clientName, FlagsData data) async {
+    _values[clientName] = _cloneFlagsData(data);
   }
 
   @override
@@ -73,6 +71,6 @@ class InMemoryDatadogFlagsStore implements DatadogFlagsStore {
   }
 }
 
-Map<String, Object?> _cloneJsonObject(Map<String, Object?> value) {
-  return Map<String, Object?>.from(jsonDecode(jsonEncode(value)) as Map);
+FlagsData _cloneFlagsData(FlagsData value) {
+  return FlagsData.fromJson(value.toJson());
 }

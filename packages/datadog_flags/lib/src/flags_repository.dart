@@ -4,7 +4,6 @@
 // Copyright 2019-Present Datadog, Inc.
 
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:meta/meta.dart';
 
@@ -18,7 +17,7 @@ class FlagsRepository {
   static const defaultStoreReadTimeout = Duration(milliseconds: 100);
 
   @visibleForTesting
-  static Duration storeReadTimeout = defaultStoreReadTimeout;
+  final Duration storeReadTimeout;
 
   final String clientName;
   final FlagAssignmentsFetcher fetcher;
@@ -26,7 +25,7 @@ class FlagsRepository {
   final DateTime Function() dateProvider;
 
   FlagsData? _state;
-  int _contextRequestId = 0;
+  _InitializeOperation? _currentOperation;
   Future<void> _cacheOperation = Future<void>.value();
 
   FlagsRepository({
@@ -34,6 +33,7 @@ class FlagsRepository {
     required this.fetcher,
     this.store,
     required this.dateProvider,
+    this.storeReadTimeout = defaultStoreReadTimeout,
   });
 
   FlagsEvaluationContext? get context => _state?.context;
@@ -41,79 +41,31 @@ class FlagsRepository {
   FlagAssignment? flagAssignment(String key) => _state?.flags[key];
 
   Future<void> initialize(FlagsEvaluationContext context) async {
-    final requestId = ++_contextRequestId;
-    final cached = await _readCached();
-    if (requestId != _contextRequestId) {
-      return;
-    }
-    final matchingCached =
-        cached != null && _contextsMatch(cached.context, context)
-            ? cached
-            : null;
-    if (matchingCached != null) {
-      _publishStoredAssignments(requestId, matchingCached);
-    }
-
-    await _publishLiveAssignments(
-      requestId: requestId,
-      context: context,
-      liveAssignments: _fetchLiveAssignments(context),
-      clearOnFailure: matchingCached == null,
-    );
-  }
-
-  Future<({PrecomputedAssignments? assignments})> _fetchLiveAssignments(
-    FlagsEvaluationContext context,
-  ) async {
-    try {
-      return (assignments: await fetcher.fetch(context));
-    } catch (_) {
-      return (assignments: null);
-    }
-  }
-
-  Future<void> _publishLiveAssignments({
-    required int requestId,
-    required FlagsEvaluationContext context,
-    required Future<({PrecomputedAssignments? assignments})> liveAssignments,
-    required bool clearOnFailure,
-  }) async {
-    final result = await liveAssignments;
-    final assignments = result.assignments;
-    if (assignments != null) {
-      await _publishAssignments(
-        requestId: requestId,
-        context: context,
-        assignments: assignments,
-      );
-      return;
-    }
-
-    if (clearOnFailure && requestId == _contextRequestId) {
-      _state = null;
-    }
+    final operation = _InitializeOperation(this, context);
+    _currentOperation = operation;
+    await operation.run();
   }
 
   Future<void> _publishAssignments({
-    required int requestId,
-    required FlagsEvaluationContext context,
+    required _InitializeOperation operation,
     required PrecomputedAssignments assignments,
   }) async {
-    if (requestId != _contextRequestId) {
+    if (!operation.isCurrent) {
       return;
     }
 
     final data = FlagsData(
       flags: assignments.flags,
-      context: context,
+      context: operation.context,
       date: _nextStateDate(),
     );
     _state = data;
     await _writeCached(data);
   }
 
-  void _publishStoredAssignments(int requestId, FlagsData data) {
-    if (requestId != _contextRequestId || _isOlderThanCurrentState(data)) {
+  void _publishStoredAssignments(
+      _InitializeOperation operation, FlagsData data) {
+    if (!operation.isCurrent || _isOlderThanCurrentState(data)) {
       return;
     }
 
@@ -130,6 +82,8 @@ class FlagsRepository {
   DateTime _nextStateDate() {
     final now = dateProvider();
     final current = _state?.date;
+    // Do not let a live refresh move persisted state backward if the injected
+    // clock repeats or regresses during a fast same-context refresh.
     if (current != null && !now.isAfter(current)) {
       return current.add(const Duration(microseconds: 1));
     }
@@ -137,7 +91,7 @@ class FlagsRepository {
   }
 
   Future<void> clearMemory() async {
-    _contextRequestId++;
+    _currentOperation = null;
     _state = null;
   }
 
@@ -153,11 +107,10 @@ class FlagsRepository {
     }
 
     try {
-      final encoded = await store.read(clientName).timeout(
+      return await store.read(clientName).timeout(
             storeReadTimeout,
             onTimeout: () => null,
           );
-      return encoded == null ? null : FlagsData.fromJson(encoded);
     } catch (_) {
       return null;
     }
@@ -166,7 +119,7 @@ class FlagsRepository {
   Future<void> _writeCached(FlagsData data) async {
     await _enqueueCacheOperation(() async {
       try {
-        await store?.write(clientName, data.toJson());
+        await store?.write(clientName, data);
       } catch (_) {
         return;
       }
@@ -190,30 +143,93 @@ class FlagsRepository {
   }
 }
 
+class _InitializeOperation {
+  final FlagsRepository _repository;
+  final FlagsEvaluationContext context;
+
+  _InitializeOperation(this._repository, this.context);
+
+  bool get isCurrent => identical(_repository._currentOperation, this);
+
+  Future<void> run() async {
+    final cached =
+        _repository.store == null ? null : await _repository._readCached();
+    if (!isCurrent) {
+      return;
+    }
+
+    final matchingCached =
+        cached != null && _contextsMatch(cached.context, context)
+            ? cached
+            : null;
+    if (matchingCached != null) {
+      _repository._publishStoredAssignments(this, matchingCached);
+    }
+
+    await _publishLiveAssignments(clearOnFailure: matchingCached == null);
+  }
+
+  Future<void> _publishLiveAssignments({
+    required bool clearOnFailure,
+  }) async {
+    try {
+      final assignments = await _repository.fetcher.fetch(context);
+      await _repository._publishAssignments(
+        operation: this,
+        assignments: assignments,
+      );
+    } catch (_) {
+      if (clearOnFailure && isCurrent) {
+        _repository._state = null;
+      }
+    }
+  }
+}
+
 bool _contextsMatch(FlagsEvaluationContext left, FlagsEvaluationContext right) {
   if (left.targetingKey != right.targetingKey) {
     return false;
   }
 
   try {
-    return jsonEncode(_sortedJson(sanitizeJsonValue(left.attributes))) ==
-        jsonEncode(_sortedJson(sanitizeJsonValue(right.attributes)));
+    return _jsonValuesMatch(
+      sanitizeJsonValue(left.attributes),
+      sanitizeJsonValue(right.attributes),
+    );
   } catch (_) {
     return false;
   }
 }
 
-Object? _sortedJson(Object? value) {
-  if (value is Map<Object?, Object?>) {
-    final entries = value.entries.toList()
-      ..sort((a, b) => a.key.toString().compareTo(b.key.toString()));
-    return {
-      for (final entry in entries)
-        entry.key.toString(): _sortedJson(entry.value),
-    };
+bool _jsonValuesMatch(Object? left, Object? right) {
+  if (left is Map<Object?, Object?> && right is Map<Object?, Object?>) {
+    if (left.length != right.length) {
+      return false;
+    }
+    for (final entry in left.entries) {
+      if (!right.containsKey(entry.key) ||
+          !_jsonValuesMatch(entry.value, right[entry.key])) {
+        return false;
+      }
+    }
+    return true;
   }
-  if (value is Iterable<Object?>) {
-    return value.map(_sortedJson).toList();
+  if (left is Iterable<Object?> && right is Iterable<Object?>) {
+    final leftIterator = left.iterator;
+    final rightIterator = right.iterator;
+    while (true) {
+      final hasLeft = leftIterator.moveNext();
+      final hasRight = rightIterator.moveNext();
+      if (hasLeft != hasRight) {
+        return false;
+      }
+      if (!hasLeft) {
+        return true;
+      }
+      if (!_jsonValuesMatch(leftIterator.current, rightIterator.current)) {
+        return false;
+      }
+    }
   }
-  return value;
+  return left == right;
 }

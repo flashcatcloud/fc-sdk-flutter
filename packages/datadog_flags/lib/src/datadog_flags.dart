@@ -58,15 +58,7 @@ class DatadogFlags {
   }
 
   Future<void> reset() async {
-    await Future.wait(
-      _clients.values.map((client) async {
-        if (client is DefaultDatadogFlagsClient) {
-          await client.reset();
-        } else {
-          await client.shutdown();
-        }
-      }),
-    );
+    await Future.wait(_clients.values.map((client) => client.reset()));
   }
 
   Future<void> disable() async {

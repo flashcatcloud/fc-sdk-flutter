@@ -103,6 +103,7 @@ class DefaultDatadogFlagsClient implements DatadogFlagsClient {
     await _repository.clearMemory();
   }
 
+  @override
   Future<void> reset() async {
     await _repository.reset();
   }

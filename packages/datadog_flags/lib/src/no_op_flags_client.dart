@@ -57,6 +57,9 @@ class NoOpDatadogFlagsClient implements DatadogFlagsClient {
   }
 
   @override
+  Future<void> reset() async {}
+
+  @override
   Future<void> shutdown() async {}
 
   FlagDetails<T> _details<T>({
