@@ -1288,6 +1288,34 @@ void main() {
     await datadogFlags.disable();
   });
 
+  test('reset keeps existing clients active for scheduled evaluation uploads',
+      () async {
+    final requests = <http.Request>[];
+    final datadogFlags = DatadogFlags();
+    addTearDown(datadogFlags.disable);
+    await datadogFlags.enable(
+      configuration: DatadogFlagsConfiguration(
+        datadogConfig: _datadogConfig(),
+        trackExposures: false,
+        trackEvaluations: true,
+        evaluationFlushInterval: const Duration(seconds: 1),
+        httpClient: _clientWithResponse(requests, _assignmentsResponse()),
+      ),
+    );
+    final client = datadogFlags.sharedClient();
+    const context = FlagsEvaluationContext(targetingKey: 'user-123');
+
+    await client.initialize(context);
+    await datadogFlags.reset();
+    await client.initialize(context);
+    client.getBooleanDetails(key: 'show-paywall', defaultValue: false);
+
+    await _waitUntil(
+      () => _evaluationRequests(requests).length == 1,
+      timeout: const Duration(seconds: 4),
+    );
+  });
+
   test('reset clears persisted assignments while cache write is pending',
       () async {
     final store = _DelayedWriteStore();
@@ -1316,6 +1344,43 @@ void main() {
 
     expect(await store.read(DatadogFlags.defaultClientName), isNull);
     await datadogFlags.disable();
+  });
+
+  test('unsupported context attributes miss the cache without throwing',
+      () async {
+    final store = InMemoryDatadogFlagsStore();
+    final requests = <http.Request>[];
+    final client = await _createClient(
+      requests: requests,
+      response: _assignmentsResponse(),
+      trackExposures: false,
+      trackEvaluations: false,
+      store: store,
+    );
+    await client.initialize(
+      const FlagsEvaluationContext(targetingKey: 'user-123'),
+    );
+
+    await expectLater(
+      client.initialize(
+        FlagsEvaluationContext(
+          targetingKey: 'user-123',
+          attributes: {'unsupported': Object()},
+        ),
+      ),
+      completes,
+    );
+
+    final details = client.getBooleanDetails(
+      key: 'show-paywall',
+      defaultValue: false,
+    );
+    expect(details.error, FlagEvaluationError.providerNotReady);
+    expect(
+      requests
+          .where((request) => request.url.path == '/precompute-assignments'),
+      hasLength(1),
+    );
   });
 }
 

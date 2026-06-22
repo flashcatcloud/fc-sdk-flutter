@@ -104,7 +104,6 @@ class DefaultDatadogFlagsClient implements DatadogFlagsClient {
   }
 
   Future<void> reset() async {
-    await shutdown();
     await _repository.reset();
   }
 

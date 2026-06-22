@@ -43,9 +43,6 @@ class FileDatadogFlagsStore implements DatadogFlagsStore {
       final temporaryFile = File('${file.path}.tmp');
 
       await temporaryFile.writeAsString(jsonEncode(data), flush: true);
-      if (await file.exists()) {
-        await file.delete();
-      }
       await temporaryFile.rename(file.path);
     } catch (_) {
       await _deleteTemporaryFile(clientName);

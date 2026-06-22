@@ -12,6 +12,7 @@ import 'assignment.dart';
 import 'evaluation_context.dart';
 import 'flag_assignments_fetcher.dart';
 import 'flags_store.dart';
+import 'json_value.dart';
 
 class FlagsRepository {
   static const defaultStoreReadTimeout = Duration(milliseconds: 100);
@@ -190,9 +191,16 @@ class FlagsRepository {
 }
 
 bool _contextsMatch(FlagsEvaluationContext left, FlagsEvaluationContext right) {
-  return left.targetingKey == right.targetingKey &&
-      jsonEncode(_sortedJson(left.attributes)) ==
-          jsonEncode(_sortedJson(right.attributes));
+  if (left.targetingKey != right.targetingKey) {
+    return false;
+  }
+
+  try {
+    return jsonEncode(_sortedJson(sanitizeJsonValue(left.attributes))) ==
+        jsonEncode(_sortedJson(sanitizeJsonValue(right.attributes)));
+  } catch (_) {
+    return false;
+  }
 }
 
 Object? _sortedJson(Object? value) {

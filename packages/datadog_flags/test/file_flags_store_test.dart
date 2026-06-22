@@ -43,6 +43,18 @@ void main() {
       expect(await store.read('default'), data);
     });
 
+    test('overwrites existing JSON data', () async {
+      final directory = await _createTestDirectory();
+      final store = FileDatadogFlagsStore(directory: directory);
+
+      await store.write('default', {'value': 'old'});
+      await store.write('default', {'value': 'new'});
+
+      final files = await directory.list().toList();
+      expect(files, hasLength(1));
+      expect(await store.read('default'), {'value': 'new'});
+    });
+
     test('keeps client names inside the store directory', () async {
       final directory = await _createTestDirectory();
       final store = FileDatadogFlagsStore(directory: directory);
