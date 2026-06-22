@@ -18,13 +18,13 @@ class DefaultDatadogFlagsClient implements DatadogFlagsClient {
   final String name;
   final FlagsRepository _repository;
   final ExposureLogger _exposureLogger;
-  final EvaluationAggregator? _evaluationAggregator;
+  final EvaluationAggregator _evaluationAggregator;
 
   DefaultDatadogFlagsClient({
     required this.name,
     required FlagsRepository repository,
     required ExposureLogger exposureLogger,
-    required EvaluationAggregator? evaluationAggregator,
+    required EvaluationAggregator evaluationAggregator,
   })  : _repository = repository,
         _exposureLogger = exposureLogger,
         _evaluationAggregator = evaluationAggregator;
@@ -97,7 +97,7 @@ class DefaultDatadogFlagsClient implements DatadogFlagsClient {
   @override
   Future<void> shutdown() async {
     await Future.wait([
-      if (_evaluationAggregator != null) _evaluationAggregator.shutdown(),
+      _evaluationAggregator.shutdown(),
       _exposureLogger.shutdown(),
     ]);
     await _repository.clearMemory();
@@ -114,7 +114,7 @@ class DefaultDatadogFlagsClient implements DatadogFlagsClient {
   }) {
     final context = _repository.context;
     if (context == null) {
-      _evaluationAggregator?.recordEvaluation(
+      _evaluationAggregator.recordEvaluation(
         flagKey: key,
         assignment: null,
         evaluationContext: FlagsEvaluationContext.empty,
@@ -129,7 +129,7 @@ class DefaultDatadogFlagsClient implements DatadogFlagsClient {
 
     final assignment = _repository.flagAssignment(key);
     if (assignment == null) {
-      _evaluationAggregator?.recordEvaluation(
+      _evaluationAggregator.recordEvaluation(
         flagKey: key,
         assignment: null,
         evaluationContext: context,
@@ -168,7 +168,7 @@ class DefaultDatadogFlagsClient implements DatadogFlagsClient {
     };
 
     if (identical(resolvedValue, _typeMismatch)) {
-      _evaluationAggregator?.recordEvaluation(
+      _evaluationAggregator.recordEvaluation(
         flagKey: key,
         assignment: assignment,
         evaluationContext: context,
@@ -187,7 +187,7 @@ class DefaultDatadogFlagsClient implements DatadogFlagsClient {
       evaluationContext: context,
     );
 
-    _evaluationAggregator?.recordEvaluation(
+    _evaluationAggregator.recordEvaluation(
       flagKey: key,
       assignment: assignment,
       evaluationContext: context,

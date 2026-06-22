@@ -6,21 +6,18 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:http/http.dart' as http;
 import 'package:meta/meta.dart';
 import 'package:uuid/uuid.dart';
 
 import 'assignment.dart';
-import 'datadog_flags_config.dart';
 import 'evaluation_context.dart';
-import 'flags_configuration.dart';
+import 'flags_runtime.dart';
 import 'json_value.dart';
 import 'sdk_metadata.dart';
 
 class EvaluationAggregator {
   static const int defaultMaxBatchSize = 1000;
   static const Duration defaultUploadTimeout = Duration(seconds: 15);
-  static const Duration defaultRetryDelay = Duration(milliseconds: 500);
 
   @visibleForTesting
   static int maxBatchSize = defaultMaxBatchSize;
@@ -28,27 +25,21 @@ class EvaluationAggregator {
   @visibleForTesting
   static Duration uploadTimeout = defaultUploadTimeout;
 
-  @visibleForTesting
-  static Duration retryDelay = defaultRetryDelay;
-
-  final DatadogFlagsConfiguration configuration;
-  final DatadogFlagsConfig datadogConfig;
-  final http.Client httpClient;
+  final FlagsRuntime runtime;
   final Map<String, _AggregatedEvaluation> _aggregations = {};
   Future<bool>? _uploadInFlight;
   Future<void>? _shutdownInFlight;
   Timer? _periodicFlushTimer;
+  Timer? _retryFlushTimer;
   bool _shutdownDrainActive = false;
 
-  EvaluationAggregator({
-    required this.configuration,
-    required this.datadogConfig,
-    required this.httpClient,
-  }) {
-    _periodicFlushTimer = Timer.periodic(
-      configuration.evaluationFlushInterval,
-      (_) => unawaited(flush()),
-    );
+  EvaluationAggregator(this.runtime) {
+    if (runtime.configuration.trackEvaluations) {
+      _periodicFlushTimer = Timer.periodic(
+        runtime.configuration.evaluationFlushInterval,
+        (_) => unawaited(flush()),
+      );
+    }
   }
 
   void recordEvaluation({
@@ -57,6 +48,11 @@ class EvaluationAggregator {
     required FlagsEvaluationContext evaluationContext,
     required String? error,
   }) {
+    final configuration = runtime.configuration;
+    if (!configuration.trackEvaluations) {
+      return;
+    }
+
     final now = configuration.dateProvider().millisecondsSinceEpoch;
     final key = _aggregationKey(
       flagKey: flagKey,
@@ -100,6 +96,8 @@ class EvaluationAggregator {
   Future<void> shutdown() {
     _periodicFlushTimer?.cancel();
     _periodicFlushTimer = null;
+    _retryFlushTimer?.cancel();
+    _retryFlushTimer = null;
 
     final shutdownInFlight = _shutdownInFlight;
     if (shutdownInFlight != null) {
@@ -121,7 +119,10 @@ class EvaluationAggregator {
     try {
       final activeUpload = _uploadInFlight;
       if (activeUpload != null) {
-        await activeUpload;
+        final succeeded = await activeUpload;
+        if (!succeeded) {
+          return;
+        }
       }
 
       await _uploadPendingEvaluations(rescheduleOnFailure: false);
@@ -134,6 +135,9 @@ class EvaluationAggregator {
     required bool rescheduleOnFailure,
   }) async {
     if (_uploadInFlight != null) {
+      if (rescheduleOnFailure) {
+        _scheduleRetryFlush();
+      }
       return;
     }
 
@@ -143,17 +147,17 @@ class EvaluationAggregator {
   Future<bool> _uploadPendingEvaluations({
     required bool rescheduleOnFailure,
   }) {
-    final activeUpload = _uploadInFlight;
-    if (activeUpload != null) {
-      return activeUpload;
-    }
-
-    if (_aggregations.isEmpty) {
+    final configuration = runtime.configuration;
+    if (!configuration.trackEvaluations || _aggregations.isEmpty) {
       return Future.value(true);
     }
 
+    final evaluations = List<_AggregatedEvaluation>.from(_aggregations.values);
+    _aggregations.clear();
+
     late final Future<bool> uploadOperation;
-    uploadOperation = _uploadLoop(
+    uploadOperation = _sendEvaluations(
+      evaluations,
       rescheduleOnFailure: rescheduleOnFailure,
     ).whenComplete(() {
       if (identical(_uploadInFlight, uploadOperation)) {
@@ -164,36 +168,10 @@ class EvaluationAggregator {
     return uploadOperation;
   }
 
-  Future<bool> _uploadLoop({
+  Future<bool> _sendEvaluations(
+    List<_AggregatedEvaluation> evaluations, {
     required bool rescheduleOnFailure,
   }) async {
-    var succeeded = true;
-    while (_aggregations.isNotEmpty) {
-      final evaluations =
-          List<_AggregatedEvaluation>.from(_aggregations.values);
-      _aggregations.clear();
-
-      succeeded = await _sendEvaluations(evaluations);
-      if (succeeded) {
-        continue;
-      }
-
-      _restore(evaluations);
-      if (!rescheduleOnFailure || _shutdownDrainActive) {
-        return false;
-      }
-
-      await Future<void>.delayed(retryDelay);
-      if (_shutdownDrainActive) {
-        return false;
-      }
-    }
-    return succeeded;
-  }
-
-  Future<bool> _sendEvaluations(
-    List<_AggregatedEvaluation> evaluations,
-  ) async {
     final endpoint = _evaluationEndpoint();
     final body = jsonEncode({
       'context': _datadogContext(),
@@ -201,12 +179,12 @@ class EvaluationAggregator {
     });
 
     try {
-      final response = await httpClient
+      final response = await runtime.httpClient
           .post(
             endpoint,
             headers: {
               'Content-Type': 'application/json',
-              'DD-API-KEY': datadogConfig.clientToken,
+              'DD-API-KEY': runtime.datadogConfig.clientToken,
               'DD-EVP-ORIGIN': datadogFlagsSource,
               'DD-EVP-ORIGIN-VERSION': datadogFlagsSdkVersion,
               'DD-REQUEST-ID': const Uuid().v4(),
@@ -215,10 +193,12 @@ class EvaluationAggregator {
           )
           .timeout(uploadTimeout);
       if (response.statusCode < 200 || response.statusCode >= 300) {
+        _restore(evaluations, reschedule: rescheduleOnFailure);
         return false;
       }
       return true;
     } catch (_) {
+      _restore(evaluations, reschedule: rescheduleOnFailure);
       return false;
     }
   }
@@ -227,7 +207,10 @@ class EvaluationAggregator {
     unawaited(shutdown());
   }
 
-  void _restore(List<_AggregatedEvaluation> evaluations) {
+  void _restore(
+    List<_AggregatedEvaluation> evaluations, {
+    required bool reschedule,
+  }) {
     for (final evaluation in evaluations) {
       final existing = _aggregations[evaluation.aggregationKey];
       if (existing == null) {
@@ -245,10 +228,15 @@ class EvaluationAggregator {
               : evaluation.lastEvaluation;
       existing.evaluationCount += evaluation.evaluationCount;
     }
+
+    if (reschedule && !_shutdownDrainActive) {
+      _scheduleRetryFlush();
+    }
   }
 
   Uri _evaluationEndpoint() {
-    final endpoint = configuration.customEvaluationEndpoint ??
+    final datadogConfig = runtime.datadogConfig;
+    final endpoint = runtime.configuration.customEvaluationEndpoint ??
         datadogConfig.intakeEndpoint().replace(path: '/api/v2/flagevaluation');
     return endpoint.replace(
       queryParameters: {
@@ -259,16 +247,27 @@ class EvaluationAggregator {
   }
 
   Map<String, Object?> _datadogContext() {
-    final applicationId = datadogConfig.applicationId;
+    final applicationId = runtime.datadogConfig.applicationId;
     return _removeNullValues({
-      'env': datadogConfig.env,
-      'service': datadogConfig.service,
-      'version': datadogConfig.version,
+      'env': runtime.datadogConfig.env,
+      'service': runtime.datadogConfig.service,
+      'version': runtime.datadogConfig.version,
       'rum': applicationId == null
           ? null
           : {
               'application': {'id': applicationId},
             },
+    });
+  }
+
+  void _scheduleRetryFlush() {
+    if (_retryFlushTimer != null) {
+      return;
+    }
+
+    _retryFlushTimer = Timer(_evaluationFlushRetryDelay, () {
+      _retryFlushTimer = null;
+      unawaited(_flushPendingEvaluations(rescheduleOnFailure: true));
     });
   }
 }
@@ -364,6 +363,8 @@ Object? _removeNestedNullValues(Object? value) {
   }
   return value;
 }
+
+const _evaluationFlushRetryDelay = Duration(milliseconds: 500);
 
 Object? _sortedJson(Object? value) {
   if (value is Map<Object?, Object?>) {

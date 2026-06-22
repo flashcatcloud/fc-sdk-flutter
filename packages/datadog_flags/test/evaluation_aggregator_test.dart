@@ -9,6 +9,7 @@ import 'dart:convert';
 import 'package:datadog_flags/datadog_flags.dart';
 import 'package:datadog_flags/src/assignment.dart';
 import 'package:datadog_flags/src/evaluation_aggregator.dart';
+import 'package:datadog_flags/src/flags_runtime.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:test/test.dart';
@@ -19,7 +20,6 @@ void main() {
         EvaluationAggregator.defaultMaxBatchSize;
     EvaluationAggregator.uploadTimeout =
         EvaluationAggregator.defaultUploadTimeout;
-    EvaluationAggregator.retryDelay = EvaluationAggregator.defaultRetryDelay;
   });
 
   test('aggregates matching flag evaluations into one intake event', () async {
@@ -120,9 +120,8 @@ void main() {
     );
   });
 
-  test('retries failed uploads from the same in-flight operation', () async {
-    EvaluationAggregator.retryDelay = const Duration(milliseconds: 1);
-
+  test('restores failed uploads and merges matching later evaluations',
+      () async {
     final requests = <http.Request>[];
     var attempt = 0;
     final aggregator = _aggregator(
@@ -145,56 +144,17 @@ void main() {
     );
     await aggregator.flush();
 
+    aggregator.recordEvaluation(
+      flagKey: 'checkout.enabled',
+      assignment: _assignment(),
+      evaluationContext: const FlagsEvaluationContext(
+        targetingKey: 'user-123',
+      ),
+      error: null,
+    );
+    await aggregator.flush();
+
     expect(_evaluationRequests(requests), hasLength(2));
-    final resentEvaluation =
-        _flagEvaluations(_evaluationRequests(requests).last).single;
-    expect(resentEvaluation['evaluation_count'], 1);
-  });
-
-  test('does not start overlapping uploads while retrying', () async {
-    EvaluationAggregator.maxBatchSize = 1;
-    EvaluationAggregator.retryDelay = const Duration(milliseconds: 1);
-
-    final requests = <http.Request>[];
-    final firstResponse = Completer<http.Response>();
-    var attempt = 0;
-    final aggregator = _aggregator(
-      requests: requests,
-      httpClient: MockClient((request) async {
-        requests.add(request);
-        attempt += 1;
-        if (attempt == 1) {
-          return firstResponse.future;
-        }
-        return http.Response('{"ok":true}', 200);
-      }),
-    );
-    addTearDown(aggregator.shutdown);
-
-    aggregator.recordEvaluation(
-      flagKey: 'checkout.enabled',
-      assignment: _assignment(),
-      evaluationContext: const FlagsEvaluationContext(
-        targetingKey: 'user-123',
-      ),
-      error: null,
-    );
-    await _waitUntil(() => _evaluationRequests(requests).length == 1);
-
-    aggregator.recordEvaluation(
-      flagKey: 'checkout.enabled',
-      assignment: _assignment(),
-      evaluationContext: const FlagsEvaluationContext(
-        targetingKey: 'user-123',
-      ),
-      error: null,
-    );
-    await Future<void>.delayed(const Duration(milliseconds: 20));
-    expect(_evaluationRequests(requests), hasLength(1));
-
-    firstResponse.complete(http.Response('{"ok":true}', 500));
-    await _waitUntil(() => _evaluationRequests(requests).length == 2);
-
     final resentEvaluation =
         _flagEvaluations(_evaluationRequests(requests).last).single;
     expect(resentEvaluation['evaluation_count'], 2);
@@ -217,6 +177,27 @@ void main() {
     );
 
     await _waitUntil(() => _evaluationRequests(requests).length == 1);
+  });
+
+  test('does not send evaluations when tracking is disabled', () async {
+    final requests = <http.Request>[];
+    final aggregator = _aggregator(
+      requests: requests,
+      trackEvaluations: false,
+    );
+    addTearDown(aggregator.shutdown);
+
+    aggregator.recordEvaluation(
+      flagKey: 'checkout.enabled',
+      assignment: _assignment(),
+      evaluationContext: const FlagsEvaluationContext(
+        targetingKey: 'user-123',
+      ),
+      error: null,
+    );
+    await aggregator.flush();
+
+    expect(_evaluationRequests(requests), isEmpty);
   });
 
   test('bounds shutdown when an upload does not complete', () async {
@@ -254,18 +235,22 @@ void main() {
 EvaluationAggregator _aggregator({
   required List<http.Request> requests,
   http.Client? httpClient,
+  bool trackEvaluations = true,
   DateTime Function()? dateProvider,
 }) {
   final client = httpClient ?? _successClient(requests);
   return EvaluationAggregator(
-    configuration: DatadogFlagsConfiguration(
+    FlagsRuntime(
+      configuration: DatadogFlagsConfiguration(
+        datadogConfig: _datadogConfig(),
+        trackEvaluations: trackEvaluations,
+        evaluationFlushInterval: const Duration(hours: 1),
+        httpClient: client,
+        dateProvider: dateProvider ?? DateTime.now,
+      ),
       datadogConfig: _datadogConfig(),
-      evaluationFlushInterval: const Duration(hours: 1),
       httpClient: client,
-      dateProvider: dateProvider ?? DateTime.now,
     ),
-    datadogConfig: _datadogConfig(),
-    httpClient: client,
   );
 }
 

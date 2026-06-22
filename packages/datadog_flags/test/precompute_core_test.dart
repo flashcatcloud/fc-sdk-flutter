@@ -8,6 +8,7 @@ import 'dart:convert';
 import 'package:datadog_flags/datadog_flags.dart';
 import 'package:datadog_flags/src/assignment.dart';
 import 'package:datadog_flags/src/flag_assignments_fetcher.dart';
+import 'package:datadog_flags/src/flags_error.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:test/test.dart';
@@ -319,10 +320,10 @@ void main() {
             const FlagsEvaluationContext(targetingKey: 'subject'),
           ),
           throwsA(
-            isA<Exception>().having(
-              (error) => error.toString(),
-              'message',
-              contains('Unexpected flag assignments response status 500'),
+            isA<FlagsException>().having(
+              (error) => error.type,
+              'type',
+              FlagsErrorType.networkError,
             ),
           ),
         );
@@ -338,14 +339,13 @@ void main() {
             const FlagsEvaluationContext(targetingKey: 'subject'),
           ),
           throwsA(
-            isA<Exception>().having(
-              (error) => error.toString(),
-              'message',
-              allOf(
-                contains('Failed to fetch flag assignments'),
-                contains('offline'),
-              ),
-            ),
+            isA<FlagsException>()
+                .having(
+                  (error) => error.type,
+                  'type',
+                  FlagsErrorType.networkError,
+                )
+                .having((error) => error.cause, 'cause', isA<StateError>()),
           ),
         );
       },
@@ -362,7 +362,13 @@ void main() {
         fetcher.fetch(
           const FlagsEvaluationContext(targetingKey: 'subject'),
         ),
-        throwsA(isA<FormatException>()),
+        throwsA(
+          isA<FlagsException>().having(
+            (error) => error.type,
+            'type',
+            FlagsErrorType.invalidResponse,
+          ),
+        ),
       );
     });
   });

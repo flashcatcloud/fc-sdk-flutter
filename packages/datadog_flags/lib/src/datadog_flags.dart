@@ -12,6 +12,7 @@ import 'flag_assignments_fetcher.dart';
 import 'flags_client.dart';
 import 'flags_configuration.dart';
 import 'flags_repository.dart';
+import 'flags_runtime.dart';
 import 'no_op_flags_client.dart';
 
 /// Entry point for configuring and creating Datadog feature flag clients.
@@ -96,6 +97,11 @@ class DatadogFlags {
       configuration: configuration,
       httpClient: httpClient,
     );
+    final runtime = FlagsRuntime(
+      configuration: configuration,
+      datadogConfig: datadogConfig,
+      httpClient: httpClient,
+    );
 
     final repository = FlagsRepository(
       clientName: name,
@@ -107,18 +113,8 @@ class DatadogFlags {
     final client = DefaultDatadogFlagsClient(
       name: name,
       repository: repository,
-      exposureLogger: ExposureLogger(
-        configuration: configuration,
-        datadogConfig: datadogConfig,
-        httpClient: httpClient,
-      ),
-      evaluationAggregator: configuration.trackEvaluations
-          ? EvaluationAggregator(
-              configuration: configuration,
-              datadogConfig: datadogConfig,
-              httpClient: httpClient,
-            )
-          : null,
+      exposureLogger: ExposureLogger(runtime),
+      evaluationAggregator: EvaluationAggregator(runtime),
     );
     _clients[name] = client;
     return client;

@@ -6,14 +6,12 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:http/http.dart' as http;
 import 'package:meta/meta.dart';
 import 'package:uuid/uuid.dart';
 
 import 'assignment.dart';
-import 'datadog_flags_config.dart';
 import 'evaluation_context.dart';
-import 'flags_configuration.dart';
+import 'flags_runtime.dart';
 import 'json_value.dart';
 import 'sdk_metadata.dart';
 
@@ -23,9 +21,7 @@ class ExposureLogger {
   @visibleForTesting
   static Duration uploadTimeout = defaultUploadTimeout;
 
-  final DatadogFlagsConfiguration configuration;
-  final DatadogFlagsConfig datadogConfig;
-  final http.Client httpClient;
+  final FlagsRuntime runtime;
   final Map<_ExposureCacheKey, _ExposureCacheValue> _loggedAssignments = {};
   final List<Map<String, Object?>> _pendingExposures = [];
   Future<bool>? _uploadInFlight;
@@ -33,17 +29,14 @@ class ExposureLogger {
   Timer? _flushTimer;
   bool _shutdownDrainActive = false;
 
-  ExposureLogger({
-    required this.configuration,
-    required this.datadogConfig,
-    required this.httpClient,
-  });
+  ExposureLogger(this.runtime);
 
   void logExposure({
     required String flagKey,
     required FlagAssignment assignment,
     required FlagsEvaluationContext evaluationContext,
   }) {
+    final configuration = runtime.configuration;
     if (!configuration.trackExposures || !assignment.doLog) {
       return;
     }
@@ -153,12 +146,12 @@ class ExposureLogger {
     required bool rescheduleOnFailure,
   }) async {
     try {
-      final response = await httpClient
+      final response = await runtime.httpClient
           .post(
             _exposureEndpoint(),
             headers: {
               'Content-Type': 'text/plain;charset=UTF-8',
-              'DD-API-KEY': datadogConfig.clientToken,
+              'DD-API-KEY': runtime.datadogConfig.clientToken,
               'DD-EVP-ORIGIN': datadogFlagsSource,
               'DD-EVP-ORIGIN-VERSION': datadogFlagsSdkVersion,
               'DD-REQUEST-ID': const Uuid().v4(),
@@ -187,7 +180,7 @@ class ExposureLogger {
       'attributes': sanitizeJsonValue(evaluationContext.attributes),
     });
     return {
-      'timestamp': configuration.dateProvider().millisecondsSinceEpoch,
+      'timestamp': runtime.configuration.dateProvider().millisecondsSinceEpoch,
       'allocation': {'key': assignment.allocationKey},
       'flag': {'key': flagKey},
       'variant': {'key': assignment.variationKey},
@@ -227,7 +220,8 @@ class ExposureLogger {
   }
 
   Uri _exposureEndpoint() {
-    final endpoint = configuration.customExposureEndpoint ??
+    final datadogConfig = runtime.datadogConfig;
+    final endpoint = runtime.configuration.customExposureEndpoint ??
         datadogConfig.intakeEndpoint().replace(path: '/api/v2/exposures');
     return endpoint.replace(
       queryParameters: {
