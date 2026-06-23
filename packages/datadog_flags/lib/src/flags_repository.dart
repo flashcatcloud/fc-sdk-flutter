@@ -41,6 +41,7 @@ class FlagsRepository {
   FlagAssignment? flagAssignment(String key) => _state?.flags[key];
 
   Future<void> initialize(FlagsEvaluationContext context) async {
+    _currentOperation?.cancel();
     final operation = _InitializeOperation(this, context);
     _currentOperation = operation;
     await operation.run();
@@ -77,7 +78,12 @@ class FlagsRepository {
     return current != null && _contextsMatch(current.context, context);
   }
 
+  bool _isCurrentOperation(_InitializeOperation operation) {
+    return identical(_currentOperation, operation);
+  }
+
   Future<void> clearMemory() async {
+    _currentOperation?.cancel();
     _currentOperation = null;
     _state = null;
   }
@@ -133,15 +139,22 @@ class FlagsRepository {
 class _InitializeOperation {
   final FlagsRepository _repository;
   final FlagsEvaluationContext context;
+  var _canceled = false;
 
   _InitializeOperation(this._repository, this.context);
 
-  bool get isCurrent => identical(_repository._currentOperation, this);
+  bool get isCanceled => _canceled;
+
+  bool get isCurrent => !isCanceled && _repository._isCurrentOperation(this);
+
+  void cancel() {
+    _canceled = true;
+  }
 
   Future<void> run() async {
     final cached =
         _repository.store == null ? null : await _repository._readCached();
-    if (!isCurrent) {
+    if (isCanceled) {
       return;
     }
 
@@ -150,6 +163,9 @@ class _InitializeOperation {
             ? cached
             : null;
     if (matchingCached != null) {
+      if (isCanceled) {
+        return;
+      }
       _repository._publishStoredAssignments(this, matchingCached);
     }
 
@@ -161,12 +177,15 @@ class _InitializeOperation {
   }) async {
     try {
       final assignments = await _repository.fetcher.fetch(context);
+      if (isCanceled) {
+        return;
+      }
       await _repository._publishAssignments(
         operation: this,
         assignments: assignments,
       );
     } catch (_) {
-      if (clearOnFailure && isCurrent) {
+      if (clearOnFailure && !isCanceled && isCurrent) {
         _repository._state = null;
       }
     }

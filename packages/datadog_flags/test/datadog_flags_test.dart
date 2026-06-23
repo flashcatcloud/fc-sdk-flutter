@@ -1176,6 +1176,39 @@ void main() {
     await _waitUntil(() => _evaluationRequests(requests).length == 1);
   });
 
+  test('reset cancels in-flight assignment refreshes', () async {
+    final liveResponse = Completer<http.Response>();
+    final requests = <http.Request>[];
+    final datadogFlags = DatadogFlags();
+    addTearDown(datadogFlags.disable);
+    await datadogFlags.enable(
+      configuration: DatadogFlagsConfiguration(
+        datadogConfig: _datadogConfig(),
+        trackExposures: false,
+        trackEvaluations: false,
+        httpClient: MockClient((request) {
+          requests.add(request);
+          return liveResponse.future;
+        }),
+      ),
+    );
+    final client = datadogFlags.sharedClient();
+    final initialize = client.initialize(
+      const FlagsEvaluationContext(targetingKey: 'user-123'),
+    );
+    await _waitUntil(() => requests.length == 1);
+
+    await datadogFlags.reset();
+    liveResponse
+        .complete(http.Response(jsonEncode(_assignmentsResponse()), 200));
+    await initialize;
+
+    expect(
+      client.getBooleanDetails(key: 'show-paywall', defaultValue: false).error,
+      FlagEvaluationError.providerNotReady,
+    );
+  });
+
   test('reset waits for pending store writes before deleting assignments',
       () async {
     final store = _DelayedWriteStore();
