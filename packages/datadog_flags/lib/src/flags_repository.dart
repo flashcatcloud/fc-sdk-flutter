@@ -25,7 +25,7 @@ class FlagsRepository {
   final DateTime Function() dateProvider;
 
   FlagsData? _state;
-  _InitializeOperation? _currentOperation;
+  _CancelToken? _currentToken;
   Future<void> _cacheOperation = Future<void>.value();
 
   FlagsRepository({
@@ -41,36 +41,40 @@ class FlagsRepository {
   FlagAssignment? flagAssignment(String key) => _state?.flags[key];
 
   Future<void> initialize(FlagsEvaluationContext context) async {
-    _currentOperation?.cancel();
-    final operation = _InitializeOperation(this, context);
-    _currentOperation = operation;
-    await operation.run();
-  }
+    _currentToken?.cancel();
+    final token = _CancelToken();
+    _currentToken = token;
 
-  Future<void> _publishAssignments({
-    required _InitializeOperation operation,
-    required PrecomputedAssignments assignments,
-  }) async {
-    if (!operation.isCurrent) {
+    final cached = store == null ? null : await _readCached();
+    if (token.isCanceled) {
       return;
     }
 
-    final data = FlagsData(
-      flags: assignments.flags,
-      context: operation.context,
-      date: dateProvider(),
-    );
-    _state = data;
-    await _writeCached(data);
-  }
-
-  void _publishStoredAssignments(
-      _InitializeOperation operation, FlagsData data) {
-    if (!operation.isCurrent || _hasCurrentStateForContext(data.context)) {
-      return;
+    final matchingCached =
+        cached != null && _contextsMatch(cached.context, context)
+            ? cached
+            : null;
+    if (matchingCached != null && !_hasCurrentStateForContext(context)) {
+      _state = matchingCached;
     }
 
-    _state = data;
+    try {
+      final assignments = await fetcher.fetch(context);
+      if (token.isCanceled) {
+        return;
+      }
+      final data = FlagsData(
+        flags: assignments.flags,
+        context: context,
+        date: dateProvider(),
+      );
+      _state = data;
+      await _writeCached(data);
+    } catch (_) {
+      if (!token.isCanceled && matchingCached == null) {
+        _state = null;
+      }
+    }
   }
 
   bool _hasCurrentStateForContext(FlagsEvaluationContext context) {
@@ -78,13 +82,9 @@ class FlagsRepository {
     return current != null && _contextsMatch(current.context, context);
   }
 
-  bool _isCurrentOperation(_InitializeOperation operation) {
-    return identical(_currentOperation, operation);
-  }
-
   Future<void> clearMemory() async {
-    _currentOperation?.cancel();
-    _currentOperation = null;
+    _currentToken?.cancel();
+    _currentToken = null;
     _state = null;
   }
 
@@ -136,59 +136,13 @@ class FlagsRepository {
   }
 }
 
-class _InitializeOperation {
-  final FlagsRepository _repository;
-  final FlagsEvaluationContext context;
+class _CancelToken {
   var _canceled = false;
-
-  _InitializeOperation(this._repository, this.context);
 
   bool get isCanceled => _canceled;
 
-  bool get isCurrent => !isCanceled && _repository._isCurrentOperation(this);
-
   void cancel() {
     _canceled = true;
-  }
-
-  Future<void> run() async {
-    final cached =
-        _repository.store == null ? null : await _repository._readCached();
-    if (isCanceled) {
-      return;
-    }
-
-    final matchingCached =
-        cached != null && _contextsMatch(cached.context, context)
-            ? cached
-            : null;
-    if (matchingCached != null) {
-      if (isCanceled) {
-        return;
-      }
-      _repository._publishStoredAssignments(this, matchingCached);
-    }
-
-    await _publishLiveAssignments(clearOnFailure: matchingCached == null);
-  }
-
-  Future<void> _publishLiveAssignments({
-    required bool clearOnFailure,
-  }) async {
-    try {
-      final assignments = await _repository.fetcher.fetch(context);
-      if (isCanceled) {
-        return;
-      }
-      await _repository._publishAssignments(
-        operation: this,
-        assignments: assignments,
-      );
-    } catch (_) {
-      if (clearOnFailure && !isCanceled && isCurrent) {
-        _repository._state = null;
-      }
-    }
   }
 }
 
