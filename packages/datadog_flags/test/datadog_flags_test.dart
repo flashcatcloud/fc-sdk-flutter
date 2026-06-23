@@ -1019,6 +1019,74 @@ void main() {
     );
   });
 
+  test('does not replace current assignments with matching stored assignments',
+      () async {
+    final store = InMemoryDatadogFlagsStore();
+    final requests = <http.Request>[];
+    final liveResponse = Completer<http.Response>();
+    var precomputeRequests = 0;
+    final datadogFlags = DatadogFlags();
+    addTearDown(datadogFlags.disable);
+    await datadogFlags.enable(
+      configuration: DatadogFlagsConfiguration(
+        datadogConfig: _datadogConfig(),
+        trackExposures: false,
+        trackEvaluations: false,
+        httpClient: MockClient((request) {
+          requests.add(request);
+          precomputeRequests += 1;
+          if (precomputeRequests == 1) {
+            return Future.value(
+              http.Response(jsonEncode(_assignmentsResponse()), 200),
+            );
+          }
+          return liveResponse.future;
+        }),
+        store: store,
+      ),
+    );
+    const context = FlagsEvaluationContext(targetingKey: 'user-123');
+    final client = datadogFlags.sharedClient();
+
+    await client.initialize(context);
+    expect(
+      client.getBooleanDetails(key: 'show-paywall', defaultValue: false).value,
+      isTrue,
+    );
+
+    await store.write(
+      DatadogFlags.defaultClientName,
+      FlagsData.fromJson({
+        'flags': {
+          'show-paywall': _assignment(
+            allocationKey: 'stale-allocation',
+            variationKey: 'disabled',
+            variationType: 'boolean',
+            variationValue: false,
+          ),
+        },
+        'context': context.toJson(),
+        'date': DateTime.utc(2026, 6, 23).toIso8601String(),
+      }),
+    );
+
+    final refresh = client.initialize(context);
+    await _waitUntil(() => requests.length == 2);
+    expect(
+      client.getBooleanDetails(key: 'show-paywall', defaultValue: false).value,
+      isTrue,
+    );
+
+    liveResponse.complete(
+      http.Response(jsonEncode(_assignmentsResponse(booleanValue: false)), 200),
+    );
+    await refresh;
+    expect(
+      client.getBooleanDetails(key: 'show-paywall', defaultValue: true).value,
+      isFalse,
+    );
+  });
+
   test('ignores stored assignments for a different context', () async {
     final store = InMemoryDatadogFlagsStore();
     final requests = <http.Request>[];

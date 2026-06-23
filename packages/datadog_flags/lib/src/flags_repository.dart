@@ -57,7 +57,7 @@ class FlagsRepository {
     final data = FlagsData(
       flags: assignments.flags,
       context: operation.context,
-      date: _nextStateDate(),
+      date: dateProvider(),
     );
     _state = data;
     await _writeCached(data);
@@ -65,29 +65,16 @@ class FlagsRepository {
 
   void _publishStoredAssignments(
       _InitializeOperation operation, FlagsData data) {
-    if (!operation.isCurrent || _isOlderThanCurrentState(data)) {
+    if (!operation.isCurrent || _hasCurrentStateForContext(data.context)) {
       return;
     }
 
     _state = data;
   }
 
-  bool _isOlderThanCurrentState(FlagsData data) {
+  bool _hasCurrentStateForContext(FlagsEvaluationContext context) {
     final current = _state;
-    return current != null &&
-        _contextsMatch(current.context, data.context) &&
-        data.date.isBefore(current.date);
-  }
-
-  DateTime _nextStateDate() {
-    final now = dateProvider();
-    final current = _state?.date;
-    // Do not let a live refresh move persisted state backward if the injected
-    // clock repeats or regresses during a fast same-context refresh.
-    if (current != null && !now.isAfter(current)) {
-      return current.add(const Duration(microseconds: 1));
-    }
-    return now;
+    return current != null && _contextsMatch(current.context, context);
   }
 
   Future<void> clearMemory() async {
