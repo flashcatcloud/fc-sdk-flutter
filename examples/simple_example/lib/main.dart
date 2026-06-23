@@ -44,7 +44,7 @@ Future<void> main() async {
   final env = _configValue(
     'DD_ENV',
     defineValue: ddEnv,
-    defaultValue: siteName == 'datad0g.com' ? 'staging' : 'dev',
+    defaultValue: 'dev',
   );
   final datadogConfig = DatadogConfiguration(
     clientToken: _configValue(
@@ -54,44 +54,42 @@ Future<void> main() async {
     ),
     env: env,
     site: _siteForName(siteName),
-    loggingConfiguration:
-        DatadogLoggingConfiguration(customEndpoint: intakeEndpoint),
+    loggingConfiguration: DatadogLoggingConfiguration(
+      customEndpoint: intakeEndpoint,
+    ),
     firstPartyHosts: ['localhost'],
     rumConfiguration: DatadogRumConfiguration(
-        applicationId: applicationId,
-        customEndpoint: intakeEndpoint,
-        traceSampleRate: 100.0,
-        trackResourceHeaders: ResourceHeadersExtractor(
-          captureHeaders: [
-            'accept-ranges',
-            'content-disposition',
-            'server',
-            'user-agent',
-            'via',
-            'x-cache-hits',
-            'x-served-by',
-            'x-datadog-trace-id',
-            'x-datadog-parent-id',
-            'x-datadog-origin',
-            'traceparent',
-          ],
-        )),
+      applicationId: applicationId,
+      customEndpoint: intakeEndpoint,
+      traceSampleRate: 100.0,
+      trackResourceHeaders: ResourceHeadersExtractor(
+        captureHeaders: [
+          'accept-ranges',
+          'content-disposition',
+          'server',
+          'user-agent',
+          'via',
+          'x-cache-hits',
+          'x-served-by',
+          'x-datadog-trace-id',
+          'x-datadog-parent-id',
+          'x-datadog-origin',
+          'traceparent',
+        ],
+      ),
+    ),
   )
     ..enableHttpTracking(
       // Using ignoreUrlPatterns is needed if you want to combine HttpClient
       // tracking and GraphQL tracking through datadog_gql_link
-      ignoreUrlPatterns: [
-        RegExp('localhost'),
-      ],
+      ignoreUrlPatterns: [RegExp('localhost')],
     )
     ..enableSessionReplay(
-        DatadogSessionReplayConfiguration(replaySampleRate: 100));
+      DatadogSessionReplayConfiguration(replaySampleRate: 100),
+    );
 
   // runUsingRunApp(datadogConfig);
-  runUsingAlternativeInit(
-    datadogConfig,
-    siteName: siteName,
-  );
+  runUsingAlternativeInit(datadogConfig, siteName: siteName);
 }
 
 String _configValue(
@@ -159,17 +157,14 @@ Future<void> runUsingAlternativeInit(
     siteName: siteName,
     applicationId: datadogConfig.rumConfiguration?.applicationId,
   );
-  await DatadogFlags.enable(configuration: flagsRuntime.configuration);
+  await DatadogFlags.instance.enable(configuration: flagsRuntime.configuration);
   final link = Link.from([
     DatadogGqlLink(DatadogSdk.instance, Uri.parse(graphQlUrl)),
     HttpLink(graphQlUrl),
   ]);
 
   final graphQlClient = GraphQLClient(link: link, cache: GraphQLCache());
-  runApp(MyApp(
-    graphQLClient: graphQlClient,
-    flagsRuntime: flagsRuntime,
-  ));
+  runApp(MyApp(graphQLClient: graphQlClient, flagsRuntime: flagsRuntime));
 }
 
 Future<void> runUsingRunApp(DatadogConfiguration datadogConfig) async {
@@ -187,17 +182,16 @@ Future<void> runUsingRunApp(DatadogConfiguration datadogConfig) async {
       siteName: siteName,
       applicationId: datadogConfig.rumConfiguration?.applicationId,
     ).then((flagsRuntime) async {
-      await DatadogFlags.enable(configuration: flagsRuntime.configuration);
+      await DatadogFlags.instance.enable(
+        configuration: flagsRuntime.configuration,
+      );
       final link = Link.from([
         DatadogGqlLink(DatadogSdk.instance, Uri.parse(graphQlUrl)),
         HttpLink(graphQlUrl),
       ]);
       final graphQlClient = GraphQLClient(link: link, cache: GraphQLCache());
 
-      runApp(MyApp(
-        graphQLClient: graphQlClient,
-        flagsRuntime: flagsRuntime,
-      ));
+      runApp(MyApp(graphQLClient: graphQlClient, flagsRuntime: flagsRuntime));
     });
   });
 }

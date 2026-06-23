@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../flags/flags_demo_runtime.dart';
+import '../flags/flags_request_counter.dart';
 
 class FlagsScreen extends StatefulWidget {
   final FlagsDemoRuntime runtime;
@@ -22,8 +23,10 @@ class FlagsScreen extends StatefulWidget {
 }
 
 class _FlagsScreenState extends State<FlagsScreen> {
-  static const _targetingKey = String.fromEnvironment('FLAGS_TARGETING_KEY',
-      defaultValue: 'test_subject4');
+  static const _targetingKey = String.fromEnvironment(
+    'FLAGS_TARGETING_KEY',
+    defaultValue: 'test_subject4',
+  );
   static const _targetingAttributesJson = String.fromEnvironment(
     'FLAGS_TARGETING_ATTRIBUTES_JSON',
     defaultValue: '{"attr1":"value1","companyId":"1"}',
@@ -33,32 +36,41 @@ class _FlagsScreenState extends State<FlagsScreen> {
   static const _integerKeys = String.fromEnvironment('FLAGS_INTEGER_KEYS');
   static const _doubleKeys = String.fromEnvironment('FLAGS_DOUBLE_KEYS');
   static const _objectKeys = String.fromEnvironment('FLAGS_OBJECT_KEYS');
-  static const _exposureProbeKey = String.fromEnvironment(
-    'FLAGS_EXPOSURE_PROBE_KEY',
-    defaultValue: 'android-mobile-app-aa-test',
-  );
+  static const _initialModeName = String.fromEnvironment('FLAGS_MODE');
 
-  late final DatadogFlagsClient _client;
+  late DatadogFlagsClient _client;
   Timer? _counterRefreshTimer;
+  late FlagsDemoProviderMode _mode;
   String _assignmentState = 'idle';
+  Duration? _lastAssignmentsRefreshDuration;
+  Duration? _lastProviderInitializationDuration;
+  late String _configuredEnv;
+  late String _obfuscatedClientToken;
   int _recordedEvaluationCount = 0;
+  int _refreshRequestId = 0;
   List<_EvaluatedFlag> _flags = [];
 
   @override
   void initState() {
     super.initState();
-    _client = DatadogFlagsClient.shared();
+    _mode = _initialMode();
+    _client = DatadogFlags.instance.sharedClient();
+    _configuredEnv = widget.runtime.configuredEnv;
+    _obfuscatedClientToken = widget.runtime.obfuscatedClientToken;
     if (widget.runtime.counter != null) {
-      _counterRefreshTimer = Timer.periodic(
-        const Duration(milliseconds: 500),
-        (_) {
-          if (mounted) {
-            setState(() {});
-          }
-        },
-      );
+      _counterRefreshTimer = Timer.periodic(const Duration(milliseconds: 500), (
+        _,
+      ) {
+        if (mounted) {
+          setState(() {});
+        }
+      });
     }
-    _refreshFlags();
+    if (_mode == FlagsDemoProviderMode.ffeDogfooding) {
+      unawaited(_refreshFlags());
+    } else {
+      unawaited(_enableProviderAndRefresh(_mode));
+    }
   }
 
   @override
@@ -68,104 +80,150 @@ class _FlagsScreenState extends State<FlagsScreen> {
   }
 
   Future<void> _refreshFlags() async {
+    final requestId = ++_refreshRequestId;
+    final mode = _modeDefinition(_mode);
+    final stopwatch = Stopwatch()..start();
     setState(() {
       _assignmentState = 'fetching';
+      _lastAssignmentsRefreshDuration = null;
     });
     try {
-      await _client.setEvaluationContext(DatadogFlagsEvaluationContext(
-        targetingKey: _targetingKey,
-        attributes: _targetingAttributes(),
-      ));
-      _evaluate();
+      await _client.initialize(
+        FlagsEvaluationContext(
+          targetingKey: mode.targetingKey,
+          attributes: mode.targetingAttributes,
+        ),
+      );
+      stopwatch.stop();
+      if (!mounted || requestId != _refreshRequestId) {
+        return;
+      }
+      _evaluate(mode);
       setState(() {
         _assignmentState = 'ready';
+        _lastAssignmentsRefreshDuration = stopwatch.elapsed;
       });
     } catch (error) {
+      stopwatch.stop();
+      if (!mounted || requestId != _refreshRequestId) {
+        return;
+      }
       setState(() {
         _assignmentState = 'fetch failed: $error';
+        _lastAssignmentsRefreshDuration = stopwatch.elapsed;
         _flags = [];
       });
     }
   }
 
-  void _evaluate() {
+  void _evaluate([_FlagModeDefinition? mode]) {
+    final selectedMode = mode ?? _modeDefinition(_mode);
     final flags = <_EvaluatedFlag>[];
-    for (final key
-        in _keys(_booleanKeys, const ['ffe-dogfooding-boolean-flag'])) {
-      flags.add(_EvaluatedFlag(
-        label: 'Boolean',
-        key: key,
-        details: _client.getBooleanDetails(
-          key: key,
-          defaultValue: false,
+    for (final spec in selectedMode.flags) {
+      flags.add(
+        _EvaluatedFlag(
+          label: spec.label,
+          key: spec.key,
+          details: _detailsForSpec(spec),
         ),
-      ));
-    }
-    for (final key
-        in _keys(_stringKeys, const ['ffe-dogfooding-string-flag'])) {
-      flags.add(_EvaluatedFlag(
-        label: 'String',
-        key: key,
-        details: _client.getStringDetails(
-          key: key,
-          defaultValue: 'Fallback title',
-        ),
-      ));
-    }
-    for (final key
-        in _keys(_integerKeys, const ['ffe-dogfooding-integer-flag'])) {
-      flags.add(_EvaluatedFlag(
-        label: 'Integer',
-        key: key,
-        details: _client.getIntegerDetails(
-          key: key,
-          defaultValue: 0,
-        ),
-      ));
-    }
-    for (final key in _keys(_doubleKeys, const ['ffe-dogfooding-float-flag'])) {
-      flags.add(_EvaluatedFlag(
-        label: 'Float',
-        key: key,
-        details: _client.getDoubleDetails(
-          key: key,
-          defaultValue: 0,
-        ),
-      ));
-    }
-    for (final key in _keys(_objectKeys, const ['ffe-dogfooding-json-flag'])) {
-      flags.add(_EvaluatedFlag(
-        label: 'JSON',
-        key: key,
-        details: _client.getObjectDetails(
-          key: key,
-          defaultValue: const {},
-        ),
-      ));
-    }
-    var evaluationCount = flags.length;
-    final exposureProbeKey = _exposureProbeKey.trim();
-    if (exposureProbeKey.isNotEmpty &&
-        !flags.any((flag) => flag.key == exposureProbeKey)) {
-      _client.getStringDetails(
-        key: exposureProbeKey,
-        defaultValue: '',
       );
-      evaluationCount += 1;
     }
     setState(() {
       _flags = flags;
-      _recordedEvaluationCount += evaluationCount;
+      _recordedEvaluationCount += flags.length;
     });
+  }
+
+  FlagDetails<dynamic> _detailsForSpec(_FlagSpec spec) {
+    return switch (spec.type) {
+      _FlagValueType.boolean => _client.getBooleanDetails(
+          key: spec.key,
+          defaultValue: false,
+        ),
+      _FlagValueType.string => _client.getStringDetails(
+          key: spec.key,
+          defaultValue: 'Fallback title',
+        ),
+      _FlagValueType.integer => _client.getIntegerDetails(
+          key: spec.key,
+          defaultValue: 0,
+        ),
+      _FlagValueType.float => _client.getDoubleDetails(
+          key: spec.key,
+          defaultValue: 0,
+        ),
+      _FlagValueType.object => _client.getObjectDetails(
+          key: spec.key,
+          defaultValue: const {},
+        ),
+    };
+  }
+
+  Future<void> _selectMode(FlagsDemoProviderMode mode) async {
+    if (_mode == mode) {
+      return;
+    }
+    setState(() {
+      _mode = mode;
+    });
+    await _enableProviderAndRefresh(mode);
+  }
+
+  Future<void> _enableProviderAndRefresh(FlagsDemoProviderMode mode) async {
+    final requestId = ++_refreshRequestId;
+    setState(() {
+      _assignmentState = 'switching';
+      _flags = [];
+    });
+    try {
+      final diagnostics = await widget.runtime.enableProvider(mode);
+      if (!mounted || requestId != _refreshRequestId) {
+        return;
+      }
+      _client = DatadogFlags.instance.sharedClient();
+      setState(() {
+        _configuredEnv = diagnostics.configuredEnv;
+        _obfuscatedClientToken = diagnostics.obfuscatedClientToken;
+        _lastProviderInitializationDuration =
+            diagnostics.providerInitializationDuration;
+      });
+    } catch (error) {
+      if (!mounted || requestId != _refreshRequestId) {
+        return;
+      }
+      setState(() {
+        _assignmentState = 'switch failed: $error';
+      });
+      return;
+    }
+    await _refreshFlags();
+  }
+
+  Future<void> _clearExposureCache() async {
+    await _enableProviderAndRefresh(_mode);
+    if (!mounted) {
+      return;
+    }
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Exposure cache cleared')));
   }
 
   @override
   Widget build(BuildContext context) {
     final counter = widget.runtime.counter;
+    final selectedMode = _modeDefinition(_mode);
     return Scaffold(
       appBar: AppBar(
+        toolbarHeight: 48,
         title: const Text('Flags'),
         actions: [
+          IconButton(
+            key: const Key('flags-clear-exposure-cache-button'),
+            tooltip: 'Clear exposure cache',
+            icon: const Icon(Icons.clear_all),
+            onPressed: _clearExposureCache,
+          ),
           IconButton(
             key: const Key('flags-home-button'),
             tooltip: 'Home',
@@ -175,50 +233,53 @@ class _FlagsScreenState extends State<FlagsScreen> {
         ],
       ),
       body: DefaultTextStyle.merge(
-        style: const TextStyle(fontSize: 14),
+        style: const TextStyle(fontSize: 13),
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
+          padding: const EdgeInsets.fromLTRB(12, 4, 12, 8),
           children: [
+            _ModeRow(selectedMode: _mode, onChanged: _selectMode),
             _Row(label: 'Assignments', value: _assignmentState),
-            const _Row(label: 'Targeting key', value: _targetingKey),
+            _Row(label: 'Targeting key', value: selectedMode.targetingKey),
             _Row(
-              label: 'Eval calls',
-              value: '$_recordedEvaluationCount',
+              label: 'Events',
+              value: _eventsSummary(counter),
               valueKey: const Key('flags-recorded-evaluation-count'),
             ),
-            if (counter != null) ...[
-              _Row(
-                label: 'Exposures',
-                value: '${counter.exposureCount}',
-                valueKey: const Key('flags-exposure-count'),
-              ),
-              _Row(
-                label: 'Flag eval events',
-                value: '${counter.evaluationEventCount}',
-                valueKey: const Key('flags-evaluation-event-count'),
-              ),
-            ],
-            const SizedBox(height: 8),
+            _Row(
+              label: 'Env / token',
+              value: '$_configuredEnv / $_obfuscatedClientToken',
+            ),
+            _DiagnosticsGrid(
+              rows: _diagnosticRows(),
+              gridKey: const Key('flags-diagnostics'),
+            ),
+            const SizedBox(height: 2),
             for (final flag in _flags)
               _DetailsRow(
                 label: flag.label,
                 keyName: flag.key,
                 details: flag.details,
               ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
             Row(
               children: [
                 Expanded(
                   child: ElevatedButton(
                     onPressed: _refreshFlags,
-                    child: const Text('Refresh'),
+                    child: const FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text('Refresh assignments', maxLines: 1),
+                    ),
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 8),
                 Expanded(
                   child: ElevatedButton(
                     onPressed: _evaluate,
-                    child: const Text('Evaluate'),
+                    child: const FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text('Evaluate flags', maxLines: 1),
+                    ),
                   ),
                 ),
               ],
@@ -240,6 +301,104 @@ class _FlagsScreenState extends State<FlagsScreen> {
     return defaultKeys;
   }
 
+  FlagsDemoProviderMode _initialMode() {
+    return switch (_initialModeName) {
+      'perplexity' ||
+      'perplexity-load-test' =>
+        FlagsDemoProviderMode.perplexityLoadTest,
+      _ => FlagsDemoProviderMode.ffeDogfooding,
+    };
+  }
+
+  _FlagModeDefinition _modeDefinition(FlagsDemoProviderMode mode) {
+    return switch (mode) {
+      FlagsDemoProviderMode.ffeDogfooding => _FlagModeDefinition(
+          label: 'FFE dogfooding',
+          targetingKey: _targetingKey,
+          targetingAttributes: _targetingAttributes(),
+          flags: [
+            ..._specs(
+              configured: _booleanKeys,
+              defaultKeys: const ['ffe-dogfooding-boolean-flag'],
+              label: 'Boolean',
+              type: _FlagValueType.boolean,
+            ),
+            ..._specs(
+              configured: _stringKeys,
+              defaultKeys: const ['ffe-dogfooding-string-flag'],
+              label: 'String',
+              type: _FlagValueType.string,
+            ),
+            ..._specs(
+              configured: _integerKeys,
+              defaultKeys: const ['ffe-dogfooding-integer-flag'],
+              label: 'Integer',
+              type: _FlagValueType.integer,
+            ),
+            ..._specs(
+              configured: _doubleKeys,
+              defaultKeys: const ['ffe-dogfooding-float-flag'],
+              label: 'Float',
+              type: _FlagValueType.float,
+            ),
+            ..._specs(
+              configured: _objectKeys,
+              defaultKeys: const ['ffe-dogfooding-json-flag'],
+              label: 'JSON',
+              type: _FlagValueType.object,
+            ),
+          ],
+        ),
+      FlagsDemoProviderMode.perplexityLoadTest => const _FlagModeDefinition(
+          label: 'Perplexity load test',
+          targetingKey: 'perplexity-load-test-subject',
+          targetingAttributes: {
+            'attr1': 'value1',
+            'companyId': 'perplexity-load-test',
+            'org': 'perplexity-load-test',
+          },
+          flags: [
+            _FlagSpec(
+              label: 'Boolean',
+              key: '2025-nba-playoffs-bracket',
+              type: _FlagValueType.boolean,
+            ),
+            _FlagSpec(
+              label: 'String',
+              key: 'thread-branching-enabled',
+              type: _FlagValueType.string,
+            ),
+            _FlagSpec(
+              label: 'JSON',
+              key: 'windows-app-milestone-check-config',
+              type: _FlagValueType.object,
+            ),
+            _FlagSpec(
+              label: 'Integer',
+              key: 'android-attachment-limit',
+              type: _FlagValueType.integer,
+            ),
+            _FlagSpec(
+              label: 'Integer',
+              key: 'cf-challenge-reload',
+              type: _FlagValueType.integer,
+            ),
+          ],
+        ),
+    };
+  }
+
+  List<_FlagSpec> _specs({
+    required String configured,
+    required List<String> defaultKeys,
+    required String label,
+    required _FlagValueType type,
+  }) {
+    return _keys(configured, defaultKeys).map((key) {
+      return _FlagSpec(label: label, key: key, type: type);
+    }).toList(growable: false);
+  }
+
   static Map<String, Object?> _targetingAttributes() {
     try {
       final decoded = jsonDecode(_targetingAttributesJson);
@@ -254,6 +413,83 @@ class _FlagsScreenState extends State<FlagsScreen> {
     }
     return const {};
   }
+
+  List<List<_DiagnosticMetric>> _diagnosticRows() {
+    final counter = widget.runtime.counter;
+    return [
+      [
+        _DiagnosticMetric(
+          label: 'Refresh',
+          value: _formatDuration(_lastAssignmentsRefreshDuration),
+        ),
+        _DiagnosticMetric(
+          label: 'HTTP',
+          value: _formatDuration(counter?.lastPrecomputeHttpDuration),
+        ),
+        _DiagnosticMetric(
+          label: 'Payload parse',
+          value: _formatDuration(counter?.lastPrecomputePayloadParseDuration),
+        ),
+      ],
+      [
+        _DiagnosticMetric(
+          label: 'Provider init',
+          value: _formatDuration(_lastProviderInitializationDuration),
+        ),
+        _DiagnosticMetric(
+          label: 'Payload',
+          value: _formatBytes(counter?.lastPrecomputePayloadBytes),
+        ),
+        _DiagnosticMetric(
+          label: 'Flag keys',
+          value: _formatNullableCount(counter?.lastPrecomputeFlagCount),
+        ),
+      ],
+    ];
+  }
+
+  String _eventsSummary(FlagsRequestCounter? counter) {
+    if (counter == null) {
+      return 'eval $_recordedEvaluationCount';
+    }
+    return 'eval $_recordedEvaluationCount / exposures ${counter.exposureCount} / flageval ${counter.evaluationEventCount}';
+  }
+
+  String _formatDuration(Duration? duration) {
+    if (duration == null) {
+      return '-';
+    }
+    final microseconds = duration.inMicroseconds;
+    if (microseconds < 1000) {
+      return '$microseconds us';
+    }
+    final milliseconds = microseconds / 1000;
+    if (milliseconds < 1000) {
+      return '${milliseconds.toStringAsFixed(1)} ms';
+    }
+    return '${(milliseconds / 1000).toStringAsFixed(2)} s';
+  }
+
+  String _formatNullableCount(int? value) {
+    if (value == null) {
+      return '-';
+    }
+    return '$value';
+  }
+
+  String _formatBytes(int? bytes) {
+    if (bytes == null) {
+      return '-';
+    }
+    if (bytes < 1024) {
+      return '$bytes B';
+    }
+    final kibibytes = bytes / 1024;
+    if (kibibytes < 1024) {
+      return '${kibibytes.toStringAsFixed(1)} KB';
+    }
+    return '${(kibibytes / 1024).toStringAsFixed(1)} MB';
+  }
 }
 
 class _EvaluatedFlag {
@@ -266,6 +502,80 @@ class _EvaluatedFlag {
     required this.key,
     required this.details,
   });
+}
+
+class _FlagModeDefinition {
+  final String label;
+  final String targetingKey;
+  final Map<String, Object?> targetingAttributes;
+  final List<_FlagSpec> flags;
+
+  const _FlagModeDefinition({
+    required this.label,
+    required this.targetingKey,
+    required this.targetingAttributes,
+    required this.flags,
+  });
+}
+
+class _FlagSpec {
+  final String label;
+  final String key;
+  final _FlagValueType type;
+
+  const _FlagSpec({required this.label, required this.key, required this.type});
+}
+
+enum _FlagValueType { boolean, string, integer, float, object }
+
+class _ModeRow extends StatelessWidget {
+  final FlagsDemoProviderMode selectedMode;
+  final ValueChanged<FlagsDemoProviderMode> onChanged;
+
+  const _ModeRow({required this.selectedMode, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 3),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          const SizedBox(
+            width: 112,
+            child: Text('Org', style: TextStyle(fontWeight: FontWeight.w600)),
+          ),
+          Expanded(
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<FlagsDemoProviderMode>(
+                key: const Key('flags-mode-selector'),
+                value: selectedMode,
+                isExpanded: true,
+                items: FlagsDemoProviderMode.values.map((mode) {
+                  return DropdownMenuItem(
+                    value: mode,
+                    child: Text(_modeLabel(mode)),
+                  );
+                }).toList(growable: false),
+                onChanged: (mode) {
+                  if (mode != null) {
+                    onChanged(mode);
+                  }
+                },
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _modeLabel(FlagsDemoProviderMode mode) {
+    return switch (mode) {
+      FlagsDemoProviderMode.ffeDogfooding => 'FFE dogfooding',
+      FlagsDemoProviderMode.perplexityLoadTest => 'Perplexity load test',
+    };
+  }
 }
 
 class _DetailsRow extends StatelessWidget {
@@ -282,13 +592,15 @@ class _DetailsRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final value = details;
+    final formattedValue = value == null ? '-' : _formatValue(value.value);
+    final error = value?.error?.name;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 5),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
-            width: 72,
+            width: 74,
             child: Text(
               label,
               style: const TextStyle(fontWeight: FontWeight.w600),
@@ -304,17 +616,9 @@ class _DetailsRow extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  value == null ? '-' : _formatValue(value.value),
+                  error == null ? formattedValue : '$formattedValue - $error',
                   softWrap: true,
                 ),
-                if (value?.error != null) ...[
-                  const SizedBox(height: 1),
-                  Text(
-                    'error=${value?.error?.name}',
-                    style: Theme.of(context).textTheme.bodySmall,
-                    softWrap: true,
-                  ),
-                ],
               ],
             ),
           ),
@@ -346,7 +650,7 @@ class _Row extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
-            width: 140,
+            width: 112,
             child: Text(
               label,
               style: const TextStyle(fontWeight: FontWeight.w600),
@@ -354,6 +658,63 @@ class _Row extends StatelessWidget {
           ),
           Expanded(child: Text(value, key: valueKey)),
         ],
+      ),
+    );
+  }
+}
+
+class _DiagnosticMetric {
+  final String label;
+  final String value;
+
+  const _DiagnosticMetric({required this.label, required this.value});
+}
+
+class _DiagnosticsGrid extends StatelessWidget {
+  final List<List<_DiagnosticMetric>> rows;
+  final Key? gridKey;
+
+  const _DiagnosticsGrid({required this.rows, this.gridKey});
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    return Padding(
+      key: gridKey,
+      padding: const EdgeInsets.only(top: 8, bottom: 4),
+      child: Column(
+        children: rows.map((row) {
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 6),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: row.map((metric) {
+                return Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          metric.label,
+                          style: textTheme.labelSmall?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          metric.value,
+                          style: textTheme.bodySmall,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }).toList(growable: false),
+            ),
+          );
+        }).toList(growable: false),
       ),
     );
   }

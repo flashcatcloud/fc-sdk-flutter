@@ -13,9 +13,14 @@ import 'package:test_app/flags/forwarding_flags_counter.dart';
 void main() {
   test('forwarding counter records flag request attempts and forwards them',
       () async {
+    const precomputeBody =
+        '{"data":{"attributes":{"flags":{"flag-a":{},"flag-b":{}}}}}';
     final forwarded = <http.Request>[];
     final client = CountingFlagsHttpClient(MockClient((request) async {
       forwarded.add(request);
+      if (request.url.path == '/precompute-assignments') {
+        return http.Response(precomputeBody, 200);
+      }
       return http.Response('{}', 202);
     }));
 
@@ -50,6 +55,11 @@ void main() {
 
     expect(forwarded, hasLength(3));
     expect(client.precomputeRequestCount, 1);
+    expect(client.lastPrecomputeFlagCount, 2);
+    expect(
+        client.lastPrecomputePayloadBytes, utf8.encode(precomputeBody).length);
+    expect(client.lastPrecomputeHttpDuration, isNotNull);
+    expect(client.lastPrecomputePayloadParseDuration, isNotNull);
     expect(client.exposureCount, 1);
     expect(client.evaluationRequestCount, 1);
     expect(client.evaluationEventCount, 2);

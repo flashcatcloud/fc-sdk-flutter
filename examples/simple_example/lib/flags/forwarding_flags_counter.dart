@@ -3,6 +3,7 @@
 // developed at Datadog (https://www.datadoghq.com/).
 // Copyright 2019-Present Datadog, Inc.
 
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
@@ -31,6 +32,20 @@ class ForwardingFlagsCounter implements FlagsRequestCounter {
   int get evaluationEventCount => httpClient.evaluationEventCount;
 
   @override
+  int? get lastPrecomputeFlagCount => httpClient.lastPrecomputeFlagCount;
+
+  @override
+  int? get lastPrecomputePayloadBytes => httpClient.lastPrecomputePayloadBytes;
+
+  @override
+  Duration? get lastPrecomputeHttpDuration =>
+      httpClient.lastPrecomputeHttpDuration;
+
+  @override
+  Duration? get lastPrecomputePayloadParseDuration =>
+      httpClient.lastPrecomputePayloadParseDuration;
+
+  @override
   Future<void> stop() async {
     httpClient.close();
   }
@@ -43,15 +58,32 @@ class CountingFlagsHttpClient extends http.BaseClient {
   int exposureCount = 0;
   int evaluationRequestCount = 0;
   int evaluationEventCount = 0;
+  int? lastPrecomputeFlagCount;
+  int? lastPrecomputePayloadBytes;
+  Duration? lastPrecomputeHttpDuration;
+  Duration? lastPrecomputePayloadParseDuration;
 
   CountingFlagsHttpClient(this._inner);
 
   @override
-  Future<http.StreamedResponse> send(http.BaseRequest request) {
+  Future<http.StreamedResponse> send(http.BaseRequest request) async {
     final body = request is http.Request ? request.body : '';
     final path = request.url.path;
     if (path == '/precompute-assignments') {
       precomputeRequestCount += 1;
+      final stopwatch = Stopwatch()..start();
+      final response = await _inner.send(request);
+      final bodyBytes = await response.stream.toBytes();
+      stopwatch.stop();
+      lastPrecomputeHttpDuration = stopwatch.elapsed;
+      lastPrecomputePayloadBytes = bodyBytes.length;
+
+      final parseStopwatch = Stopwatch()..start();
+      lastPrecomputeFlagCount = _tryCountPrecomputeFlags(bodyBytes);
+      parseStopwatch.stop();
+      lastPrecomputePayloadParseDuration = parseStopwatch.elapsed;
+
+      return _copyResponseWithBytes(response, bodyBytes);
     } else if (path == '/api/v2/exposures') {
       exposureCount += _countExposureBody(body);
     } else if (path == '/api/v2/flagevaluation') {
@@ -72,6 +104,18 @@ int _countExposureBody(String body) {
   return body.split('\n').where((line) => line.trim().isNotEmpty).length;
 }
 
+int? _tryCountPrecomputeFlags(List<int> bodyBytes) {
+  try {
+    final decoded = jsonDecode(utf8.decode(bodyBytes)) as Map<String, Object?>;
+    final data = decoded['data'] as Map<String, Object?>;
+    final attributes = data['attributes'] as Map<String, Object?>;
+    final flags = attributes['flags'] as Map<String, Object?>;
+    return flags.length;
+  } catch (_) {
+    return null;
+  }
+}
+
 int _tryCountEvaluationEvents(String body) {
   try {
     final decoded = jsonDecode(body) as Map<String, Object?>;
@@ -80,4 +124,20 @@ int _tryCountEvaluationEvents(String body) {
   } catch (_) {
     return 0;
   }
+}
+
+http.StreamedResponse _copyResponseWithBytes(
+  http.StreamedResponse response,
+  List<int> bodyBytes,
+) {
+  return http.StreamedResponse(
+    Stream.value(bodyBytes),
+    response.statusCode,
+    contentLength: response.contentLength,
+    request: response.request,
+    headers: response.headers,
+    isRedirect: response.isRedirect,
+    persistentConnection: response.persistentConnection,
+    reasonPhrase: response.reasonPhrase,
+  );
 }

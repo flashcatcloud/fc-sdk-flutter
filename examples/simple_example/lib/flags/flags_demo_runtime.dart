@@ -4,30 +4,102 @@
 // Copyright 2019-Present Datadog, Inc.
 
 import 'package:datadog_flags/datadog_flags.dart';
-import 'package:datadog_flutter_plugin/datadog_flutter_plugin.dart';
 
 import 'flags_request_counter.dart';
 import 'forwarding_flags_counter.dart';
 
 const _externalFlagsEndpoint = String.fromEnvironment('FLAGS_ENDPOINT');
-const _externalExposureEndpoint =
-    String.fromEnvironment('FLAGS_EXPOSURE_ENDPOINT');
-const _externalEvaluationEndpoint =
-    String.fromEnvironment('FLAGS_EVALUATION_ENDPOINT');
-const _countRequests =
-    bool.fromEnvironment('FLAGS_COUNT_REQUESTS', defaultValue: true);
+const _externalExposureEndpoint = String.fromEnvironment(
+  'FLAGS_EXPOSURE_ENDPOINT',
+);
+const _externalEvaluationEndpoint = String.fromEnvironment(
+  'FLAGS_EVALUATION_ENDPOINT',
+);
+const _countRequests = bool.fromEnvironment(
+  'FLAGS_COUNT_REQUESTS',
+  defaultValue: true,
+);
+const _perplexityClientToken = 'pub2f0197bbd2a6d0ce1781a08c2c5307eb';
 
 class FlagsDemoRuntime {
-  final FlagsRequestCounter? counter;
-  final DatadogFlagsConfiguration configuration;
+  FlagsRequestCounter? _counter;
+  final DatadogFlagsConfig? _baseDatadogConfig;
+  final Uri? _customFlagsEndpoint;
+  final Uri? _customExposureEndpoint;
+  final Uri? _customEvaluationEndpoint;
+  final String? applicationId;
+  final String configuredEnv;
+  final String obfuscatedClientToken;
 
-  const FlagsDemoRuntime._({
-    required this.counter,
-    required this.configuration,
-  });
+  FlagsDemoRuntime._({
+    required FlagsRequestCounter? counter,
+    required DatadogFlagsConfig? datadogConfig,
+    required Uri? customFlagsEndpoint,
+    required Uri? customExposureEndpoint,
+    required Uri? customEvaluationEndpoint,
+    required this.applicationId,
+    required this.configuredEnv,
+    required this.obfuscatedClientToken,
+  })  : _counter = counter,
+        _baseDatadogConfig = datadogConfig,
+        _customFlagsEndpoint = customFlagsEndpoint,
+        _customExposureEndpoint = customExposureEndpoint,
+        _customEvaluationEndpoint = customEvaluationEndpoint;
+
+  FlagsRequestCounter? get counter => _counter;
+
+  DatadogFlagsConfiguration get configuration => _configurationFor(
+        datadogConfig: _baseDatadogConfig,
+        customFlagsEndpoint: _customFlagsEndpoint,
+        customExposureEndpoint: _customExposureEndpoint,
+        customEvaluationEndpoint: _customEvaluationEndpoint,
+      );
 
   Future<void> stop() async {
-    await counter?.stop();
+    await _counter?.stop();
+  }
+
+  Future<FlagsDemoProviderDiagnostics> enableProvider(
+    FlagsDemoProviderMode mode,
+  ) async {
+    await _counter?.stop();
+    _counter = _createCounter();
+    final provider = providerConfiguration(mode);
+    final stopwatch = Stopwatch()..start();
+    await DatadogFlags.instance.enable(configuration: provider.configuration);
+    stopwatch.stop();
+    return FlagsDemoProviderDiagnostics(
+      configuredEnv: provider.configuredEnv,
+      obfuscatedClientToken: provider.obfuscatedClientToken,
+      providerInitializationDuration: stopwatch.elapsed,
+    );
+  }
+
+  FlagsDemoProviderConfiguration providerConfiguration(
+    FlagsDemoProviderMode mode,
+  ) {
+    return switch (mode) {
+      FlagsDemoProviderMode.ffeDogfooding => FlagsDemoProviderConfiguration(
+          configuration: configuration,
+          configuredEnv: configuredEnv,
+          obfuscatedClientToken: obfuscatedClientToken,
+        ),
+      FlagsDemoProviderMode.perplexityLoadTest =>
+        FlagsDemoProviderConfiguration(
+          configuration: _configurationFor(
+            datadogConfig: DatadogFlagsConfig(
+              clientToken: _perplexityClientToken,
+              env: 'prod',
+              site: DatadogFlagsSite.us1,
+              service: 'simple-example',
+              version: '1.0.0',
+              applicationId: _emptyToNull(applicationId),
+            ),
+          ),
+          configuredEnv: 'prod',
+          obfuscatedClientToken: _obfuscateToken(_perplexityClientToken),
+        ),
+    };
   }
 
   static Future<FlagsDemoRuntime> create({
@@ -37,69 +109,127 @@ class FlagsDemoRuntime {
     String? applicationId,
   }) async {
     final externalFlagsEndpoint = _uriFromEnvironment(_externalFlagsEndpoint);
-    final externalExposureEndpoint =
-        _uriFromEnvironment(_externalExposureEndpoint);
-    final externalEvaluationEndpoint =
-        _uriFromEnvironment(_externalEvaluationEndpoint);
+    final externalExposureEndpoint = _uriFromEnvironment(
+      _externalExposureEndpoint,
+    );
+    final externalEvaluationEndpoint = _uriFromEnvironment(
+      _externalEvaluationEndpoint,
+    );
 
-    final useDatad0g = siteName == 'datad0g.com';
-    final counter = _countRequests ? ForwardingFlagsCounter.create() : null;
+    final counter = _createCounter();
+    final datadogConfig = _datadogConfig(
+      clientToken: clientToken,
+      env: env,
+      siteName: siteName,
+      applicationId: applicationId,
+    );
 
     return FlagsDemoRuntime._(
       counter: counter,
-      configuration: DatadogFlagsConfiguration(
-        customFlagsEndpoint: externalFlagsEndpoint ??
-            (useDatad0g
-                ? Uri.https(
-                    'preview.ff-cdn.datad0g.com',
-                    '/precompute-assignments',
-                  )
-                : null),
-        customExposureEndpoint: externalExposureEndpoint ??
-            (useDatad0g
-                ? Uri.parse(
-                    'https://browser-intake-datad0g.com/api/v2/exposures?ddsource=flutter',
-                  )
-                : null),
-        customEvaluationEndpoint: externalEvaluationEndpoint ??
-            (useDatad0g
-                ? Uri.parse(
-                    'https://browser-intake-datad0g.com/api/v2/flagevaluation?ddsource=flutter',
-                  )
-                : null),
-        httpClient:
-            counter is ForwardingFlagsCounter ? counter.httpClient : null,
-        datadogContext: _datadogContext(
-          useDatad0g: useDatad0g,
-          clientToken: clientToken,
-          env: env,
-          applicationId: applicationId,
-        ),
-        evaluationFlushInterval: const Duration(seconds: 1),
+      datadogConfig: datadogConfig,
+      customFlagsEndpoint: externalFlagsEndpoint ??
+          (siteName == 'datad0g.com'
+              ? Uri.https(
+                  'preview.ff-cdn.datad0g.com',
+                  '/precompute-assignments',
+                )
+              : null),
+      customExposureEndpoint: externalExposureEndpoint ??
+          (siteName == 'datad0g.com'
+              ? Uri.parse(
+                  'https://browser-intake-datad0g.com/api/v2/exposures',
+                )
+              : null),
+      customEvaluationEndpoint: externalEvaluationEndpoint ??
+          (siteName == 'datad0g.com'
+              ? Uri.parse(
+                  'https://browser-intake-datad0g.com/api/v2/flagevaluation',
+                )
+              : null),
+      applicationId: applicationId,
+      configuredEnv: _configuredEnv(datadogConfig, env),
+      obfuscatedClientToken: _obfuscateToken(
+        datadogConfig?.clientToken ?? clientToken,
       ),
+    );
+  }
+
+  DatadogFlagsConfiguration _configurationFor({
+    required DatadogFlagsConfig? datadogConfig,
+    Uri? customFlagsEndpoint,
+    Uri? customExposureEndpoint,
+    Uri? customEvaluationEndpoint,
+  }) {
+    final requestCounter = _counter;
+    return DatadogFlagsConfiguration(
+      customFlagsEndpoint: customFlagsEndpoint,
+      customExposureEndpoint: customExposureEndpoint,
+      customEvaluationEndpoint: customEvaluationEndpoint,
+      httpClient: requestCounter is ForwardingFlagsCounter
+          ? requestCounter.httpClient
+          : null,
+      datadogConfig: datadogConfig,
+      evaluationFlushInterval: const Duration(seconds: 1),
     );
   }
 }
 
-DatadogFlagsContext? _datadogContext({
-  required bool useDatad0g,
+enum FlagsDemoProviderMode { ffeDogfooding, perplexityLoadTest }
+
+class FlagsDemoProviderConfiguration {
+  final DatadogFlagsConfiguration configuration;
+  final String configuredEnv;
+  final String obfuscatedClientToken;
+
+  const FlagsDemoProviderConfiguration({
+    required this.configuration,
+    required this.configuredEnv,
+    required this.obfuscatedClientToken,
+  });
+}
+
+class FlagsDemoProviderDiagnostics {
+  final String configuredEnv;
+  final String obfuscatedClientToken;
+  final Duration providerInitializationDuration;
+
+  const FlagsDemoProviderDiagnostics({
+    required this.configuredEnv,
+    required this.obfuscatedClientToken,
+    required this.providerInitializationDuration,
+  });
+}
+
+DatadogFlagsConfig? _datadogConfig({
   required String? clientToken,
   required String? env,
+  required String? siteName,
   required String? applicationId,
 }) {
-  if (!useDatad0g) {
+  if (clientToken == null || clientToken.isEmpty) {
     return null;
   }
 
-  return DatadogFlagsContext(
-    clientToken: clientToken ?? '',
-    env: env ?? 'staging',
-    site: DatadogFlagsSite.us1,
+  return DatadogFlagsConfig(
+    clientToken: clientToken,
+    env: env ?? 'dev',
+    site: _flagsSiteForName(siteName),
     service: 'simple-example',
     version: '1.0.0',
     applicationId: _emptyToNull(applicationId),
-    sdkVersion: DatadogSdk.sdkVersion,
   );
+}
+
+DatadogFlagsSite _flagsSiteForName(String? siteName) {
+  return switch (siteName) {
+    'datad0g.com' => DatadogFlagsSite.us1Staging,
+    'us3' || 'us3.datadoghq.com' => DatadogFlagsSite.us3,
+    'us5' || 'us5.datadoghq.com' => DatadogFlagsSite.us5,
+    'eu1' || 'datadoghq.eu' => DatadogFlagsSite.eu1,
+    'ap1' || 'ap1.datadoghq.com' => DatadogFlagsSite.ap1,
+    'ap2' || 'ap2.datadoghq.com' => DatadogFlagsSite.ap2,
+    _ => DatadogFlagsSite.us1,
+  };
 }
 
 Uri? _uriFromEnvironment(String value) {
@@ -114,4 +244,28 @@ String? _emptyToNull(String? value) {
     return null;
   }
   return value;
+}
+
+String _configuredEnv(DatadogFlagsConfig? config, String? fallback) {
+  if (config != null) {
+    return config.env;
+  }
+  if (fallback != null && fallback.isNotEmpty) {
+    return fallback;
+  }
+  return '-';
+}
+
+String _obfuscateToken(String? token) {
+  if (token == null || token.isEmpty) {
+    return '-';
+  }
+  if (token.length <= 10) {
+    return '${token.substring(0, 1)}...${token.substring(token.length - 1)}';
+  }
+  return '${token.substring(0, 6)}...${token.substring(token.length - 4)}';
+}
+
+FlagsRequestCounter? _createCounter() {
+  return _countRequests ? ForwardingFlagsCounter.create() : null;
 }

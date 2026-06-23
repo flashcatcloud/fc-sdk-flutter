@@ -306,6 +306,32 @@ void main() {
       expect(response.flags.keys, ['valid']);
     });
 
+    test('accepts live response environment objects', () async {
+      final requests = <http.Request>[];
+      final fetcher = FlagAssignmentsFetcher(
+        datadogConfig: _contextFor(DatadogFlagsSite.us1),
+        configuration: const DatadogFlagsConfiguration(),
+        httpClient: _jsonClient(requests, {
+          'data': {
+            'attributes': {
+              'createdAt': '2026-06-23T21:04:41.025844773Z',
+              'environment': {'name': 'Development - Local or Hash'},
+              'flags': {
+                'valid': _assignment('boolean', true),
+              },
+            },
+          },
+        }),
+      );
+
+      final response = await fetcher.fetch(
+        const FlagsEvaluationContext(targetingKey: 'subject'),
+      );
+
+      expect(response.environment, 'Development - Local or Hash');
+      expect(response.flags.keys, ['valid']);
+    });
+
     test(
       'reports internal network errors for wrapper fallback handling',
       () async {
