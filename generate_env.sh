@@ -16,6 +16,7 @@ dotEnvFiles=(
   "packages/datadog_flutter_plugin/integration_test_app/.env"
   "packages/datadog_tracking_http_client/example/.env"
   "packages/datadog_webview_tracking/example/.env"
+  "examples/simple_example/.env"
   "test_apps/stress_test/.env"
 )
 
@@ -65,4 +66,3 @@ tee ./ddog_config.plist > /dev/null << END
 </plist>
 END
 popd
-
