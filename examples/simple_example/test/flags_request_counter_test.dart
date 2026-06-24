@@ -16,13 +16,14 @@ void main() {
     const precomputeBody =
         '{"data":{"attributes":{"flags":{"flag-a":{},"flag-b":{}}}}}';
     final forwarded = <http.Request>[];
+    var notifications = 0;
     final client = CountingFlagsHttpClient(MockClient((request) async {
       forwarded.add(request);
       if (request.url.path == '/precompute-assignments') {
         return http.Response(precomputeBody, 200);
       }
       return http.Response('{}', 202);
-    }));
+    }), onChange: () => notifications++);
 
     await client.post(
       Uri.https(
@@ -64,5 +65,6 @@ void main() {
     expect(client.exposureCount, 1);
     expect(client.evaluationRequestCount, 1);
     expect(client.evaluationEventCount, 2);
+    expect(notifications, 3);
   });
 }

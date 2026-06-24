@@ -3,7 +3,9 @@
 // developed at Datadog (https://www.datadoghq.com/).
 // Copyright 2019-Present Datadog, Inc.
 
-abstract interface class FlagsRequestCounter {
+import 'package:flutter/foundation.dart';
+
+abstract interface class FlagsRequestCounter implements Listenable {
   int get precomputeRequestCount;
   int get exposureCount;
   int get evaluationRequestCount;

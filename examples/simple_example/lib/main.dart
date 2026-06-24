@@ -9,7 +9,6 @@ import 'package:datadog_session_replay/datadog_session_replay.dart';
 import 'package:datadog_tracking_http_client/datadog_tracking_http_client.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 
 import 'app.dart';
@@ -23,8 +22,6 @@ const ddEnv = String.fromEnvironment('DD_ENV');
 const ddSite = String.fromEnvironment('DD_SITE');
 
 Future<void> main() async {
-  await dotenv.load(isOptional: true);
-
   WidgetsFlutterBinding.ensureInitialized();
   configureUrlStrategy();
 
@@ -88,7 +85,6 @@ Future<void> main() async {
       DatadogSessionReplayConfiguration(replaySampleRate: 100),
     );
 
-  // runUsingRunApp(datadogConfig);
   runUsingAlternativeInit(datadogConfig, siteName: siteName);
 }
 
@@ -99,10 +95,6 @@ String _configValue(
 }) {
   if (defineValue.isNotEmpty) {
     return defineValue;
-  }
-  final value = dotenv.maybeGet(name);
-  if (value != null && value.isNotEmpty) {
-    return value;
   }
   return defaultValue;
 }
@@ -165,33 +157,4 @@ Future<void> runUsingAlternativeInit(
 
   final graphQlClient = GraphQLClient(link: link, cache: GraphQLCache());
   runApp(MyApp(graphQLClient: graphQlClient, flagsRuntime: flagsRuntime));
-}
-
-Future<void> runUsingRunApp(DatadogConfiguration datadogConfig) async {
-  await DatadogSdk.runApp(datadogConfig, TrackingConsent.granted, () {
-    // This path is not used by default, but keep flags configured for parity
-    // if the example is switched back to DatadogSdk.runApp.
-    final siteName = _configValue(
-      'DD_SITE',
-      defineValue: ddSite,
-      defaultValue: 'us1',
-    );
-    FlagsDemoRuntime.create(
-      clientToken: datadogConfig.clientToken,
-      env: datadogConfig.env,
-      siteName: siteName,
-      applicationId: datadogConfig.rumConfiguration?.applicationId,
-    ).then((flagsRuntime) async {
-      await DatadogFlags.instance.enable(
-        configuration: flagsRuntime.configuration,
-      );
-      final link = Link.from([
-        DatadogGqlLink(DatadogSdk.instance, Uri.parse(graphQlUrl)),
-        HttpLink(graphQlUrl),
-      ]);
-      final graphQlClient = GraphQLClient(link: link, cache: GraphQLCache());
-
-      runApp(MyApp(graphQLClient: graphQlClient, flagsRuntime: flagsRuntime));
-    });
-  });
 }

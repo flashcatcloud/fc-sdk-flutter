@@ -6,17 +6,22 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 import 'flags_request_counter.dart';
 
 class ForwardingFlagsCounter implements FlagsRequestCounter {
   final CountingFlagsHttpClient httpClient;
+  final List<VoidCallback> _listeners = [];
 
-  ForwardingFlagsCounter._(this.httpClient);
+  ForwardingFlagsCounter._(http.Client inner)
+      : httpClient = CountingFlagsHttpClient(inner) {
+    httpClient.onChange = _notifyListeners;
+  }
 
   factory ForwardingFlagsCounter.create() {
-    return ForwardingFlagsCounter._(CountingFlagsHttpClient(http.Client()));
+    return ForwardingFlagsCounter._(http.Client());
   }
 
   @override
@@ -52,10 +57,27 @@ class ForwardingFlagsCounter implements FlagsRequestCounter {
   Future<void> stop() async {
     httpClient.close();
   }
+
+  @override
+  void addListener(VoidCallback listener) {
+    _listeners.add(listener);
+  }
+
+  @override
+  void removeListener(VoidCallback listener) {
+    _listeners.remove(listener);
+  }
+
+  void _notifyListeners() {
+    for (final listener in List<VoidCallback>.of(_listeners)) {
+      listener();
+    }
+  }
 }
 
 class CountingFlagsHttpClient extends http.BaseClient {
   final http.Client _inner;
+  VoidCallback? onChange;
 
   int precomputeRequestCount = 0;
   int exposureCount = 0;
@@ -67,7 +89,7 @@ class CountingFlagsHttpClient extends http.BaseClient {
   Duration? lastPrecomputeHttpDuration;
   Duration? lastPrecomputePayloadParseDuration;
 
-  CountingFlagsHttpClient(this._inner);
+  CountingFlagsHttpClient(this._inner, {this.onChange});
 
   @override
   Future<http.StreamedResponse> send(http.BaseRequest request) async {
@@ -87,13 +109,16 @@ class CountingFlagsHttpClient extends http.BaseClient {
       lastPrecomputeFlagCount = _tryCountPrecomputeFlags(bodyBytes);
       parseStopwatch.stop();
       lastPrecomputePayloadParseDuration = parseStopwatch.elapsed;
+      _notifyChanged();
 
       return _copyResponseWithBytes(response, bodyBytes);
     } else if (path == '/api/v2/exposures') {
       exposureCount += _countExposureBody(body);
+      _notifyChanged();
     } else if (path == '/api/v2/flagevaluation') {
       evaluationRequestCount += 1;
       evaluationEventCount += _tryCountEvaluationEvents(body);
+      _notifyChanged();
     }
     return _inner.send(request);
   }
@@ -102,6 +127,10 @@ class CountingFlagsHttpClient extends http.BaseClient {
   void close() {
     _inner.close();
     super.close();
+  }
+
+  void _notifyChanged() {
+    onChange?.call();
   }
 }
 

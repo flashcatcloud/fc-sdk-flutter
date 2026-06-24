@@ -62,7 +62,7 @@ class _FlagsScreenState extends State<FlagsScreen> {
   );
 
   late DatadogFlagsClient _client;
-  Timer? _counterRefreshTimer;
+  FlagsRequestCounter? _attachedCounter;
   late FlagsDemoProviderMode _mode;
   String _assignmentState = 'idle';
   Duration? _lastAssignmentsRefreshDuration;
@@ -79,15 +79,7 @@ class _FlagsScreenState extends State<FlagsScreen> {
     _client = DatadogFlags.instance.sharedClient();
     _configuredEnv = widget.runtime.configuredEnv;
     _obfuscatedClientToken = widget.runtime.obfuscatedClientToken;
-    if (widget.runtime.counter != null) {
-      _counterRefreshTimer = Timer.periodic(const Duration(milliseconds: 500), (
-        _,
-      ) {
-        if (mounted) {
-          setState(() {});
-        }
-      });
-    }
+    _attachCounter(widget.runtime.counter);
     if (_mode == FlagsDemoProviderMode.ffeDogfooding) {
       unawaited(_refreshFlags());
     } else {
@@ -97,8 +89,23 @@ class _FlagsScreenState extends State<FlagsScreen> {
 
   @override
   void dispose() {
-    _counterRefreshTimer?.cancel();
+    _attachCounter(null);
     super.dispose();
+  }
+
+  void _attachCounter(FlagsRequestCounter? counter) {
+    if (identical(_attachedCounter, counter)) {
+      return;
+    }
+    _attachedCounter?.removeListener(_handleCounterChanged);
+    _attachedCounter = counter;
+    _attachedCounter?.addListener(_handleCounterChanged);
+  }
+
+  void _handleCounterChanged() {
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   Future<void> _refreshFlags() async {
@@ -201,6 +208,7 @@ class _FlagsScreenState extends State<FlagsScreen> {
         return;
       }
       _client = DatadogFlags.instance.sharedClient();
+      _attachCounter(widget.runtime.counter);
       setState(() {
         _configuredEnv = diagnostics.configuredEnv;
         _obfuscatedClientToken = diagnostics.obfuscatedClientToken;
