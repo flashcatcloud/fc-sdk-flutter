@@ -120,7 +120,8 @@ void main() {
     );
   });
 
-  test('drops failed HTTP uploads without retrying them', () async {
+  test('restores failed uploads and merges matching later evaluations',
+      () async {
     final requests = <http.Request>[];
     var attempt = 0;
     final aggregator = _aggregator(
@@ -143,10 +144,20 @@ void main() {
     );
     await aggregator.flush();
 
+    aggregator.recordEvaluation(
+      flagKey: 'checkout.enabled',
+      assignment: _assignment(),
+      evaluationContext: const FlagsEvaluationContext(
+        targetingKey: 'user-123',
+      ),
+      error: null,
+    );
     await aggregator.flush();
 
-    expect(attempt, 1);
-    expect(_evaluationRequests(requests), hasLength(1));
+    expect(_evaluationRequests(requests), hasLength(2));
+    final resentEvaluation =
+        _flagEvaluations(_evaluationRequests(requests).last).single;
+    expect(resentEvaluation['evaluation_count'], 2);
   });
 
   test('drops non-retryable client error uploads', () async {
