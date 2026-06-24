@@ -8,10 +8,10 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 
-import 'main_screen.dart';
 import 'flags/flags_demo_runtime.dart';
-import 'screens/flags_screen.dart';
+import 'main_screen.dart';
 import 'screens/crash_screen.dart';
+import 'screens/flags_screen.dart';
 import 'screens/graph_ql_screen.dart';
 import 'screens/network_screen.dart';
 
@@ -32,46 +32,47 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   var captureKey = GlobalKey();
 
-  late final router = GoRouter(observers: [
-    DatadogNavigationObserver(datadogSdk: DatadogSdk.instance)
-  ], routes: [
-    GoRoute(
-      path: '/',
-      builder: (context, state) {
-        return const MainScreen();
-      },
-    ),
-    GoRoute(
-      path: '/home',
-      builder: (context, state) {
-        return const MyHomePage(title: 'Home');
-      },
-    ),
-    GoRoute(
-      path: '/network',
-      builder: (context, state) {
-        return const NetworkScreen();
-      },
-    ),
-    GoRoute(
-      path: '/graphql',
-      builder: (context, state) {
-        return const GraphQlScreen();
-      },
-    ),
-    GoRoute(
-      path: '/crash',
-      builder: (context, state) {
-        return const CrashTestScreen();
-      },
-    ),
-    GoRoute(
-      path: '/flags',
-      builder: (context, state) {
-        return FlagsScreen(runtime: widget.flagsRuntime);
-      },
-    ),
-  ]);
+  late final router = GoRouter(
+    observers: [DatadogNavigationObserver(datadogSdk: DatadogSdk.instance)],
+    routes: [
+      GoRoute(
+        path: '/',
+        builder: (context, state) {
+          return const MainScreen();
+        },
+      ),
+      GoRoute(
+        path: '/home',
+        builder: (context, state) {
+          return const MyHomePage(title: 'Home');
+        },
+      ),
+      GoRoute(
+        path: '/network',
+        builder: (context, state) {
+          return const NetworkScreen();
+        },
+      ),
+      GoRoute(
+        path: '/graphql',
+        builder: (context, state) {
+          return const GraphQlScreen();
+        },
+      ),
+      GoRoute(
+        path: '/crash',
+        builder: (context, state) {
+          return const CrashTestScreen();
+        },
+      ),
+      GoRoute(
+        path: '/flags',
+        builder: (context, state) {
+          return FlagsScreen(runtime: widget.flagsRuntime);
+        },
+      ),
+    ],
+  );
 
   @override
   Widget build(BuildContext context) {
