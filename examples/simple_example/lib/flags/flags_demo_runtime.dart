@@ -66,23 +66,32 @@ class FlagsDemoRuntime {
       );
 
   Future<void> stop() async {
+    await DatadogFlags.instance.disable();
     await _counter?.stop();
   }
 
   Future<FlagsDemoProviderDiagnostics> enableProvider(
     FlagsDemoProviderMode mode,
   ) async {
-    await _counter?.stop();
+    final previousCounter = _counter;
     _counter = _createCounter();
     final provider = providerConfiguration(mode);
     final stopwatch = Stopwatch()..start();
-    await DatadogFlags.instance.enable(configuration: provider.configuration);
-    stopwatch.stop();
-    return FlagsDemoProviderDiagnostics(
-      configuredEnv: provider.configuredEnv,
-      obfuscatedClientToken: provider.obfuscatedClientToken,
-      providerInitializationDuration: stopwatch.elapsed,
-    );
+    try {
+      await DatadogFlags.instance.enable(configuration: provider.configuration);
+      stopwatch.stop();
+      await previousCounter?.stop();
+      return FlagsDemoProviderDiagnostics(
+        configuredEnv: provider.configuredEnv,
+        obfuscatedClientToken: provider.obfuscatedClientToken,
+        providerInitializationDuration: stopwatch.elapsed,
+      );
+    } catch (_) {
+      stopwatch.stop();
+      await _counter?.stop();
+      _counter = previousCounter;
+      rethrow;
+    }
   }
 
   FlagsDemoProviderConfiguration providerConfiguration(

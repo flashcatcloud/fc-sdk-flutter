@@ -78,6 +78,7 @@ class ForwardingFlagsCounter implements FlagsRequestCounter {
 class CountingFlagsHttpClient extends http.BaseClient {
   final http.Client _inner;
   VoidCallback? onChange;
+  bool _closed = false;
 
   int precomputeRequestCount = 0;
   int exposureCount = 0;
@@ -125,6 +126,10 @@ class CountingFlagsHttpClient extends http.BaseClient {
 
   @override
   void close() {
+    if (_closed) {
+      return;
+    }
+    _closed = true;
     _inner.close();
     super.close();
   }

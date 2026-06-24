@@ -310,12 +310,12 @@ storage mechanism.
 
 ## Reset and Disable
 
-`DatadogFlags.reset()` clears all clients' in-memory assignment state and
-deletes stored assignments without shutting down the shared HTTP client.
+`DatadogFlags.instance.reset()` clears all clients' in-memory assignment state
+and deletes stored assignments without shutting down the shared HTTP client.
 
-`DatadogFlags.disable()` shuts down all clients, drains pending telemetry, closes
-the shared HTTP client when the SDK created it, clears all named clients, and
-returns the SDK to an unconfigured state.
+`DatadogFlags.instance.disable()` shuts down all clients, drains pending
+telemetry, closes the shared HTTP client when the SDK created it, clears all
+named clients, and returns the SDK to an unconfigured state.
 
 ## Examples
 

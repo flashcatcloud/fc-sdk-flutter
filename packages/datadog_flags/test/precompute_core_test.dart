@@ -63,7 +63,7 @@ void main() {
               'env': {'dd_env': 'staging'},
               'source': {
                 'sdk_name': 'dd-sdk-dart',
-                'sdk_version': '0.0.1',
+                'sdk_version': '1.0.0',
               },
               'subject': {
                 'targeting_key': 'precomputed-user',
@@ -123,7 +123,7 @@ void main() {
             'env': {'dd_env': 'dev'},
             'source': {
               'sdk_name': 'dd-sdk-dart',
-              'sdk_version': '0.0.1',
+              'sdk_version': '1.0.0',
             },
             'subject': {
               'targeting_key': '',
