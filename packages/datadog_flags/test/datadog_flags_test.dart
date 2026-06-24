@@ -857,7 +857,7 @@ void main() {
     expect(_evaluationRequests(requests), hasLength(1));
   });
 
-  test('retries flag evaluation emission after a failed send', () async {
+  test('drops flag evaluation emission after a failed HTTP response', () async {
     final requests = <http.Request>[];
     var evaluationAttempt = 0;
     final client = await _createClient(
@@ -887,8 +887,8 @@ void main() {
     await client.shutdown();
     await client.shutdown();
 
-    expect(evaluationAttempt, 2);
-    expect(_evaluationRequests(requests), hasLength(2));
+    expect(evaluationAttempt, 1);
+    expect(_evaluationRequests(requests), hasLength(1));
   });
 
   test('drops flag evaluation emission after a non-retryable client error',
