@@ -19,7 +19,15 @@ const _countRequests = bool.fromEnvironment(
   'FLAGS_COUNT_REQUESTS',
   defaultValue: true,
 );
-const _perplexityClientToken = 'pub2f0197bbd2a6d0ce1781a08c2c5307eb';
+const _customClientToken = String.fromEnvironment('FLAGS_CUSTOM_CLIENT_TOKEN');
+const _customEnv = String.fromEnvironment(
+  'FLAGS_CUSTOM_ENV',
+  defaultValue: 'prod',
+);
+const _customSite = String.fromEnvironment(
+  'FLAGS_CUSTOM_SITE',
+  defaultValue: 'us1',
+);
 
 class FlagsDemoRuntime {
   FlagsRequestCounter? _counter;
@@ -47,6 +55,8 @@ class FlagsDemoRuntime {
         _customEvaluationEndpoint = customEvaluationEndpoint;
 
   FlagsRequestCounter? get counter => _counter;
+
+  bool get hasCustomProvider => _customClientToken.isNotEmpty;
 
   DatadogFlagsConfiguration get configuration => _configurationFor(
         datadogConfig: _baseDatadogConfig,
@@ -84,22 +94,26 @@ class FlagsDemoRuntime {
           configuredEnv: configuredEnv,
           obfuscatedClientToken: obfuscatedClientToken,
         ),
-      FlagsDemoProviderMode.perplexityLoadTest =>
-        FlagsDemoProviderConfiguration(
-          configuration: _configurationFor(
-            datadogConfig: DatadogFlagsConfig(
-              clientToken: _perplexityClientToken,
-              env: 'prod',
-              site: DatadogFlagsSite.us1,
-              service: 'simple-example',
-              version: '1.0.0',
-              applicationId: _emptyToNull(applicationId),
-            ),
-          ),
-          configuredEnv: 'prod',
-          obfuscatedClientToken: _obfuscateToken(_perplexityClientToken),
-        ),
+      FlagsDemoProviderMode.custom => _customProviderConfiguration(),
     };
+  }
+
+  FlagsDemoProviderConfiguration _customProviderConfiguration() {
+    final datadogConfig = _datadogConfig(
+      clientToken: _customClientToken,
+      env: _customEnv,
+      siteName: _customSite,
+      applicationId: applicationId,
+    );
+    if (datadogConfig == null) {
+      return providerConfiguration(FlagsDemoProviderMode.ffeDogfooding);
+    }
+
+    return FlagsDemoProviderConfiguration(
+      configuration: _configurationFor(datadogConfig: datadogConfig),
+      configuredEnv: datadogConfig.env,
+      obfuscatedClientToken: _obfuscateToken(datadogConfig.clientToken),
+    );
   }
 
   static Future<FlagsDemoRuntime> create({
@@ -174,7 +188,7 @@ class FlagsDemoRuntime {
   }
 }
 
-enum FlagsDemoProviderMode { ffeDogfooding, perplexityLoadTest }
+enum FlagsDemoProviderMode { ffeDogfooding, custom }
 
 class FlagsDemoProviderConfiguration {
   final DatadogFlagsConfiguration configuration;

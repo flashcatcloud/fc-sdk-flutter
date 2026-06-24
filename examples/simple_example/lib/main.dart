@@ -20,10 +20,10 @@ const graphQlUrl = 'http://localhost:3000/graphql';
 const ddClientToken = String.fromEnvironment('DD_CLIENT_TOKEN');
 const ddApplicationId = String.fromEnvironment('DD_APPLICATION_ID');
 const ddEnv = String.fromEnvironment('DD_ENV');
-const ddSite = String.fromEnvironment('DD_SITE', defaultValue: 'us1');
+const ddSite = String.fromEnvironment('DD_SITE');
 
 Future<void> main() async {
-  await dotenv.load();
+  await dotenv.load(isOptional: true);
 
   WidgetsFlutterBinding.ensureInitialized();
   configureUrlStrategy();

@@ -38,6 +38,9 @@ class ForwardingFlagsCounter implements FlagsRequestCounter {
   int? get lastPrecomputePayloadBytes => httpClient.lastPrecomputePayloadBytes;
 
   @override
+  int? get lastPrecomputeStatusCode => httpClient.lastPrecomputeStatusCode;
+
+  @override
   Duration? get lastPrecomputeHttpDuration =>
       httpClient.lastPrecomputeHttpDuration;
 
@@ -60,6 +63,7 @@ class CountingFlagsHttpClient extends http.BaseClient {
   int evaluationEventCount = 0;
   int? lastPrecomputeFlagCount;
   int? lastPrecomputePayloadBytes;
+  int? lastPrecomputeStatusCode;
   Duration? lastPrecomputeHttpDuration;
   Duration? lastPrecomputePayloadParseDuration;
 
@@ -77,6 +81,7 @@ class CountingFlagsHttpClient extends http.BaseClient {
       stopwatch.stop();
       lastPrecomputeHttpDuration = stopwatch.elapsed;
       lastPrecomputePayloadBytes = bodyBytes.length;
+      lastPrecomputeStatusCode = response.statusCode;
 
       final parseStopwatch = Stopwatch()..start();
       lastPrecomputeFlagCount = _tryCountPrecomputeFlags(bodyBytes);

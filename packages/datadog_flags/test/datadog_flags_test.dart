@@ -405,6 +405,35 @@ void main() {
     expect(exposureAttempt, 2);
   });
 
+  test('drops exposure emission after a non-retryable client error', () async {
+    final requests = <http.Request>[];
+    var exposureAttempt = 0;
+    final client = await _createClient(
+      requests: requests,
+      trackExposures: true,
+      httpClient: MockClient((request) async {
+        requests.add(request);
+        if (request.url.path == '/precompute-assignments') {
+          return http.Response(jsonEncode(_assignmentsResponse()), 200);
+        }
+        if (request.url.path == '/api/v2/exposures') {
+          exposureAttempt += 1;
+          return http.Response('{"error":"invalid token"}', 403);
+        }
+        return http.Response('{"error":"unexpected"}', 404);
+      }),
+    );
+    await client.initialize(
+      const FlagsEvaluationContext(targetingKey: 'user-123'),
+    );
+
+    client.getBooleanDetails(key: 'show-paywall', defaultValue: false);
+    await client.shutdown();
+    await client.shutdown();
+
+    expect(exposureAttempt, 1);
+  });
+
   test('waits for an in-flight exposure upload during shutdown', () async {
     final requests = <http.Request>[];
     final exposureStarted = Completer<void>();
@@ -860,6 +889,38 @@ void main() {
 
     expect(evaluationAttempt, 2);
     expect(_evaluationRequests(requests), hasLength(2));
+  });
+
+  test('drops flag evaluation emission after a non-retryable client error',
+      () async {
+    final requests = <http.Request>[];
+    var evaluationAttempt = 0;
+    final client = await _createClient(
+      requests: requests,
+      trackExposures: false,
+      trackEvaluations: true,
+      httpClient: MockClient((request) async {
+        requests.add(request);
+        if (request.url.path == '/precompute-assignments') {
+          return http.Response(jsonEncode(_assignmentsResponse()), 200);
+        }
+        if (request.url.path == '/api/v2/flagevaluation') {
+          evaluationAttempt += 1;
+          return http.Response('{"error":"invalid token"}', 403);
+        }
+        return http.Response('{"error":"unexpected"}', 404);
+      }),
+    );
+    await client.initialize(
+      const FlagsEvaluationContext(targetingKey: 'user-123'),
+    );
+
+    client.getBooleanDetails(key: 'show-paywall', defaultValue: false);
+    await client.shutdown();
+    await client.shutdown();
+
+    expect(evaluationAttempt, 1);
+    expect(_evaluationRequests(requests), hasLength(1));
   });
 
   test('keeps flag evaluations recorded while upload is in flight', () async {

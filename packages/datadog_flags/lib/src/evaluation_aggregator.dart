@@ -14,6 +14,7 @@ import 'evaluation_context.dart';
 import 'flags_runtime.dart';
 import 'json_value.dart';
 import 'sdk_metadata.dart';
+import 'upload_retry.dart';
 
 class EvaluationAggregator {
   static const int defaultMaxBatchSize = 1000;
@@ -193,8 +194,11 @@ class EvaluationAggregator {
           )
           .timeout(uploadTimeout);
       if (response.statusCode < 200 || response.statusCode >= 300) {
-        _restore(evaluations, reschedule: rescheduleOnFailure);
-        return false;
+        if (shouldRetryFlagsUpload(response.statusCode)) {
+          _restore(evaluations, reschedule: rescheduleOnFailure);
+          return false;
+        }
+        return true;
       }
       return true;
     } catch (_) {

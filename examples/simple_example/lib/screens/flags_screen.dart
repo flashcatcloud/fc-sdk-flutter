@@ -37,6 +37,29 @@ class _FlagsScreenState extends State<FlagsScreen> {
   static const _doubleKeys = String.fromEnvironment('FLAGS_DOUBLE_KEYS');
   static const _objectKeys = String.fromEnvironment('FLAGS_OBJECT_KEYS');
   static const _initialModeName = String.fromEnvironment('FLAGS_MODE');
+  static const _customTargetingKey = String.fromEnvironment(
+    'FLAGS_CUSTOM_TARGETING_KEY',
+    defaultValue: 'custom-subject',
+  );
+  static const _customTargetingAttributesJson = String.fromEnvironment(
+    'FLAGS_CUSTOM_TARGETING_ATTRIBUTES_JSON',
+    defaultValue: '{}',
+  );
+  static const _customBooleanKeys = String.fromEnvironment(
+    'FLAGS_CUSTOM_BOOLEAN_KEYS',
+  );
+  static const _customStringKeys = String.fromEnvironment(
+    'FLAGS_CUSTOM_STRING_KEYS',
+  );
+  static const _customIntegerKeys = String.fromEnvironment(
+    'FLAGS_CUSTOM_INTEGER_KEYS',
+  );
+  static const _customDoubleKeys = String.fromEnvironment(
+    'FLAGS_CUSTOM_DOUBLE_KEYS',
+  );
+  static const _customObjectKeys = String.fromEnvironment(
+    'FLAGS_CUSTOM_OBJECT_KEYS',
+  );
 
   late DatadogFlagsClient _client;
   Timer? _counterRefreshTimer;
@@ -46,7 +69,6 @@ class _FlagsScreenState extends State<FlagsScreen> {
   Duration? _lastProviderInitializationDuration;
   late String _configuredEnv;
   late String _obfuscatedClientToken;
-  int _recordedEvaluationCount = 0;
   int _refreshRequestId = 0;
   List<_EvaluatedFlag> _flags = [];
 
@@ -98,6 +120,15 @@ class _FlagsScreenState extends State<FlagsScreen> {
       if (!mounted || requestId != _refreshRequestId) {
         return;
       }
+      final readiness = _assignmentReadiness();
+      if (!readiness.isReady) {
+        setState(() {
+          _assignmentState = readiness.label;
+          _lastAssignmentsRefreshDuration = stopwatch.elapsed;
+          _flags = [];
+        });
+        return;
+      }
       _evaluate(mode);
       setState(() {
         _assignmentState = 'ready';
@@ -130,7 +161,6 @@ class _FlagsScreenState extends State<FlagsScreen> {
     }
     setState(() {
       _flags = flags;
-      _recordedEvaluationCount += flags.length;
     });
   }
 
@@ -157,16 +187,6 @@ class _FlagsScreenState extends State<FlagsScreen> {
           defaultValue: const {},
         ),
     };
-  }
-
-  Future<void> _selectMode(FlagsDemoProviderMode mode) async {
-    if (_mode == mode) {
-      return;
-    }
-    setState(() {
-      _mode = mode;
-    });
-    await _enableProviderAndRefresh(mode);
   }
 
   Future<void> _enableProviderAndRefresh(FlagsDemoProviderMode mode) async {
@@ -237,7 +257,7 @@ class _FlagsScreenState extends State<FlagsScreen> {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(12, 4, 12, 8),
           children: [
-            _ModeRow(selectedMode: _mode, onChanged: _selectMode),
+            _Row(label: 'Mode', value: _modeLabel(_mode)),
             _Row(label: 'Assignments', value: _assignmentState),
             _Row(label: 'Targeting key', value: selectedMode.targetingKey),
             _Row(
@@ -302,11 +322,16 @@ class _FlagsScreenState extends State<FlagsScreen> {
   }
 
   FlagsDemoProviderMode _initialMode() {
-    return switch (_initialModeName) {
-      'perplexity' ||
-      'perplexity-load-test' =>
-        FlagsDemoProviderMode.perplexityLoadTest,
-      _ => FlagsDemoProviderMode.ffeDogfooding,
+    if (_initialModeName == 'custom' && widget.runtime.hasCustomProvider) {
+      return FlagsDemoProviderMode.custom;
+    }
+    return FlagsDemoProviderMode.ffeDogfooding;
+  }
+
+  String _modeLabel(FlagsDemoProviderMode mode) {
+    return switch (mode) {
+      FlagsDemoProviderMode.ffeDogfooding => 'FFE Dogfooding',
+      FlagsDemoProviderMode.custom => 'Custom',
     };
   }
 
@@ -315,7 +340,7 @@ class _FlagsScreenState extends State<FlagsScreen> {
       FlagsDemoProviderMode.ffeDogfooding => _FlagModeDefinition(
           label: 'FFE dogfooding',
           targetingKey: _targetingKey,
-          targetingAttributes: _targetingAttributes(),
+          targetingAttributes: _attributesFromJson(_targetingAttributesJson),
           flags: [
             ..._specs(
               configured: _booleanKeys,
@@ -349,39 +374,42 @@ class _FlagsScreenState extends State<FlagsScreen> {
             ),
           ],
         ),
-      FlagsDemoProviderMode.perplexityLoadTest => const _FlagModeDefinition(
-          label: 'Perplexity load test',
-          targetingKey: 'perplexity-load-test-subject',
-          targetingAttributes: {
-            'attr1': 'value1',
-            'companyId': 'perplexity-load-test',
-            'org': 'perplexity-load-test',
-          },
+      FlagsDemoProviderMode.custom => _FlagModeDefinition(
+          label: 'Custom',
+          targetingKey: _customTargetingKey,
+          targetingAttributes: _attributesFromJson(
+            _customTargetingAttributesJson,
+          ),
           flags: [
-            _FlagSpec(
+            ..._specs(
+              configured: _customBooleanKeys,
+              defaultKeys: const [],
               label: 'Boolean',
-              key: '2025-nba-playoffs-bracket',
               type: _FlagValueType.boolean,
             ),
-            _FlagSpec(
+            ..._specs(
+              configured: _customStringKeys,
+              defaultKeys: const [],
               label: 'String',
-              key: 'thread-branching-enabled',
               type: _FlagValueType.string,
             ),
-            _FlagSpec(
+            ..._specs(
+              configured: _customIntegerKeys,
+              defaultKeys: const [],
+              label: 'Integer',
+              type: _FlagValueType.integer,
+            ),
+            ..._specs(
+              configured: _customDoubleKeys,
+              defaultKeys: const [],
+              label: 'Float',
+              type: _FlagValueType.float,
+            ),
+            ..._specs(
+              configured: _customObjectKeys,
+              defaultKeys: const [],
               label: 'JSON',
-              key: 'windows-app-milestone-check-config',
               type: _FlagValueType.object,
-            ),
-            _FlagSpec(
-              label: 'Integer',
-              key: 'android-attachment-limit',
-              type: _FlagValueType.integer,
-            ),
-            _FlagSpec(
-              label: 'Integer',
-              key: 'cf-challenge-reload',
-              type: _FlagValueType.integer,
             ),
           ],
         ),
@@ -399,9 +427,9 @@ class _FlagsScreenState extends State<FlagsScreen> {
     }).toList(growable: false);
   }
 
-  static Map<String, Object?> _targetingAttributes() {
+  static Map<String, Object?> _attributesFromJson(String value) {
     try {
-      final decoded = jsonDecode(_targetingAttributesJson);
+      final decoded = jsonDecode(value);
       if (decoded is Map<String, Object?>) {
         return decoded;
       }
@@ -448,11 +476,30 @@ class _FlagsScreenState extends State<FlagsScreen> {
     ];
   }
 
+  _AssignmentReadiness _assignmentReadiness() {
+    final counter = widget.runtime.counter;
+    if (counter == null) {
+      return const _AssignmentReadiness.ready();
+    }
+
+    final statusCode = counter.lastPrecomputeStatusCode;
+    if (statusCode == null) {
+      return const _AssignmentReadiness.notReady('not configured');
+    }
+    if (statusCode < 200 || statusCode >= 300) {
+      return _AssignmentReadiness.notReady('not ready (HTTP $statusCode)');
+    }
+    if (counter.lastPrecomputeFlagCount == null) {
+      return const _AssignmentReadiness.notReady('not ready');
+    }
+    return const _AssignmentReadiness.ready();
+  }
+
   String _eventsSummary(FlagsRequestCounter? counter) {
     if (counter == null) {
-      return 'eval $_recordedEvaluationCount';
+      return 'exposures - / flageval -';
     }
-    return 'eval $_recordedEvaluationCount / exposures ${counter.exposureCount} / flageval ${counter.evaluationEventCount}';
+    return 'exposures ${counter.exposureCount} / flageval ${counter.evaluationEventCount}';
   }
 
   String _formatDuration(Duration? duration) {
@@ -504,6 +551,17 @@ class _EvaluatedFlag {
   });
 }
 
+class _AssignmentReadiness {
+  final bool isReady;
+  final String label;
+
+  const _AssignmentReadiness.ready()
+      : isReady = true,
+        label = 'ready';
+
+  const _AssignmentReadiness.notReady(this.label) : isReady = false;
+}
+
 class _FlagModeDefinition {
   final String label;
   final String targetingKey;
@@ -527,56 +585,6 @@ class _FlagSpec {
 }
 
 enum _FlagValueType { boolean, string, integer, float, object }
-
-class _ModeRow extends StatelessWidget {
-  final FlagsDemoProviderMode selectedMode;
-  final ValueChanged<FlagsDemoProviderMode> onChanged;
-
-  const _ModeRow({required this.selectedMode, required this.onChanged});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 3),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          const SizedBox(
-            width: 112,
-            child: Text('Org', style: TextStyle(fontWeight: FontWeight.w600)),
-          ),
-          Expanded(
-            child: DropdownButtonHideUnderline(
-              child: DropdownButton<FlagsDemoProviderMode>(
-                key: const Key('flags-mode-selector'),
-                value: selectedMode,
-                isExpanded: true,
-                items: FlagsDemoProviderMode.values.map((mode) {
-                  return DropdownMenuItem(
-                    value: mode,
-                    child: Text(_modeLabel(mode)),
-                  );
-                }).toList(growable: false),
-                onChanged: (mode) {
-                  if (mode != null) {
-                    onChanged(mode);
-                  }
-                },
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  String _modeLabel(FlagsDemoProviderMode mode) {
-    return switch (mode) {
-      FlagsDemoProviderMode.ffeDogfooding => 'FFE dogfooding',
-      FlagsDemoProviderMode.perplexityLoadTest => 'Perplexity load test',
-    };
-  }
-}
 
 class _DetailsRow extends StatelessWidget {
   final String label;

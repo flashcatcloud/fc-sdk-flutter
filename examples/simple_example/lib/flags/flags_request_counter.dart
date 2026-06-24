@@ -10,6 +10,7 @@ abstract interface class FlagsRequestCounter {
   int get evaluationEventCount;
   int? get lastPrecomputeFlagCount;
   int? get lastPrecomputePayloadBytes;
+  int? get lastPrecomputeStatusCode;
   Duration? get lastPrecomputeHttpDuration;
   Duration? get lastPrecomputePayloadParseDuration;
 

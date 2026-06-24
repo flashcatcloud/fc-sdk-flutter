@@ -14,6 +14,7 @@ import 'evaluation_context.dart';
 import 'flags_runtime.dart';
 import 'json_value.dart';
 import 'sdk_metadata.dart';
+import 'upload_retry.dart';
 
 class ExposureLogger {
   static const Duration defaultUploadTimeout = Duration(seconds: 15);
@@ -160,8 +161,11 @@ class ExposureLogger {
           )
           .timeout(uploadTimeout);
       if (response.statusCode < 200 || response.statusCode >= 300) {
-        _restore(exposures, reschedule: rescheduleOnFailure);
-        return false;
+        if (shouldRetryFlagsUpload(response.statusCode)) {
+          _restore(exposures, reschedule: rescheduleOnFailure);
+          return false;
+        }
+        return true;
       }
       return true;
     } catch (_) {

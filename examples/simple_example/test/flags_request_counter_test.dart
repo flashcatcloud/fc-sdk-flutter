@@ -55,6 +55,7 @@ void main() {
 
     expect(forwarded, hasLength(3));
     expect(client.precomputeRequestCount, 1);
+    expect(client.lastPrecomputeStatusCode, 200);
     expect(client.lastPrecomputeFlagCount, 2);
     expect(
         client.lastPrecomputePayloadBytes, utf8.encode(precomputeBody).length);
