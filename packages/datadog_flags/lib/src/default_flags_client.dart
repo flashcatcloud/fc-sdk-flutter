@@ -7,54 +7,31 @@ import 'assignment.dart';
 import 'evaluation_aggregator.dart';
 import 'evaluation_context.dart';
 import 'exposure_logger.dart';
-import 'flag_assignments_fetcher.dart';
 import 'flags_client.dart';
 import 'flags_error.dart';
+import 'flags_repository.dart';
 
 class DefaultDatadogFlagsClient implements DatadogFlagsClient {
   static final Object _typeMismatch = Object();
 
   @override
   final String name;
-  final FlagAssignmentsFetcher _fetcher;
+  final FlagsRepository _repository;
   final ExposureLogger _exposureLogger;
   final EvaluationAggregator _evaluationAggregator;
 
-  FlagsEvaluationContext? _context;
-  Map<String, FlagAssignment> _flags = const {};
-  int _contextRequestId = 0;
-
   DefaultDatadogFlagsClient({
     required this.name,
-    required FlagAssignmentsFetcher fetcher,
+    required FlagsRepository repository,
     required ExposureLogger exposureLogger,
     required EvaluationAggregator evaluationAggregator,
-  })  : _fetcher = fetcher,
+  })  : _repository = repository,
         _exposureLogger = exposureLogger,
         _evaluationAggregator = evaluationAggregator;
 
   @override
   Future<void> initialize(FlagsEvaluationContext context) async {
-    // Multiple initialize calls can be in flight at once. Only the latest
-    // request is allowed to publish assignments back into this client.
-    final requestId = ++_contextRequestId;
-    final PrecomputedAssignments assignments;
-    try {
-      assignments = await _fetcher.fetch(context);
-    } catch (_) {
-      if (requestId == _contextRequestId) {
-        _context = null;
-        _flags = const {};
-      }
-      return;
-    }
-
-    if (requestId != _contextRequestId) {
-      return;
-    }
-
-    _context = context;
-    _flags = assignments.flags;
+    await _repository.initialize(context);
   }
 
   @override
@@ -123,9 +100,12 @@ class DefaultDatadogFlagsClient implements DatadogFlagsClient {
       _evaluationAggregator.shutdown(),
       _exposureLogger.shutdown(),
     ]);
-    _contextRequestId++;
-    _context = null;
-    _flags = const {};
+    await _repository.clearMemory();
+  }
+
+  @override
+  Future<void> reset() async {
+    await _repository.reset();
   }
 
   FlagDetails<T> getDetails<T>({
@@ -133,7 +113,7 @@ class DefaultDatadogFlagsClient implements DatadogFlagsClient {
     required T defaultValue,
     required FlagVariationType requestedType,
   }) {
-    final context = _context;
+    final context = _repository.context;
     if (context == null) {
       _evaluationAggregator.recordEvaluation(
         flagKey: key,
@@ -148,7 +128,7 @@ class DefaultDatadogFlagsClient implements DatadogFlagsClient {
       );
     }
 
-    final assignment = _flags[key];
+    final assignment = _repository.flagAssignment(key);
     if (assignment == null) {
       _evaluationAggregator.recordEvaluation(
         flagKey: key,
