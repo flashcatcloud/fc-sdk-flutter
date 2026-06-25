@@ -31,6 +31,25 @@ void main() {
     expect(datadogFlags.isEnabled, isTrue);
   });
 
+  test('disable does not close a caller-provided HTTP client', () async {
+    final requests = <http.Request>[];
+    final httpClient = _CloseTrackingClient(
+      _clientWithResponse(requests, _assignmentsResponse()),
+    );
+    addTearDown(httpClient.close);
+    final datadogFlags = DatadogFlags();
+    await datadogFlags.enable(
+      configuration: DatadogFlagsConfiguration(
+        datadogConfig: _datadogConfig(),
+        httpClient: httpClient,
+      ),
+    );
+
+    await datadogFlags.disable();
+
+    expect(httpClient.closed, isFalse);
+  });
+
   test('missing configuration creates a no-op client', () async {
     final datadogFlags = DatadogFlags();
 
@@ -1373,6 +1392,25 @@ http.Client _clientWithResponse(
     requests.add(request);
     return http.Response(jsonEncode(body), statusCode);
   });
+}
+
+class _CloseTrackingClient extends http.BaseClient {
+  final http.Client _inner;
+  bool closed = false;
+
+  _CloseTrackingClient(this._inner);
+
+  @override
+  Future<http.StreamedResponse> send(http.BaseRequest request) {
+    return _inner.send(request);
+  }
+
+  @override
+  void close() {
+    closed = true;
+    _inner.close();
+    super.close();
+  }
 }
 
 Map<String, Object?> _assignmentsResponse({

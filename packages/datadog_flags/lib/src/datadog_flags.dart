@@ -31,6 +31,7 @@ class DatadogFlags {
   }
 
   http.Client? _httpClient;
+  bool _ownsHttpClient = false;
   DatadogFlagsConfiguration? _configuration;
   final Map<String, DatadogFlagsClient> _clients = {};
 
@@ -48,7 +49,9 @@ class DatadogFlags {
       return;
     }
 
-    _httpClient = configuration.httpClient ?? http.Client();
+    final customHttpClient = configuration.httpClient;
+    _httpClient = customHttpClient ?? http.Client();
+    _ownsHttpClient = customHttpClient == null;
     _configuration = configuration;
     sharedClient();
   }
@@ -64,8 +67,11 @@ class DatadogFlags {
   Future<void> disable() async {
     await Future.wait(_clients.values.map((client) => client.shutdown()));
     _clients.clear();
-    _httpClient?.close();
+    if (_ownsHttpClient) {
+      _httpClient?.close();
+    }
     _httpClient = null;
+    _ownsHttpClient = false;
     _configuration = null;
   }
 
