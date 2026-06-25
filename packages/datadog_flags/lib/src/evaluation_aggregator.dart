@@ -14,7 +14,6 @@ import 'evaluation_context.dart';
 import 'flags_runtime.dart';
 import 'json_value.dart';
 import 'sdk_metadata.dart';
-import 'upload_retry.dart';
 
 class EvaluationAggregator {
   static const int defaultMaxBatchSize = 1000;

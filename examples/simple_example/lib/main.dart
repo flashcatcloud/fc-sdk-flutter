@@ -13,7 +13,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 
 import 'app.dart';
-import 'flags/flags_demo_runtime.dart';
+import 'flags/flags_example_config.dart';
 import 'url_strategy_stub.dart' if (dart.library.html) 'url_strategy_web.dart';
 
 const graphQlUrl = 'http://localhost:3000/graphql';
@@ -61,13 +61,21 @@ void main() async {
     ..enableSessionReplay(
         DatadogSessionReplayConfiguration(replaySampleRate: 100));
 
-  // runUsingRunApp(datadogConfig);
-  runUsingAlternativeInit(
-    datadogConfig,
+  final flagsConfig = FlagsExampleConfig.fromDotEnv(
+    clientToken: datadogConfig.clientToken,
+    env: datadogConfig.env,
+    siteName: dotenv.maybeGet('DD_SITE'),
+    applicationId: datadogConfig.rumConfiguration?.applicationId,
   );
+
+  // runUsingRunApp(datadogConfig, flagsConfig);
+  runUsingAlternativeInit(datadogConfig, flagsConfig);
 }
 
-Future<void> runUsingAlternativeInit(DatadogConfiguration datadogConfig) async {
+Future<void> runUsingAlternativeInit(
+  DatadogConfiguration datadogConfig,
+  FlagsExampleConfig flagsConfig,
+) async {
   final originalOnError = FlutterError.onError;
   FlutterError.onError = (details) {
     FlutterError.presentError(details);
@@ -86,13 +94,7 @@ Future<void> runUsingAlternativeInit(DatadogConfiguration datadogConfig) async {
   };
 
   await DatadogSdk.instance.initialize(datadogConfig, TrackingConsent.granted);
-  final flagsRuntime = await FlagsDemoRuntime.create(
-    clientToken: datadogConfig.clientToken,
-    env: datadogConfig.env,
-    siteName: dotenv.maybeGet('DD_SITE'),
-    applicationId: datadogConfig.rumConfiguration?.applicationId,
-  );
-  await DatadogFlags.instance.enable(configuration: flagsRuntime.configuration);
+  await DatadogFlags.instance.enable(configuration: flagsConfig.configuration);
   final link = Link.from([
     DatadogGqlLink(DatadogSdk.instance, Uri.parse(graphQlUrl)),
     HttpLink(graphQlUrl),
@@ -101,21 +103,18 @@ Future<void> runUsingAlternativeInit(DatadogConfiguration datadogConfig) async {
   final graphQlClient = GraphQLClient(link: link, cache: GraphQLCache());
   runApp(MyApp(
     graphQLClient: graphQlClient,
-    flagsRuntime: flagsRuntime,
+    flagsConfig: flagsConfig,
   ));
 }
 
-Future<void> runUsingRunApp(DatadogConfiguration datadogConfig) async {
+Future<void> runUsingRunApp(
+  DatadogConfiguration datadogConfig,
+  FlagsExampleConfig flagsConfig,
+) async {
   await DatadogSdk.runApp(datadogConfig, TrackingConsent.granted, () {
-    FlagsDemoRuntime.create(
-      clientToken: datadogConfig.clientToken,
-      env: datadogConfig.env,
-      siteName: dotenv.maybeGet('DD_SITE'),
-      applicationId: datadogConfig.rumConfiguration?.applicationId,
-    ).then((flagsRuntime) async {
-      await DatadogFlags.instance.enable(
-        configuration: flagsRuntime.configuration,
-      );
+    DatadogFlags.instance
+        .enable(configuration: flagsConfig.configuration)
+        .then((_) {
       final link = Link.from([
         DatadogGqlLink(DatadogSdk.instance, Uri.parse(graphQlUrl)),
         HttpLink(graphQlUrl),
@@ -124,7 +123,7 @@ Future<void> runUsingRunApp(DatadogConfiguration datadogConfig) async {
 
       runApp(MyApp(
         graphQLClient: graphQlClient,
-        flagsRuntime: flagsRuntime,
+        flagsConfig: flagsConfig,
       ));
     });
   });

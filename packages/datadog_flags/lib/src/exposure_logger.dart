@@ -14,7 +14,6 @@ import 'evaluation_context.dart';
 import 'flags_runtime.dart';
 import 'json_value.dart';
 import 'sdk_metadata.dart';
-import 'upload_retry.dart';
 
 class ExposureLogger {
   static const Duration defaultUploadTimeout = Duration(seconds: 15);

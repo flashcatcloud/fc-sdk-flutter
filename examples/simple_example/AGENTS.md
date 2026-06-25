@@ -5,18 +5,20 @@ This app is public example code. Keep it safe to publish and easy to run locally
 ## Credentials
 
 - Never commit real Datadog client tokens, application IDs, customer names, org names, or customer-owned flag keys.
-- Runtime credentials should come from the generated local `.env` file. Use
-  `--dart-define` only for optional flag-demo overrides such as `FLAGS_*`.
+- Runtime credentials and optional flag overrides should come from the generated
+  local `.env` file.
 - Keep `.env` ignored and local-only. It must not be committed.
 - Prefer placeholder values in docs and tests, for example `pub...`, `fake-token`, or `fake-application-id`.
 
 ## Flags Example
 
 - The default flags screen should use Datadog FFE dogfooding placeholders only.
-- Custom/customer validation must be opt-in through `FLAGS_CUSTOM_*` `--dart-define` values.
+- Custom/customer validation belongs in an FFE-owned dogfooding app outside
+  this repository, not in this public example app.
 - Do not hardcode customer-specific modes, labels, targeting attributes, or flag keys in Dart source.
 - Do not add a fake local mode for flags. When credentials are provided, the example should exercise real Datadog Flags requests.
-- Keep diagnostics compact. Timing, payload size, and event counters are useful, but should not dominate the example UI.
+- Keep this app focused on basic initialization and typed evaluation. Timing,
+  payload size, and event counters belong in the FFE-owned dogfooding app.
 
 ## Local Run Shape
 
@@ -27,23 +29,13 @@ Generate local configuration before running the app:
 flutter run
 ```
 
-For private custom validation, add local-only values:
+Use the FFE-owned dogfooding app outside this repository for private custom
+validation.
+
+For staging flags validation, keep credentials, site, and optional `FLAGS_*`
+overrides in `.env`:
 
 ```bash
-flutter run \
-  --dart-define FLAGS_CUSTOM_CLIENT_TOKEN=pub... \
-  --dart-define FLAGS_CUSTOM_ENV=prod \
-  --dart-define FLAGS_CUSTOM_SITE=us1 \
-  --dart-define FLAGS_MODE=custom \
-  --dart-define FLAGS_CUSTOM_STRING_KEYS=example-flag-key
-```
-
-For staging flags validation, keep credentials in `.env` and use local-only
-defines for non-default endpoints or sites:
-
-```bash
-flutter run \
-  --dart-define FLAGS_ENDPOINT=https://preview.ff-cdn.datad0g.com/precompute-assignments \
-  --dart-define FLAGS_EXPOSURE_ENDPOINT=https://browser-intake-datad0g.com/api/v2/exposures \
-  --dart-define FLAGS_EVALUATION_ENDPOINT=https://browser-intake-datad0g.com/api/v2/flagevaluation
+DD_SITE=datad0g.com
+FLAGS_TARGETING_KEY=test_subject4
 ```

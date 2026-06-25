@@ -30,6 +30,26 @@ DD_ENV=prod
 END
 done
 
+flagsTargetingAttributesJson=${FLAGS_TARGETING_ATTRIBUTES_JSON:-'{"attr1":"value1","companyId":"1"}'}
+flagDotEnvFiles=(
+  "examples/simple_example/.env"
+)
+
+for f in ${flagDotEnvFiles[@]}; do
+  tee -a $f > /dev/null << END
+
+# Optional Datadog Flags example settings.
+DD_SITE=${DD_SITE:-us1}
+FLAGS_TARGETING_KEY=${FLAGS_TARGETING_KEY:-test_subject4}
+FLAGS_TARGETING_ATTRIBUTES_JSON=$flagsTargetingAttributesJson
+FLAGS_BOOLEAN_KEYS=${FLAGS_BOOLEAN_KEYS:-ffe-dogfooding-boolean-flag}
+FLAGS_STRING_KEYS=${FLAGS_STRING_KEYS:-ffe-dogfooding-string-flag}
+FLAGS_INTEGER_KEYS=${FLAGS_INTEGER_KEYS:-ffe-dogfooding-integer-flag}
+FLAGS_DOUBLE_KEYS=${FLAGS_DOUBLE_KEYS:-ffe-dogfooding-float-flag}
+FLAGS_OBJECT_KEYS=${FLAGS_OBJECT_KEYS:-ffe-dogfooding-json-flag}
+END
+done
+
 e2eDotEnvFiles=(
   "packages/datadog_flutter_plugin/e2e_test_app/.env"
 )

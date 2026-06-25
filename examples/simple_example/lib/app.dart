@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 
-import 'flags/flags_demo_runtime.dart';
+import 'flags/flags_example_config.dart';
 import 'main_screen.dart';
 import 'screens/crash_screen.dart';
 import 'screens/flags_screen.dart';
@@ -17,12 +17,12 @@ import 'screens/network_screen.dart';
 
 class MyApp extends StatefulWidget {
   final GraphQLClient graphQLClient;
-  final FlagsDemoRuntime flagsRuntime;
+  final FlagsExampleConfig flagsConfig;
 
   const MyApp({
     super.key,
     required this.graphQLClient,
-    required this.flagsRuntime,
+    required this.flagsConfig,
   });
 
   @override
@@ -68,7 +68,7 @@ class _MyAppState extends State<MyApp> {
       GoRoute(
         path: '/flags',
         builder: (context, state) {
-          return FlagsScreen(runtime: widget.flagsRuntime);
+          return FlagsScreen(config: widget.flagsConfig);
         },
       ),
     ],
