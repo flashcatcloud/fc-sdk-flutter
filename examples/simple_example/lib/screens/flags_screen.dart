@@ -175,13 +175,11 @@ class _InfoRow extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(
-            width: 112,
-            child: Text(
-              label,
-              style: const TextStyle(fontWeight: FontWeight.w600),
-            ),
+          Text(
+            label,
+            style: const TextStyle(fontWeight: FontWeight.w600),
           ),
+          const SizedBox(width: 12),
           Expanded(child: Text(value)),
         ],
       ),

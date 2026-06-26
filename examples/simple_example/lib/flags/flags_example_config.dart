@@ -47,31 +47,31 @@ final class FlagsExampleConfig {
       flags: [
         ..._flagSpecs(
           dotenv.maybeGet('FLAGS_BOOLEAN_KEYS'),
-          const ['ffe-dogfooding-boolean-flag'],
+          const ['checkout.enabled'],
           'Boolean',
           FlagsExampleFlagType.boolean,
         ),
         ..._flagSpecs(
           dotenv.maybeGet('FLAGS_STRING_KEYS'),
-          const ['ffe-dogfooding-string-flag'],
+          const ['checkout.copy'],
           'String',
           FlagsExampleFlagType.string,
         ),
         ..._flagSpecs(
           dotenv.maybeGet('FLAGS_INTEGER_KEYS'),
-          const ['ffe-dogfooding-integer-flag'],
+          const ['checkout.limit'],
           'Integer',
           FlagsExampleFlagType.integer,
         ),
         ..._flagSpecs(
           dotenv.maybeGet('FLAGS_DOUBLE_KEYS'),
-          const ['ffe-dogfooding-float-flag'],
+          const ['checkout.ratio'],
           'Float',
           FlagsExampleFlagType.float,
         ),
         ..._flagSpecs(
           dotenv.maybeGet('FLAGS_OBJECT_KEYS'),
-          const ['ffe-dogfooding-json-flag'],
+          const ['checkout.config'],
           'JSON',
           FlagsExampleFlagType.object,
         ),
@@ -132,9 +132,11 @@ List<FlagsExampleFlag> _flagSpecs(
   String label,
   FlagsExampleFlagType type,
 ) {
-  return _keys(configured, defaultKeys).map((key) {
-    return FlagsExampleFlag(label: label, key: key, type: type);
-  }).toList(growable: false);
+  final keys = _keys(configured, defaultKeys);
+  return [
+    for (final key in keys)
+      FlagsExampleFlag(label: label, key: key, type: type),
+  ];
 }
 
 List<String> _keys(String? configured, List<String> defaultKeys) {

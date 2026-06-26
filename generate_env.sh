@@ -42,11 +42,11 @@ for f in ${flagDotEnvFiles[@]}; do
 DD_SITE=${DD_SITE:-us1}
 FLAGS_TARGETING_KEY=${FLAGS_TARGETING_KEY:-test_subject4}
 FLAGS_TARGETING_ATTRIBUTES_JSON=$flagsTargetingAttributesJson
-FLAGS_BOOLEAN_KEYS=${FLAGS_BOOLEAN_KEYS:-ffe-dogfooding-boolean-flag}
-FLAGS_STRING_KEYS=${FLAGS_STRING_KEYS:-ffe-dogfooding-string-flag}
-FLAGS_INTEGER_KEYS=${FLAGS_INTEGER_KEYS:-ffe-dogfooding-integer-flag}
-FLAGS_DOUBLE_KEYS=${FLAGS_DOUBLE_KEYS:-ffe-dogfooding-float-flag}
-FLAGS_OBJECT_KEYS=${FLAGS_OBJECT_KEYS:-ffe-dogfooding-json-flag}
+FLAGS_BOOLEAN_KEYS=${FLAGS_BOOLEAN_KEYS:-checkout.enabled}
+FLAGS_STRING_KEYS=${FLAGS_STRING_KEYS:-checkout.copy}
+FLAGS_INTEGER_KEYS=${FLAGS_INTEGER_KEYS:-checkout.limit}
+FLAGS_DOUBLE_KEYS=${FLAGS_DOUBLE_KEYS:-checkout.ratio}
+FLAGS_OBJECT_KEYS=${FLAGS_OBJECT_KEYS:-checkout.config}
 END
 done
 

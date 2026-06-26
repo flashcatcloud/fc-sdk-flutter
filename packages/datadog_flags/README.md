@@ -332,6 +332,6 @@ dart run datadog_flags_example:typed_evaluation \
   --targeting-attributes '{"companyId":"company-456"}'
 ```
 
-The repository also includes a Flutter dogfooding screen in
-`examples/simple_example` that can initialize the SDK, refresh assignments, and
-evaluate multiple flag types.
+The repository also includes a Flutter example screen in `examples/simple_example`
+that can initialize the SDK, refresh assignments, and evaluate multiple flag
+types.

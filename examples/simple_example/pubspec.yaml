@@ -32,12 +32,6 @@ dependencies:
   transparent_image: ^2.0.1
   graphql_flutter: ^5.1.2
 
-dependency_overrides:
-  datadog_flutter_plugin:
-    path: ../../packages/datadog_flutter_plugin
-  datadog_flags:
-    path: ../../packages/datadog_flags
-
 dev_dependencies:
   flutter_test:
     sdk: flutter
