@@ -19,9 +19,9 @@ import 'url_strategy_stub.dart' if (dart.library.html) 'url_strategy_web.dart';
 const graphQlUrl = 'http://localhost:3000/graphql';
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load();
 
-  WidgetsFlutterBinding.ensureInitialized();
   configureUrlStrategy();
 
   DatadogSdk.instance.sdkVerbosity = CoreLoggerLevel.debug;
