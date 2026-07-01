@@ -7,7 +7,7 @@ import 'dart:js_interop';
 
 import 'package:uuid/uuid.dart';
 
-import '../../../datadog_flutter_plugin.dart';
+import '../../../flashcat_flutter_plugin.dart';
 import '../../../datadog_flutter_plugin_web.dart';
 import '../../../datadog_internal.dart';
 import '../../web_helpers.dart';

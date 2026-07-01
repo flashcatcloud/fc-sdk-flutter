@@ -2,7 +2,7 @@
 // This product includes software developed at Datadog (https://www.datadoghq.com/).
 // Copyright 2019-2021 Datadog, Inc.
 
-import 'package:datadog_flutter_plugin/datadog_flutter_plugin.dart';
+import 'package:flashcat_flutter_plugin/flashcat_flutter_plugin.dart';
 import 'package:flutter/material.dart';
 
 class RumScreen extends StatefulWidget {

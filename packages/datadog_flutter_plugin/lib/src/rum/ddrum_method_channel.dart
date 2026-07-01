@@ -5,7 +5,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
-import '../../datadog_flutter_plugin.dart';
+import '../../flashcat_flutter_plugin.dart';
 import '../../datadog_internal.dart';
 import 'ddrum_platform_interface.dart';
 import 'rum_mapper_proxy_stub.dart'

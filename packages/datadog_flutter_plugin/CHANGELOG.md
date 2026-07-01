@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.1.0
+
+* First FlashCat release (forked from `datadog_flutter_plugin` 3.0.1).
+* Rebrand to the FlashCat platform: package renamed to `flashcat_flutter_plugin`;
+  native dependencies point at the FlashCat SDK forks (iOS `Flashcat*` / SPM
+  `fc-sdk-ios`, Android `cloud.flashcat:*`).
+* v1 platforms: iOS + Android. RUM, Crash Reporting, and WebView tracking
+  (native path) are supported. The Flutter Web platform target is dropped.
+* Site model renamed `DatadogSite` -> `FlashcatSite` (`cn` default ->
+  `browser.flashcat.cloud`, `staging` -> `jira.flashcat.cloud`).
+* Logs are not supported in this release (FlashCat ingest does not accept Logs
+  yet); the Logs API links the no-op variant and sends nothing.
+
 ## 3.0.1
 
 * Add missing Proguard rules for Android. See [#932](https://github.com/DataDog/dd-sdk-flutter/issues/932)

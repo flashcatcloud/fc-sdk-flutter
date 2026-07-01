@@ -4,7 +4,7 @@
 
 import 'package:jni/jni.dart';
 
-import '../../datadog_flutter_plugin.dart';
+import '../../flashcat_flutter_plugin.dart';
 import '../internal_logger.dart';
 import '../rum/rum_mapper_proxy.dart';
 import 'datadog_android_bridge.dart';

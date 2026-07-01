@@ -5,7 +5,7 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:datadog_flutter_plugin/datadog_flutter_plugin.dart';
+import 'package:flashcat_flutter_plugin/flashcat_flutter_plugin.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 

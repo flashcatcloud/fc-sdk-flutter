@@ -9,7 +9,7 @@ import 'dart:js_interop';
 
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 
-import 'datadog_flutter_plugin.dart';
+import 'flashcat_flutter_plugin.dart';
 import 'src/datadog_sdk_platform_interface.dart';
 import 'src/internal_logger.dart';
 import 'src/logs/ddlogs_platform_interface.dart';

@@ -4,7 +4,7 @@
 import 'dart:io';
 
 import 'package:datadog_common_test/datadog_common_test.dart';
-import 'package:datadog_flutter_plugin/datadog_internal.dart';
+import 'package:flashcat_flutter_plugin/datadog_internal.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';

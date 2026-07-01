@@ -2,7 +2,7 @@
 // This product includes software developed at Datadog (https://www.datadoghq.com/).
 // Copyright 2019-2022 Datadog, Inc.
 
-import '../datadog_flutter_plugin.dart';
+import '../flashcat_flutter_plugin.dart';
 import '../datadog_internal.dart';
 
 /// Defines the Datadog SDK policy when batching data together before uploading

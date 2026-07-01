@@ -4,7 +4,7 @@
 
 import 'package:json_annotation/json_annotation.dart';
 
-import '../../datadog_flutter_plugin.dart';
+import '../../flashcat_flutter_plugin.dart';
 import '../json_helpers.dart';
 
 part 'ddrum_events.g.dart';

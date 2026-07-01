@@ -2,11 +2,11 @@
 // This product includes software developed at Datadog (https://www.datadoghq.com/).
 // Copyright 2025-Present Datadog, Inc.
 
-import 'package:datadog_flutter_plugin/datadog_flutter_plugin.dart';
-import 'package:datadog_flutter_plugin/datadog_internal.dart';
-import 'package:datadog_flutter_plugin/src/datadog_noop_platform.dart';
-import 'package:datadog_flutter_plugin/src/rum/ddrum_noop_platform.dart';
-import 'package:datadog_flutter_plugin/src/rum/ddrum_platform_interface.dart';
+import 'package:flashcat_flutter_plugin/flashcat_flutter_plugin.dart';
+import 'package:flashcat_flutter_plugin/datadog_internal.dart';
+import 'package:flashcat_flutter_plugin/src/datadog_noop_platform.dart';
+import 'package:flashcat_flutter_plugin/src/rum/ddrum_noop_platform.dart';
+import 'package:flashcat_flutter_plugin/src/rum/ddrum_platform_interface.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:mocktail/mocktail.dart';

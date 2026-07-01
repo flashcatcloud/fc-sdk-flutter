@@ -210,12 +210,12 @@ For more information, read the [Contributing guidelines][4].
 
 For more information, see [Apache License, v2.0][5].
 
-[1]: https://pub.dev/packages/datadog_flutter_plugin
+[1]: https://pub.dev/packages/flashcat_flutter_plugin
 [2]: https://app.datadoghq.com/rum/application/create
 [3]: https://docs.datadoghq.com/account_management/api-app-keys/#client-tokens
 [4]: https://github.com/DataDog/dd-sdk-flutter/blob/main/CONTRIBUTING.md
 [5]: https://github.com/DataDog/dd-sdk-flutter/blob/main/LICENSE
 [7]: https://pub.dev/packages/datadog_tracking_http_client
-[8]: https://pub.dev/documentation/datadog_flutter_plugin/latest/datadog_flutter_plugin/DatadogConfiguration-class.html
-[10]: https://pub.dev/documentation/datadog_flutter_plugin/latest/datadog_flutter_plugin/ViewInfoExtractor.html
+[8]: https://pub.dev/documentation/flashcat_flutter_plugin/latest/flashcat_flutter_plugin/DatadogConfiguration-class.html
+[10]: https://pub.dev/documentation/flashcat_flutter_plugin/latest/flashcat_flutter_plugin/ViewInfoExtractor.html
 [11]: https://docs.datadoghq.com/real_user_monitoring/mobile_and_tv_monitoring/setup/flutter/

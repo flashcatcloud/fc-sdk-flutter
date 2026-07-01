@@ -118,7 +118,7 @@ scripts:
       melos exec -c 1 -- "bash -c 'set -euxo pipefail; flutter test --machine --platform chrome | tojunit \"--output\" \"$MELOS_ROOT_PATH/.build/test-results/\$MELOS_PACKAGE_NAME_unit_web.xml\"'"
       # melos exec -c 1 -- "bash -c 'set -euxo pipefail; flutter test --machine --platform chrome --wasm | tojunit \"--output\" \"$MELOS_ROOT_PATH/.build/test-results/\$MELOS_PACKAGE_NAME_unit_web_wasm.xml\"'" 
     packageFilters:
-      scope: 'datadog_flutter_plugin'
+      scope: 'flashcat_flutter_plugin'
 
   unit_test:ios:
     exec:
@@ -132,7 +132,7 @@ scripts:
         - 'example/ios'
       # TODO: These packages should probably have platform unit tests
       ignore: 
-        - 'datadog_webview_tracking'
+        - 'flashcat_webview_tracking'
         - 'datadog_inappwebview_tracking'
 
   unit_test:android:
@@ -144,7 +144,7 @@ scripts:
         - 'android'
         - 'example/android'
       ignore:
-        - 'datadog_webview_tracking'
+        - 'flashcat_webview_tracking'
         - 'datadog_inappwebview_tracking'
 
   integration_test:ios:
@@ -162,9 +162,9 @@ scripts:
       | tojunit "--output" "$MELOS_ROOT_PATH/.build/test-results/\$MELOS_PACKAGE_NAME_ios_integration.xml"'
     packageFilters:
       dirExists:  'example/integration_test'
-      ignore: 'datadog_flutter_plugin'
+      ignore: 'flashcat_flutter_plugin'
 
-  # Because the main package (datadog_flutter_plugin) is set up weird for integration tests,
+  # Because the main package (flashcat_flutter_plugin) is set up weird for integration tests,
   # have a separate target just for it that is called by `integration_test:ios``
   integration_test:ios:main:
     exec: |
@@ -175,7 +175,7 @@ scripts:
       flutter test integration_test --machine -d iPhone --dart-define DD_CLIENT_TOKEN=$DD_CLIENT_TOKEN,DD_APPLICATION_ID=$DD_APPLICATION_ID \
       | tojunit "--output" "$MELOS_ROOT_PATH/.build/test-results/\$MELOS_PACKAGE_NAME_ios_integration.xml"'
     packageFilters:
-      scope: 'datadog_flutter_plugin'
+      scope: 'flashcat_flutter_plugin'
 
   integration_test:android:
     run: melos integration_test:android:main && melos integration_test:android:other
@@ -192,9 +192,9 @@ scripts:
       | tojunit "--output" "$MELOS_ROOT_PATH/.build/test-results/\$MELOS_PACKAGE_NAME_android_integration.xml"'
     packageFilters:
       dirExists:  'example/integration_test'
-      ignore: 'datadog_flutter_plugin'
+      ignore: 'flashcat_flutter_plugin'
 
-  # Because the main package (datadog_flutter_plugin) is set up weird for integration tests,
+  # Because the main package (flashcat_flutter_plugin) is set up weird for integration tests,
   # have a separate target just for it that is called by `integration_test:ios``
   integration_test:android:main:
     exec: | 
@@ -205,7 +205,7 @@ scripts:
       flutter test integration_test --machine -d emulator --dart-define DD_CLIENT_TOKEN=$DD_CLIENT_TOKEN,DD_APPLICATION_ID=$DD_APPLICATION_ID \
       | tojunit "--output" "$MELOS_ROOT_PATH/.build/test-results/\$MELOS_PACKAGE_NAME_android_integration.xml"'
     packageFilters:
-      scope: 'datadog_flutter_plugin'
+      scope: 'flashcat_flutter_plugin'
 
   integration_test:web:
     run: melos integration_test:web:main && melos integration_test:web:other
@@ -215,7 +215,7 @@ scripts:
       cd integration_test_app
       dart $MELOS_ROOT_PATH/tools/ci/bin/web_integration_tests.dart
     packageFilters:
-      scope: 'datadog_flutter_plugin'
+      scope: 'flashcat_flutter_plugin'
 
   integration_test:web:other:
     exec: 
@@ -234,7 +234,7 @@ scripts:
       bash -c 'set -euxo pipefail; \
       flutter test integration_test --machine -d "iPhone"'
     packageFilters:
-      scope: 'datadog_flutter_plugin'
+      scope: 'flashcat_flutter_plugin'
 
   e2e_tests:android:
     exec: |
@@ -244,7 +244,7 @@ scripts:
       bash -c 'set -euxo pipefail; \
       flutter test integration_test --machine -d emulator'     
     packageFilters:
-      scope: 'datadog_flutter_plugin'
+      scope: 'flashcat_flutter_plugin'
 
   remove_cocoapods:
     exec: |

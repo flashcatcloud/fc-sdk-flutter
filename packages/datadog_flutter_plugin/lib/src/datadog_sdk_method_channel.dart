@@ -10,7 +10,7 @@ import 'dart:ui';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
-import '../datadog_flutter_plugin.dart';
+import '../flashcat_flutter_plugin.dart';
 import 'android/android_plugin_stub.dart'
     if (dart.library.io) 'android/android_plugin_ffi.dart';
 import 'datadog_sdk_platform_interface.dart';

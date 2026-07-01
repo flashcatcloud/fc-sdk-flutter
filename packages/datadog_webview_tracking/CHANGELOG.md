@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.0
+
+* First FlashCat release (forked from `datadog_webview_tracking`).
+* Rebrand to the FlashCat platform: package renamed to
+  `flashcat_webview_tracking`; depends on `flashcat_flutter_plugin`. Native
+  WebView tracking points at the FlashCat SDK forks (iOS
+  `FlashcatWebViewTracking`, Android `cloud.flashcat:dd-sdk-android-webview`).
+
 ## 3.0.2
 
 * Fix crash with iOS Webview tracking in Flutter 3.38+.

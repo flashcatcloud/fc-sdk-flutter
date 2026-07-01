@@ -7,7 +7,7 @@ import 'dart:js_interop_unsafe';
 
 import 'package:flutter/foundation.dart';
 
-import '../datadog_flutter_plugin.dart';
+import '../flashcat_flutter_plugin.dart';
 
 String siteStringForSite(FlashcatSite? site) {
   switch (site) {

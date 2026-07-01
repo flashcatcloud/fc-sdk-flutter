@@ -5,7 +5,7 @@
 import 'package:meta/meta.dart';
 import 'package:uuid/uuid.dart';
 
-import '../../datadog_flutter_plugin.dart';
+import '../../flashcat_flutter_plugin.dart';
 import '../helpers.dart';
 import '../internal_logger.dart';
 import '../sampler.dart';

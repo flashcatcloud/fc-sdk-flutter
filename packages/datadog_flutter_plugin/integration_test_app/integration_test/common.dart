@@ -5,7 +5,7 @@
 import 'dart:async';
 
 import 'package:datadog_common_test/datadog_common_test.dart';
-import 'package:datadog_flutter_plugin/datadog_flutter_plugin.dart';
+import 'package:flashcat_flutter_plugin/flashcat_flutter_plugin.dart';
 import 'package:datadog_integration_test_app/main.dart' as app;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';

@@ -2,7 +2,7 @@
 // This product includes software developed at Datadog (https://www.datadoghq.com/).
 // Copyright 2016-Present Datadog, Inc.
 
-import 'package:datadog_flutter_plugin/datadog_flutter_plugin.dart';
+import 'package:flashcat_flutter_plugin/flashcat_flutter_plugin.dart';
 import 'package:flutter/material.dart';
 
 class LoggingUserAccountScenario extends StatefulWidget {

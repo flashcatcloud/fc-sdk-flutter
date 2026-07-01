@@ -4,7 +4,7 @@
 
 import 'package:flutter/material.dart';
 
-import '../datadog_flutter_plugin.dart';
+import '../flashcat_flutter_plugin.dart';
 
 abstract class DatadogPluginConfiguration {
   DatadogPlugin create(DatadogSdk datadogInstance);

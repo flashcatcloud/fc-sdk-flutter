@@ -17,7 +17,10 @@ Instrument your application with Datadog.
   s.static_framework = true
   s.dependency 'Flutter'
   s.dependency 'FlashcatCore', '~> 0.5'
-  s.dependency 'FlashcatLogs', '~> 0.5'
+  # Logs are not supported in v1 (FlashCat ingest does not accept Logs yet).
+  # Use the no-op Logs variant so the API compiles but sends nothing. Matches
+  # the SPM Package.swift, which links the FlashcatLogs-NoOp product.
+  s.dependency 'FlashcatLogs-NoOp', '~> 0.5'
   s.dependency 'FlashcatRUM', '~> 0.5'
   s.dependency 'FlashcatInternal', '~> 0.5'
   s.dependency 'FlashcatCrashReporting', '~> 0.5'

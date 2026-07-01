@@ -1,5 +1,5 @@
-import 'package:datadog_flutter_plugin/src/helpers.dart';
-import 'package:datadog_flutter_plugin/src/internal_logger.dart';
+import 'package:flashcat_flutter_plugin/src/helpers.dart';
+import 'package:flashcat_flutter_plugin/src/internal_logger.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
