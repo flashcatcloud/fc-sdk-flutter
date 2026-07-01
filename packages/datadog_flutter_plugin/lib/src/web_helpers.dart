@@ -9,24 +9,14 @@ import 'package:flutter/foundation.dart';
 
 import '../datadog_flutter_plugin.dart';
 
-String siteStringForSite(DatadogSite? site) {
+String siteStringForSite(FlashcatSite? site) {
   switch (site) {
-    case DatadogSite.us1:
-      return 'datadoghq.com';
-    case DatadogSite.us3:
-      return 'us3.datadoghq.com';
-    case DatadogSite.us5:
-      return 'us5.datadoghq.com';
-    case DatadogSite.eu1:
-      return 'datadoghq.eu';
-    case DatadogSite.us1Fed:
-      return 'ddog-gov.com';
-    case DatadogSite.ap1:
-      return 'ap1.datadoghq.com';
-    case DatadogSite.ap2:
-      return 'ap2.datadoghq.com';
+    case FlashcatSite.cn:
+      return 'browser.flashcat.cloud';
+    case FlashcatSite.staging:
+      return 'jira.flashcat.cloud';
     default:
-      return 'datadoghq.com';
+      return 'browser.flashcat.cloud';
   }
 }
 

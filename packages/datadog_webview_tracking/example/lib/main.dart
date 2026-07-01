@@ -25,7 +25,7 @@ Future<void> main() async {
   final configuration = DatadogConfiguration(
     clientToken: clientToken,
     env: dotenv.get('DD_ENV', fallback: ''),
-    site: DatadogSite.us1,
+    site: FlashcatSite.cn,
     uploadFrequency: UploadFrequency.frequent,
     batchSize: BatchSize.small,
     nativeCrashReportEnabled: true,

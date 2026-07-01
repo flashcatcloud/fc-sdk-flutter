@@ -926,6 +926,16 @@ class DatadogRumPlugin extends jni$_.JObject {
   static jni$_.JString get PARAM_KEY =>
       _id_PARAM_KEY.get(_class, const jni$_.JStringType());
 
+  static final _id_PARAM_KEYS = _class.staticFieldId(
+    r'PARAM_KEYS',
+    r'Ljava/lang/String;',
+  );
+
+  /// from: `static public final java.lang.String PARAM_KEYS`
+  /// The returned object must be released after use, by calling the [release] method.
+  static jni$_.JString get PARAM_KEYS =>
+      _id_PARAM_KEYS.get(_class, const jni$_.JStringType());
+
   static final _id_PARAM_VALUE = _class.staticFieldId(
     r'PARAM_VALUE',
     r'Ljava/lang/String;',
@@ -1291,63 +1301,6 @@ class DatadogRumPlugin extends jni$_.JObject {
     final _$result = result.reference;
     _onMethodCall(reference.pointer, _id_onMethodCall as jni$_.JMethodIDPtr,
             _$methodCall.pointer, _$result.pointer)
-        .check();
-  }
-
-  static final _id_onSessionStarted = _class.instanceMethodId(
-    r'onSessionStarted',
-    r'(Ljava/lang/String;Z)V',
-  );
-
-  static final _onSessionStarted = jni$_.ProtectedJniExtensions.lookup<
-              jni$_.NativeFunction<
-                  jni$_.JThrowablePtr Function(
-                      jni$_.Pointer<jni$_.Void>,
-                      jni$_.JMethodIDPtr,
-                      jni$_
-                          .VarArgs<(jni$_.Pointer<jni$_.Void>, jni$_.Int32)>)>>(
-          'globalEnv_CallVoidMethod')
-      .asFunction<
-          jni$_.JThrowablePtr Function(jni$_.Pointer<jni$_.Void>,
-              jni$_.JMethodIDPtr, jni$_.Pointer<jni$_.Void>, int)>();
-
-  /// from: `public void onSessionStarted(java.lang.String string, boolean z)`
-  void onSessionStarted(
-    jni$_.JString string,
-    bool z,
-  ) {
-    final _$string = string.reference;
-    _onSessionStarted(
-            reference.pointer,
-            _id_onSessionStarted as jni$_.JMethodIDPtr,
-            _$string.pointer,
-            z ? 1 : 0)
-        .check();
-  }
-
-  static final _id_attachToExistingSdk = _class.instanceMethodId(
-    r'attachToExistingSdk',
-    r'(Lcom/datadog/android/rum/RumMonitor;)V',
-  );
-
-  static final _attachToExistingSdk = jni$_.ProtectedJniExtensions.lookup<
-              jni$_.NativeFunction<
-                  jni$_.JThrowablePtr Function(
-                      jni$_.Pointer<jni$_.Void>,
-                      jni$_.JMethodIDPtr,
-                      jni$_.VarArgs<(jni$_.Pointer<jni$_.Void>,)>)>>(
-          'globalEnv_CallVoidMethod')
-      .asFunction<
-          jni$_.JThrowablePtr Function(jni$_.Pointer<jni$_.Void>,
-              jni$_.JMethodIDPtr, jni$_.Pointer<jni$_.Void>)>();
-
-  /// from: `public final void attachToExistingSdk(com.datadog.android.rum.RumMonitor rumMonitor)`
-  void attachToExistingSdk(
-    jni$_.JObject rumMonitor,
-  ) {
-    final _$rumMonitor = rumMonitor.reference;
-    _attachToExistingSdk(reference.pointer,
-            _id_attachToExistingSdk as jni$_.JMethodIDPtr, _$rumMonitor.pointer)
         .check();
   }
 
@@ -3908,7 +3861,7 @@ class DatadogContext extends jni$_.JObject {
   static const nullableType = $DatadogContext$NullableType();
   static const type = $DatadogContext$Type();
   static final _id_new$ = _class.constructorId(
-    r'(Lcom/datadog/android/DatadogSite;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;Lcom/datadog/android/api/context/TimeInfo;Lcom/datadog/android/api/context/ProcessInfo;Lcom/datadog/android/api/context/NetworkInfo;Lcom/datadog/android/api/context/DeviceInfo;Lcom/datadog/android/api/context/UserInfo;Lcom/datadog/android/api/context/AccountInfo;Lcom/datadog/android/privacy/TrackingConsent;Ljava/lang/String;Ljava/util/Map;)V',
+    r'(Lcom/datadog/android/FlashcatSite;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;Lcom/datadog/android/api/context/TimeInfo;Lcom/datadog/android/api/context/ProcessInfo;Lcom/datadog/android/api/context/NetworkInfo;Lcom/datadog/android/api/context/DeviceInfo;Lcom/datadog/android/api/context/UserInfo;Lcom/datadog/android/api/context/AccountInfo;Lcom/datadog/android/privacy/TrackingConsent;Ljava/lang/String;Ljava/util/Map;)V',
   );
 
   static final _new$ = jni$_.ProtectedJniExtensions.lookup<
@@ -3960,10 +3913,10 @@ class DatadogContext extends jni$_.JObject {
               jni$_.Pointer<jni$_.Void>,
               jni$_.Pointer<jni$_.Void>)>();
 
-  /// from: `public void <init>(com.datadog.android.DatadogSite datadogSite, java.lang.String string, java.lang.String string1, java.lang.String string2, java.lang.String string3, int i, java.lang.String string4, java.lang.String string5, java.lang.String string6, com.datadog.android.api.context.TimeInfo timeInfo, com.datadog.android.api.context.ProcessInfo processInfo, com.datadog.android.api.context.NetworkInfo networkInfo, com.datadog.android.api.context.DeviceInfo deviceInfo, com.datadog.android.api.context.UserInfo userInfo, com.datadog.android.api.context.AccountInfo accountInfo, com.datadog.android.privacy.TrackingConsent trackingConsent, java.lang.String string7, java.util.Map<java.lang.String, ? extends java.util.Map> map)`
+  /// from: `public void <init>(com.datadog.android.FlashcatSite flashcatSite, java.lang.String string, java.lang.String string1, java.lang.String string2, java.lang.String string3, int i, java.lang.String string4, java.lang.String string5, java.lang.String string6, com.datadog.android.api.context.TimeInfo timeInfo, com.datadog.android.api.context.ProcessInfo processInfo, com.datadog.android.api.context.NetworkInfo networkInfo, com.datadog.android.api.context.DeviceInfo deviceInfo, com.datadog.android.api.context.UserInfo userInfo, com.datadog.android.api.context.AccountInfo accountInfo, com.datadog.android.privacy.TrackingConsent trackingConsent, java.lang.String string7, java.util.Map<java.lang.String, ? extends java.util.Map> map)`
   /// The returned object must be released after use, by calling the [release] method.
   factory DatadogContext(
-    jni$_.JObject datadogSite,
+    jni$_.JObject flashcatSite,
     jni$_.JString string,
     jni$_.JString string1,
     jni$_.JString string2,
@@ -3982,7 +3935,7 @@ class DatadogContext extends jni$_.JObject {
     jni$_.JString? string7,
     jni$_.JMap<jni$_.JString, jni$_.JMap<jni$_.JString, jni$_.JObject?>> map,
   ) {
-    final _$datadogSite = datadogSite.reference;
+    final _$flashcatSite = flashcatSite.reference;
     final _$string = string.reference;
     final _$string1 = string1.reference;
     final _$string2 = string2.reference;
@@ -4002,7 +3955,7 @@ class DatadogContext extends jni$_.JObject {
     return DatadogContext.fromReference(_new$(
             _class.reference.pointer,
             _id_new$ as jni$_.JMethodIDPtr,
-            _$datadogSite.pointer,
+            _$flashcatSite.pointer,
             _$string.pointer,
             _$string1.pointer,
             _$string2.pointer,
@@ -4025,7 +3978,7 @@ class DatadogContext extends jni$_.JObject {
 
   static final _id_getSite = _class.instanceMethodId(
     r'getSite',
-    r'()Lcom/datadog/android/DatadogSite;',
+    r'()Lcom/datadog/android/FlashcatSite;',
   );
 
   static final _getSite = jni$_.ProtectedJniExtensions.lookup<
@@ -4040,7 +3993,7 @@ class DatadogContext extends jni$_.JObject {
             jni$_.JMethodIDPtr,
           )>();
 
-  /// from: `public final com.datadog.android.DatadogSite getSite()`
+  /// from: `public final com.datadog.android.FlashcatSite getSite()`
   /// The returned object must be released after use, by calling the [release] method.
   jni$_.JObject getSite() {
     return _getSite(reference.pointer, _id_getSite as jni$_.JMethodIDPtr)
@@ -4474,7 +4427,7 @@ class DatadogContext extends jni$_.JObject {
 
   static final _id_component1 = _class.instanceMethodId(
     r'component1',
-    r'()Lcom/datadog/android/DatadogSite;',
+    r'()Lcom/datadog/android/FlashcatSite;',
   );
 
   static final _component1 = jni$_.ProtectedJniExtensions.lookup<
@@ -4489,7 +4442,7 @@ class DatadogContext extends jni$_.JObject {
             jni$_.JMethodIDPtr,
           )>();
 
-  /// from: `public final com.datadog.android.DatadogSite component1()`
+  /// from: `public final com.datadog.android.FlashcatSite component1()`
   /// The returned object must be released after use, by calling the [release] method.
   jni$_.JObject component1() {
     return _component1(reference.pointer, _id_component1 as jni$_.JMethodIDPtr)
@@ -4921,7 +4874,7 @@ class DatadogContext extends jni$_.JObject {
 
   static final _id_copy = _class.instanceMethodId(
     r'copy',
-    r'(Lcom/datadog/android/DatadogSite;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;Lcom/datadog/android/api/context/TimeInfo;Lcom/datadog/android/api/context/ProcessInfo;Lcom/datadog/android/api/context/NetworkInfo;Lcom/datadog/android/api/context/DeviceInfo;Lcom/datadog/android/api/context/UserInfo;Lcom/datadog/android/api/context/AccountInfo;Lcom/datadog/android/privacy/TrackingConsent;Ljava/lang/String;Ljava/util/Map;)Lcom/datadog/android/api/context/DatadogContext;',
+    r'(Lcom/datadog/android/FlashcatSite;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;Lcom/datadog/android/api/context/TimeInfo;Lcom/datadog/android/api/context/ProcessInfo;Lcom/datadog/android/api/context/NetworkInfo;Lcom/datadog/android/api/context/DeviceInfo;Lcom/datadog/android/api/context/UserInfo;Lcom/datadog/android/api/context/AccountInfo;Lcom/datadog/android/privacy/TrackingConsent;Ljava/lang/String;Ljava/util/Map;)Lcom/datadog/android/api/context/DatadogContext;',
   );
 
   static final _copy = jni$_.ProtectedJniExtensions.lookup<
@@ -4973,10 +4926,10 @@ class DatadogContext extends jni$_.JObject {
               jni$_.Pointer<jni$_.Void>,
               jni$_.Pointer<jni$_.Void>)>();
 
-  /// from: `public final com.datadog.android.api.context.DatadogContext copy(com.datadog.android.DatadogSite datadogSite, java.lang.String string, java.lang.String string1, java.lang.String string2, java.lang.String string3, int i, java.lang.String string4, java.lang.String string5, java.lang.String string6, com.datadog.android.api.context.TimeInfo timeInfo, com.datadog.android.api.context.ProcessInfo processInfo, com.datadog.android.api.context.NetworkInfo networkInfo, com.datadog.android.api.context.DeviceInfo deviceInfo, com.datadog.android.api.context.UserInfo userInfo, com.datadog.android.api.context.AccountInfo accountInfo, com.datadog.android.privacy.TrackingConsent trackingConsent, java.lang.String string7, java.util.Map<java.lang.String, ? extends java.util.Map> map)`
+  /// from: `public final com.datadog.android.api.context.DatadogContext copy(com.datadog.android.FlashcatSite flashcatSite, java.lang.String string, java.lang.String string1, java.lang.String string2, java.lang.String string3, int i, java.lang.String string4, java.lang.String string5, java.lang.String string6, com.datadog.android.api.context.TimeInfo timeInfo, com.datadog.android.api.context.ProcessInfo processInfo, com.datadog.android.api.context.NetworkInfo networkInfo, com.datadog.android.api.context.DeviceInfo deviceInfo, com.datadog.android.api.context.UserInfo userInfo, com.datadog.android.api.context.AccountInfo accountInfo, com.datadog.android.privacy.TrackingConsent trackingConsent, java.lang.String string7, java.util.Map<java.lang.String, ? extends java.util.Map> map)`
   /// The returned object must be released after use, by calling the [release] method.
   DatadogContext copy(
-    jni$_.JObject datadogSite,
+    jni$_.JObject flashcatSite,
     jni$_.JString string,
     jni$_.JString string1,
     jni$_.JString string2,
@@ -4995,7 +4948,7 @@ class DatadogContext extends jni$_.JObject {
     jni$_.JString? string7,
     jni$_.JMap<jni$_.JString, jni$_.JMap<jni$_.JString, jni$_.JObject?>> map,
   ) {
-    final _$datadogSite = datadogSite.reference;
+    final _$flashcatSite = flashcatSite.reference;
     final _$string = string.reference;
     final _$string1 = string1.reference;
     final _$string2 = string2.reference;
@@ -5015,7 +4968,7 @@ class DatadogContext extends jni$_.JObject {
     return _copy(
             reference.pointer,
             _id_copy as jni$_.JMethodIDPtr,
-            _$datadogSite.pointer,
+            _$flashcatSite.pointer,
             _$string.pointer,
             _$string1.pointer,
             _$string2.pointer,

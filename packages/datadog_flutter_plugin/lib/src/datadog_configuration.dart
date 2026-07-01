@@ -70,34 +70,14 @@ enum TrackingConsent {
 }
 
 /// Determines the server for uploading RUM events.
-enum DatadogSite {
-  /// US based servers. Sends RUM events to
-  /// [app.datadoghq.com](https://app.datadoghq.com/).
-  us1,
+enum FlashcatSite {
+  /// China based servers (default). Sends data to
+  /// [browser.flashcat.cloud](https://browser.flashcat.cloud/).
+  cn,
 
-  /// US based servers. Sends RUM events to
-  /// [us3.datadoghq.com](https://us3.datadoghq.com/).
-  us3,
-
-  /// US based servers. Sends RUM events to
-  /// [us5.datadoghq.com](https://us5.datadoghq.com/).
-  us5,
-
-  /// Europe based servers. Sends RUM events to
-  /// [app.datadoghq.eu](https://app.datadoghq.eu/).
-  eu1,
-
-  /// US based servers, FedRAMP compatible. Sends RUM events to
-  /// [app.ddog-gov.com](https://app.ddog-gov.com/).
-  us1Fed,
-
-  /// Asia-Pacific based servers. Sends data to
-  /// [ap1.datadoghq.com](https://ap1.datadoghq.com).
-  ap1,
-
-  /// Asia-Pacific based servers. Sends data to
-  /// [ap2.datadoghq.com](https://ap2.datadoghq.com).
-  ap2,
+  /// Staging environment (internal usage only). Sends data to
+  /// [jira.flashcat.cloud](https://jira.flashcat.cloud/).
+  staging,
 }
 
 /// Defines whether the trace context should be injected into all requests or
@@ -131,9 +111,9 @@ class DatadogConfiguration {
   /// Whether or not to enable native crash reporting.
   bool nativeCrashReportEnabled;
 
-  /// The [DatadogSite] to send information to. This site must match the site
+  /// The [FlashcatSite] to send information to. This site must match the site
   /// used to generate your client token.
-  DatadogSite site;
+  FlashcatSite site;
 
   /// The service name for this application
   String? service;

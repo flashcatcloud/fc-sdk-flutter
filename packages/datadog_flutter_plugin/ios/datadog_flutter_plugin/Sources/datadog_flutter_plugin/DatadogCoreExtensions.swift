@@ -50,17 +50,12 @@ public extension Datadog.Configuration.BatchProcessingLevel {
     }
 }
 
-public extension DatadogSite {
+public extension FlashcatSite {
     static func parseFromFlutter(_ value: String) -> Self {
         switch value {
-        case "DatadogSite.us1": return .us1
-        case "DatadogSite.us3": return .us3
-        case "DatadogSite.us5": return .us5
-        case "DatadogSite.eu1": return .eu1
-        case "DatadogSite.us1Fed": return .us1_fed
-        case "DatadogSite.ap1": return .ap1
-        case "DatadogSite.ap2": return .ap2
-        default: return .us1
+        case "FlashcatSite.cn": return .cn
+        case "FlashcatSite.staging": return .staging
+        default: return .cn
         }
     }
 }

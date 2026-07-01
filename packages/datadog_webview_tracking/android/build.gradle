@@ -3,7 +3,7 @@ version '1.0-SNAPSHOT'
 
 buildscript {
     ext.kotlin_version = '2.1.0'
-    ext.datadog_version = "3.0.0"
+    ext.datadog_version = "0.4.1"
 
     repositories {
         google()
@@ -54,7 +54,7 @@ android {
 }
 
 dependencies {
-    implementation "com.datadoghq:dd-sdk-android-webview:$datadog_version"
+    implementation "cloud.flashcat:dd-sdk-android-webview:$datadog_version"
 
     implementation project(":webview_flutter_android")
 

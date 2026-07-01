@@ -49,7 +49,7 @@ extension Datadog.Configuration {
 
         service = try? castUnwrap(encoded["service"])
 
-        if let site = convertOptional(encoded["site"], DatadogSite.parseFromFlutter) {
+        if let site = convertOptional(encoded["site"], FlashcatSite.parseFromFlutter) {
             self.site = site
         }
         if let batchSize = convertOptional(encoded["batchSize"], Datadog.Configuration.BatchSize.parseFromFlutter) {
