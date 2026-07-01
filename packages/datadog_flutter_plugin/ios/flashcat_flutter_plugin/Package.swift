@@ -4,12 +4,12 @@
 import PackageDescription
 
 let package = Package(
-    name: "datadog_flutter_plugin",
+    name: "flashcat_flutter_plugin",
     platforms: [
         .iOS("12.0")
     ],
     products: [
-        .library(name: "datadog-flutter-plugin", targets: ["datadog_flutter_plugin"])
+        .library(name: "flashcat-flutter-plugin", targets: ["flashcat_flutter_plugin"])
     ],
     dependencies: [
         .package(url: "https://github.com/flashcatcloud/fc-sdk-ios.git", exact: "0.5.0"),
@@ -18,7 +18,7 @@ let package = Package(
     targets: [
         .systemLibrary(name: "datadog_flutter_plugin_c"),
         .target(
-            name: "datadog_flutter_plugin",
+            name: "flashcat_flutter_plugin",
             dependencies: [
                 .product(name: "FlashcatCore", package: "fc-sdk-ios"),
                 .product(name: "FlashcatLogs-NoOp", package: "fc-sdk-ios"),

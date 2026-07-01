@@ -7,7 +7,7 @@ import Flutter
 import XCTest
 import DatadogCore
 
-@testable import datadog_flutter_plugin
+@testable import flashcat_flutter_plugin
 
 class FlutterSdkAttributesTests: XCTestCase {
     func testAttributes_SimpleValues_AreEncodedProperly() {
