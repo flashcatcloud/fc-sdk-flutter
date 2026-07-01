@@ -1,3 +1,7 @@
+# FlashCat WebView Tracking for Flutter
+
+> Forked from the [Datadog Flutter SDK](https://github.com/DataDog/dd-sdk-flutter) and customized for FlashCat Cloud. Only the published package name changes (`flashcat_webview_tracking`); internal namespaces remain `datadog*`. See [`flashcat_flutter_plugin`][1] for the full list of differences.
+
 ## Overview
 
 This package is an extension to the [`flashcat_flutter_plugin`][1]. It allows

@@ -1,6 +1,25 @@
+# FlashCat SDK for Flutter
+
+> Flutter plugin for FlashCat Real User Monitoring (RUM), crash reporting, and WebView tracking.
+
+## About
+
+This SDK is forked from the [Datadog Flutter SDK](https://github.com/DataDog/dd-sdk-flutter) and customized for FlashCat Cloud. It is a thin bridge over the FlashCat native SDKs ([iOS](https://github.com/flashcatcloud/fc-sdk-ios), [Android](https://github.com/flashcatcloud/fc-sdk-android)).
+
+### Key Differences from the Datadog SDK
+
+- **Endpoint**: Data is sent to FlashCat Cloud (`browser.flashcat.cloud`) instead of Datadog.
+- **Site configuration**: Uses `FlashcatSite` with `.cn` (default) and `.staging`, replacing `DatadogSite`.
+- **Package name**: Published as `flashcat_flutter_plugin` and `flashcat_webview_tracking`; imports use `package:flashcat_flutter_plugin/…`. Only the published package name changes — internal Dart/Kotlin/Swift namespaces remain `datadog*`.
+- **Native dependencies**: Uses the FlashCat forks — iOS `Flashcat*` pods / `fc-sdk-ios` (SPM), Android `cloud.flashcat:*`.
+- **v1 scope**: iOS and Android only; the Flutter Web target is dropped.
+- **Not yet available**: `Logs` (the API is a no-op — FlashCat ingest does not accept Logs yet), Session Replay, the dio/gql/grpc integrations, and Feature Flags.
+
+---
+
 ## Overview
 
-Datadog Real User Monitoring (RUM) enables you to visualize and analyze the real-time performance and user journeys of your Flutter application’s individual users.
+FlashCat Real User Monitoring (RUM) enables you to visualize and analyze the real-time performance and user journeys of your Flutter application’s individual users.
 
 Datadog RUM SDK versions < 1.4 support monitoring for Flutter 2.8+.
 Datadog RUM SDK versions >= 1.4 support monitoring for Flutter 3.0+.
