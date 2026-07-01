@@ -2,10 +2,14 @@
     <img src="https://imgix.datadoghq.com/img/about/presskit/logo-v/dd_vertical_white.png" width="200">
 </p>
 
-# DataDog Flutter Plugin Packages
+# FlashCat Flutter Plugin Packages
 
-This is the monorepo for Datadog Flutter packages. To get started, check the
+> Forked from the [Datadog Flutter SDK](https://github.com/DataDog/dd-sdk-flutter) and customized for FlashCat Cloud. See the [core plugin README](packages/datadog_flutter_plugin/README.md#about) for the full list of differences.
+
+This is the monorepo for FlashCat's Flutter packages. To get started, check the
 [README](packages/datadog_flutter_plugin/README.md) in the core plugin.
+
+**v1 publishes two packages:** `flashcat_flutter_plugin` (RUM + Crash Reporting + WebView tracking) and `flashcat_webview_tracking`. The other packages in this monorepo are inherited from upstream and are not part of the FlashCat v1 release.
 
 ## Packages
 
