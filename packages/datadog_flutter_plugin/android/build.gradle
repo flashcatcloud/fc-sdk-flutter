@@ -76,6 +76,13 @@ dependencies {
     implementation "cloud.flashcat:dd-sdk-android-logs:$datadog_version"
     implementation "cloud.flashcat:dd-sdk-android-ndk:$datadog_version"
 
+    // okhttp is a runtime dependency of dd-sdk-android-core (its uploader), but the
+    // FlashCat fork's Gradle module metadata for 0.4.1 misfiles it under the
+    // test-fixtures variant, so it is not pulled transitively. Declare it explicitly
+    // to avoid `ClassNotFoundException: okhttp3.Authenticator` at init. Remove once
+    // fc-sdk-android publishes okhttp as an api dependency of the core runtime variant.
+    implementation "com.squareup.okhttp3:okhttp:4.9.0"
+
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation "com.google.code.gson:gson:2.12.1"
 
