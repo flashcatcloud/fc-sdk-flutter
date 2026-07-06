@@ -4,11 +4,11 @@
 
 import 'dart:io';
 
-import 'package:datadog_flutter_plugin/datadog_flutter_plugin.dart';
-import 'package:datadog_flutter_plugin/datadog_internal.dart';
+import 'package:flashcat_flutter_plugin/flashcat_flutter_plugin.dart';
+import 'package:flashcat_flutter_plugin/datadog_internal.dart';
 import 'package:flutter/foundation.dart';
 
-import '../datadog_tracking_http_client.dart';
+import '../flashcat_tracking_http_client.dart';
 
 /// An interface for providing attributes to Datadog RUM resources by listening
 /// to HttpClient requests and responses.

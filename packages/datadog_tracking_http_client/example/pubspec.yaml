@@ -1,5 +1,5 @@
-name: datadog_tracking_http_client_example
-description: Demonstrates how to use the datadog_tracking_http_client package.
+name: flashcat_tracking_http_client_example
+description: Demonstrates how to use the flashcat_tracking_http_client package.
 publish_to: 'none'
 version: 1.0.0+1
 
@@ -16,9 +16,9 @@ dependencies:
   http: ">=0.13.4 <2.0.0"
   transparent_image: ^2.0.0
 
-  datadog_flutter_plugin:
+  flashcat_flutter_plugin:
     path: ../../datadog_flutter_plugin
-  datadog_tracking_http_client:
+  flashcat_tracking_http_client:
     path: ../
   datadog_common_test:
     path: ../../datadog_common_test
@@ -39,6 +39,6 @@ flutter:
     - .env
 
 dependency_overrides:
-  datadog_flutter_plugin:
+  flashcat_flutter_plugin:
     path: ../../datadog_flutter_plugin
     

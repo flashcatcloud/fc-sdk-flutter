@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.0
+
+* First FlashCat release (forked from `datadog_tracking_http_client` 3.1.0).
+* Package renamed to `flashcat_tracking_http_client`; depends on
+  `flashcat_flutter_plugin` instead of `datadog_flutter_plugin`.
+* Tracks HTTP calls as RUM resources and injects distributed tracing headers
+  for configured first-party hosts.
+
 ## 3.0.1
 
 * Properly depend on Datadog 3.0.
