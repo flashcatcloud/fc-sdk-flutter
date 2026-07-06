@@ -228,11 +228,7 @@ void main() {
     expect(additionalConfig[DatadogConfigKey.variant], 'strawberry');
   });
 
-  test('initialize with logging configuration creates logs', () async {
-    when(
-      () => mockLogsPlatform.createLogger(any(), any()),
-    ).thenAnswer((_) => Future<void>.value());
-
+  test('initialize with logging configuration does not enable logs', () async {
     final loggingConfiguration = DatadogLoggingConfiguration();
     final configuration = DatadogConfiguration(
       clientToken: 'clientToken',
@@ -242,10 +238,11 @@ void main() {
     );
     await datadogSdk.initialize(configuration, TrackingConsent.pending);
 
-    final logs = datadogSdk.logs;
-
-    expect(logs, isNotNull);
-    verify(() => mockLogsPlatform.enable(datadogSdk, loggingConfiguration));
+    // Logs are not supported by the FlashCat platform: the configuration is
+    // cleared before it reaches the native SDKs and logs are never enabled.
+    expect(datadogSdk.logs, isNull);
+    expect(configuration.loggingConfiguration, isNull);
+    verifyNever(() => mockLogsPlatform.enable(any(), any()));
   });
 
   test('initialize with rum configuration creates RUM', () async {
@@ -651,21 +648,22 @@ void main() {
       () => mockLogsPlatform.createLogger(any(), any()),
     ).thenAnswer((_) => Future<void>.value());
 
-    final loggingConfig = DatadogLoggingConfiguration();
     final configuration = DatadogConfiguration(
       clientToken: 'clientToken',
       env: 'env',
       site: FlashcatSite.cn,
-      loggingConfiguration: loggingConfig,
     );
     await datadogSdk.initialize(configuration, TrackingConsent.granted);
+    // Logging cannot be enabled through initialize, so construct the
+    // logging instance directly to test the createLogger passthrough.
+    final logs = DatadogLogging(datadogSdk);
     final logConfig = DatadogLoggerConfiguration(name: 'test_logger');
 
-    final logger = datadogSdk.logs?.createLogger(logConfig);
+    final logger = logs.createLogger(logConfig);
 
     expect(logger, isNotNull);
     verify(
-      () => mockLogsPlatform.createLogger(logger!.loggerHandle, logConfig),
+      () => mockLogsPlatform.createLogger(logger.loggerHandle, logConfig),
     );
   });
 

@@ -242,6 +242,8 @@ class DatadogConfiguration {
   /// is initialized.
   final List<DatadogPluginConfiguration> additionalPlugins = [];
 
+  /// Logs are not supported by the FlashCat platform — this configuration is
+  /// ignored during initialization and no logs are sent.
   DatadogLoggingConfiguration? loggingConfiguration;
   DatadogRumConfiguration? rumConfiguration;
 
