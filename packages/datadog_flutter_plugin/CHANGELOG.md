@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.1
+
+* Fix the SDK version reported in events: `ddPackageVersion` still carried the
+  upstream `3.0.1`; it now matches the package version.
+* Align the iOS podspec version (`0.0.1` -> package version).
+* Companion release: automatic HTTP resource tracking and distributed tracing
+  are now available via the new [`flashcat_tracking_http_client`](https://pub.dev/packages/flashcat_tracking_http_client) package.
+
 ## 0.1.0
 
 * First FlashCat release (forked from `datadog_flutter_plugin` 3.0.1).
