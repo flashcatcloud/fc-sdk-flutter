@@ -1,8 +1,8 @@
-name: datadog_tracking_http_client
-description: A wrapping implementation of HttpClient for tracking resources with Datadog
-version: 3.1.0
-repository: https://github.com/DataDog/dd-sdk-flutter
-homepage: https://datadoghq.com
+name: flashcat_tracking_http_client
+description: A wrapping implementation of HttpClient for tracking resources with FlashCat
+version: 0.1.0
+homepage: https://flashcat.cloud
+repository: https://github.com/flashcatcloud/fc-sdk-flutter
 
 environment:
   sdk: ">=3.6.0 <4.0.0"
@@ -11,7 +11,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  datadog_flutter_plugin: ^3.0.0
+  flashcat_flutter_plugin: ^0.1.0
   uuid: ^4.0.0
   http: ^1.0.0
 
@@ -22,4 +22,3 @@ dev_dependencies:
     path: ../datadog_common_test
   flutter_lints: ^2.0.1
   mocktail: ^0.2.0
-

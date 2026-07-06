@@ -1,0 +1,85 @@
+name: Publish to pub.dev
+
+# Automated publishing via pub.dev's GitHub Actions OIDC integration.
+# Requires "Automated publishing" to be enabled for each package on pub.dev
+# (Settings -> Automated publishing) with this repository and the matching
+# tag pattern:
+#   flashcat_flutter_plugin        -> flashcat_flutter_plugin-v{{version}}
+#   flashcat_webview_tracking      -> flashcat_webview_tracking-v{{version}}
+#   flashcat_tracking_http_client  -> flashcat_tracking_http_client-v{{version}}
+on:
+  push:
+    tags:
+      - "flashcat_flutter_plugin-v[0-9]+.[0-9]+.[0-9]+*"
+      - "flashcat_webview_tracking-v[0-9]+.[0-9]+.[0-9]+*"
+      - "flashcat_tracking_http_client-v[0-9]+.[0-9]+.[0-9]+*"
+
+jobs:
+  publish:
+    name: Publish ${{ github.ref_name }}
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write # Required for OIDC authentication against pub.dev
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Ensure the tag is on the publish branch
+        run: |
+          git fetch origin publish:refs/remotes/origin/publish
+          if ! git merge-base --is-ancestor "$GITHUB_SHA" refs/remotes/origin/publish; then
+            echo "Tag ${GITHUB_REF_NAME} does not point to a commit on the publish branch; refusing to publish." >&2
+            exit 1
+          fi
+
+      - name: Resolve package directory from tag
+        id: package
+        run: |
+          case "${GITHUB_REF_NAME}" in
+            flashcat_flutter_plugin-v*)
+              echo "dir=packages/datadog_flutter_plugin" >> "$GITHUB_OUTPUT"
+              echo "name=flashcat_flutter_plugin" >> "$GITHUB_OUTPUT"
+              echo "version=${GITHUB_REF_NAME#flashcat_flutter_plugin-v}" >> "$GITHUB_OUTPUT"
+              ;;
+            flashcat_webview_tracking-v*)
+              echo "dir=packages/datadog_webview_tracking" >> "$GITHUB_OUTPUT"
+              echo "name=flashcat_webview_tracking" >> "$GITHUB_OUTPUT"
+              echo "version=${GITHUB_REF_NAME#flashcat_webview_tracking-v}" >> "$GITHUB_OUTPUT"
+              ;;
+            flashcat_tracking_http_client-v*)
+              echo "dir=packages/datadog_tracking_http_client" >> "$GITHUB_OUTPUT"
+              echo "name=flashcat_tracking_http_client" >> "$GITHUB_OUTPUT"
+              echo "version=${GITHUB_REF_NAME#flashcat_tracking_http_client-v}" >> "$GITHUB_OUTPUT"
+              ;;
+            *)
+              echo "Unrecognized tag: ${GITHUB_REF_NAME}" >&2
+              exit 1
+              ;;
+          esac
+
+      - name: Verify tag matches pubspec version
+        working-directory: ${{ steps.package.outputs.dir }}
+        run: |
+          pubspec_version=$(grep -E "^version:" pubspec.yaml | awk '{print $2}' | tr -d '"')
+          if [ "$pubspec_version" != "${{ steps.package.outputs.version }}" ]; then
+            echo "Tag version ${{ steps.package.outputs.version }} does not match pubspec version $pubspec_version" >&2
+            exit 1
+          fi
+
+      # setup-dart performs the OIDC temporary-token exchange with pub.dev
+      - uses: dart-lang/setup-dart@v1
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Run tests
+        working-directory: ${{ steps.package.outputs.dir }}
+        run: |
+          flutter pub get
+          flutter test
+
+      - name: Publish ${{ steps.package.outputs.name }}
+        working-directory: ${{ steps.package.outputs.dir }}
+        run: flutter pub publish --force

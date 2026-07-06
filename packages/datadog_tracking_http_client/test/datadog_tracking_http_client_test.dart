@@ -6,10 +6,10 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:datadog_common_test/uri_matchers.dart';
-import 'package:datadog_flutter_plugin/datadog_flutter_plugin.dart';
-import 'package:datadog_flutter_plugin/datadog_internal.dart';
-import 'package:datadog_tracking_http_client/datadog_tracking_http_client.dart';
-import 'package:datadog_tracking_http_client/src/tracking_http_client_plugin.dart';
+import 'package:flashcat_flutter_plugin/flashcat_flutter_plugin.dart';
+import 'package:flashcat_flutter_plugin/datadog_internal.dart';
+import 'package:flashcat_tracking_http_client/flashcat_tracking_http_client.dart';
+import 'package:flashcat_tracking_http_client/src/tracking_http_client_plugin.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
