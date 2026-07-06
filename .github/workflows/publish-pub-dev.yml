@@ -23,6 +23,12 @@ jobs:
   publish:
     name: Publish ${{ github.ref_name }}
     runs-on: ubuntu-latest
+    # pub.dev requires the OIDC token to carry this environment claim
+    # ("Require GitHub Actions environment" is enabled for our packages).
+    # The environment currently has no protection rules; adding required
+    # reviewers in repo Settings -> Environments would gate publishing
+    # behind a manual approval without further changes here.
+    environment: pub.dev
     permissions:
       id-token: write # Required for OIDC authentication against pub.dev
     steps:
