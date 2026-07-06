@@ -2,8 +2,8 @@
 // This product includes software developed at Datadog (https://www.datadoghq.com/).
 // Copyright 2022-Present Datadog, Inc.
 
-import 'package:datadog_flutter_plugin/datadog_flutter_plugin.dart';
-import 'package:datadog_tracking_http_client/datadog_tracking_http_client.dart';
+import 'package:flashcat_flutter_plugin/flashcat_flutter_plugin.dart';
+import 'package:flashcat_tracking_http_client/flashcat_tracking_http_client.dart';
 import 'package:flutter/material.dart';
 
 import 'clients/dio_client.dart';

@@ -5,8 +5,8 @@
 import 'dart:io';
 
 import 'package:datadog_common_test/datadog_common_test.dart';
-import 'package:datadog_flutter_plugin/datadog_flutter_plugin.dart';
-import 'package:datadog_tracking_http_client/datadog_tracking_http_client.dart';
+import 'package:flashcat_flutter_plugin/flashcat_flutter_plugin.dart';
+import 'package:flashcat_tracking_http_client/flashcat_tracking_http_client.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -73,7 +73,7 @@ Future<void> main() async {
   final configuration = DatadogConfiguration(
     clientToken: clientToken,
     env: dotenv.get('DD_ENV', fallback: ''),
-    site: DatadogSite.us1,
+    site: FlashcatSite.cn,
     uploadFrequency: UploadFrequency.frequent,
     batchSize: BatchSize.small,
     nativeCrashReportEnabled: true,
