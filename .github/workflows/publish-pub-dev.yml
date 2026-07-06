@@ -22,6 +22,16 @@ jobs:
       id-token: write # Required for OIDC authentication against pub.dev
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Ensure the tag is on the publish branch
+        run: |
+          git fetch origin publish:refs/remotes/origin/publish
+          if ! git merge-base --is-ancestor "$GITHUB_SHA" refs/remotes/origin/publish; then
+            echo "Tag ${GITHUB_REF_NAME} does not point to a commit on the publish branch; refusing to publish." >&2
+            exit 1
+          fi
 
       - name: Resolve package directory from tag
         id: package
