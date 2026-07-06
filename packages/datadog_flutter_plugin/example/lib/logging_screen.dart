@@ -4,7 +4,7 @@
 
 import 'dart:isolate';
 
-import 'package:datadog_flutter_plugin/datadog_flutter_plugin.dart';
+import 'package:flashcat_flutter_plugin/flashcat_flutter_plugin.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';

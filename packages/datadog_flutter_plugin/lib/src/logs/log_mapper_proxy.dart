@@ -6,7 +6,7 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 
-import '../../datadog_flutter_plugin.dart';
+import '../../flashcat_flutter_plugin.dart';
 import '../../datadog_internal.dart';
 import '../android/android_log_event_mapper.dart';
 import '../ios/ios_log_event_mapper.dart';

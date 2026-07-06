@@ -7,7 +7,7 @@ package com.datadoghq.flutter
 
 import android.util.Log
 import com.datadog.android.Datadog
-import com.datadog.android.DatadogSite
+import com.datadog.android.FlashcatSite
 import com.datadog.android._InternalProxy
 import com.datadog.android.api.context.DatadogContext
 import com.datadog.android.api.feature.Feature
@@ -370,16 +370,11 @@ internal fun parseTrackingConsent(trackingConsent: String): TrackingConsent {
     }
 }
 
-internal fun parseSite(site: String): DatadogSite {
+internal fun parseSite(site: String): FlashcatSite {
     return when (site) {
-        "DatadogSite.us1" -> DatadogSite.US1
-        "DatadogSite.us3" -> DatadogSite.US3
-        "DatadogSite.us5" -> DatadogSite.US5
-        "DatadogSite.eu1" -> DatadogSite.EU1
-        "DatadogSite.us1Fed" -> DatadogSite.US1_FED
-        "DatadogSite.ap1" -> DatadogSite.AP1
-        "DatadogSite.ap2" -> DatadogSite.AP2
-        else -> DatadogSite.US1
+        "FlashcatSite.cn" -> FlashcatSite.CN
+        "FlashcatSite.staging" -> FlashcatSite.STAGING
+        else -> FlashcatSite.CN
     }
 }
 

@@ -8,7 +8,7 @@
 
 import 'package:meta/meta.dart';
 
-import 'datadog_flutter_plugin.dart';
+import 'flashcat_flutter_plugin.dart';
 import 'src/internal_logger.dart';
 
 export 'src/attributes.dart';

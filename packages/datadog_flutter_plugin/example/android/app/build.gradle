@@ -4,7 +4,7 @@
  * Copyright 2016-Present Datadog, Inc.
  */
 buildscript {
-    ext.datadog_version = "3+"
+    ext.datadog_version = "0.4.1"
 }
 
 plugins {
@@ -77,9 +77,9 @@ flutter {
 }
 
 dependencies {
-    implementation "com.datadoghq:dd-sdk-android-rum:$datadog_version"
-    implementation "com.datadoghq:dd-sdk-android-logs:$datadog_version"
-    implementation "com.datadoghq:dd-sdk-android-ndk:$datadog_version"
+    implementation "cloud.flashcat:dd-sdk-android-rum:$datadog_version"
+    implementation "cloud.flashcat:dd-sdk-android-logs:$datadog_version"
+    implementation "cloud.flashcat:dd-sdk-android-ndk:$datadog_version"
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation 'androidx.work:work-runtime-ktx:2.8.0'

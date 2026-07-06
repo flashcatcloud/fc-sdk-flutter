@@ -17,7 +17,7 @@ import assertk.assertions.isNotNull
 import assertk.assertions.isNull
 import assertk.assertions.isNullOrEmpty
 import com.datadog.android.Datadog
-import com.datadog.android.DatadogSite
+import com.datadog.android.FlashcatSite
 import com.datadog.android.api.context.AccountInfo
 import com.datadog.android.api.context.UserInfo
 import com.datadog.android.core.configuration.BatchProcessingLevel
@@ -181,22 +181,12 @@ class DatadogSdkPluginTest {
     @Test
     fun `M parse all sites W parseSite`() {
         // WHEN
-        val us1 = parseSite("DatadogSite.us1")
-        val us3 = parseSite("DatadogSite.us3")
-        val us5 = parseSite("DatadogSite.us5")
-        val eu1 = parseSite("DatadogSite.eu1")
-        val us1Fed = parseSite("DatadogSite.us1Fed")
-        val ap1 = parseSite("DatadogSite.ap1")
-        val ap2 = parseSite("DatadogSite.ap2")
+        val cn = parseSite("FlashcatSite.cn")
+        val staging = parseSite("FlashcatSite.staging")
 
         // THEN
-        assertThat(us1).isEqualTo(DatadogSite.US1)
-        assertThat(us3).isEqualTo(DatadogSite.US3)
-        assertThat(us5).isEqualTo(DatadogSite.US5)
-        assertThat(eu1).isEqualTo(DatadogSite.EU1)
-        assertThat(us1Fed).isEqualTo(DatadogSite.US1_FED)
-        assertThat(ap1).isEqualTo(DatadogSite.AP1)
-        assertThat(ap2).isEqualTo(DatadogSite.AP2)
+        assertThat(cn).isEqualTo(FlashcatSite.CN)
+        assertThat(staging).isEqualTo(FlashcatSite.STAGING)
     }
 
     @Test
@@ -256,7 +246,7 @@ class DatadogSdkPluginTest {
             "env" to environment,
             "nativeCrashReportEnabled" to true,
             "service" to service,
-            "site" to "DatadogSite.us3",
+            "site" to "FlashcatSite.staging",
             "batchSize" to "BatchSize.small",
             "uploadFrequency" to "UploadFrequency.frequent",
             "batchProcessingLevel" to "BatchProcessingLevel.low",
@@ -271,7 +261,7 @@ class DatadogSdkPluginTest {
         // THEN
         val coreConfig: Any = config.getFieldValue("coreConfig")
         assertThat(config.getPrivate("crashReportsEnabled")).isEqualTo(true)
-        assertThat(coreConfig.getPrivate("site")).isEqualTo(DatadogSite.US3)
+        assertThat(coreConfig.getPrivate("site")).isEqualTo(FlashcatSite.STAGING)
         assertThat(coreConfig.getPrivate("batchSize")).isEqualTo(BatchSize.SMALL)
         assertThat(coreConfig.getPrivate("batchProcessingLevel")).isEqualTo(BatchProcessingLevel.LOW)
         assertThat(config.getPrivate("service")).isEqualTo(service)

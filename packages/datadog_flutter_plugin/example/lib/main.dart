@@ -2,7 +2,7 @@
 // This product includes software developed at Datadog (https://www.datadoghq.com/).
 // Copyright 2016-Present Datadog, Inc.
 
-import 'package:datadog_flutter_plugin/datadog_flutter_plugin.dart';
+import 'package:flashcat_flutter_plugin/flashcat_flutter_plugin.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
@@ -18,7 +18,7 @@ void main() async {
     env: dotenv.get('DD_ENV', fallback: ''),
     service: 'com.datadoghq.example.flutter',
     version: '1.2.3',
-    site: DatadogSite.us1,
+    site: FlashcatSite.cn,
     nativeCrashReportEnabled: true,
     loggingConfiguration: DatadogLoggingConfiguration(),
     rumConfiguration: applicationId != null

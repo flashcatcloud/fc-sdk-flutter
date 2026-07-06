@@ -7,10 +7,10 @@ import 'dart:math';
 
 import 'package:datadog_common_test/datadog_common_test.dart'
     hide DurationHelpers;
-import 'package:datadog_flutter_plugin/datadog_flutter_plugin.dart';
-import 'package:datadog_flutter_plugin/datadog_internal.dart';
-import 'package:datadog_flutter_plugin/src/rum/ddrum_noop_platform.dart';
-import 'package:datadog_flutter_plugin/src/rum/ddrum_platform_interface.dart';
+import 'package:flashcat_flutter_plugin/flashcat_flutter_plugin.dart';
+import 'package:flashcat_flutter_plugin/datadog_internal.dart';
+import 'package:flashcat_flutter_plugin/src/rum/ddrum_noop_platform.dart';
+import 'package:flashcat_flutter_plugin/src/rum/ddrum_platform_interface.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';

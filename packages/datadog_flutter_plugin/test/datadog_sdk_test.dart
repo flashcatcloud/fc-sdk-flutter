@@ -2,10 +2,10 @@
 // This product includes software developed at Datadog (https://www.datadoghq.com/).
 // Copyright 2016-Present Datadog, Inc.
 
-import 'package:datadog_flutter_plugin/datadog_flutter_plugin.dart';
-import 'package:datadog_flutter_plugin/datadog_internal.dart';
-import 'package:datadog_flutter_plugin/src/logs/ddlogs_platform_interface.dart';
-import 'package:datadog_flutter_plugin/src/rum/ddrum_platform_interface.dart';
+import 'package:flashcat_flutter_plugin/flashcat_flutter_plugin.dart';
+import 'package:flashcat_flutter_plugin/datadog_internal.dart';
+import 'package:flashcat_flutter_plugin/src/logs/ddlogs_platform_interface.dart';
+import 'package:flashcat_flutter_plugin/src/rum/ddrum_platform_interface.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
@@ -134,7 +134,7 @@ void main() {
     final configuration = DatadogConfiguration(
       clientToken: 'clientToken',
       env: 'env',
-      site: DatadogSite.us1,
+      site: FlashcatSite.cn,
     );
     await datadogSdk.initialize(configuration, TrackingConsent.granted);
 
@@ -152,13 +152,13 @@ void main() {
     final configuration = DatadogConfiguration(
       clientToken: 'fake-client-token',
       env: 'prod',
-      site: DatadogSite.us1,
+      site: FlashcatSite.cn,
     );
     final encoded = configuration.encode();
     expect(encoded, {
       'clientToken': 'fake-client-token',
       'env': 'prod',
-      'site': 'DatadogSite.us1',
+      'site': 'FlashcatSite.cn',
       'nativeCrashReportEnabled': false,
       'service': null,
       'batchSize': null,
@@ -173,18 +173,18 @@ void main() {
         DatadogConfiguration(
             clientToken: 'fakeClientToken',
             env: 'environment',
-            site: DatadogSite.us1,
+            site: FlashcatSite.cn,
           )
           ..batchSize = BatchSize.small
           ..uploadFrequency = UploadFrequency.frequent
           ..batchProcessingLevel = BatchProcessingLevel.low
-          ..site = DatadogSite.eu1;
+          ..site = FlashcatSite.staging;
 
     final encoded = configuration.encode();
     expect(encoded['batchSize'], 'BatchSize.small');
     expect(encoded['uploadFrequency'], 'UploadFrequency.frequent');
     expect(encoded['batchProcessingLevel'], 'BatchProcessingLevel.low');
-    expect(encoded['site'], 'DatadogSite.eu1');
+    expect(encoded['site'], 'FlashcatSite.staging');
   });
 
   test('configuration encodes service name', () {
@@ -192,7 +192,7 @@ void main() {
       clientToken: 'fakeClientToken',
       env: 'fake-env',
       service: 'com.servicename',
-      site: DatadogSite.us1,
+      site: FlashcatSite.cn,
     );
 
     final encoded = configuration.encode();
@@ -204,7 +204,7 @@ void main() {
     final configuration = DatadogConfiguration(
       clientToken: 'fakeClientToken',
       env: 'fake-env',
-      site: DatadogSite.us1,
+      site: FlashcatSite.cn,
       version: '1.9.8+123',
     );
 
@@ -218,7 +218,7 @@ void main() {
     final configuration = DatadogConfiguration(
       clientToken: 'fakeClientToken',
       env: 'fake-env',
-      site: DatadogSite.us1,
+      site: FlashcatSite.cn,
       flavor: 'strawberry',
     );
 
@@ -228,24 +228,21 @@ void main() {
     expect(additionalConfig[DatadogConfigKey.variant], 'strawberry');
   });
 
-  test('initialize with logging configuration creates logs', () async {
-    when(
-      () => mockLogsPlatform.createLogger(any(), any()),
-    ).thenAnswer((_) => Future<void>.value());
-
+  test('initialize with logging configuration does not enable logs', () async {
     final loggingConfiguration = DatadogLoggingConfiguration();
     final configuration = DatadogConfiguration(
       clientToken: 'clientToken',
       env: 'env',
-      site: DatadogSite.us1,
+      site: FlashcatSite.cn,
       loggingConfiguration: loggingConfiguration,
     );
     await datadogSdk.initialize(configuration, TrackingConsent.pending);
 
-    final logs = datadogSdk.logs;
-
-    expect(logs, isNotNull);
-    verify(() => mockLogsPlatform.enable(datadogSdk, loggingConfiguration));
+    // Logs are not supported by the FlashCat platform: the configuration is
+    // cleared before it reaches the native SDKs and logs are never enabled.
+    expect(datadogSdk.logs, isNull);
+    expect(configuration.loggingConfiguration, isNull);
+    verifyNever(() => mockLogsPlatform.enable(any(), any()));
   });
 
   test('initialize with rum configuration creates RUM', () async {
@@ -270,7 +267,7 @@ void main() {
     final configuration = DatadogConfiguration(
       clientToken: 'clientToken',
       env: 'env',
-      site: DatadogSite.us1,
+      site: FlashcatSite.cn,
       rumConfiguration: rumConfiguration,
     );
     await datadogSdk.initialize(configuration, TrackingConsent.pending);
@@ -356,7 +353,7 @@ void main() {
     final configuration = DatadogConfiguration(
       clientToken: 'clientToken',
       env: 'env',
-      site: DatadogSite.us1,
+      site: FlashcatSite.cn,
       firstPartyHosts: ['example.com', 'datadoghq.com'],
     );
     await datadogSdk.initialize(configuration, TrackingConsent.granted);
@@ -378,7 +375,7 @@ void main() {
     final configuration = DatadogConfiguration(
       clientToken: 'clientToken',
       env: 'env',
-      site: DatadogSite.us1,
+      site: FlashcatSite.cn,
       firstPartyHostsWithTracingHeaders: {
         'example.com': {TracingHeaderType.b3},
         'datadoghq.com': {TracingHeaderType.datadog},
@@ -399,7 +396,7 @@ void main() {
     final configuration = DatadogConfiguration(
       clientToken: 'clientToken',
       env: 'env',
-      site: DatadogSite.us1,
+      site: FlashcatSite.cn,
       firstPartyHosts: ['datadoghq.com'],
       firstPartyHostsWithTracingHeaders: {
         'example.com': {TracingHeaderType.b3},
@@ -421,7 +418,7 @@ void main() {
     final configuration = DatadogConfiguration(
       clientToken: 'clientToken',
       env: 'env',
-      site: DatadogSite.us1,
+      site: FlashcatSite.cn,
     );
     await datadogSdk.initialize(configuration, TrackingConsent.granted);
 
@@ -437,7 +434,7 @@ void main() {
       final configuration = DatadogConfiguration(
         clientToken: 'clientToken',
         env: 'env',
-        site: DatadogSite.us1,
+        site: FlashcatSite.cn,
         firstPartyHosts: firstPartyHosts,
       );
       await datadogSdk.initialize(configuration, TrackingConsent.pending);
@@ -458,7 +455,7 @@ void main() {
       final configuration = DatadogConfiguration(
         clientToken: 'clientToken',
         env: 'env',
-        site: DatadogSite.us1,
+        site: FlashcatSite.cn,
         firstPartyHosts: firstPartyHosts,
       );
       await datadogSdk.initialize(configuration, TrackingConsent.pending);
@@ -479,7 +476,7 @@ void main() {
       final configuration = DatadogConfiguration(
         clientToken: 'clientToken',
         env: 'env',
-        site: DatadogSite.us1,
+        site: FlashcatSite.cn,
         firstPartyHosts: firstPartyHosts,
       );
       await datadogSdk.initialize(configuration, TrackingConsent.granted);
@@ -495,7 +492,7 @@ void main() {
     final configuration = DatadogConfiguration(
       clientToken: 'clientToken',
       env: 'env',
-      site: DatadogSite.us1,
+      site: FlashcatSite.cn,
       firstPartyHosts: firstPartyHosts,
     );
     await datadogSdk.initialize(configuration, TrackingConsent.pending);
@@ -513,7 +510,7 @@ void main() {
     final configuration = DatadogConfiguration(
       clientToken: 'clientToken',
       env: 'env',
-      site: DatadogSite.us1,
+      site: FlashcatSite.cn,
       firstPartyHostsWithTracingHeaders: firstPartyHosts,
     );
     await datadogSdk.initialize(configuration, TrackingConsent.granted);
@@ -535,7 +532,7 @@ void main() {
     final configuration = DatadogConfiguration(
       clientToken: 'clientToken',
       env: 'env',
-      site: DatadogSite.us1,
+      site: FlashcatSite.cn,
       firstPartyHostsWithTracingHeaders: firstPartyHosts,
     );
     await datadogSdk.initialize(configuration, TrackingConsent.granted);
@@ -651,21 +648,22 @@ void main() {
       () => mockLogsPlatform.createLogger(any(), any()),
     ).thenAnswer((_) => Future<void>.value());
 
-    final loggingConfig = DatadogLoggingConfiguration();
     final configuration = DatadogConfiguration(
       clientToken: 'clientToken',
       env: 'env',
-      site: DatadogSite.us1,
-      loggingConfiguration: loggingConfig,
+      site: FlashcatSite.cn,
     );
     await datadogSdk.initialize(configuration, TrackingConsent.granted);
+    // Logging cannot be enabled through initialize, so construct the
+    // logging instance directly to test the createLogger passthrough.
+    final logs = DatadogLogging(datadogSdk);
     final logConfig = DatadogLoggerConfiguration(name: 'test_logger');
 
-    final logger = datadogSdk.logs?.createLogger(logConfig);
+    final logger = logs.createLogger(logConfig);
 
     expect(logger, isNotNull);
     verify(
-      () => mockLogsPlatform.createLogger(logger!.loggerHandle, logConfig),
+      () => mockLogsPlatform.createLogger(logger.loggerHandle, logConfig),
     );
   });
 
@@ -681,7 +679,7 @@ void main() {
       final config = DatadogConfiguration(
         clientToken: 'fake_token',
         env: 'env',
-        site: DatadogSite.us1,
+        site: FlashcatSite.cn,
       )..addPlugin(mockPluginConfig);
 
       await datadogSdk.initialize(config, TrackingConsent.pending);
@@ -721,7 +719,7 @@ void main() {
     final configuration = DatadogConfiguration(
       clientToken: 'clientToken',
       env: 'env',
-      site: DatadogSite.us1,
+      site: FlashcatSite.cn,
     );
     await datadogSdk.initialize(configuration, TrackingConsent.pending);
 
@@ -750,7 +748,7 @@ void main() {
     final configuration = DatadogConfiguration(
       clientToken: 'clientToken',
       env: 'env',
-      site: DatadogSite.us1,
+      site: FlashcatSite.cn,
     );
     await datadogSdk.initialize(configuration, TrackingConsent.pending);
 

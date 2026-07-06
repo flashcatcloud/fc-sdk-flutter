@@ -12,7 +12,7 @@ import 'package:flutter/services.dart';
 // ignore: unnecessary_import
 import 'package:meta/meta.dart';
 
-import '../../datadog_flutter_plugin.dart';
+import '../../flashcat_flutter_plugin.dart';
 import '../../datadog_internal.dart';
 import 'ddrum_platform_interface.dart';
 import 'inv_metric_provider.dart';

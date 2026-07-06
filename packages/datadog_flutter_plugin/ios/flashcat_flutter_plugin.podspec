@@ -1,9 +1,9 @@
 #
 # To learn more about a Podspec see http://guides.cocoapods.org/syntax/podspec.html.
-# Run `pod lib lint datadog_flutter_plugin.podspec` to validate before publishing.
+# Run `pod lib lint flashcat_flutter_plugin.podspec` to validate before publishing.
 #
 Pod::Spec.new do |s|
-  s.name             = 'datadog_flutter_plugin'
+  s.name             = 'flashcat_flutter_plugin'
   s.version          = '0.0.1'
   s.summary          = 'Instrument your application with Datadog.'
   s.description      = <<-DESC
@@ -13,14 +13,17 @@ Instrument your application with Datadog.
   s.license          = { :file => '../LICENSE' }
   s.author           = { 'Datadog' => 'info@datadoghq.com' }
   s.source           = { :path => '.' }
-  s.source_files = 'datadog_flutter_plugin/Sources/**/*'
+  s.source_files = 'flashcat_flutter_plugin/Sources/**/*'
   s.static_framework = true
   s.dependency 'Flutter'
-  s.dependency 'DatadogCore', '3.4.0'
-  s.dependency 'DatadogLogs', '3.4.0'
-  s.dependency 'DatadogRUM', '3.4.0'
-  s.dependency 'DatadogInternal', '3.4.0'
-  s.dependency 'DatadogCrashReporting', '3.4.0'
+  s.dependency 'FlashcatCore', '~> 0.5'
+  # Logs are not supported in v1 (FlashCat ingest does not accept Logs yet).
+  # Use the no-op Logs variant so the API compiles but sends nothing. Matches
+  # the SPM Package.swift, which links the FlashcatLogs-NoOp product.
+  s.dependency 'FlashcatLogs-NoOp', '~> 0.5'
+  s.dependency 'FlashcatRUM', '~> 0.5'
+  s.dependency 'FlashcatInternal', '~> 0.5'
+  s.dependency 'FlashcatCrashReporting', '~> 0.5'
   s.dependency 'DictionaryCoder', '1.2.0'
   s.platform = :ios, '12.0'
 

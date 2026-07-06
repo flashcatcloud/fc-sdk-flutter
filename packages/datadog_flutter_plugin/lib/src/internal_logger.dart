@@ -4,7 +4,7 @@
 
 import 'package:flutter/foundation.dart';
 
-import '../datadog_flutter_plugin.dart';
+import '../flashcat_flutter_plugin.dart';
 import 'datadog_sdk_platform_interface.dart';
 import 'helpers.dart';
 

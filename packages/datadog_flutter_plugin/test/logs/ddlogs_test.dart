@@ -6,9 +6,9 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:datadog_common_test/datadog_common_test.dart';
-import 'package:datadog_flutter_plugin/datadog_flutter_plugin.dart';
-import 'package:datadog_flutter_plugin/src/internal_logger.dart';
-import 'package:datadog_flutter_plugin/src/logs/ddlogs_platform_interface.dart';
+import 'package:flashcat_flutter_plugin/flashcat_flutter_plugin.dart';
+import 'package:flashcat_flutter_plugin/src/internal_logger.dart';
+import 'package:flashcat_flutter_plugin/src/logs/ddlogs_platform_interface.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';

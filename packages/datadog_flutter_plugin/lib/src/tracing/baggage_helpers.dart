@@ -4,7 +4,7 @@
 
 import 'dart:convert';
 
-import '../../datadog_flutter_plugin.dart';
+import '../../flashcat_flutter_plugin.dart';
 import '../../datadog_internal.dart';
 
 // The resulting baggage-string should contain 64 list-members or less (https://www.w3.org/TR/baggage/#limits)

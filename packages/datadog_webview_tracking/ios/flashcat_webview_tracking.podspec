@@ -3,7 +3,7 @@
 # Run `pod lib lint datadog_webview_tracking.podspec` to validate before publishing.
 #
 Pod::Spec.new do |s|
-  s.name             = 'datadog_webview_tracking'
+  s.name             = 'flashcat_webview_tracking'
   s.version          = '0.0.1'
   s.summary          = 'A Flutter plugin for Datadog webview tracking.'
   s.description      = <<-DESC
@@ -13,10 +13,10 @@ A Flutter plugin for use with the Datadog Flutter Plugin to track webviews as pa
   s.license          = { :type => "Apache", :file => '../LICENSE' }
   s.authors          = { "Jeff Ward" => "jeff.ward@datadoghq.com" }
   s.source           = { :path => '.' }
-  s.source_files = 'datadog_webview_tracking/Sources/**/*'
+  s.source_files = 'flashcat_webview_tracking/Sources/**/*'
   s.dependency 'Flutter'
-  s.dependency 'DatadogCore', '~> 3'
-  s.dependency 'DatadogWebViewTracking', '~> 3'
+  s.dependency 'FlashcatCore', '~> 0.5'
+  s.dependency 'FlashcatWebViewTracking', '~> 0.5'
   s.dependency 'webview_flutter_wkwebview'
   s.platform = :ios, '13.0'
 

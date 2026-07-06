@@ -8,7 +8,7 @@ import XCTest
 @testable import DatadogInternal
 @testable import DatadogLogs
 @testable import DatadogRUM
-@testable import datadog_flutter_plugin
+@testable import flashcat_flutter_plugin
 
 class DatadogConfigurationTests: XCTestCase {
 
@@ -53,21 +53,11 @@ class DatadogConfigurationTests: XCTestCase {
     }
 
     func testAllSites_AreParsedCorrectly() {
-        let us1 = DatadogSite.parseFromFlutter("DatadogSite.us1")
-        let us3 = DatadogSite.parseFromFlutter("DatadogSite.us3")
-        let us5 = DatadogSite.parseFromFlutter("DatadogSite.us5")
-        let eu1 = DatadogSite.parseFromFlutter("DatadogSite.eu1")
-        let us1Fed = DatadogSite.parseFromFlutter("DatadogSite.us1Fed")
-        let ap1 = DatadogSite.parseFromFlutter("DatadogSite.ap1")
-        let ap2 = DatadogSite.parseFromFlutter("DatadogSite.ap2")
+        let cn = FlashcatSite.parseFromFlutter("FlashcatSite.cn")
+        let staging = FlashcatSite.parseFromFlutter("FlashcatSite.staging")
 
-        XCTAssertEqual(us1, .us1)
-        XCTAssertEqual(us3, .us3)
-        XCTAssertEqual(us5, .us5)
-        XCTAssertEqual(eu1, .eu1)
-        XCTAssertEqual(us1Fed, .us1_fed)
-        XCTAssertEqual(ap1, .ap1)
-        XCTAssertEqual(ap2, .ap2)
+        XCTAssertEqual(cn, .cn)
+        XCTAssertEqual(staging, .staging)
     }
 
     func testAllVitalsFrequencies_AreParsedCorrectly() {
@@ -107,7 +97,7 @@ class DatadogConfigurationTests: XCTestCase {
         XCTAssertNotNil(config)
         XCTAssertEqual(config.clientToken, "fakeClientToken")
         XCTAssertEqual(config.env, "fakeEnvironment")
-        XCTAssertEqual(config.site, .us1)
+        XCTAssertEqual(config.site, .cn)
         XCTAssertEqual(config.batchSize, .medium)
         XCTAssertEqual(config.batchProcessingLevel, .medium)
         XCTAssertEqual(config.uploadFrequency, .average)
@@ -118,7 +108,7 @@ class DatadogConfigurationTests: XCTestCase {
         let encoded: [String: Any?]  = [
             "clientToken": "fakeClientToken",
             "env": "fakeEnvironment",
-            "site": "DatadogSite.eu1",
+            "site": "FlashcatSite.staging",
             "batchSize": "BatchSize.small",
             "uploadFrequency": "UploadFrequency.frequent",
             "batchProcessingLevel": "BatchProcessingLevel.low",
@@ -129,7 +119,7 @@ class DatadogConfigurationTests: XCTestCase {
         let config = Datadog.Configuration(fromEncoded: encoded)!
 
         XCTAssertNotNil(config)
-        XCTAssertEqual(config.site, .eu1)
+        XCTAssertEqual(config.site, .staging)
         XCTAssertNil(config.service)
         XCTAssertEqual(config.batchSize, .small)
         XCTAssertEqual(config.uploadFrequency, .frequent)
@@ -141,7 +131,7 @@ class DatadogConfigurationTests: XCTestCase {
             "clientToken": "fakeClientToken",
             "env": "fakeEnvironment",
             "service": "com.servicename",
-            "site": "DatadogSite.eu1",
+            "site": "FlashcatSite.staging",
             "batchSize": "BatchSize.small",
             "uploadFrequency": "UploadFrequency.frequent",
             "additionalConfig": [:] as [String: Any?]

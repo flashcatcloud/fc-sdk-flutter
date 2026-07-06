@@ -4,7 +4,7 @@
 
 import 'dart:math';
 
-import '../../datadog_flutter_plugin.dart';
+import '../../flashcat_flutter_plugin.dart';
 
 /// Defines the frequency at which Datadog SDK will collect mobile vitals, such
 /// as CPU and memory usage.

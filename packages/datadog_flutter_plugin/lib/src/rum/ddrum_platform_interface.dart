@@ -4,7 +4,7 @@
 
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
-import '../../datadog_flutter_plugin.dart';
+import '../../flashcat_flutter_plugin.dart';
 import 'ddrum_method_channel.dart';
 
 abstract class DdRumPlatform extends PlatformInterface {

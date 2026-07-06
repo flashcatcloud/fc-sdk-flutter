@@ -3,8 +3,8 @@
 // Copyright 2019-Present Datadog, Inc.
 
 import 'package:datadog_common_test/datadog_common_test.dart';
-import 'package:datadog_flutter_plugin/src/rum/ddrum.dart';
-import 'package:datadog_flutter_plugin/src/rum/rum_user_action_detector.dart';
+import 'package:flashcat_flutter_plugin/src/rum/ddrum.dart';
+import 'package:flashcat_flutter_plugin/src/rum/rum_user_action_detector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';

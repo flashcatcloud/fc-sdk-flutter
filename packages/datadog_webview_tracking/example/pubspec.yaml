@@ -1,5 +1,5 @@
-name: datadog_webview_tracking_example
-description: Demonstrates how to use the datadog_webview_tracking plugin.
+name: flashcat_webview_tracking_example
+description: Demonstrates how to use the flashcat_webview_tracking plugin.
 publish_to: 'none'
 
 environment:
@@ -9,8 +9,8 @@ dependencies:
   flutter:
     sdk: flutter
 
-  datadog_flutter_plugin: ^3.0.0
-  datadog_webview_tracking:
+  flashcat_flutter_plugin: ^0.1.0
+  flashcat_webview_tracking:
     path: ../
   webview_flutter: ^4.0.4
   cupertino_icons: ^1.0.2
@@ -32,5 +32,5 @@ flutter:
     - .env
 
 dependency_overrides:
-  datadog_flutter_plugin:
+  flashcat_flutter_plugin:
     path: ../../datadog_flutter_plugin

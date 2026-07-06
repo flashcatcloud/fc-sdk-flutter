@@ -5,7 +5,7 @@
 // Ignore the fact that we're not using RadioGroup as that is Flutter 3.35 exclusive
 // ignore_for_file: deprecated_member_use
 
-import 'package:datadog_flutter_plugin/datadog_flutter_plugin.dart';
+import 'package:flashcat_flutter_plugin/flashcat_flutter_plugin.dart';
 import 'package:flutter/material.dart';
 
 /// This screen is used to demonstrate / test the types of User actions

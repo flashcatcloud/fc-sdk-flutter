@@ -5,7 +5,7 @@
 import 'dart:js_interop';
 import 'dart:js_interop_unsafe';
 
-import 'package:datadog_flutter_plugin/src/rum/web/raw_events.dart';
+import 'package:flashcat_flutter_plugin/src/rum/web/raw_events.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// Custom Equality matchers

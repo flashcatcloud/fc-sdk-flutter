@@ -172,19 +172,23 @@ class DatadogSdk {
 
     _setFirstPartyHosts(configuration.firstPartyHostsWithTracingHeaders);
 
+    // Logs are not supported by the FlashCat platform. Clear the
+    // configuration before it reaches the native SDKs so logging is never
+    // enabled on any platform.
+    if (configuration.loggingConfiguration != null) {
+      internalLogger.warn(
+        'Logs are not supported by the FlashCat platform.'
+        ' The provided loggingConfiguration will be ignored and no logs will be sent.',
+      );
+      configuration.loggingConfiguration = null;
+    }
+
     await _platform.initialize(
       configuration,
       trackingConsent,
       logCallback: _platformLog,
       internalLogger: internalLogger,
     );
-
-    if (configuration.loggingConfiguration != null) {
-      _logs = await DatadogLogging.enable(
-        this,
-        configuration.loggingConfiguration!,
-      );
-    }
 
     if (configuration.rumConfiguration != null) {
       _rum = await DatadogRum.enable(this, configuration.rumConfiguration!);

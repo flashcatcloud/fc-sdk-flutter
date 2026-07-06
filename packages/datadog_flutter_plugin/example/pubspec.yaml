@@ -1,5 +1,5 @@
-name: datadog_flutter_plugin_example
-description: Demonstrates how to use the datadog_flutter_plugin package.
+name: flashcat_flutter_plugin_example
+description: Demonstrates how to use the flashcat_flutter_plugin package.
 publish_to: "none"
 version: "1.0.0"
 
@@ -11,7 +11,7 @@ dependencies:
   flutter:
     sdk: flutter
 
-  datadog_flutter_plugin:
+  flashcat_flutter_plugin:
     path: ../
 
   cupertino_icons: ^1.0.2

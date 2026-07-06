@@ -5,9 +5,9 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:datadog_flutter_plugin/datadog_flutter_plugin.dart';
-import 'package:datadog_flutter_plugin/datadog_internal.dart';
-import 'package:datadog_flutter_plugin/src/datadog_sdk_method_channel.dart';
+import 'package:flashcat_flutter_plugin/flashcat_flutter_plugin.dart';
+import 'package:flashcat_flutter_plugin/datadog_internal.dart';
+import 'package:flashcat_flutter_plugin/src/datadog_sdk_method_channel.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -38,7 +38,7 @@ void main() {
     final configuration = DatadogConfiguration(
       clientToken: 'fakeClientToken',
       env: 'environment',
-      site: DatadogSite.us1,
+      site: FlashcatSite.cn,
     );
     await ddSdkPlatform.initialize(
       configuration,
@@ -63,7 +63,7 @@ void main() {
     final configuration = DatadogConfiguration(
       clientToken: 'fakeClientToken',
       env: 'environment',
-      site: DatadogSite.us1,
+      site: FlashcatSite.cn,
     );
     await ddSdkPlatform.initialize(
       configuration,

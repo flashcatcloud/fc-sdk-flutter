@@ -1,23 +1,33 @@
+# FlashCat SDK for Flutter
+
+> Flutter plugin for FlashCat Real User Monitoring (RUM), crash reporting, and WebView tracking.
+
+## About
+
+This SDK is forked from the [Datadog Flutter SDK](https://github.com/DataDog/dd-sdk-flutter) and customized for FlashCat Cloud. It is a thin bridge over the FlashCat native SDKs ([iOS](https://github.com/flashcatcloud/fc-sdk-ios), [Android](https://github.com/flashcatcloud/fc-sdk-android)).
+
+### Key Differences from the Datadog SDK
+
+- **Endpoint**: Data is sent to FlashCat Cloud (`browser.flashcat.cloud`) instead of Datadog.
+- **Site configuration**: Uses `FlashcatSite` with `.cn` (default) and `.staging`, replacing `DatadogSite`.
+- **Package name**: Published as `flashcat_flutter_plugin` and `flashcat_webview_tracking`; imports use `package:flashcat_flutter_plugin/…`. Only the published package name changes — internal Dart/Kotlin/Swift namespaces remain `datadog*`.
+- **Native dependencies**: Uses the FlashCat forks — iOS `Flashcat*` pods / `fc-sdk-ios` (SPM), Android `cloud.flashcat:*`.
+- **v1 scope**: iOS and Android only; the Flutter Web target is dropped.
+- **Not yet available**: `Logs` (the API is a no-op — FlashCat ingest does not accept Logs yet), Session Replay, automatic HTTP/resource tracking (`datadog_tracking_http_client`), the dio/gql/grpc integrations, and Feature Flags.
+
+---
+
 ## Overview
 
-Datadog Real User Monitoring (RUM) enables you to visualize and analyze the real-time performance and user journeys of your Flutter application’s individual users.
+FlashCat Real User Monitoring (RUM) enables you to visualize and analyze the real-time performance and user journeys of your Flutter application’s individual users.
 
-Datadog RUM SDK versions < 1.4 support monitoring for Flutter 2.8+.
-Datadog RUM SDK versions >= 1.4 support monitoring for Flutter 3.0+.
-Datadog RUM SDK versions >= 2.6 support monitoring for Flutter 3.19+.
-Datadog RUM SDK versions >= 3.0 support monitoring for Flutter 3.27+.
+This release requires Flutter 3.27+ and supports iOS and Android only.
 
-For complete documentation, see the [official Datadog documentation][11].
+## Native SDK Versions
 
-## Current Datadog SDK Versions
-
-[//]: # (SDK Table)
-
-| iOS SDK | Android SDK | Browser SDK |
-| :-----: | :---------: | :---------: |
-| 3.4.0 | 3.5.0 | 5.x.x |
-
-[//]: # (End SDK Table)
+| iOS SDK | Android SDK |
+| :-----: | :---------: |
+| 0.5.0 | 0.4.1 |
 
 ### iOS
 
@@ -27,31 +37,14 @@ Your iOS Podfile must have `use_frameworks!` (which is true by default in Flutte
 
 On Android, your `minSdkVersion` must be >= 23, and if you are using Kotlin, it should be version >= 2.1.0.
 
-### Web
-
-On Web, add the following to your `index.html` under your `head` tag:
-
-```html
-<script type="text/javascript" src="https://www.datadoghq-browser-agent.com/us1/v6/datadog-logs.js"></script> 
-<script type="text/javascript" src="https://www.datadoghq-browser-agent.com/us1/v6/datadog-rum-slim.js"></script> 
-```
-
-This loads the CDN-delivered Datadog Browser SDKs for Logs and RUM. The synchronous CDN-delivered version of the Datadog Browser SDK is the only version currently supported by the Flutter plugin.
-
-Note that Datadog provides one CDN bundle per site. See the [Browser SDK README](https://github.com/DataDog/browser-sdk/#cdn-bundles) for a list of all site URLs.
-
-See [Flutter Web Support](#web_support) for information on current support for Flutter Web
-
 ## Setup
 
-Use the [Datadog Flutter Plugin][1] to set up Log Management or Real User Monitoring (RUM). The setup instructions may vary based on your decision to use Logs, RUM, or both, but most of the setup steps are consistent.
-
-For instructions on how to set up the Datadog Flutter Plugin, see the [official Datadog documentation][11].
+Use the [FlashCat Flutter Plugin][1] to set up Real User Monitoring (RUM) and crash reporting.
 
 
 ### Create configuration object
 
-Create a configuration object for each Datadog feature (such as Logs and RUM) with the following snippet. By not passing a configuration for a given feature, it is disabled.
+Create a configuration object for each FlashCat feature (such as RUM) with the following snippet. By not passing a configuration for a given feature, it is disabled.
 
 ```dart
 // Determine the user's consent to be tracked
@@ -59,9 +52,8 @@ final trackingConsent = ...
 final configuration = DatadogConfiguration(
   clientToken: '<CLIENT_TOKEN>',
   env: '<ENV_NAME>',
-  site: DatadogSite.us1,
+  site: FlashcatSite.cn,
   nativeCrashReportEnabled: true,
-  loggingConfiguration: DatadogLoggingConfiguration(),
   rumConfiguration: DatadogRumConfiguration(
     applicationId: '<RUM_APPLICATION_ID>',
   )
@@ -105,37 +97,6 @@ You can initialize RUM using one of two methods in the `main.dart` file.
 
   runApp(const MyApp());
   ```
-
-### Send Logs
-
-After initializing Datadog with a `DatadogLoggingConfiguration`, you can create an instance of a `DatadogLogger` to send logs to Datadog.
-
-```dart
-final logger = DatadogSdk.instance.logs?.createLogger(
-  DatadogLoggerConfiguration(
-    remoteLogThreshold: LogLevel.warning,
-  ),
-);
-logger?.debug("A debug message.");
-logger?.info("Some relevant information?");
-logger?.warn("An important warning…");
-logger?.error("An error was met!");
-```
-
-You can name loggers or customize their service:
-
-```dart
-final secondLogger = DatadogSdk.instance.createLogger(
-  LoggingConfiguration({
-    service: 'my_app.additional_logger',
-    name: 'Additional logger'
-  })
-);
-
-secondLogger.info('Info from my additional logger.');
-```
-
-Tags and attributes set on loggers are local to each logger.
 
 ### Track RUM views
 
@@ -187,19 +148,6 @@ class _MyHomeScreenState extends State<MyHomeScreen>
 }
 ```
 
-### Automatic Resource Tracking
-
-You can enable automatic tracking of resources and HTTP calls from your RUM views using the [Datadog Tracking HTTP Client][7] package. Add the package to your `pubspec.yaml`, and add the following to your initialization:
-
-```dart
-final configuration = DatadogConfiguration(
-  // configuration
-  firstPartyHosts: ['example.com'],
-)..enableHttpTracking()
-```
-
-In order to enable Datadog Distributed Tracing, the `DatadogConfiguration.firstPartyHosts` property in your configuration object must be set to a domain that supports distributed tracing. You can also modify the sampling rate for Datadog distributed tracing by setting the `traceSampleRate` on your `DatadogRumConfiguration`.
-
 ## Contributing
 
 Pull requests are welcome. First, open an issue to discuss what you would like to change.
@@ -210,12 +158,8 @@ For more information, read the [Contributing guidelines][4].
 
 For more information, see [Apache License, v2.0][5].
 
-[1]: https://pub.dev/packages/datadog_flutter_plugin
-[2]: https://app.datadoghq.com/rum/application/create
-[3]: https://docs.datadoghq.com/account_management/api-app-keys/#client-tokens
-[4]: https://github.com/DataDog/dd-sdk-flutter/blob/main/CONTRIBUTING.md
-[5]: https://github.com/DataDog/dd-sdk-flutter/blob/main/LICENSE
-[7]: https://pub.dev/packages/datadog_tracking_http_client
-[8]: https://pub.dev/documentation/datadog_flutter_plugin/latest/datadog_flutter_plugin/DatadogConfiguration-class.html
-[10]: https://pub.dev/documentation/datadog_flutter_plugin/latest/datadog_flutter_plugin/ViewInfoExtractor.html
-[11]: https://docs.datadoghq.com/real_user_monitoring/mobile_and_tv_monitoring/setup/flutter/
+[1]: https://pub.dev/packages/flashcat_flutter_plugin
+[4]: https://github.com/flashcatcloud/fc-sdk-flutter/blob/main/CONTRIBUTING.md
+[5]: https://github.com/flashcatcloud/fc-sdk-flutter/blob/main/LICENSE
+[8]: https://pub.dev/documentation/flashcat_flutter_plugin/latest/flashcat_flutter_plugin/DatadogConfiguration-class.html
+[10]: https://pub.dev/documentation/flashcat_flutter_plugin/latest/flashcat_flutter_plugin/ViewInfoExtractor.html

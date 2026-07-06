@@ -6,13 +6,13 @@ import 'dart:js_interop';
 import 'dart:js_interop_unsafe';
 
 import 'package:datadog_common_test/datadog_common_test.dart';
-import 'package:datadog_flutter_plugin/datadog_internal.dart'
+import 'package:flashcat_flutter_plugin/datadog_internal.dart'
     hide DurationHelpers;
-import 'package:datadog_flutter_plugin/src/rum/rum.dart';
-import 'package:datadog_flutter_plugin/src/rum/web/raw_events.dart';
-import 'package:datadog_flutter_plugin/src/rum/web/resource_tracker.dart';
-import 'package:datadog_flutter_plugin/src/rum/web/rum_web_plugin.dart';
-import 'package:datadog_flutter_plugin/src/web_helpers.dart';
+import 'package:flashcat_flutter_plugin/src/rum/rum.dart';
+import 'package:flashcat_flutter_plugin/src/rum/web/raw_events.dart';
+import 'package:flashcat_flutter_plugin/src/rum/web/resource_tracker.dart';
+import 'package:flashcat_flutter_plugin/src/rum/web/rum_web_plugin.dart';
+import 'package:flashcat_flutter_plugin/src/web_helpers.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 

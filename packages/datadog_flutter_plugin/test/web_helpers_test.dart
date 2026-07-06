@@ -7,8 +7,8 @@
 import 'dart:js_interop';
 import 'dart:js_interop_unsafe';
 
-import 'package:datadog_flutter_plugin/datadog_flutter_plugin.dart';
-import 'package:datadog_flutter_plugin/src/web_helpers.dart';
+import 'package:flashcat_flutter_plugin/flashcat_flutter_plugin.dart';
+import 'package:flashcat_flutter_plugin/src/web_helpers.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

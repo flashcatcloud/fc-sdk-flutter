@@ -4,7 +4,7 @@
 
 import 'package:flutter/services.dart';
 
-import '../../datadog_flutter_plugin.dart';
+import '../../flashcat_flutter_plugin.dart';
 import '../internal_logger.dart';
 import '../logs/log_mapper_proxy.dart';
 
