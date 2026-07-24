@@ -187,8 +187,9 @@ class DdNoOpRumPlatform extends DdRumPlatform {
   @override
   Future<void> updatePerformanceMetrics(
     List<double> buildTimes,
-    List<double> rasterTimes,
-  ) {
+    List<double> rasterTimes, [
+    List<double> frameTimes = const [],
+  ]) {
     return Future.value();
   }
 
