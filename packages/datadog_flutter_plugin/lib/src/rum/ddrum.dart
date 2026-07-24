@@ -3,6 +3,7 @@
 // Copyright 2019-2021 Datadog, Inc.
 
 import 'dart:io';
+import 'dart:ui' show PlatformDispatcher;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/scheduler.dart';
@@ -748,21 +749,46 @@ class DatadogRum {
     }
   }
 
+  // Physical display refresh rate in Hz (e.g. 60, 90, 120), used to normalize the
+  // external refresh-rate signal on platforms whose native monitor can't see Flutter's
+  // own render surface (Android). iOS measures refresh rate natively.
+  double get _displayRefreshRate {
+    final displays = PlatformDispatcher.instance.displays;
+    final rate = displays.isNotEmpty ? displays.first.refreshRate : 60.0;
+    return rate > 0 ? rate : 60.0;
+  }
+
   void _timingsCallback(List<FrameTiming> timings) {
     if (timings.isNotEmpty) {
       var buildTimes = <double>[];
       var rasterTimes = <double>[];
+      var frameTimes = <double>[];
+      final refreshRate = _displayRefreshRate;
       for (final timing in timings) {
-        buildTimes.add(
-          timing.buildDuration.inMicroseconds / Duration.microsecondsPerSecond,
-        );
+        final build =
+            timing.buildDuration.inMicroseconds / Duration.microsecondsPerSecond;
+        buildTimes.add(build);
         rasterTimes.add(
           timing.rasterDuration.inMicroseconds / Duration.microsecondsPerSecond,
         );
+        // Mirror the native FPSVitalListener: use the UI-thread frame duration
+        // (buildDuration ≈ frameDurationUiNanos), cap the instantaneous rate at the
+        // display rate, then normalize to a 60fps baseline. The native external hook
+        // stores Hz = 1/frameTime unchanged, so we pass frameTime = 1/normalizedRate.
+        final rawRate = build > 0 ? 1.0 / build : refreshRate;
+        final capped = rawRate < refreshRate ? rawRate : refreshRate;
+        final normalized = capped * 60.0 / refreshRate;
+        if (normalized > 0) {
+          frameTimes.add(1.0 / normalized);
+        }
       }
 
       wrap('rum.updatePerformanceMetrics', logger, null, () {
-        return _platform.updatePerformanceMetrics(buildTimes, rasterTimes);
+        return _platform.updatePerformanceMetrics(
+          buildTimes,
+          rasterTimes,
+          frameTimes,
+        );
       });
     }
   }

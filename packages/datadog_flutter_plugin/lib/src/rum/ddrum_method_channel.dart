@@ -406,11 +406,13 @@ class DdRumMethodChannel extends DdRumPlatform {
   @override
   Future<void> updatePerformanceMetrics(
     List<double> buildTimes,
-    List<double> rasterTimes,
-  ) {
+    List<double> rasterTimes, [
+    List<double> frameTimes = const [],
+  ]) {
     return methodChannel.invokeMethod('updatePerformanceMetrics', {
       'buildTimes': buildTimes,
       'rasterTimes': rasterTimes,
+      'frameTimes': frameTimes,
     });
   }
 
