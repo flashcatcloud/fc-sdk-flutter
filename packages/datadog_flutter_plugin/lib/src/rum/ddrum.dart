@@ -2,12 +2,14 @@
 // This product includes software developed at Datadog (https://www.datadoghq.com/).
 // Copyright 2019-2021 Datadog, Inc.
 
+import 'dart:developer' show Timeline;
 import 'dart:io';
-import 'dart:ui' show PlatformDispatcher;
+import 'dart:ui' show FramePhase, PlatformDispatcher;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 // Dart 3.9 moved made it so meta is no longer needed for `@internal`, but we
 // still need it for versions below 3.9.
 // ignore: unnecessary_import
@@ -221,6 +223,12 @@ class DatadogRum {
           SchedulerBinding.instance,
         )?.addTimingsCallback(_timingsCallback);
       }
+
+      // Report app launch (TTID) once, on the launch frame. iOS is a no-op (its native
+      // SDK measures app launch itself); Android's native detector can't, because Flutter
+      // initializes the SDK from Dart main, after the first Activity's onCreate has
+      // already gone by.
+      _registerAppLaunchCallback();
 
       core.updateConfigurationInfo(
         LateConfigurationProperty.trackFlutterPerformance,
@@ -756,6 +764,78 @@ class DatadogRum {
     final displays = PlatformDispatcher.instance.displays;
     final rate = displays.isNotEmpty ? displays.first.refreshRate : 60.0;
     return rate > 0 ? rate : 60.0;
+  }
+
+  bool _appLaunchReported = false;
+
+  // A frame reported as more than this old is not plausibly the frame we just rendered -
+  // treat the reading as unusable rather than shifting the launch time by it.
+  static const _maxPlausibleFrameAgeUs = 10 * 1000 * 1000;
+
+  /// Subscribes to the launch frame, if there is still one to observe.
+  ///
+  /// Tolerates a missing binding on purpose: [enable] is reachable from plain Dart
+  /// contexts - unit tests, background isolates - where no binding has been initialized
+  /// and touching `instance` throws instead of returning null.
+  void _registerAppLaunchCallback() {
+    final scheduler = _schedulerBindingOrNull();
+    if (scheduler == null) return;
+
+    // addTimingsCallback only delivers frames rendered after it is registered. If the
+    // first frame is already on screen, the next frame handed to us is not the launch
+    // frame - reporting it would overstate the launch, and a static page may never
+    // render another frame at all. Report nothing rather than something wrong.
+    if (_firstFrameAlreadyRasterized()) {
+      _appLaunchReported = true;
+      return;
+    }
+
+    scheduler.addTimingsCallback(_appLaunchTimingsCallback);
+  }
+
+  SchedulerBinding? _schedulerBindingOrNull() {
+    try {
+      return ambiguate(SchedulerBinding.instance);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  bool _firstFrameAlreadyRasterized() {
+    try {
+      return ambiguate(WidgetsBinding.instance)?.firstFrameRasterized ?? false;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  void _appLaunchTimingsCallback(List<FrameTiming> timings) {
+    if (_appLaunchReported || timings.isEmpty) return;
+    _appLaunchReported = true;
+    _schedulerBindingOrNull()
+        ?.removeTimingsCallback(_appLaunchTimingsCallback);
+
+    wrap('rum.notifyAppLaunch', logger, null, () {
+      return _platform.notifyAppLaunch(_frameAgeNs(timings.first));
+    });
+  }
+
+  /// How long ago [timing] finished rasterizing, in nanoseconds.
+  ///
+  /// The native side subtracts this from its own clock reading so that neither the
+  /// callback scheduling nor the method channel round trip is counted as launch time.
+  /// [Timeline.now] shares its clock with [FrameTiming], which is what makes the
+  /// subtraction meaningful; an implausible result falls back to 0, which simply
+  /// reproduces measuring at arrival.
+  int _frameAgeNs(FrameTiming timing) {
+    try {
+      final ageUs =
+          Timeline.now - timing.timestampInMicroseconds(FramePhase.rasterFinish);
+      if (ageUs <= 0 || ageUs >= _maxPlausibleFrameAgeUs) return 0;
+      return ageUs * 1000;
+    } catch (_) {
+      return 0;
+    }
   }
 
   void _timingsCallback(List<FrameTiming> timings) {
