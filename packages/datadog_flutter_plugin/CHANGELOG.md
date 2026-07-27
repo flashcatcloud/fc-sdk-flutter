@@ -9,6 +9,17 @@
   external refresh-rate hook. iOS already measured this natively and is
   unchanged.
 
+* Report app launch (TTID) for Flutter on Android. The native app-startup
+  detector registers its Activity lifecycle callbacks when the RUM feature
+  initializes, and Flutter initializes the SDK from Dart `main()` — by then the
+  first Activity already exists, so no launch was ever reported. The launch is
+  now reported from the plugin on the launch frame, timed from the Activity
+  attach and excluding the callback scheduling and method channel round trip.
+  Nothing is reported when RUM is enabled after the first frame is already on
+  screen, since that frame is no longer observable. iOS measures app launch
+  natively and is unchanged. **Requires `cloud.flashcat:dd-sdk-android-rum`
+  0.5.0.**
+
 ## 0.1.1
 
 * Fix the SDK version reported in events: `ddPackageVersion` still carried the
