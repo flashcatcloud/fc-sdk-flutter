@@ -416,6 +416,13 @@ class DdRumMethodChannel extends DdRumPlatform {
     });
   }
 
+  @override
+  Future<void> notifyAppLaunch(int frameAgeNs) {
+    return methodChannel.invokeMethod('notifyAppLaunch', {
+      'frameAgeNs': frameAgeNs,
+    });
+  }
+
   void _onSessionChanged(MethodCall call) {
     if (call.arguments case final Map<dynamic, dynamic> arguments?) {
       final sessionId = arguments['sessionId'];

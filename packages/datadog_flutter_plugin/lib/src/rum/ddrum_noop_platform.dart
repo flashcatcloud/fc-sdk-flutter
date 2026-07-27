@@ -194,6 +194,11 @@ class DdNoOpRumPlatform extends DdRumPlatform {
   }
 
   @override
+  Future<void> notifyAppLaunch(int frameAgeNs) {
+    return Future.value();
+  }
+
+  @override
   Future<void> failFeatureOperation(
       DateTime timestamp,
       String name,

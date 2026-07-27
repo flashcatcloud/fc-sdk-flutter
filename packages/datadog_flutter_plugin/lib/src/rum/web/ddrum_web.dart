@@ -434,6 +434,11 @@ class DdRumWeb extends DdRumPlatform {
     // NOOP - Not supported by the Browser SDK
   }
 
+  @override
+  Future<void> notifyAppLaunch(int frameAgeNs) async {
+    // NOOP - Browser SDK measures its own load timings
+  }
+
   JSNumber _toRelativeTime(DateTime time) {
     return _webPlugin?.getEventRelativeTime(time) ??
         time.microsecondsSinceEpoch.toJS;

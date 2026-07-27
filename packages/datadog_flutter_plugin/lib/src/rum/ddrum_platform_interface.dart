@@ -145,4 +145,6 @@ abstract class DdRumPlatform extends PlatformInterface {
     List<double> rasterTimes, [
     List<double> frameTimes = const [],
   ]);
+
+  Future<void> notifyAppLaunch(int frameAgeNs);
 }
