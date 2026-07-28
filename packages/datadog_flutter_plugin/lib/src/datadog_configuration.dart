@@ -420,8 +420,9 @@ class DatadogAttachConfiguration {
   /// Flutter's render surface. iOS measures refresh rate natively and ignores
   /// this.
   ///
-  /// Defaults to [VitalsFrequency.average]. Set to [VitalsFrequency.never] to
-  /// stop reporting a Flutter refresh rate.
+  /// Assign to `null` to stop reporting a Flutter refresh rate.
+  ///
+  /// Defaults to [VitalsFrequency.average].
   final VitalsFrequency? vitalUpdateFrequency;
 
   DatadogAttachConfiguration({
