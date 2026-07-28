@@ -620,6 +620,7 @@ void main() {
         arguments: {
           'buildTimes': [0.2, 0.3],
           'rasterTimes': [0.11, 0.25],
+          'frameTimes': <double>[],
         },
       ),
     ]);

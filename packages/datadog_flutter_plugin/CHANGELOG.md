@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.1.2
+
+* Report a refresh rate for Flutter views on Android. The native SDK measures
+  frame rate with JankStats bound to the host Activity window, which never sees
+  Flutter's own render surface, so Flutter views reported `refresh_rate=0` on
+  Android. The per-frame UI-thread build duration is now pushed into the native
+  external refresh-rate hook. iOS already measured this natively and is
+  unchanged.
+
 ## 0.1.1
 
 * Fix the SDK version reported in events: `ddPackageVersion` still carried the

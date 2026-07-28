@@ -481,6 +481,12 @@ class DatadogRumPlugin : MethodChannel.MethodCallHandler {
                     it
                 )
             }
+            // Flutter renders to its own surface, so the native JankStats monitor never
+            // observes these frames. Push per-frame intervals into the external refresh-rate
+            // hook so the view still gets a refresh_rate vital (iOS measures this natively).
+            call.argument<List<Double>>("frameTimes")?.forEach {
+                rum?._getInternal()?.updateExternalRefreshRate(it)
+            }
             result.success(null)
         } else {
             result.missingParameter(call.method)
