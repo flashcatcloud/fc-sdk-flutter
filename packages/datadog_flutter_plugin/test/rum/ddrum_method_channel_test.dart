@@ -612,7 +612,10 @@ void main() {
   });
 
   test('updatePerformanceMetrics calls to platform', () async {
-    await ddRumPlatform.updatePerformanceMetrics([0.2, 0.3], [0.11, 0.25]);
+    await ddRumPlatform.updatePerformanceMetrics(
+      buildTimes: [0.2, 0.3],
+      rasterTimes: [0.11, 0.25],
+    );
 
     expect(log, [
       isMethodCall(
@@ -620,7 +623,19 @@ void main() {
         arguments: {
           'buildTimes': [0.2, 0.3],
           'rasterTimes': [0.11, 0.25],
-          'frameTimes': <double>[],
+        },
+      ),
+    ]);
+  });
+
+  test('updatePerformanceMetrics can send only frame times', () async {
+    await ddRumPlatform.updatePerformanceMetrics(frameTimes: [0.01, 0.02]);
+
+    expect(log, [
+      isMethodCall(
+        'updatePerformanceMetrics',
+        arguments: {
+          'frameTimes': [0.01, 0.02],
         },
       ),
     ]);

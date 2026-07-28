@@ -34,12 +34,14 @@ import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.Result
 import java.lang.ClassCastException
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicLong
 import kotlin.time.Duration.Companion.seconds
 
 @OptIn(ExperimentalRumApi::class)
 class DatadogRumPlugin : MethodChannel.MethodCallHandler {
     companion object {
         const val PARAM_AT = "at"
+        const val PARAM_FRAME_AGE_NS = "frameAgeNs"
         const val PARAM_DURATION = "duration"
         const val PARAM_KEY = "key"
         const val PARAM_KEYS = "keys"
@@ -58,6 +60,7 @@ class DatadogRumPlugin : MethodChannel.MethodCallHandler {
         const val PARAM_TYPE = "type"
         const val PARAM_BUILD_TIMES = "buildTimes"
         const val PARAM_RASTER_TIMES = "rasterTimes"
+        const val PARAM_FRAME_TIMES = "frameTimes"
         const val PARAM_OVERWRITE = "overwrite"
         const val PARAM_OPERATION_KEY = "operationKey"
         const val PARAM_FAILURE_REASON = "failureReason"
@@ -68,9 +71,28 @@ class DatadogRumPlugin : MethodChannel.MethodCallHandler {
         // Static instance of the event mapper
         internal val eventMapper: DatadogRumEventMapper = DatadogRumEventMapper()
 
+        // System.nanoTime() at the moment the first Activity was attached, which is the
+        // stand-in for first-Activity-onCreate that the native RumAppStartupDetector uses to
+        // tell a cold launch from a warm one. Written exactly once, by whichever engine gets
+        // there first: a second engine attaching later must not overwrite the real moment the
+        // UI came up. compareAndSet rather than a plain @Volatile check-then-set, because two
+        // engines can attach concurrently.
+        private val uiCreateTime = AtomicLong(0L)
+
+        internal val uiCreateTimeNs: Long
+            get() = uiCreateTime.get()
+
+        /**
+         * Records when the app's UI was created, if it has not been recorded already.
+         */
+        internal fun markUiCreated() {
+            uiCreateTime.compareAndSet(0L, System.nanoTime())
+        }
+
         // For testing purposes only
         internal fun resetConfig() {
             previousConfiguration = null
+            uiCreateTime.set(0L)
         }
 
         @JvmStatic
@@ -131,6 +153,7 @@ class DatadogRumPlugin : MethodChannel.MethodCallHandler {
                 "removeViewAttributes" -> removeViewAttributes(call, result)
                 "reportLongTask" -> reportLongTask(call, result)
                 "updatePerformanceMetrics" -> updatePerformanceMetrics(call, result)
+                "notifyAppLaunch" -> notifyAppLaunch(call, result)
                 "addFeatureFlagEvaluation" -> addFeatureFlagEvaluation(call, result)
                 "startFeatureOperation" -> startFeatureOperation(call, result)
                 "succeedFeatureOperation" -> succeedFeatureOperation(call, result)
@@ -468,14 +491,17 @@ class DatadogRumPlugin : MethodChannel.MethodCallHandler {
     private fun updatePerformanceMetrics(call: MethodCall, result: Result) {
         val buildTimes = call.argument<List<Double>>(PARAM_BUILD_TIMES)
         val rasterTimes = call.argument<List<Double>>(PARAM_RASTER_TIMES)
-        if (buildTimes != null && rasterTimes != null) {
-            buildTimes.forEach {
+        val frameTimes = call.argument<List<Double>>(PARAM_FRAME_TIMES)
+        val hasFlutterMetrics = buildTimes != null && rasterTimes != null
+        val hasIncompleteFlutterMetrics = (buildTimes == null) != (rasterTimes == null)
+        if (!hasIncompleteFlutterMetrics && (hasFlutterMetrics || frameTimes != null)) {
+            buildTimes?.forEach {
                 rum?._getInternal()?.updatePerformanceMetric(
                     RumPerformanceMetric.FLUTTER_BUILD_TIME,
                     it
                 )
             }
-            rasterTimes.forEach {
+            rasterTimes?.forEach {
                 rum?._getInternal()?.updatePerformanceMetric(
                     RumPerformanceMetric.FLUTTER_RASTER_TIME,
                     it
@@ -484,13 +510,32 @@ class DatadogRumPlugin : MethodChannel.MethodCallHandler {
             // Flutter renders to its own surface, so the native JankStats monitor never
             // observes these frames. Push per-frame intervals into the external refresh-rate
             // hook so the view still gets a refresh_rate vital (iOS measures this natively).
-            call.argument<List<Double>>("frameTimes")?.forEach {
+            frameTimes?.forEach {
                 rum?._getInternal()?.updateExternalRefreshRate(it)
             }
             result.success(null)
         } else {
             result.missingParameter(call.method)
         }
+    }
+
+    // Report the Android app launch (TTID) to RUM. The native RumAppStartupDetector never
+    // fires for Flutter (SDK inits from Dart main, after the Activity's first draw), so we hand
+    // the SDK the moment our UI was created and let it do the measuring. Deliberately not
+    // computed here: the SDK derives process start from a value that already has the buggy
+    // Process.getStartElapsedRealtime() readings filtered out, and classifies cold vs warm with
+    // the same heuristic the native detector uses. iOS is a no-op here (its native SDK measures
+    // app launch on its own).
+    //
+    // frameAgeNs is how long before this call the launch frame actually finished rasterizing.
+    // Without it the Dart callback scheduling and this method channel round trip would be
+    // counted as launch time; Dart sends 0 when it cannot measure that reliably.
+    private fun notifyAppLaunch(call: MethodCall, result: Result) {
+        val frameAgeNs = call.argument<Number>(PARAM_FRAME_AGE_NS)?.toLong() ?: 0L
+        // Requested unconditionally: only the native SDK can tell whether its own detector saw
+        // this launch, and it also de-duplicates several engines asking for the same one.
+        rum?._getInternal()?.notifyAppLaunchIfAbsent(uiCreateTimeNs, frameAgeNs)
+        result.success(null)
     }
 
     private fun addFeatureFlagEvaluation(call: MethodCall, result: Result) {
