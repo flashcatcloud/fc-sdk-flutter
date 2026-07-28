@@ -2,12 +2,14 @@
 // This product includes software developed at Datadog (https://www.datadoghq.com/).
 // Copyright 2019-2021 Datadog, Inc.
 
+import 'dart:developer' show Timeline;
 import 'dart:io';
-import 'dart:ui' show PlatformDispatcher;
+import 'dart:ui' show FramePhase, PlatformDispatcher;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 // Dart 3.9 moved made it so meta is no longer needed for `@internal`, but we
 // still need it for versions below 3.9.
 // ignore: unnecessary_import
@@ -15,6 +17,8 @@ import 'package:meta/meta.dart';
 
 import '../../flashcat_flutter_plugin.dart';
 import '../../datadog_internal.dart';
+import 'ddrum_app_launch.dart';
+import 'ddrum_performance.dart';
 import 'ddrum_platform_interface.dart';
 import 'inv_metric_provider.dart';
 import 'rum_long_task_observer.dart';
@@ -166,6 +170,7 @@ class DatadogRum {
       detectLongTasks: config.detectLongTasks,
       longTaskThreshold: config.longTaskThreshold,
       reportFlutterPerformance: config.reportFlutterPerformance,
+      vitalUpdateFrequency: config.vitalUpdateFrequency,
     );
   }
 
@@ -181,6 +186,7 @@ class DatadogRum {
       detectLongTasks: false,
       longTaskThreshold: 0.0,
       reportFlutterPerformance: false,
+      vitalUpdateFrequency: null,
     );
   }
 
@@ -194,6 +200,7 @@ class DatadogRum {
       detectLongTasks: configuration.detectLongTasks,
       longTaskThreshold: configuration.longTaskThreshold,
       reportFlutterPerformance: configuration.reportFlutterPerformance,
+      vitalUpdateFrequency: configuration.vitalUpdateFrequency,
     );
   }
 
@@ -202,6 +209,7 @@ class DatadogRum {
     required bool detectLongTasks,
     required double longTaskThreshold,
     required bool reportFlutterPerformance,
+    required VitalsFrequency? vitalUpdateFrequency,
   }) {
     final isBackgroundIsolate =
         kIsWeb ? false : ServicesBinding.rootIsolateToken == null;
@@ -216,10 +224,29 @@ class DatadogRum {
         );
         _longTaskObserver!.init();
       }
-      if (reportFlutterPerformance) {
+      // Both signals come off the same frame timings, so they share one
+      // subscription and one platform call per batch even though they stay
+      // independently configurable.
+      _reportFlutterPerformance = reportFlutterPerformance;
+      _sampleRefreshRate = shouldSampleRefreshRate(
+        isWeb: kIsWeb,
+        isAndroid: !kIsWeb && Platform.isAndroid,
+        vitalUpdateFrequency: vitalUpdateFrequency,
+      );
+      if (_reportFlutterPerformance || _sampleRefreshRate) {
         ambiguate(
           SchedulerBinding.instance,
-        )?.addTimingsCallback(_timingsCallback);
+        )?.addTimingsCallback(_performanceTimingsCallback);
+      }
+
+      // Report app launch (TTID) once, on the launch frame. Android's native
+      // detector cannot observe Flutter-owned initialization because Dart main
+      // initializes the SDK after the first Activity's onCreate.
+      if (shouldRegisterAppLaunchCallback(
+        isWeb: kIsWeb,
+        isAndroid: !kIsWeb && Platform.isAndroid,
+      )) {
+        _registerAppLaunchCallback();
       }
 
       core.updateConfigurationInfo(
@@ -758,38 +785,127 @@ class DatadogRum {
     return rate > 0 ? rate : 60.0;
   }
 
-  void _timingsCallback(List<FrameTiming> timings) {
-    if (timings.isNotEmpty) {
-      var buildTimes = <double>[];
-      var rasterTimes = <double>[];
-      var frameTimes = <double>[];
-      final refreshRate = _displayRefreshRate;
-      for (final timing in timings) {
-        final build =
-            timing.buildDuration.inMicroseconds / Duration.microsecondsPerSecond;
-        buildTimes.add(build);
-        rasterTimes.add(
-          timing.rasterDuration.inMicroseconds / Duration.microsecondsPerSecond,
-        );
-        // Mirror the native FPSVitalListener: use the UI-thread frame duration
-        // (buildDuration ≈ frameDurationUiNanos), cap the instantaneous rate at the
-        // display rate, then normalize to a 60fps baseline. The native external hook
-        // stores Hz = 1/frameTime unchanged, so we pass frameTime = 1/normalizedRate.
-        final rawRate = build > 0 ? 1.0 / build : refreshRate;
-        final capped = rawRate < refreshRate ? rawRate : refreshRate;
-        final normalized = capped * 60.0 / refreshRate;
-        if (normalized > 0) {
-          frameTimes.add(1.0 / normalized);
-        }
-      }
+  bool _appLaunchReported = false;
 
-      wrap('rum.updatePerformanceMetrics', logger, null, () {
-        return _platform.updatePerformanceMetrics(
-          buildTimes,
-          rasterTimes,
-          frameTimes,
-        );
-      });
+  /// Subscribes to the launch frame, if there is still one to observe.
+  ///
+  /// Tolerates a missing binding on purpose: [enable] is reachable from plain Dart
+  /// contexts - unit tests, background isolates - where no binding has been initialized
+  /// and touching `instance` throws instead of returning null.
+  void _registerAppLaunchCallback() {
+    final scheduler = _schedulerBindingOrNull();
+    if (scheduler == null) return;
+
+    // addTimingsCallback only delivers frames rendered after it is registered. If the
+    // first frame is already on screen, the next frame handed to us is not the launch
+    // frame - reporting it would overstate the launch, and a static page may never
+    // render another frame at all. Report nothing rather than something wrong.
+    if (_firstFrameAlreadyRasterized()) {
+      _appLaunchReported = true;
+      return;
     }
+
+    scheduler.addTimingsCallback(_appLaunchTimingsCallback);
+  }
+
+  SchedulerBinding? _schedulerBindingOrNull() {
+    try {
+      return ambiguate(SchedulerBinding.instance);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  bool _firstFrameAlreadyRasterized() {
+    try {
+      return ambiguate(WidgetsBinding.instance)?.firstFrameRasterized ?? false;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  void _appLaunchTimingsCallback(List<FrameTiming> timings) {
+    if (_appLaunchReported || timings.isEmpty) return;
+    _appLaunchReported = true;
+    _schedulerBindingOrNull()?.removeTimingsCallback(_appLaunchTimingsCallback);
+
+    wrap('rum.notifyAppLaunch', logger, null, () {
+      return _platform.notifyAppLaunch(_frameAgeNs(timings.first));
+    });
+  }
+
+  /// How long ago [timing] finished rasterizing, in nanoseconds.
+  ///
+  /// The native side subtracts this from its own clock reading so that neither the
+  /// callback scheduling nor the method channel round trip is counted as launch time.
+  /// [Timeline.now] shares its clock with [FrameTiming], which is what makes the
+  /// subtraction meaningful; an implausible result falls back to 0, which simply
+  /// reproduces measuring at arrival.
+  int _frameAgeNs(FrameTiming timing) {
+    try {
+      final rasterFinishUs =
+          timing.timestampInMicroseconds(FramePhase.rasterFinish);
+      return frameAgeNsFromTimestamps(
+        nowUs: Timeline.now,
+        rasterFinishUs: rasterFinishUs,
+      );
+    } catch (_) {
+      return 0;
+    }
+  }
+
+  bool _reportFlutterPerformance = false;
+  bool _sampleRefreshRate = false;
+
+  void _performanceTimingsCallback(List<FrameTiming> timings) {
+    if (timings.isEmpty) return;
+
+    List<double>? buildTimes;
+    List<double>? rasterTimes;
+    if (_reportFlutterPerformance) {
+      buildTimes = timings
+          .map(
+            (timing) =>
+                timing.buildDuration.inMicroseconds /
+                Duration.microsecondsPerSecond,
+          )
+          .toList();
+      rasterTimes = timings
+          .map(
+            (timing) =>
+                timing.rasterDuration.inMicroseconds /
+                Duration.microsecondsPerSecond,
+          )
+          .toList();
+    }
+
+    List<double>? frameTimes;
+    if (_sampleRefreshRate) {
+      final refreshRate = _displayRefreshRate;
+      final sampled = timings
+          .map(
+            // Mirror the native FPSVitalListener: use the UI-thread frame
+            // duration, cap the instantaneous rate at the display rate, and
+            // normalize it to a 60 fps baseline.
+            (timing) => frameIntervalForRefreshRate(
+              timing.buildDuration.inMicroseconds /
+                  Duration.microsecondsPerSecond,
+              refreshRate,
+            ),
+          )
+          .nonNulls
+          .toList();
+      if (sampled.isNotEmpty) frameTimes = sampled;
+    }
+
+    if (buildTimes == null && frameTimes == null) return;
+
+    wrap('rum.updatePerformanceMetrics', logger, null, () {
+      return _platform.updatePerformanceMetrics(
+        buildTimes: buildTimes,
+        rasterTimes: rasterTimes,
+        frameTimes: frameTimes,
+      );
+    });
   }
 }

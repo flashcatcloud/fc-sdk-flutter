@@ -922,6 +922,29 @@ class DatadogRumPluginTest {
     }
 
     @Test
+    fun `M call internal updatePerformanceMetrics W only frame times are provided`(
+        forge: Forge,
+    ) {
+        // GIVEN
+        val frameTimes = forge.aList { forge.aDouble() }
+        val call = MethodCall(
+            "updatePerformanceMetrics",
+            mapOf("frameTimes" to frameTimes)
+        )
+        val mockResult = mockk<MethodChannel.Result>()
+        every { mockResult.success(any()) } returns Unit
+
+        // WHEN
+        plugin.onMethodCall(call, mockResult)
+
+        // THEN
+        frameTimes.forEach {
+            verify { monitorProxy.mockInternalProxy.updateExternalRefreshRate(it) }
+        }
+        verify { mockResult.success(null) }
+    }
+
+    @Test
     fun `M call internal setInternalViewAttribute W setInternalViewAtttribute is called`(
         forge: Forge,
     ) {
@@ -955,6 +978,61 @@ class DatadogRumPluginTest {
         }
         verify { monitorProxy.mockInternalProxy.setInternalViewAttribute(key, expectedValue) }
         verify { mockResult.success(null) }
+    }
+
+    @Test
+    fun `M forward every app launch request W app launch is reported`(
+        @LongForgery frameAgeNs: Long,
+    ) {
+        // GIVEN - de-duplication belongs to the native SDK, which is the only side that knows
+        // whether its own startup detector already reported this launch. The plugin forwards
+        // unconditionally so that a host whose native SDK initialized too late to observe the
+        // first Activity still gets a launch reported.
+        val call = MethodCall(
+            "notifyAppLaunch",
+            mapOf("frameAgeNs" to frameAgeNs)
+        )
+        val mockResult = mockk<MethodChannel.Result>()
+        every { mockResult.success(any()) } returns Unit
+
+        // WHEN
+        plugin.onMethodCall(call, mockResult)
+        plugin.onMethodCall(call, mockResult)
+
+        // THEN
+        verify(exactly = 2) {
+            monitorProxy.mockInternalProxy.notifyAppLaunchIfAbsent(
+                DatadogRumPlugin.uiCreateTimeNs,
+                frameAgeNs
+            )
+        }
+        verify(exactly = 2) { mockResult.success(null) }
+    }
+
+    @Test
+    fun `M pass the recorded UI creation time W app launch is reported`(
+        @LongForgery frameAgeNs: Long,
+    ) {
+        // GIVEN
+        DatadogRumPlugin.resetConfig()
+        DatadogRumPlugin.markUiCreated()
+        val uiCreateTimeNs = DatadogRumPlugin.uiCreateTimeNs
+        val call = MethodCall(
+            "notifyAppLaunch",
+            mapOf("frameAgeNs" to frameAgeNs)
+        )
+        val mockResult = mockk<MethodChannel.Result>()
+        every { mockResult.success(any()) } returns Unit
+
+        // WHEN - a second engine attaching later must not move the launch start
+        DatadogRumPlugin.markUiCreated()
+        plugin.onMethodCall(call, mockResult)
+
+        // THEN
+        assertThat(DatadogRumPlugin.uiCreateTimeNs).isEqualTo(uiCreateTimeNs)
+        verify(exactly = 1) {
+            monitorProxy.mockInternalProxy.notifyAppLaunchIfAbsent(uiCreateTimeNs, frameAgeNs)
+        }
     }
 
     private val contracts = listOf(
@@ -1035,6 +1113,9 @@ class DatadogRumPluginTest {
         Contract("updatePerformanceMetrics", mapOf(
             "buildTimes" to ContractParameter.Type(SupportedContractType.LIST),
             "rasterTimes" to ContractParameter.Type(SupportedContractType.LIST),
+        )),
+        Contract("updatePerformanceMetrics", mapOf(
+            "frameTimes" to ContractParameter.Type(SupportedContractType.LIST),
         )),
         Contract("addFeatureFlagEvaluation", mapOf(
             "name" to ContractParameter.Type(SupportedContractType.STRING),
