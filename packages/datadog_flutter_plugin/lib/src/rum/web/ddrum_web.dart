@@ -426,12 +426,17 @@ class DdRumWeb extends DdRumPlatform {
   }
 
   @override
-  Future<void> updatePerformanceMetrics(
-    List<double> buildTimes,
-    List<double> rasterTimes, [
-    List<double> frameTimes = const [],
-  ]) async {
+  Future<void> updatePerformanceMetrics({
+    List<double>? buildTimes,
+    List<double>? rasterTimes,
+    List<double>? frameTimes,
+  }) async {
     // NOOP - Not supported by the Browser SDK
+  }
+
+  @override
+  Future<void> notifyAppLaunch(int frameAgeNs) async {
+    // NOOP - Browser SDK measures its own load timings
   }
 
   JSNumber _toRelativeTime(DateTime time) {
