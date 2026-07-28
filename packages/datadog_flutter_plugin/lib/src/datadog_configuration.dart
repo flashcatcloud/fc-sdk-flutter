@@ -413,11 +413,23 @@ class DatadogAttachConfiguration {
   /// is initialized.
   final List<DatadogPluginConfiguration> additionalPlugins = [];
 
+  /// The frequency at which Flutter-measured vitals are sampled.
+  ///
+  /// Only used on Android, where the native SDK measures frame rate with
+  /// JankStats bound to the host Activity window and therefore never observes
+  /// Flutter's render surface. iOS measures refresh rate natively and ignores
+  /// this.
+  ///
+  /// Defaults to [VitalsFrequency.average]. Set to [VitalsFrequency.never] to
+  /// stop reporting a Flutter refresh rate.
+  final VitalsFrequency? vitalUpdateFrequency;
+
   DatadogAttachConfiguration({
     this.detectLongTasks = true,
     this.longTaskThreshold = 0.1,
     this.traceSampleRate = 100.0,
     this.reportFlutterPerformance = false,
+    this.vitalUpdateFrequency = VitalsFrequency.average,
     List<String>? firstPartyHosts,
     this.firstPartyHostsWithTracingHeaders = const {},
     this.traceContextInjection = TraceContextInjection.sampled,

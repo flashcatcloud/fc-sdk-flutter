@@ -15,10 +15,17 @@
   first Activity already exists, so no launch was ever reported. The launch is
   now reported from the plugin on the launch frame, timed from the Activity
   attach and excluding the callback scheduling and method channel round trip.
-  Nothing is reported when RUM is enabled after the first frame is already on
-  screen, since that frame is no longer observable. iOS measures app launch
-  natively and is unchanged. **Requires `cloud.flashcat:dd-sdk-android-rum`
-  0.5.0.**
+  This applies to `attachToExisting` too: initializing the native SDK before
+  Flutter attaches does not mean it initialized early enough for the detector to
+  see the launch, so the plugin always asks and the native SDK reports only when
+  its own detector did not. Nothing is reported when RUM is enabled after the
+  first frame is already on screen, since that frame is no longer observable.
+  iOS measures app launch natively and is unchanged. **Requires
+  `cloud.flashcat:dd-sdk-android-rum` 0.5.0.**
+
+* Add `vitalUpdateFrequency` to `DatadogAttachConfiguration`, so an app that
+  attaches to a natively initialized SDK can still report a Flutter refresh rate
+  on Android. Defaults to `VitalsFrequency.average`.
 
 ## 0.1.1
 

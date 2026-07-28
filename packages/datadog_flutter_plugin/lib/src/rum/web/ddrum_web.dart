@@ -426,11 +426,11 @@ class DdRumWeb extends DdRumPlatform {
   }
 
   @override
-  Future<void> updatePerformanceMetrics(
-    List<double> buildTimes,
-    List<double> rasterTimes, [
-    List<double> frameTimes = const [],
-  ]) async {
+  Future<void> updatePerformanceMetrics({
+    List<double>? buildTimes,
+    List<double>? rasterTimes,
+    List<double>? frameTimes,
+  }) async {
     // NOOP - Not supported by the Browser SDK
   }
 

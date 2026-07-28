@@ -29,12 +29,12 @@ import com.datadog.android.rum.metric.networksettled.TimeBasedInitialResourceIde
 import com.datadog.android.rum.tracking.ViewTrackingStrategy
 import com.datadog.android.telemetry.model.TelemetryConfigurationEvent
 import io.flutter.embedding.engine.plugins.FlutterPlugin
-import java.util.concurrent.atomic.AtomicLong
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.Result
 import java.lang.ClassCastException
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicLong
 import kotlin.time.Duration.Companion.seconds
 
 @OptIn(ExperimentalRumApi::class)
@@ -60,6 +60,7 @@ class DatadogRumPlugin : MethodChannel.MethodCallHandler {
         const val PARAM_TYPE = "type"
         const val PARAM_BUILD_TIMES = "buildTimes"
         const val PARAM_RASTER_TIMES = "rasterTimes"
+        const val PARAM_FRAME_TIMES = "frameTimes"
         const val PARAM_OVERWRITE = "overwrite"
         const val PARAM_OPERATION_KEY = "operationKey"
         const val PARAM_FAILURE_REASON = "failureReason"
@@ -490,14 +491,17 @@ class DatadogRumPlugin : MethodChannel.MethodCallHandler {
     private fun updatePerformanceMetrics(call: MethodCall, result: Result) {
         val buildTimes = call.argument<List<Double>>(PARAM_BUILD_TIMES)
         val rasterTimes = call.argument<List<Double>>(PARAM_RASTER_TIMES)
-        if (buildTimes != null && rasterTimes != null) {
-            buildTimes.forEach {
+        val frameTimes = call.argument<List<Double>>(PARAM_FRAME_TIMES)
+        val hasFlutterMetrics = buildTimes != null && rasterTimes != null
+        val hasIncompleteFlutterMetrics = (buildTimes == null) != (rasterTimes == null)
+        if (!hasIncompleteFlutterMetrics && (hasFlutterMetrics || frameTimes != null)) {
+            buildTimes?.forEach {
                 rum?._getInternal()?.updatePerformanceMetric(
                     RumPerformanceMetric.FLUTTER_BUILD_TIME,
                     it
                 )
             }
-            rasterTimes.forEach {
+            rasterTimes?.forEach {
                 rum?._getInternal()?.updatePerformanceMetric(
                     RumPerformanceMetric.FLUTTER_RASTER_TIME,
                     it
@@ -506,7 +510,7 @@ class DatadogRumPlugin : MethodChannel.MethodCallHandler {
             // Flutter renders to its own surface, so the native JankStats monitor never
             // observes these frames. Push per-frame intervals into the external refresh-rate
             // hook so the view still gets a refresh_rate vital (iOS measures this natively).
-            call.argument<List<Double>>("frameTimes")?.forEach {
+            frameTimes?.forEach {
                 rum?._getInternal()?.updateExternalRefreshRate(it)
             }
             result.success(null)
@@ -528,7 +532,9 @@ class DatadogRumPlugin : MethodChannel.MethodCallHandler {
     // counted as launch time; Dart sends 0 when it cannot measure that reliably.
     private fun notifyAppLaunch(call: MethodCall, result: Result) {
         val frameAgeNs = call.argument<Number>(PARAM_FRAME_AGE_NS)?.toLong() ?: 0L
-        rum?._getInternal()?.notifyAppLaunch(uiCreateTimeNs, frameAgeNs)
+        // Requested unconditionally: only the native SDK can tell whether its own detector saw
+        // this launch, and it also de-duplicates several engines asking for the same one.
+        rum?._getInternal()?.notifyAppLaunchIfAbsent(uiCreateTimeNs, frameAgeNs)
         result.success(null)
     }
 

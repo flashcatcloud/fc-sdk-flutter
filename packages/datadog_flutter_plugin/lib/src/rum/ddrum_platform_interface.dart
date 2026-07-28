@@ -140,11 +140,11 @@ abstract class DdRumPlatform extends PlatformInterface {
   );
 
   Future<void> reportLongTask(DateTime at, int durationMs);
-  Future<void> updatePerformanceMetrics(
-    List<double> buildTimes,
-    List<double> rasterTimes, [
-    List<double> frameTimes = const [],
-  ]);
+  Future<void> updatePerformanceMetrics({
+    List<double>? buildTimes,
+    List<double>? rasterTimes,
+    List<double>? frameTimes,
+  });
 
   Future<void> notifyAppLaunch(int frameAgeNs);
 }
