@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.1.3
+
+* Ship the OkHttp TLS-provider `-dontwarn` rules in the plugin's consumer
+  ProGuard rules. Up to 0.1.2 they were missing, so `flutter build apk
+  --release` — including the `--obfuscate --split-debug-info` command the
+  crash-symbolication docs tell every integrator to run — failed outright with
+  `ERROR: R8: Missing class org.bouncycastle.jsse.BCSSLParameters ...` on a
+  stock app that had only added this plugin. OkHttp probes for BouncyCastle,
+  Conscrypt and OpenJSSE to pick a TLS provider and falls back to the platform
+  one when they are absent, but R8 cannot tell those references are optional.
+  Every integrator had to discover and paste the rules by hand; they are now
+  delivered automatically and no app-side ProGuard file is required.
+
+* Report the package version as `0.1.3`. `ddPackageVersion` and the iOS podspec
+  were left at `0.1.1` when 0.1.2 shipped, so events carried a stale version.
+
 ## 0.1.2
 
 * Report a refresh rate for Flutter views on Android. The native SDK measures
