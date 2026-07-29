@@ -67,7 +67,11 @@ android {
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig signingConfigs.debug
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            // Deliberately no `proguardFiles` here. The R8 rules this app needs
+            // (the OkHttp TLS-provider -dontwarn lines) ship with the plugin in
+            // android/consumer-rules.pro, so the example must build with nothing
+            // of its own -- that is what proves a real integrator's app builds.
+            // A local copy here would mask a regression in the consumer rules.
         }
     }
     namespace 'com.datadoghq.example.flutter'
