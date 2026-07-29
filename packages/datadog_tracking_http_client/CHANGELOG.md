@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.1
+
+* Fix RUM resources never being reported when the response body is consumed
+  with `HttpClientResponse.drain()`, or whenever `onDone` / `onError` /
+  `asFuture` are registered on the subscription returned by `listen`. The
+  subscription returned to the caller is now a wrapper that keeps the resource
+  tracking callbacks attached, so `stopResource` is always called.
+
 ## 0.1.0
 
 * First FlashCat release (forked from `datadog_tracking_http_client` 3.1.0).
