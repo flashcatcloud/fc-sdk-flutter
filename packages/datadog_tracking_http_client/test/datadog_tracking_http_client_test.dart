@@ -287,6 +287,65 @@ void main() {
           capturedKey, 403, RumResourceType.image, 88888, any()));
     });
 
+    test('calls stop resource when the response body is drained', () async {
+      var url = Uri.parse('https://test_url/path');
+      final completer = setupMockRequest(url);
+
+      var request = await client.openUrl('get', url);
+
+      var capturedKey = verify(
+        () => mockRum.startResource(
+            captureAny(), RumHttpMethod.get, url.toString(), any()),
+      ).captured[0] as String;
+
+      verifyNever(() => mockRum.stopResource(any(), any(), any()));
+
+      final mockResponse = setupMockClientResponse(200);
+      completer.complete(mockResponse);
+      var response = await request.done;
+
+      // `drain` is `listen(null, cancelOnError: true).asFuture(...)`, and
+      // `asFuture` overwrites the `onDone` handler of the subscription it is
+      // called on. Resource tracking has to survive that.
+      final drained = response.drain<void>();
+      mockResponse.streamController.sink.add([12]);
+      await mockResponse.streamController.close();
+      await drained;
+
+      verify(() => mockRum.stopResource(
+          capturedKey, 200, RumResourceType.image, 88888, any()));
+    });
+
+    test('calls stop resource when onDone is registered on the subscription',
+        () async {
+      var url = Uri.parse('https://test_url/path');
+      final completer = setupMockRequest(url);
+
+      var request = await client.openUrl('get', url);
+
+      var capturedKey = verify(
+        () => mockRum.startResource(
+            captureAny(), RumHttpMethod.get, url.toString(), any()),
+      ).captured[0] as String;
+
+      verifyNever(() => mockRum.stopResource(any(), any(), any()));
+
+      final mockResponse = setupMockClientResponse(200);
+      completer.complete(mockResponse);
+      var response = await request.done;
+
+      var sawDone = false;
+      final subscription = response.listen((_) {});
+      subscription.onDone(() => sawDone = true);
+
+      mockResponse.streamController.sink.add([12]);
+      await mockResponse.streamController.close();
+
+      expect(sawDone, isTrue);
+      verify(() => mockRum.stopResource(
+          capturedKey, 200, RumResourceType.image, 88888, any()));
+    });
+
     test('sets resource type from headers', () async {
       var url = Uri.parse('https://test_url/path');
       final completer = setupMockRequest(url);
