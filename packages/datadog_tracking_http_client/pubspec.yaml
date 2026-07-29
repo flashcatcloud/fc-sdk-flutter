@@ -1,6 +1,6 @@
 name: flashcat_tracking_http_client
 description: A wrapping implementation of HttpClient for tracking resources with FlashCat
-version: 0.1.0
+version: 0.1.1
 homepage: https://flashcat.cloud
 repository: https://github.com/flashcatcloud/fc-sdk-flutter
 

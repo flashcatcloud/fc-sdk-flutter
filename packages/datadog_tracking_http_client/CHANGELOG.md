@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.1.1
 
 * Fix RUM resources never being reported when the response body is consumed
   with `HttpClientResponse.drain()`, or whenever `onDone` / `onError` /
