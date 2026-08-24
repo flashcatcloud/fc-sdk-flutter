@@ -97,6 +97,7 @@ jobs:
 
       - name: Notify deployment success
         if: success()
+        continue-on-error: true
         uses: zcong1993/actions-ding@master
         with:
           dingToken: ${{ secrets.DING_TALK_TOKEN }}
@@ -112,6 +113,7 @@ jobs:
 
       - name: Notify secondary DingTalk group on success
         if: success()
+        continue-on-error: true
         uses: zcong1993/actions-ding@master
         with:
           dingToken: ${{ secrets.DING_TALK_TOKEN_2 }}
@@ -127,6 +129,7 @@ jobs:
 
       - name: Notify deployment failure
         if: failure()
+        continue-on-error: true
         uses: zcong1993/actions-ding@master
         with:
           dingToken: ${{ secrets.DING_TALK_TOKEN }}
