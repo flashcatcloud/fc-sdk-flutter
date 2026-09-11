@@ -11,7 +11,7 @@ import Flutter
 import DatadogInternal
 @testable import DatadogCore
 @testable import DatadogRUM
-import flashcat_flutter_plugin
+@testable import flashcat_flutter_plugin
 
 enum ResultStatus: EquatableInTests {
     case notCalled
@@ -119,6 +119,14 @@ class DatadogRumPluginTests: XCTestCase {
         mock = MockRUMMonitor()
         plugin = DatadogRumPlugin.instance
         plugin.inject(rum: mock)
+        plugin.beforeSamplingMethodInvoker = nil
+        plugin.beforeSamplingTimeout = 0.5
+    }
+
+    override func tearDown() {
+        plugin.beforeSamplingMethodInvoker = nil
+        plugin.beforeSamplingTimeout = 0.5
+        super.tearDown()
     }
 
     let contracts = [
@@ -196,7 +204,9 @@ class DatadogRumPluginTests: XCTestCase {
             "failureReason": .string,
             "attributes": .map
         ]),
-        Contract(methodName: "stopSession", requiredParameters: [:])
+        Contract(methodName: "stopSession", requiredParameters: [:]),
+        Contract(methodName: "setForcedSession", requiredParameters: [:]),
+        Contract(methodName: "getRemoteConfig", requiredParameters: [:])
     ]
 
     func testRumPlugin_ContractViolationsThrowErrors() {
@@ -246,6 +256,23 @@ class DatadogRumPluginTests: XCTestCase {
 
         let config = RUM.Configuration.init(fromEncoded: encoded)
         XCTAssertEqual(config?.trackBackgroundEvents, trackBackgroundEvents)
+    }
+
+    func testRumConfiguration_RemoteConfigurationDefaultsToDisabled() {
+        let config = RUM.Configuration.init(fromEncoded: [
+            "applicationId": "fake-application-id"
+        ])
+
+        XCTAssertEqual(config?.remoteConfigurationEnabled, false)
+    }
+
+    func testRumConfiguration_WithRemoteConfigurationEnabled_IsSetCorrectly() {
+        let config = RUM.Configuration.init(fromEncoded: [
+            "applicationId": "fake-application-id",
+            "remoteConfigurationEnabled": true
+        ])
+
+        XCTAssertEqual(config?.remoteConfigurationEnabled, true)
     }
 
     func testRepeatEnable_FromMethodChannelSameOptions_DoesNothing() {
@@ -779,6 +806,149 @@ class DatadogRumPluginTests: XCTestCase {
         }
         XCTAssertEqual(resultStatus, .called(value: nil))
     }
+
+    func testSetForcedSession_CallsRumMonitor() {
+        let call = FlutterMethodCall(methodName: "setForcedSession", arguments: [:] as [String: Any])
+
+        var resultStatus = ResultStatus.notCalled
+        plugin.handle(call) { result in
+            resultStatus = .called(value: result)
+        }
+
+        XCTAssertEqual(mock.callLog, [.setForcedSession])
+        XCTAssertEqual(resultStatus, .called(value: nil))
+    }
+
+    func testGetRemoteConfig_ReturnsSanitizedCustomValues() {
+        mock.remoteConfig = [
+            "enabled": true,
+            "nested": ["sampleRate": 25.0],
+            "list": ["one", 2],
+            "unsupported": Date()
+        ]
+        let call = FlutterMethodCall(methodName: "getRemoteConfig", arguments: [:] as [String: Any])
+
+        var returnedConfig: [String: Any]?
+        plugin.handle(call) { result in
+            returnedConfig = result as? [String: Any]
+        }
+
+        XCTAssertEqual(mock.callLog, [.getRemoteConfig])
+        XCTAssertEqual(returnedConfig?["enabled"] as? Bool, true)
+        XCTAssertEqual((returnedConfig?["nested"] as? [String: Double])?["sampleRate"], 25.0)
+        XCTAssertEqual(returnedConfig?["list"] as? [AnyHashable], ["one", 2])
+        XCTAssertNil(returnedConfig?["unsupported"])
+    }
+
+    func testBeforeSampling_WhenDisabled_DoesNotAttachCallback() {
+        var config = RUM.Configuration(applicationID: "fake-application-id")
+
+        plugin.attachBeforeSampling(configArg: [:], config: &config)
+
+        XCTAssertNil(config.beforeSampling)
+    }
+
+    func testBeforeSampling_OnMainThread_ReturnsValidRateAndSanitizesContext() throws {
+        XCTAssertTrue(Thread.isMainThread)
+        var config = RUM.Configuration(applicationID: "fake-application-id")
+        var receivedArguments: [String: Any?]?
+        plugin.beforeSamplingMethodInvoker = { arguments, completion in
+            receivedArguments = arguments
+            DispatchQueue.main.async {
+                completion(42.5)
+            }
+        }
+        plugin.attachBeforeSampling(
+            configArg: ["attachBeforeSampling": true],
+            config: &config
+        )
+
+        let callback = try XCTUnwrap(config.beforeSampling)
+        let result = callback(
+            BeforeSamplingContext(
+                sessionSampleRate: 25,
+                custom: [
+                    "enabled": true,
+                    "nested": ["sampleRate": 25.0],
+                    "list": ["one", 2],
+                    "unsupported": Date()
+                ]
+            )
+        )
+
+        XCTAssertEqual(result, 42.5)
+        let context = receivedArguments?["context"] as? [String: Any?]
+        XCTAssertEqual(context?["sessionSampleRate"] as? Float, 25)
+        let custom = context?["custom"] as? [String: Any?]
+        XCTAssertEqual(custom?["enabled"] as? Bool, true)
+        XCTAssertEqual((custom?["nested"] as? [String: Double])?["sampleRate"], 25.0)
+        XCTAssertEqual(custom?["list"] as? [AnyHashable], ["one", 2])
+        XCTAssertNil(custom?["unsupported"])
+    }
+
+    func testBeforeSampling_OnBackgroundThread_ReturnsValidRate() {
+        let completed = expectation(description: "background beforeSampling completed")
+        plugin.beforeSamplingMethodInvoker = { _, completion in
+            XCTAssertTrue(Thread.isMainThread)
+            completion(60.0)
+        }
+        let plugin = self.plugin!
+
+        DispatchQueue.global().async {
+            let result = plugin.callBeforeSampling(
+                BeforeSamplingContext(sessionSampleRate: 25, custom: nil)
+            )
+            XCTAssertEqual(result, 60.0)
+            completed.fulfill()
+        }
+
+        waitForExpectations(timeout: 1)
+    }
+
+    func testBeforeSampling_InvalidResultsKeepNativeRate() {
+        let invalidResults: [Any] = [
+            true,
+            -1.0,
+            101.0,
+            FlutterError(code: "callback-error", message: "failed", details: nil)
+        ]
+        let context = BeforeSamplingContext(sessionSampleRate: 25, custom: nil)
+
+        invalidResults.forEach { invalidResult in
+            plugin.beforeSamplingMethodInvoker = { _, completion in
+                completion(invalidResult)
+            }
+            XCTAssertNil(plugin.callBeforeSampling(context))
+        }
+    }
+
+    func testBeforeSampling_WhenCallbackTimesOut_KeepsNativeRate() {
+        plugin.beforeSamplingTimeout = 0.01
+        plugin.beforeSamplingMethodInvoker = { _, _ in }
+
+        let result = plugin.callBeforeSampling(
+            BeforeSamplingContext(sessionSampleRate: 25, custom: nil)
+        )
+
+        XCTAssertNil(result)
+    }
+
+    func testBeforeSampling_WhenCallbackRepliesAfterTimeout_ReplyIsIgnored() {
+        plugin.beforeSamplingTimeout = 0.01
+        var lateCompletion: FlutterResult?
+        plugin.beforeSamplingMethodInvoker = { _, completion in
+            lateCompletion = completion
+        }
+
+        let result = plugin.callBeforeSampling(
+            BeforeSamplingContext(sessionSampleRate: 25, custom: nil)
+        )
+        XCTAssertNil(result)
+
+        // Replying after we stopped waiting must not crash or leak the rate into
+        // the sampling decision we already returned.
+        lateCompletion?(60.0)
+    }
 }
 
 // MARK: - MockRUMMonitor
@@ -816,6 +986,8 @@ class MockRUMMonitor: RUMMonitorProtocol, RUMCommandSubscriber {
         case removeViewAttributes(keys: [DatadogInternal.AttributeKey])
         case addFeatureFlagEvaluation(name: String, value: Encodable)
         case stopSession
+        case setForcedSession
+        case getRemoteConfig
         case startFeatureOperation(name: String, operationKey: String?, attributes: [AttributeKey: AttributeValue])
         case succeedFeatureOperation(name: String, operationKey: String?, attributes: [AttributeKey: AttributeValue])
         case failFeatureOperation(name: String, operationKey: String?, failureReason: RUMFeatureOperationFailureReason,
@@ -824,6 +996,7 @@ class MockRUMMonitor: RUMMonitorProtocol, RUMCommandSubscriber {
 
     var callLog: [MethodCall] = []
     var commands: [RUMCommand] = []
+    var remoteConfig: [String: Any]?
 
     init() {
         debug = true
@@ -928,6 +1101,19 @@ class MockRUMMonitor: RUMMonitorProtocol, RUMCommandSubscriber {
 
     func stopSession() {
         callLog.append(.stopSession)
+    }
+
+    func setForcedSession() {
+        callLog.append(.setForcedSession)
+    }
+
+    func getRemoteConfig() -> [String: Any]? {
+        callLog.append(.getRemoteConfig)
+        return remoteConfig
+    }
+
+    func reportAppFullyDisplayed() {
+        // No-op: required by FlashcatRUM 0.6.0.
     }
 
     func addFeatureFlagEvaluation(name: String, value: Encodable) {

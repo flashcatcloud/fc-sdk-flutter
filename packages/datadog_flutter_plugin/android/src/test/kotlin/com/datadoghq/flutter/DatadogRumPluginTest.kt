@@ -10,6 +10,7 @@ import assertk.assertThat
 import assertk.assertions.isEqualTo
 import assertk.assertions.isNotNull
 import com.datadog.android.Datadog
+import com.datadog.android.rum.BeforeSamplingContext
 import com.datadog.android.rum.GlobalRumMonitor
 import com.datadog.android.rum.Rum
 import com.datadog.android.rum.RumActionType
@@ -189,6 +190,7 @@ class DatadogRumPluginTest {
         val trackNonFatalAnrs = forge.aNullable { forge.aBool() }
         val trackAnonymousUser = forge.aBool()
         val trackBackgroundEvents = forge.aBool()
+        val remoteConfigurationEnabled = forge.aBool()
         val attributes = forge.exhaustiveAttributes()
         val configArg = mapOf(
             "sessionSampleRate" to sessionSampleRate,
@@ -197,6 +199,7 @@ class DatadogRumPluginTest {
             "trackNonFatalAnrs" to trackNonFatalAnrs,
             "trackAnonymousUser" to trackAnonymousUser,
             "trackBackgroundEvents" to trackBackgroundEvents,
+            "remoteConfigurationEnabled" to remoteConfigurationEnabled,
             "initialResourceThreshold" to initialResourceThreshold,
             "customEndpoint" to endpoint,
             "vitalsUpdateFrequency" to "VitalsFrequency.frequent",
@@ -221,6 +224,8 @@ class DatadogRumPluginTest {
         }
         assertThat(featureConfiguration.getPrivate("trackAnonymousUser")).isEqualTo(trackAnonymousUser)
         assertThat(featureConfiguration.getPrivate("backgroundEventTracking")).isEqualTo(trackBackgroundEvents)
+        assertThat(featureConfiguration.getPrivate("remoteConfigurationEnabled"))
+            .isEqualTo(remoteConfigurationEnabled)
         val initialResourceIdentifier = featureConfiguration.getPrivate("initialResourceIdentifier") as? TimeBasedInitialResourceIdentifier
         assertThat(initialResourceIdentifier).isNotNull()
         // The threshold is converted to configured in milliseconds, but held in nanoseconds.
@@ -231,6 +236,75 @@ class DatadogRumPluginTest {
         assertThat(featureConfiguration.getPrivate("vitalsMonitorUpdateFrequency"))
             .isEqualTo(VitalsUpdateFrequency.FREQUENT)
         assertThat(featureConfiguration.getPrivate("additionalConfig")).isEqualTo(attributes)
+    }
+
+    @Test
+    fun `M keep remote configuration disabled W encoded field is missing`(
+        forge: Forge
+    ) {
+        val config = RumConfiguration.Builder(forge.aString())
+            .withEncoded(emptyMap())
+            .build()
+
+        val featureConfiguration: Any = config.getFieldValue("featureConfiguration")
+        assertThat(featureConfiguration.getPrivate("remoteConfigurationEnabled")).isEqualTo(false)
+    }
+
+    @Test
+    fun `M call Flutter beforeSampling W native callback is invoked`() {
+        val mapper = DatadogRumEventMapper()
+        val callback = mockk<DatadogRumEventMapper.EventMapper>()
+        every { callback.beforeSampling(any()) } returns "42.5"
+        mapper.eventMapper = callback
+
+        val result = mapper.beforeSampling(
+            BeforeSamplingContext(
+                sessionSampleRate = 25f,
+                custom = mapOf(
+                    "debugUsers" to listOf("user-a"),
+                    "list" to listOf("one", Any(), 2),
+                    "unsupported" to Any()
+                )
+            )
+        )
+
+        assertThat(result).isEqualTo(42.5f)
+        verify {
+            callback.beforeSampling(
+                match {
+                    it.contains("\"sessionSampleRate\":25.0") &&
+                        it.contains("\"debugUsers\":[\"user-a\"]") &&
+                        it.contains("\"list\":[\"one\",2]") &&
+                        !it.contains("unsupported")
+                }
+            )
+        }
+    }
+
+    @Test
+    fun `M attach beforeSampling W attachBeforeSampling is true`(forge: Forge) {
+        val config = DatadogRumEventMapper()
+            .attachMappers(
+                mapOf("attachBeforeSampling" to true),
+                RumConfiguration.Builder(forge.aString())
+            )
+            .build()
+
+        val featureConfiguration: Any = config.getFieldValue("featureConfiguration")
+        assertThat(featureConfiguration.getPrivate("beforeSampling")).isNotNull()
+    }
+
+    @Test
+    fun `M ignore invalid Flutter beforeSampling result`() {
+        val mapper = DatadogRumEventMapper()
+        val callback = mockk<DatadogRumEventMapper.EventMapper>()
+        mapper.eventMapper = callback
+        val context = BeforeSamplingContext(sessionSampleRate = 25f, custom = null)
+
+        listOf("not-a-rate", "NaN", "-1", "101").forEach { encodedResult ->
+            every { callback.beforeSampling(any()) } returns encodedResult
+            assertThat(mapper.beforeSampling(context)).isEqualTo(null)
+        }
     }
 
     @Test
@@ -1035,6 +1109,45 @@ class DatadogRumPluginTest {
         }
     }
 
+    @Test
+    fun `M call monitor setForcedSession W setForcedSession is called`() {
+        val call = MethodCall("setForcedSession", emptyMap<String, Any?>())
+        val mockResult = mockk<MethodChannel.Result>()
+        every { mockResult.success(any()) } returns Unit
+
+        plugin.onMethodCall(call, mockResult)
+
+        verify { monitorProxy.mockMonitor.setForcedSession() }
+        verify { mockResult.success(null) }
+    }
+
+    @Test
+    fun `M return sanitized custom values W getRemoteConfig is called`() {
+        val remoteConfig = mapOf<String, Any?>(
+            "enabled" to true,
+            "nested" to mapOf("sampleRate" to 25.0),
+            "list" to listOf("one", null, Any(), 2),
+            "unsupported" to Any()
+        )
+        every { monitorProxy.mockMonitor.getRemoteConfig() } returns remoteConfig
+        val call = MethodCall("getRemoteConfig", emptyMap<String, Any?>())
+        val mockResult = mockk<MethodChannel.Result>()
+        every { mockResult.success(any()) } returns Unit
+
+        plugin.onMethodCall(call, mockResult)
+
+        verify { monitorProxy.mockMonitor.getRemoteConfig() }
+        verify {
+            mockResult.success(
+                mapOf(
+                    "enabled" to true,
+                    "nested" to mapOf("sampleRate" to 25.0),
+                    "list" to listOf("one", null, 2)
+                )
+            )
+        }
+    }
+
     private val contracts = listOf(
         Contract("startView", mapOf(
             "key" to ContractParameter.Type(SupportedContractType.STRING),
@@ -1138,7 +1251,9 @@ class DatadogRumPluginTest {
             "failureReason" to ContractParameter.Type(SupportedContractType.STRING),
             "attributes" to ContractParameter.Type(SupportedContractType.MAP)
         )),
-        Contract("stopSession", mapOf())
+        Contract("stopSession", mapOf()),
+        Contract("setForcedSession", mapOf()),
+        Contract("getRemoteConfig", mapOf())
     )
 
     @Test

@@ -13,6 +13,12 @@ class DdNoOpRumPlatform extends DdRumPlatform {
   Future<String?> getCurrentSessionId() => Future.value(null);
 
   @override
+  Future<void> setForcedSession() => Future.value();
+
+  @override
+  Future<Map<String, Object?>?> getRemoteConfig() => Future.value(null);
+
+  @override
   Future<void> addAttribute(String key, Object value) => Future.value();
 
   @override

@@ -12,7 +12,7 @@ let package = Package(
         .library(name: "flashcat-flutter-plugin", targets: ["flashcat_flutter_plugin"])
     ],
     dependencies: [
-        .package(url: "https://github.com/flashcatcloud/fc-sdk-ios.git", exact: "0.5.0"),
+        .package(url: "https://github.com/flashcatcloud/fc-sdk-ios.git", exact: "0.6.0"),
         .package(url: "https://github.com/almazrafi/DictionaryCoder.git", exact: "1.2.0")
     ],
     targets: [

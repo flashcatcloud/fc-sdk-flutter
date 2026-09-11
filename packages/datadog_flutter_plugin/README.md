@@ -13,7 +13,7 @@ This SDK is forked from the [Datadog Flutter SDK](https://github.com/DataDog/dd-
 - **Package name**: Published as `flashcat_flutter_plugin` and `flashcat_webview_tracking`; imports use `package:flashcat_flutter_plugin/…`. Only the published package name changes — internal Dart/Kotlin/Swift namespaces remain `datadog*`.
 - **Native dependencies**: Uses the FlashCat forks — iOS `Flashcat*` pods / `fc-sdk-ios` (SPM), Android `cloud.flashcat:*`.
 - **v1 scope**: iOS and Android only; the Flutter Web target is dropped.
-- **Not yet available**: `Logs` (the API is a no-op — FlashCat ingest does not accept Logs yet), Session Replay, automatic HTTP/resource tracking (`datadog_tracking_http_client`), the dio/gql/grpc integrations, and Feature Flags.
+- **Not yet available**: `Logs` (the API is a no-op — FlashCat ingest does not accept Logs yet), Session Replay, the dio/gql/grpc integrations, and Feature Flags. HTTP/resource tracking is available through the companion `flashcat_tracking_http_client` package.
 
 ---
 
@@ -27,7 +27,7 @@ This release requires Flutter 3.27+ and supports iOS and Android only.
 
 | iOS SDK | Android SDK |
 | :-----: | :---------: |
-| 0.5.0 | 0.4.1 |
+| 0.6.0 | 0.7.0 |
 
 ### iOS
 
@@ -61,6 +61,57 @@ final configuration = DatadogConfiguration(
 ```
 
 For more information on available configuration options, see the [DatadogConfiguration object][8] documentation.
+
+### Remote RUM configuration
+
+Remote configuration is opt-in and is disabled by default. Enable it when you
+want the native Android or iOS SDK to retrieve the RUM session sampling rate
+and custom values published for the application:
+
+```dart
+rumConfiguration: DatadogRumConfiguration(
+  applicationId: '<RUM_APPLICATION_ID>',
+  remoteConfigurationEnabled: true,
+  beforeSampling: (context) {
+    final debugUsers = context.custom?['debugUsers'];
+    if (debugUsers is List && debugUsers.contains(currentUserId)) {
+      return 100;
+    }
+    return null; // Keep the native SDK's sampling rate.
+  },
+)
+```
+
+`beforeSampling` runs for every new session even when remote configuration is
+disabled. In that case, `sessionSampleRate` is the local value and `custom` is
+`null`. Returning `null`, throwing, timing out, or returning a value outside
+`0...100` keeps the native SDK's sampling decision.
+
+The current process can be switched permanently to forced collection, and the
+latest custom values can be read at runtime:
+
+```dart
+DatadogSdk.instance.rum?.setForcedSession();
+final custom = await DatadogSdk.instance.rum?.getRemoteConfig();
+```
+
+Forced collection cannot be reverted until the process restarts. It reports a
+session sample rate of 100 without a remote-configuration version and does not
+enable Session Replay in Flutter. `getRemoteConfig()` returns only the
+console's `custom` object. Treat it as public information and never store
+secrets in it.
+
+The `custom` values from `getRemoteConfig()` and
+`RumBeforeSamplingContext.custom` cross the platform channel with the type
+fidelity each native SDK provides, so a number published in the console can
+arrive as either an `int` or a `double` depending on the platform. Read numbers
+as `num` (`(context.custom?['threshold'] as num?)?.toDouble()`) rather than
+testing for `int` or `double`.
+
+When attaching Flutter to an already initialized native SDK,
+`remoteConfigurationEnabled` and `beforeSampling` must have been configured by
+the native application during RUM initialization. The two runtime methods can
+still operate on the existing RUM monitor.
 
 ### Initialize the library
 

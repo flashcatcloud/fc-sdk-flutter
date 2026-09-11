@@ -286,6 +286,31 @@ class DatadogRum {
     );
   }
 
+  /// Forces RUM sessions to be collected for the lifetime of this process.
+  ///
+  /// If the current session was sampled out, the native SDK ends it and starts
+  /// a collected session. A session already being collected continues. This
+  /// setting cannot be reverted without restarting the process.
+  void setForcedSession() {
+    wrap('rum.setForcedSession', logger, null, () {
+      return _platform.setForcedSession();
+    });
+  }
+
+  /// Returns custom values supplied by RUM remote configuration.
+  ///
+  /// Returns `null` when remote configuration is disabled or unavailable. An
+  /// empty custom object is returned as an empty map. These values are public
+  /// to anyone with the client token and must not contain secrets.
+  Future<Map<String, Object?>?> getRemoteConfig() {
+    return wrapAsync(
+      'rum.getRemoteConfig',
+      logger,
+      null,
+      () => _platform.getRemoteConfig(),
+    );
+  }
+
   /// Notifies that the View identified by [key] starts being presented to the
   /// user. This view will show as [name] in the RUM explorer, and defaults to
   /// [key] if it is not provided. You can also attach custom [attributes],

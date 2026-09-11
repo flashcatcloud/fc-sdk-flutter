@@ -171,6 +171,14 @@ class MockRumMonitor : RumMonitor {
         mockMonitor.stopSession()
     }
 
+    override fun setForcedSession() {
+        mockMonitor.setForcedSession()
+    }
+
+    override fun getRemoteConfig(): Map<String, Any?>? {
+        return mockMonitor.getRemoteConfig()
+    }
+
     override fun stopView(key: Any, attributes: Map<String, Any?>) {
         mockMonitor.stopView(key, attributes)
     }

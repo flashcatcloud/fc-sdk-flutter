@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.1
+
+* Support `flashcat_flutter_plugin` 0.2.0.
+* Upgrade the native FlashCat SDKs to Android 0.7.0 and iOS 0.6.0.
+* Align the CocoaPods package version with the Dart package version.
+
 ## 0.1.0
 
 * First FlashCat release (forked from `datadog_webview_tracking`).

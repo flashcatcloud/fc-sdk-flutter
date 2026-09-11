@@ -223,6 +223,33 @@ class DatadogRumEventMapper$EventMapper extends jni$_.JObject {
         .object<jni$_.JString?>(const jni$_.JStringNullableType());
   }
 
+  static final _id_beforeSampling = _class.instanceMethodId(
+    r'beforeSampling',
+    r'(Ljava/lang/String;)Ljava/lang/String;',
+  );
+
+  static final _beforeSampling = jni$_.ProtectedJniExtensions.lookup<
+              jni$_.NativeFunction<
+                  jni$_.JniResult Function(
+                      jni$_.Pointer<jni$_.Void>,
+                      jni$_.JMethodIDPtr,
+                      jni$_.VarArgs<(jni$_.Pointer<jni$_.Void>,)>)>>(
+          'globalEnv_CallObjectMethod')
+      .asFunction<
+          jni$_.JniResult Function(jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr, jni$_.Pointer<jni$_.Void>)>();
+
+  /// from: `public abstract java.lang.String beforeSampling(java.lang.String string)`
+  /// The returned object must be released after use, by calling the [release] method.
+  jni$_.JString? beforeSampling(
+    jni$_.JString string,
+  ) {
+    final _$string = string.reference;
+    return _beforeSampling(reference.pointer,
+            _id_beforeSampling as jni$_.JMethodIDPtr, _$string.pointer)
+        .object<jni$_.JString?>(const jni$_.JStringNullableType());
+  }
+
   /// Maps a specific port to the implemented interface.
   static final core$_.Map<int, $DatadogRumEventMapper$EventMapper> _$impls = {};
   static jni$_.JObjectPtr _$invoke(
@@ -314,6 +341,16 @@ class DatadogRumEventMapper$EventMapper extends jni$_.JObject {
                 .toPointer() ??
             jni$_.nullptr;
       }
+      if ($d == r'beforeSampling(Ljava/lang/String;)Ljava/lang/String;') {
+        final $r = _$impls[$p]!.beforeSampling(
+          $a![0]!.as(const jni$_.JStringType(), releaseOriginal: true),
+        );
+        return ($r as jni$_.JObject?)
+                ?.as(const jni$_.JObjectType())
+                .reference
+                .toPointer() ??
+            jni$_.nullptr;
+      }
     } catch (e) {
       return jni$_.ProtectedJniExtensions.newDartException(e);
     }
@@ -365,6 +402,7 @@ abstract base mixin class $DatadogRumEventMapper$EventMapper {
     required jni$_.JString? Function(jni$_.JString string) mapLongTaskEvent,
     required jni$_.JString? Function(jni$_.JString string)
         mapVitalOperationStepEvent,
+    required jni$_.JString? Function(jni$_.JString string) beforeSampling,
   }) = _$DatadogRumEventMapper$EventMapper;
 
   jni$_.JString? mapViewEvent(jni$_.JString string);
@@ -373,6 +411,7 @@ abstract base mixin class $DatadogRumEventMapper$EventMapper {
   jni$_.JString? mapErrorEvent(jni$_.JString string);
   jni$_.JString? mapLongTaskEvent(jni$_.JString string);
   jni$_.JString? mapVitalOperationStepEvent(jni$_.JString string);
+  jni$_.JString? beforeSampling(jni$_.JString string);
 }
 
 final class _$DatadogRumEventMapper$EventMapper
@@ -385,12 +424,14 @@ final class _$DatadogRumEventMapper$EventMapper
     required jni$_.JString? Function(jni$_.JString string) mapLongTaskEvent,
     required jni$_.JString? Function(jni$_.JString string)
         mapVitalOperationStepEvent,
+    required jni$_.JString? Function(jni$_.JString string) beforeSampling,
   })  : _mapViewEvent = mapViewEvent,
         _mapActionEvent = mapActionEvent,
         _mapResourceEvent = mapResourceEvent,
         _mapErrorEvent = mapErrorEvent,
         _mapLongTaskEvent = mapLongTaskEvent,
-        _mapVitalOperationStepEvent = mapVitalOperationStepEvent;
+        _mapVitalOperationStepEvent = mapVitalOperationStepEvent,
+        _beforeSampling = beforeSampling;
 
   final jni$_.JString? Function(jni$_.JString string) _mapViewEvent;
   final jni$_.JString? Function(jni$_.JString string) _mapActionEvent;
@@ -399,6 +440,7 @@ final class _$DatadogRumEventMapper$EventMapper
   final jni$_.JString? Function(jni$_.JString string) _mapLongTaskEvent;
   final jni$_.JString? Function(jni$_.JString string)
       _mapVitalOperationStepEvent;
+  final jni$_.JString? Function(jni$_.JString string) _beforeSampling;
 
   jni$_.JString? mapViewEvent(jni$_.JString string) {
     return _mapViewEvent(string);
@@ -422,6 +464,10 @@ final class _$DatadogRumEventMapper$EventMapper
 
   jni$_.JString? mapVitalOperationStepEvent(jni$_.JString string) {
     return _mapVitalOperationStepEvent(string);
+  }
+
+  jni$_.JString? beforeSampling(jni$_.JString string) {
+    return _beforeSampling(string);
   }
 }
 

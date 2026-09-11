@@ -24,6 +24,7 @@ public extension RUM.Configuration {
         trackFrustrations = (encoded["trackFrustrations"] as? NSNumber)?.boolValue ?? true
         trackAnonymousUser = (encoded["trackAnonymousUser"] as? NSNumber)?.boolValue ?? true
         trackBackgroundEvents = (encoded["trackBackgroundEvents"] as? NSNumber)?.boolValue ?? false
+        remoteConfigurationEnabled = (encoded["remoteConfigurationEnabled"] as? NSNumber)?.boolValue ?? false
         if let appHangThreshold = (encoded["appHangThreshold"] as? NSNumber)?.doubleValue {
             self.appHangThreshold = appHangThreshold
         }
@@ -56,6 +57,8 @@ public extension RUM.Configuration {
 public class DatadogRumPlugin: NSObject, FlutterPlugin {
     private static var methodChannel: FlutterMethodChannel?
 
+    typealias BeforeSamplingMethodInvoker = ([String: Any?], @escaping FlutterResult) -> Void
+
     public static let instance =  DatadogRumPlugin()
     public static func register(with registrar: FlutterPluginRegistrar) {
         methodChannel = FlutterMethodChannel(name: "datadog_sdk_flutter.rum", binaryMessenger: registrar.messenger())
@@ -67,6 +70,8 @@ public class DatadogRumPlugin: NSObject, FlutterPlugin {
     internal var mapperPerf = PerformanceTracker()
     internal var mainThreadMapperPerf = PerformanceTracker()
     internal var mapperTimeouts = 0
+    internal var beforeSamplingMethodInvoker: BeforeSamplingMethodInvoker?
+    internal var beforeSamplingTimeout: TimeInterval = 0.5
 
     private var currentConfiguration: [AnyHashable: Any]?
 
@@ -114,6 +119,17 @@ public class DatadogRumPlugin: NSObject, FlutterPlugin {
 
         case "getCurrentSessionId":
             getCurrentSessionId(result: result)
+
+        case "setForcedSession":
+            rum?.setForcedSession()
+            result(nil)
+
+        case "getRemoteConfig":
+            if let remoteConfig = rum?.getRemoteConfig() {
+                result(sanitizeRemoteConfig(remoteConfig))
+            } else {
+                result(nil)
+            }
 
         case "startView":
             if let key = arguments["key"] as? String,
@@ -386,6 +402,7 @@ public class DatadogRumPlugin: NSObject, FlutterPlugin {
             if let configArg = configArg,
                var config = RUM.Configuration(fromEncoded: configArg) {
                 attachEventMappers(configArg: configArg, config: &config)
+                attachBeforeSampling(configArg: configArg, config: &config)
                 // Disable INV as the Flutter calculations for it are different
                 config.nextViewActionPredicate = nil
                 config.onSessionStart = { sessionId, discarded in
@@ -518,6 +535,166 @@ public class DatadogRumPlugin: NSObject, FlutterPlugin {
         }
         if isOptionSet("attachLongTaskEventMapper") {
             config.longTaskEventMapper = longTaskEventMapper
+        }
+    }
+
+    internal func attachBeforeSampling(configArg: [String: Any?], config: inout RUM.Configuration) {
+        let isAttached = (configArg["attachBeforeSampling"] as? NSNumber)?.boolValue ?? false
+        if isAttached {
+            config.beforeSampling = { [weak self] context in
+                guard let self = self else { return nil }
+                return self.callBeforeSampling(context)
+            }
+        }
+    }
+
+    /// Holds the rate Flutter reported for a single `beforeSampling` round trip.
+    ///
+    /// The reply can land after we gave up waiting for it, and on a different
+    /// thread than the one that started the call, so the rate is written under a
+    /// lock and `resolve()` closes the call to later replies.
+    private final class BeforeSamplingResult {
+        private let lock = NSLock()
+        private var rate: SampleRate?
+        private var isResolved = false
+
+        func set(_ rate: SampleRate) {
+            lock.lock()
+            defer { lock.unlock() }
+            guard !isResolved else { return }
+            self.rate = rate
+        }
+
+        func resolve() -> SampleRate? {
+            lock.lock()
+            defer { lock.unlock() }
+            isResolved = true
+            return rate
+        }
+    }
+
+    internal func callBeforeSampling(_ context: BeforeSamplingContext) -> SampleRate? {
+        guard DatadogRumPlugin.methodChannel != nil || beforeSamplingMethodInvoker != nil else {
+            return nil
+        }
+
+        let pendingResult = BeforeSamplingResult()
+        let semaphore = DispatchSemaphore(value: 0)
+        let encodedContext: [String: Any?] = [
+            "sessionSampleRate": context.sessionSampleRate,
+            "custom": context.custom.map { sanitizeRemoteConfig($0) }
+        ]
+
+        let invoke: () -> Void = { [weak self] in
+            guard let self = self else {
+                semaphore.signal()
+                return
+            }
+
+            let completion: FlutterResult = { result in
+                if let number = result as? NSNumber,
+                   CFGetTypeID(number) != CFBooleanGetTypeID() {
+                    let value = number.floatValue
+                    if value.isFinite && (0...100).contains(value) {
+                        pendingResult.set(value)
+                    }
+                }
+                semaphore.signal()
+            }
+
+            let arguments = ["context": encodedContext]
+            if let invoker = self.beforeSamplingMethodInvoker {
+                invoker(arguments, completion)
+            } else if let methodChannel = DatadogRumPlugin.methodChannel {
+                methodChannel.invokeMethod("beforeSampling", arguments: arguments, result: completion)
+            } else {
+                semaphore.signal()
+            }
+        }
+
+        // Initial sessions are often drawn during `RUM.enable` on the platform /
+        // main thread. Using `DispatchQueue.main.async` + `semaphore.wait` there
+        // deadlocks: the async block never runs, Flutter never sees
+        // `beforeSampling`, and we time out after 500ms.
+        //
+        // Pumping the run loop instead makes this call a re-entrancy point: any
+        // other main-queue work runs while we wait, including unrelated platform
+        // channel calls (`startView`, a second `enable`, `deinitialize`), UIKit
+        // events, and our own `onSessionStart` block. That is unavoidable while
+        // the native hook is synchronous and the method channel is not, so keep
+        // `beforeSamplingTimeout` short and assume the plugin can be called
+        // again before this method returns.
+        if Thread.isMainThread {
+            invoke()
+            let timeoutDate = Date().addingTimeInterval(beforeSamplingTimeout)
+            while true {
+                if semaphore.wait(timeout: .now()) == .success {
+                    break
+                }
+                let remaining = timeoutDate.timeIntervalSinceNow
+                if remaining <= 0 {
+                    reportBeforeSamplingTimeout()
+                    return pendingResult.resolve()
+                }
+                let slice = min(remaining, 0.01)
+                // `run(mode:before:)` returns `false` immediately when the run
+                // loop has no sources attached. Block on the semaphore in that
+                // case so we pace the loop instead of spinning for the whole
+                // timeout.
+                if !RunLoop.current.run(mode: .default, before: Date(timeIntervalSinceNow: slice)) {
+                    if semaphore.wait(timeout: .now() + .milliseconds(1)) == .success {
+                        break
+                    }
+                }
+            }
+        } else {
+            DispatchQueue.main.async(execute: invoke)
+            let timeoutMilliseconds = max(0, Int(beforeSamplingTimeout * 1_000))
+            if semaphore.wait(timeout: .now() + .milliseconds(timeoutMilliseconds)) == .timedOut {
+                reportBeforeSamplingTimeout()
+                return pendingResult.resolve()
+            }
+        }
+
+        return pendingResult.resolve()
+    }
+
+    private func reportBeforeSamplingTimeout() {
+        Datadog._internal.telemetry.debug(
+            id: "before_sampling_timeout",
+            message: "beforeSampling timed out."
+        )
+    }
+
+    private func sanitizeRemoteConfig(_ values: [String: Any]) -> [String: Any?] {
+        var sanitized: [String: Any?] = [:]
+        values.forEach { key, value in
+            if let safeValue = sanitizeRemoteConfigValue(value) {
+                sanitized[key] = safeValue
+            } else {
+                consolePrint(
+                    "Dropping unsupported remote config value for key \(key).",
+                    .warn
+                )
+            }
+        }
+        return sanitized
+    }
+
+    private func sanitizeRemoteConfigValue(_ value: Any) -> Any? {
+        switch value {
+        case is NSNull, is NSNumber, is String,
+             is Bool,
+             is Int, is Int8, is Int16, is Int32, is Int64,
+             is UInt, is UInt8, is UInt16, is UInt32, is UInt64,
+             is Float, is Double:
+            return value
+        case let array as [Any]:
+            return array.compactMap { sanitizeRemoteConfigValue($0) }
+        case let dictionary as [String: Any]:
+            return sanitizeRemoteConfig(dictionary)
+        default:
+            return nil
         }
     }
 
