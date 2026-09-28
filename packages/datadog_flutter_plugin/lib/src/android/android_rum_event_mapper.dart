@@ -24,6 +24,7 @@ class AndroidRumEventMapper extends RumMapperProxy {
           errorEventMapper: config.errorEventMapper,
           longTaskEventMapper: config.longTaskEventMapper,
           vitalOperationEventMapper: config.vitalOperationStepEventMapper,
+          beforeSampling: config.beforeSampling,
         ) {
     final listener = DatadogRumEventMapper$EventMapper.implement(
       $DatadogRumEventMapper$EventMapper(
@@ -46,6 +47,7 @@ class AndroidRumEventMapper extends RumMapperProxy {
         mapLongTaskEvent: (encoded) => _callMapper(encoded, mapLongTaskEvent),
         mapVitalOperationStepEvent: (encoded) =>
             _callMapper(encoded, mapVitalOperationEvent),
+        beforeSampling: _callBeforeSampling,
       ),
     );
 
@@ -58,5 +60,25 @@ class AndroidRumEventMapper extends RumMapperProxy {
 
     final mapped = mapper(decoded);
     return safeEncodeJavaJson(mapped, _internalLogger, fallback: encoded);
+  }
+
+  JString? _callBeforeSampling(JString encoded) {
+    try {
+      final decoded = safeDecodeJavaJson(encoded, _internalLogger);
+      if (decoded == null) return null;
+
+      final result = beforeSampling(decoded);
+      return result == null ? null : JString.fromString(result.toString());
+    } catch (e, st) {
+      _internalLogger.sendToDatadog(
+        'beforeSampling threw an exception: ${e.toString()}.',
+        st,
+        e.runtimeType.toString(),
+      );
+      _internalLogger.error(
+        'beforeSampling threw an exception: ${e.toString()}. Keeping the native sampling rate.',
+      );
+      return null;
+    }
   }
 }

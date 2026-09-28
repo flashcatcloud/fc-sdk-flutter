@@ -64,6 +64,30 @@ typedef RumLongTaskEventMapper = RumLongTaskEvent? Function(
 typedef RumVitalOperationEventMapper = RumVitalOperationStepEvent? Function(
     RumVitalOperationStepEvent event);
 
+/// The context provided to [RumBeforeSamplingCallback] before a new RUM
+/// session is sampled.
+class RumBeforeSamplingContext {
+  /// The sampling rate that would otherwise be used for the new session.
+  final double sessionSampleRate;
+
+  /// Custom values supplied by remote configuration, when available.
+  final Map<String, Object?>? custom;
+
+  const RumBeforeSamplingContext({
+    required this.sessionSampleRate,
+    this.custom,
+  });
+}
+
+/// Called synchronously before a new RUM session is sampled.
+///
+/// Return a value between `0.0` and `100.0` to override the sampling rate, or
+/// `null` to keep [RumBeforeSamplingContext.sessionSampleRate]. Invalid values
+/// and exceptions are ignored by the SDK.
+typedef RumBeforeSamplingCallback = double? Function(
+  RumBeforeSamplingContext context,
+);
+
 /// Configuration options for the Datadog Real User Monitoring (RUM) feature.
 class DatadogRumConfiguration {
   // Either a RUM Application Id. Obtained on the Datadog website.
@@ -194,6 +218,20 @@ class DatadogRumConfiguration {
   /// Use a custom endpoint for sending RUM data.
   String? customEndpoint;
 
+  /// Whether the native SDK may retrieve RUM sampling configuration remotely.
+  ///
+  /// This is disabled by default. Enabling it may cause the native SDK to make
+  /// configuration requests. Remote configuration affects sessions created
+  /// after the configuration is received.
+  bool remoteConfigurationEnabled;
+
+  /// A callback that can override the sampling rate for each new session.
+  ///
+  /// This callback is independent of [remoteConfigurationEnabled]. When remote
+  /// configuration is disabled, it still receives the locally configured
+  /// [sessionSamplingRate] and `custom` is `null`.
+  RumBeforeSamplingCallback? beforeSampling;
+
   //
   double telemetrySampleRate;
 
@@ -239,6 +277,8 @@ class DatadogRumConfiguration {
     this.trackBackgroundEvents = false,
     this.initialResourceThreshold = 0.1,
     this.customEndpoint,
+    this.remoteConfigurationEnabled = false,
+    this.beforeSampling,
     this.telemetrySampleRate = 20.0,
     this.viewEventMapper,
     this.actionEventMapper,
@@ -266,6 +306,8 @@ class DatadogRumConfiguration {
       'trackBackgroundEvents': trackBackgroundEvents,
       'initialResourceThreshold': initialResourceThreshold,
       'customEndpoint': customEndpoint,
+      'remoteConfigurationEnabled': remoteConfigurationEnabled,
+      'attachBeforeSampling': beforeSampling != null,
       'telemetrySampleRate': telemetrySampleRate,
       'attachViewEventMapper': viewEventMapper != null,
       'attachActionEventMapper': actionEventMapper != null,

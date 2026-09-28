@@ -1,5 +1,63 @@
 # Changelog
 
+## 0.2.0
+
+* Add opt-in RUM remote configuration through
+  `remoteConfigurationEnabled`, which defaults to `false`.
+* Add `beforeSampling` so applications can synchronously override the sample
+  rate for each new session. The callback also runs when remote configuration
+  is disabled; in that case it receives the local sample rate and no custom
+  values.
+* Add `DatadogRum.setForcedSession()` and
+  `DatadogRum.getRemoteConfig()`. Forced collection lasts for the current
+  process and does not imply Session Replay support in Flutter.
+* Upgrade the native FlashCat SDKs to Android 0.7.0 and iOS 0.6.0. The Android
+  upgrade includes the default NTP endpoint change introduced in Android
+  0.6.0.
+
+## 0.1.3
+
+* Ship the OkHttp TLS-provider `-dontwarn` rules in the plugin's consumer
+  ProGuard rules. Up to 0.1.2 they were missing, so `flutter build apk
+  --release` — including the `--obfuscate --split-debug-info` command the
+  crash-symbolication docs tell every integrator to run — failed outright with
+  `ERROR: R8: Missing class org.bouncycastle.jsse.BCSSLParameters ...` on a
+  stock app that had only added this plugin. OkHttp probes for BouncyCastle,
+  Conscrypt and OpenJSSE to pick a TLS provider and falls back to the platform
+  one when they are absent, but R8 cannot tell those references are optional.
+  Every integrator had to discover and paste the rules by hand; they are now
+  delivered automatically and no app-side ProGuard file is required.
+
+* Report the package version as `0.1.3`. `ddPackageVersion` and the iOS podspec
+  were left at `0.1.1` when 0.1.2 shipped, so events carried a stale version.
+
+## 0.1.2
+
+* Report a refresh rate for Flutter views on Android. The native SDK measures
+  frame rate with JankStats bound to the host Activity window, which never sees
+  Flutter's own render surface, so Flutter views reported `refresh_rate=0` on
+  Android. The per-frame UI-thread build duration is now pushed into the native
+  external refresh-rate hook. iOS already measured this natively and is
+  unchanged.
+
+* Report app launch (TTID) for Flutter on Android. The native app-startup
+  detector registers its Activity lifecycle callbacks when the RUM feature
+  initializes, and Flutter initializes the SDK from Dart `main()` — by then the
+  first Activity already exists, so no launch was ever reported. The launch is
+  now reported from the plugin on the launch frame, timed from the Activity
+  attach and excluding the callback scheduling and method channel round trip.
+  This applies to `attachToExisting` too: initializing the native SDK before
+  Flutter attaches does not mean it initialized early enough for the detector to
+  see the launch, so the plugin always asks and the native SDK reports only when
+  its own detector did not. Nothing is reported when RUM is enabled after the
+  first frame is already on screen, since that frame is no longer observable.
+  iOS measures app launch natively and is unchanged. **Requires
+  `cloud.flashcat:dd-sdk-android-rum` 0.5.0.**
+
+* Add `vitalUpdateFrequency` to `DatadogAttachConfiguration`, so an app that
+  attaches to a natively initialized SDK can still report a Flutter refresh rate
+  on Android. Defaults to `VitalsFrequency.average`.
+
 ## 0.1.1
 
 * Fix the SDK version reported in events: `ddPackageVersion` still carried the

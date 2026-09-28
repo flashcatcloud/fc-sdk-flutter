@@ -46,6 +46,12 @@ void main() {
       if (message.method == 'getCurrentSessionId') {
         return Future.value('fake-session-id');
       }
+      if (message.method == 'getRemoteConfig') {
+        return Future.value({
+          'debugUsers': ['user-a'],
+          'enabled': true,
+        });
+      }
       return null;
     });
   });
@@ -59,6 +65,22 @@ void main() {
 
     expect(sessionId, 'fake-session-id');
     expect(log, [isMethodCall('getCurrentSessionId', arguments: {})]);
+  });
+
+  test('setForcedSession calls to platform', () async {
+    await ddRumPlatform.setForcedSession();
+
+    expect(log, [isMethodCall('setForcedSession', arguments: {})]);
+  });
+
+  test('getRemoteConfig calls to platform', () async {
+    final config = await ddRumPlatform.getRemoteConfig();
+
+    expect(config, {
+      'debugUsers': ['user-a'],
+      'enabled': true,
+    });
+    expect(log, [isMethodCall('getRemoteConfig', arguments: {})]);
   });
 
   test('cachedSessionId starts null', () async {
@@ -612,7 +634,10 @@ void main() {
   });
 
   test('updatePerformanceMetrics calls to platform', () async {
-    await ddRumPlatform.updatePerformanceMetrics([0.2, 0.3], [0.11, 0.25]);
+    await ddRumPlatform.updatePerformanceMetrics(
+      buildTimes: [0.2, 0.3],
+      rasterTimes: [0.11, 0.25],
+    );
 
     expect(log, [
       isMethodCall(
@@ -620,6 +645,19 @@ void main() {
         arguments: {
           'buildTimes': [0.2, 0.3],
           'rasterTimes': [0.11, 0.25],
+        },
+      ),
+    ]);
+  });
+
+  test('updatePerformanceMetrics can send only frame times', () async {
+    await ddRumPlatform.updatePerformanceMetrics(frameTimes: [0.01, 0.02]);
+
+    expect(log, [
+      isMethodCall(
+        'updatePerformanceMetrics',
+        arguments: {
+          'frameTimes': [0.01, 0.02],
         },
       ),
     ]);

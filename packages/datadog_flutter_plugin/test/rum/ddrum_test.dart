@@ -9,8 +9,10 @@ import 'package:datadog_common_test/datadog_common_test.dart'
     hide DurationHelpers;
 import 'package:flashcat_flutter_plugin/flashcat_flutter_plugin.dart';
 import 'package:flashcat_flutter_plugin/datadog_internal.dart';
+import 'package:flashcat_flutter_plugin/src/ios/ios_rum_event_mapper.dart';
 import 'package:flashcat_flutter_plugin/src/rum/ddrum_noop_platform.dart';
 import 'package:flashcat_flutter_plugin/src/rum/ddrum_platform_interface.dart';
+import 'package:flashcat_flutter_plugin/src/rum/rum_mapper_proxy.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -28,6 +30,19 @@ class MockRumPlatform extends Mock
     implements DdRumPlatform {}
 
 class MockTimeProvider extends Mock implements DatadogTimeProvider {}
+
+class TestRumMapperProxy extends RumMapperProxy {
+  TestRumMapperProxy(RumBeforeSamplingCallback? beforeSampling)
+      : super(
+          viewEventMapper: null,
+          actionEventMapper: null,
+          resourceEventMapper: null,
+          errorEventMapper: null,
+          longTaskEventMapper: null,
+          vitalOperationEventMapper: null,
+          beforeSampling: beforeSampling,
+        );
+}
 
 void main() {
   const numSamples = 500;
@@ -98,6 +113,9 @@ void main() {
     expect(configuration.appHangThreshold, isNull);
     expect(configuration.trackAnonymousUser, true);
     expect(configuration.initialResourceThreshold, 0.1);
+    expect(configuration.remoteConfigurationEnabled, false);
+    expect(configuration.beforeSampling, isNull);
+    expect(configuration.encode()['remoteConfigurationEnabled'], false);
   });
 
   test('configuration is encoded correctly', () {
@@ -120,6 +138,8 @@ void main() {
       trackBackgroundEvents: true,
       initialResourceThreshold: 1.23,
       customEndpoint: customEndpoint,
+      remoteConfigurationEnabled: true,
+      beforeSampling: (_) => 100,
     );
 
     final encoded = configuration.encode();
@@ -135,6 +155,127 @@ void main() {
     expect(encoded['appHangThreshold'], 0.332);
     expect(encoded['customEndpoint'], customEndpoint);
     expect(encoded['initialResourceThreshold'], 1.23);
+    expect(encoded['remoteConfigurationEnabled'], true);
+    expect(encoded['attachBeforeSampling'], true);
+  });
+
+  test('configuration without beforeSampling does not attach callback', () {
+    final configuration = DatadogRumConfiguration(applicationId: 'app-id');
+
+    expect(configuration.encode()['attachBeforeSampling'], false);
+  });
+
+  test('beforeSampling receives native context and returns override', () {
+    RumBeforeSamplingContext? receivedContext;
+    final proxy = TestRumMapperProxy((context) {
+      receivedContext = context;
+      return 42.5;
+    });
+
+    final result = proxy.beforeSampling({
+      'sessionSampleRate': 12,
+      'custom': {
+        'debugUsers': ['user-a'],
+      },
+    });
+
+    expect(result, 42.5);
+    expect(receivedContext?.sessionSampleRate, 12.0);
+    expect(receivedContext?.custom, {
+      'debugUsers': ['user-a'],
+    });
+  });
+
+  test('beforeSampling ignores null, non-finite, and out-of-range values', () {
+    final encodedContext = <String, dynamic>{
+      'sessionSampleRate': 12.0,
+      'custom': null,
+    };
+
+    expect(
+        TestRumMapperProxy((_) => null).beforeSampling(encodedContext), null);
+    expect(
+      TestRumMapperProxy((_) => double.nan).beforeSampling(encodedContext),
+      null,
+    );
+    expect(TestRumMapperProxy((_) => -1).beforeSampling(encodedContext), null);
+    expect(TestRumMapperProxy((_) => 101).beforeSampling(encodedContext), null);
+  });
+
+  test('iOS beforeSampling returns valid callback result', () async {
+    RumBeforeSamplingContext? receivedContext;
+    final mapper = IosRumEventMapper(
+      DatadogRumConfiguration(
+        applicationId: 'app-id',
+        beforeSampling: (context) {
+          receivedContext = context;
+          return 80;
+        },
+      ),
+      mockInternalLogger,
+    );
+
+    final result = await mapper.handleMethodCall(
+      const MethodCall('beforeSampling', {
+        'context': {
+          'sessionSampleRate': 25.0,
+          'custom': {'debug': true},
+        },
+      }),
+    );
+
+    expect(result, 80.0);
+    expect(receivedContext?.sessionSampleRate, 25.0);
+    expect(receivedContext?.custom, {'debug': true});
+  });
+
+  test('iOS beforeSampling exception keeps native result', () async {
+    final mapper = IosRumEventMapper(
+      DatadogRumConfiguration(
+        applicationId: 'app-id',
+        beforeSampling: (_) => throw StateError('failed'),
+      ),
+      mockInternalLogger,
+    );
+
+    final result = await mapper.handleMethodCall(
+      const MethodCall('beforeSampling', {
+        'context': {'sessionSampleRate': 25.0, 'custom': null},
+      }),
+    );
+
+    expect(result, isNull);
+    verify(
+      () => mockInternalLogger.sendToDatadog(any(), any(), any()),
+    ).called(1);
+    verify(() => mockInternalLogger.error(any())).called(1);
+  });
+
+  test('iOS beforeSampling invalid return keeps native result', () async {
+    final mapper = IosRumEventMapper(
+      DatadogRumConfiguration(
+        applicationId: 'app-id',
+        beforeSampling: (_) => 101,
+      ),
+      mockInternalLogger,
+    );
+
+    final result = await mapper.handleMethodCall(
+      const MethodCall('beforeSampling', {
+        'context': {'sessionSampleRate': 25.0, 'custom': null},
+      }),
+    );
+
+    expect(result, isNull);
+  });
+
+  test('no-op platform ignores forced sessions and has no remote config',
+      () async {
+    final platform = DdNoOpRumPlatform();
+
+    await platform.setForcedSession();
+
+    expect(await platform.getRemoteConfig(), isNull);
   });
 
   test('configuration with mapper sets attach*Mapper', () {
@@ -394,6 +535,51 @@ void main() {
 
     // Then
     expect(sessionId, fakeSessionId);
+  });
+
+  test('setForcedSession forwards to platform', () async {
+    DdRumPlatform.instance = mockRumPlatform;
+    when(
+      () => mockRumPlatform.enable(any(), any()),
+    ).thenAnswer((_) => Future.value());
+    when(
+      () => mockRumPlatform.setForcedSession(),
+    ).thenAnswer((_) => Future.value());
+    final rum = await DatadogRum.enable(
+      mockDatadogSdk,
+      DatadogRumConfiguration(
+        applicationId: 'applicationId',
+        detectLongTasks: false,
+      ),
+    );
+
+    rum!.setForcedSession();
+
+    verify(() => mockRumPlatform.setForcedSession()).called(1);
+  });
+
+  test('getRemoteConfig returns custom values from platform', () async {
+    final remoteConfig = <String, Object?>{
+      'debugUsers': ['user-a'],
+    };
+    DdRumPlatform.instance = mockRumPlatform;
+    when(
+      () => mockRumPlatform.enable(any(), any()),
+    ).thenAnswer((_) => Future.value());
+    when(
+      () => mockRumPlatform.getRemoteConfig(),
+    ).thenAnswer((_) => Future.value(remoteConfig));
+    final rum = await DatadogRum.enable(
+      mockDatadogSdk,
+      DatadogRumConfiguration(
+        applicationId: 'applicationId',
+        detectLongTasks: false,
+      ),
+    );
+
+    final result = await rum!.getRemoteConfig();
+
+    expect(result, remoteConfig);
   });
 
   test('addAttribute with null calls remove attribute instead', () async {

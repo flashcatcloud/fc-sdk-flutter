@@ -4,7 +4,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'flashcat_flutter_plugin'
-  s.version          = '0.1.1'
+  s.version          = '0.2.0'
   s.summary          = 'Instrument your application with Datadog.'
   s.description      = <<-DESC
 Instrument your application with Datadog.
@@ -16,14 +16,14 @@ Instrument your application with Datadog.
   s.source_files = 'flashcat_flutter_plugin/Sources/**/*'
   s.static_framework = true
   s.dependency 'Flutter'
-  s.dependency 'FlashcatCore', '~> 0.5'
+  s.dependency 'FlashcatCore', '~> 0.6.0'
   # Logs are not supported in v1 (FlashCat ingest does not accept Logs yet).
   # Use the no-op Logs variant so the API compiles but sends nothing. Matches
   # the SPM Package.swift, which links the FlashcatLogs-NoOp product.
-  s.dependency 'FlashcatLogs-NoOp', '~> 0.5'
-  s.dependency 'FlashcatRUM', '~> 0.5'
-  s.dependency 'FlashcatInternal', '~> 0.5'
-  s.dependency 'FlashcatCrashReporting', '~> 0.5'
+  s.dependency 'FlashcatLogs-NoOp', '~> 0.6.0'
+  s.dependency 'FlashcatRUM', '~> 0.6.0'
+  s.dependency 'FlashcatInternal', '~> 0.6.0'
+  s.dependency 'FlashcatCrashReporting', '~> 0.6.0'
   s.dependency 'DictionaryCoder', '1.2.0'
   s.platform = :ios, '12.0'
 

@@ -13,6 +13,12 @@ class DdNoOpRumPlatform extends DdRumPlatform {
   Future<String?> getCurrentSessionId() => Future.value(null);
 
   @override
+  Future<void> setForcedSession() => Future.value();
+
+  @override
+  Future<Map<String, Object?>?> getRemoteConfig() => Future.value(null);
+
+  @override
   Future<void> addAttribute(String key, Object value) => Future.value();
 
   @override
@@ -185,10 +191,16 @@ class DdNoOpRumPlatform extends DdRumPlatform {
   }
 
   @override
-  Future<void> updatePerformanceMetrics(
-    List<double> buildTimes,
-    List<double> rasterTimes,
-  ) {
+  Future<void> updatePerformanceMetrics({
+    List<double>? buildTimes,
+    List<double>? rasterTimes,
+    List<double>? frameTimes,
+  }) {
+    return Future.value();
+  }
+
+  @override
+  Future<void> notifyAppLaunch(int frameAgeNs) {
     return Future.value();
   }
 

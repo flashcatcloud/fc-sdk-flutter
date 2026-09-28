@@ -521,30 +521,21 @@ class _DatadogTrackingHttpResponse extends Stream<List<int>>
   @override
   StreamSubscription<List<int>> listen(void Function(List<int> event)? onData,
       {Function? onError, void Function()? onDone, bool? cancelOnError}) {
-    return innerResponse.listen(
+    // The returned subscription must be our own wrapper. Returning the inner
+    // subscription directly loses the resource tracking whenever the caller
+    // re-registers handlers on it, because `StreamSubscription.onDone`,
+    // `StreamSubscription.onError` and `StreamSubscription.asFuture` all
+    // overwrite the handlers that were passed to `listen`. `Stream.drain`,
+    // which is the idiomatic way to discard a response body, is implemented as
+    // `listen(null, cancelOnError: true).asFuture(...)` and therefore used to
+    // drop our `onDone` callback, leaving the RUM resource started but never
+    // stopped -- so no resource was ever reported.
+    return _DatadogTrackingStreamSubscription(
+      this,
       onData,
+      onError: onError,
+      onDone: onDone,
       cancelOnError: cancelOnError,
-      onError: (Object e, StackTrace st) {
-        _onError(e, st);
-        if (onError == null) {
-          return;
-        }
-        if (onError is void Function(Object, StackTrace)) {
-          onError(e, st);
-        } else if (onError is void Function(Object)) {
-          onError(e);
-        } else {
-          client.datadogSdk.internalLogger.warn(
-              "Tracking HTTP client intercepted an error, but doesn't recognize the `onError` callback."
-              ' Expected either `void Function(Object, StackTrace)` or `void Function(Object)`.');
-        }
-      },
-      onDone: () {
-        _onFinish();
-        if (onDone != null) {
-          onDone();
-        }
-      },
     );
   }
 
@@ -646,6 +637,111 @@ class _DatadogTrackingHttpResponse extends Stream<List<int>>
 
   @override
   int get statusCode => innerResponse.statusCode;
+}
+
+/// A [StreamSubscription] that keeps the tracking callbacks of
+/// [_DatadogTrackingHttpResponse] alive.
+///
+/// It owns the subscription to the inner response and always routes the `done`
+/// and `error` events through the tracking callbacks first, then to whichever
+/// user handlers are currently registered. Because the user handlers are held
+/// here rather than on the inner subscription, later calls to [onDone],
+/// [onError] and [asFuture] replace only the user handlers and can no longer
+/// detach the tracking ones.
+class _DatadogTrackingStreamSubscription
+    implements StreamSubscription<List<int>> {
+  final _DatadogTrackingHttpResponse _response;
+
+  late final StreamSubscription<List<int>> _innerSubscription;
+
+  Function? _userOnError;
+  void Function()? _userOnDone;
+
+  _DatadogTrackingStreamSubscription(
+    this._response,
+    void Function(List<int> event)? onData, {
+    Function? onError,
+    void Function()? onDone,
+    bool? cancelOnError,
+  })  : _userOnError = onError,
+        _userOnDone = onDone {
+    _innerSubscription = _response.innerResponse.listen(
+      onData,
+      cancelOnError: cancelOnError,
+      onError: (Object e, StackTrace st) {
+        _response._onError(e, st);
+        _dispatchError(e, st);
+      },
+      onDone: () {
+        _response._onFinish();
+        _userOnDone?.call();
+      },
+    );
+  }
+
+  void _dispatchError(Object e, StackTrace st) {
+    final userOnError = _userOnError;
+    if (userOnError == null) {
+      return;
+    }
+    if (userOnError is void Function(Object, StackTrace)) {
+      userOnError(e, st);
+    } else if (userOnError is void Function(Object)) {
+      userOnError(e);
+    } else {
+      _response.client.datadogSdk.internalLogger.warn(
+          "Tracking HTTP client intercepted an error, but doesn't recognize the `onError` callback."
+          ' Expected either `void Function(Object, StackTrace)` or `void Function(Object)`.');
+    }
+  }
+
+  @override
+  Future<E> asFuture<E>([E? futureValue]) {
+    // Mirrors the semantics of the SDK's own
+    // `_BufferingStreamSubscription.asFuture`: the future completes with
+    // [futureValue] on done, and completes with the error -- after cancelling
+    // the subscription -- on the first error.
+    final resultValue = futureValue as E;
+    final completer = Completer<E>();
+
+    _userOnDone = () {
+      if (!completer.isCompleted) {
+        completer.complete(resultValue);
+      }
+    };
+    _userOnError = (Object error, StackTrace stackTrace) {
+      cancel().whenComplete(() {
+        if (!completer.isCompleted) {
+          completer.completeError(error, stackTrace);
+        }
+      });
+    };
+
+    return completer.future;
+  }
+
+  @override
+  Future<void> cancel() => _innerSubscription.cancel();
+
+  @override
+  bool get isPaused => _innerSubscription.isPaused;
+
+  @override
+  void onData(void Function(List<int> data)? handleData) =>
+      _innerSubscription.onData(handleData);
+
+  @override
+  void onDone(void Function()? handleDone) => _userOnDone = handleDone;
+
+  @override
+  void onError(Function? handleError) => _userOnError = handleError;
+
+  @override
+  void pause([Future<void>? resumeSignal]) =>
+      _innerSubscription.pause(resumeSignal);
+
+  @override
+  void resume() => _innerSubscription.resume();
 }
 
 Map<String, Object?> _mergeAttributes(

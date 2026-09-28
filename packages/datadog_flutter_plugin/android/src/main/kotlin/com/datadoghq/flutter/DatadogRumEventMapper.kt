@@ -1,5 +1,7 @@
 package com.datadoghq.flutter
 
+import android.util.Log
+import com.datadog.android.rum.BeforeSamplingContext
 import com.datadog.android.rum.ExperimentalRumApi
 import com.datadog.android.rum.RumConfiguration
 import com.datadog.android.rum.model.ActionEvent
@@ -8,6 +10,7 @@ import com.datadog.android.rum.model.LongTaskEvent
 import com.datadog.android.rum.model.ResourceEvent
 import com.datadog.android.rum.model.RumVitalOperationStepEvent
 import com.datadog.android.rum.model.ViewEvent
+import com.google.gson.GsonBuilder
 import com.google.gson.JsonParser
 
 /**
@@ -29,6 +32,7 @@ class DatadogRumEventMapper {
         fun mapErrorEvent(encodedEvent: String): String?
         fun mapLongTaskEvent(encodedEvent: String): String?
         fun mapVitalOperationStepEvent(encodedEvent: String): String?
+        fun beforeSampling(encodedContext: String): String?
     }
 
     var eventMapper: EventMapper? = null
@@ -64,8 +68,31 @@ class DatadogRumEventMapper {
                 }
             )
         }
+        if (optionIsSet("attachBeforeSampling")) {
+            configBuilder.setBeforeSampling { context -> beforeSampling(context) }
+        }
 
         return configBuilder
+    }
+
+    internal fun beforeSampling(context: BeforeSamplingContext): Float? {
+        // serializeNulls so explicit null custom entries reach Dart as null rather than being
+        // dropped, letting callbacks distinguish an absent setting from a cleared one (matching
+        // getRemoteConfig and the iOS bridge).
+        val encodedContext = try {
+            GsonBuilder().serializeNulls().create().toJson(
+                mapOf(
+                    "sessionSampleRate" to context.sessionSampleRate,
+                    "custom" to context.custom?.sanitizeForFlutter()
+                )
+            )
+        } catch (error: RuntimeException) {
+            Log.w(DATADOG_FLUTTER_TAG, "Unable to encode beforeSampling context.", error)
+            return null
+        }
+        val encodedResult = eventMapper?.beforeSampling(encodedContext) ?: return null
+        val result = encodedResult.toFloatOrNull() ?: return null
+        return result.takeIf { it.isFinite() && it in 0f..100f }
     }
 
     internal fun mapViewEvent(event: ViewEvent): ViewEvent {

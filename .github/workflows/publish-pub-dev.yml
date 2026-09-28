@@ -7,6 +7,13 @@ name: Publish to pub.dev
 #   flashcat_flutter_plugin        -> flashcat_flutter_plugin-v{{version}}
 #   flashcat_webview_tracking      -> flashcat_webview_tracking-v{{version}}
 #   flashcat_tracking_http_client  -> flashcat_tracking_http_client-v{{version}}
+#
+# Release order matters. flashcat_webview_tracking and
+# flashcat_tracking_http_client depend on flashcat_flutter_plugin from pub.dev
+# (there are no dependency_overrides), so whenever a release bumps that
+# constraint, push flashcat_flutter_plugin-v{{version}} first and wait for it to
+# publish before tagging the other two. The "Ensure the flashcat_flutter_plugin
+# dependency is published" step below enforces this.
 on:
   push:
     tags:
@@ -78,6 +85,28 @@ jobs:
             exit 1
           fi
 
+      # `flutter pub get` below resolves flashcat_flutter_plugin from pub.dev, so
+      # a dependent package tagged before it fails with an opaque version-solving
+      # error. Check the constraint's lower bound up front instead.
+      - name: Ensure the flashcat_flutter_plugin dependency is published
+        if: steps.package.outputs.name != 'flashcat_flutter_plugin'
+        working-directory: ${{ steps.package.outputs.dir }}
+        env:
+          PACKAGE_NAME: ${{ steps.package.outputs.name }}
+        run: |
+          required=$(grep -E "^[[:space:]]+flashcat_flutter_plugin:[[:space:]]*\^?[0-9]" pubspec.yaml \
+            | head -1 | sed -E 's/.*[^0-9]([0-9]+\.[0-9]+\.[0-9]+).*/\1/')
+          if [ -z "$required" ]; then
+            echo "No pinned flashcat_flutter_plugin dependency found; nothing to check."
+            exit 0
+          fi
+          if ! curl -sfo /dev/null "https://pub.dev/api/packages/flashcat_flutter_plugin/versions/${required}"; then
+            echo "flashcat_flutter_plugin ${required} is not on pub.dev yet, so ${PACKAGE_NAME} cannot resolve it." >&2
+            echo "Push the flashcat_flutter_plugin-v${required} tag and let it publish first, then re-run this release." >&2
+            exit 1
+          fi
+          echo "flashcat_flutter_plugin ${required} is published."
+
       # setup-dart performs the OIDC temporary-token exchange with pub.dev
       - uses: dart-lang/setup-dart@v1
 
@@ -94,3 +123,51 @@ jobs:
       - name: Publish ${{ steps.package.outputs.name }}
         working-directory: ${{ steps.package.outputs.dir }}
         run: flutter pub publish --force
+
+      - name: Notify deployment success
+        if: success()
+        uses: zcong1993/actions-ding@master
+        with:
+          ignoreError: "true"
+          dingToken: ${{ secrets.DING_TALK_TOKEN }}
+          secret: ${{ secrets.DING_TALK_SECRET }}
+          body: |
+            {
+              "msgtype": "markdown",
+              "markdown": {
+                "title": "fc-sdk-flutter 发布通知",
+                "text": "### ✅ fc-sdk-flutter 发布成功\n\n---\n\n 📦 包名: ${{ steps.package.outputs.name }}\n\n 🔖 版本: ${{ steps.package.outputs.version }}\n\n 👨‍💻 发布者: ${{ github.actor }}\n\n 🚀 [查看详情](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})"
+              }
+            }
+
+      - name: Notify secondary DingTalk group on success
+        if: success()
+        uses: zcong1993/actions-ding@master
+        with:
+          ignoreError: "true"
+          dingToken: ${{ secrets.DING_TALK_TOKEN_2 }}
+          secret: ${{ secrets.DING_TALK_SECRET_2 }}
+          body: |
+            {
+              "msgtype": "markdown",
+              "markdown": {
+                "title": "fc-sdk-flutter 发布通知",
+                "text": "### ✅ fc-sdk-flutter 发布成功\n\n---\n\n 📦 包名: ${{ steps.package.outputs.name }}\n\n 🔖 版本: ${{ steps.package.outputs.version }}\n\n 👨‍💻 发布者: ${{ github.actor }}\n\n 🚀 [查看详情](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})"
+              }
+            }
+
+      - name: Notify deployment failure
+        if: failure()
+        uses: zcong1993/actions-ding@master
+        with:
+          ignoreError: "true"
+          dingToken: ${{ secrets.DING_TALK_TOKEN }}
+          secret: ${{ secrets.DING_TALK_SECRET }}
+          body: |
+            {
+              "msgtype": "markdown",
+              "markdown": {
+                "title": "fc-sdk-flutter 发布通知",
+                "text": "### ❌ fc-sdk-flutter 发布失败\n\n---\n\n 🔖 标签: ${{ github.ref_name }}\n\n 👨‍💻 发布者: ${{ github.actor }}\n\n 🚀 [查看详情](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})"
+              }
+            }

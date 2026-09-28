@@ -19,6 +19,8 @@ import com.datadog.android.ndk.NdkCrashReports
 import com.datadog.android.privacy.TrackingConsent
 import com.datadog.android.rum.GlobalRumMonitor
 import io.flutter.embedding.engine.plugins.FlutterPlugin
+import io.flutter.embedding.engine.plugins.activity.ActivityAware
+import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
@@ -29,7 +31,7 @@ import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 
 @Suppress("LargeClass")
-class DatadogSdkPlugin : FlutterPlugin, MethodCallHandler {
+class DatadogSdkPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
     companion object {
         const val CONTRACT_VIOLATION = "DatadogSdk:ContractViolation"
         const val INVALID_OPERATION = "DatadogSdk:InvalidOperation"
@@ -359,6 +361,23 @@ class DatadogSdkPlugin : FlutterPlugin, MethodCallHandler {
         logsPlugin.detachFromEngine()
         rumPlugin.detachFromEngine()
     }
+
+    // The Activity is what the native app-launch detector times from, so anchor our own
+    // measurement to it as well. Engine attach is deliberately not used: a pre-warmed or
+    // headless engine attaches without any UI, which would put the launch start far too
+    // early. An engine that never gets an Activity therefore reports no UI creation time
+    // at all, and the SDK falls back to timing from process start.
+    override fun onAttachedToActivity(binding: ActivityPluginBinding) {
+        DatadogRumPlugin.markUiCreated()
+    }
+
+    override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
+        // A configuration change recreates the Activity long after launch - not a launch.
+    }
+
+    override fun onDetachedFromActivityForConfigChanges() = Unit
+
+    override fun onDetachedFromActivity() = Unit
 }
 
 internal fun parseTrackingConsent(trackingConsent: String): TrackingConsent {

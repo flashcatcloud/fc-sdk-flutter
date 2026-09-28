@@ -27,6 +27,8 @@ abstract class DdRumPlatform extends PlatformInterface {
   Future<void> deinitialize();
 
   Future<String?> getCurrentSessionId();
+  Future<void> setForcedSession();
+  Future<Map<String, Object?>?> getRemoteConfig();
 
   Future<void> startView(
     DateTime timestamp,
@@ -140,8 +142,11 @@ abstract class DdRumPlatform extends PlatformInterface {
   );
 
   Future<void> reportLongTask(DateTime at, int durationMs);
-  Future<void> updatePerformanceMetrics(
-    List<double> buildTimes,
-    List<double> rasterTimes,
-  );
+  Future<void> updatePerformanceMetrics({
+    List<double>? buildTimes,
+    List<double>? rasterTimes,
+    List<double>? frameTimes,
+  });
+
+  Future<void> notifyAppLaunch(int frameAgeNs);
 }

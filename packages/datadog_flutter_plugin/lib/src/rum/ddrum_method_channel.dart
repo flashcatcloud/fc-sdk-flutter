@@ -60,6 +60,19 @@ class DdRumMethodChannel extends DdRumPlatform {
   }
 
   @override
+  Future<void> setForcedSession() {
+    return methodChannel.invokeMethod('setForcedSession', {});
+  }
+
+  @override
+  Future<Map<String, Object?>?> getRemoteConfig() {
+    return methodChannel.invokeMapMethod<String, Object?>(
+      'getRemoteConfig',
+      {},
+    );
+  }
+
+  @override
   Future<void> addTiming(DateTime timestamp, String name) {
     return methodChannel.invokeMethod('addTiming', {'name': name});
   }
@@ -404,13 +417,22 @@ class DdRumMethodChannel extends DdRumPlatform {
   }
 
   @override
-  Future<void> updatePerformanceMetrics(
-    List<double> buildTimes,
-    List<double> rasterTimes,
-  ) {
+  Future<void> updatePerformanceMetrics({
+    List<double>? buildTimes,
+    List<double>? rasterTimes,
+    List<double>? frameTimes,
+  }) {
     return methodChannel.invokeMethod('updatePerformanceMetrics', {
-      'buildTimes': buildTimes,
-      'rasterTimes': rasterTimes,
+      if (buildTimes != null) 'buildTimes': buildTimes,
+      if (rasterTimes != null) 'rasterTimes': rasterTimes,
+      if (frameTimes != null) 'frameTimes': frameTimes,
+    });
+  }
+
+  @override
+  Future<void> notifyAppLaunch(int frameAgeNs) {
+    return methodChannel.invokeMethod('notifyAppLaunch', {
+      'frameAgeNs': frameAgeNs,
     });
   }
 
@@ -425,7 +447,7 @@ class DdRumMethodChannel extends DdRumPlatform {
 
   @visibleForTesting
   Future<dynamic> handleMethodCall(MethodCall call) async {
-    if (call.method.startsWith('map')) {
+    if (call.method.startsWith('map') || call.method == 'beforeSampling') {
       if (_mapperProxy case final RumMethodChannelMapperProxy mapper) {
         return mapper.handleMethodCall(call);
       }

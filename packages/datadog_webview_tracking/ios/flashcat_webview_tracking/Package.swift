@@ -12,7 +12,7 @@ let package = Package(
         .library(name: "flashcat-webview-tracking", targets: ["flashcat_webview_tracking"])
     ],
     dependencies: [
-        .package(url: "https://github.com/flashcatcloud/fc-sdk-ios.git", exact: "0.5.0")
+        .package(url: "https://github.com/flashcatcloud/fc-sdk-ios.git", exact: "0.6.0")
     ],
     targets: [
         .target(
