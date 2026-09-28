@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.2
+
+* Support `flashcat_flutter_plugin` 0.2.0.
+
 ## 0.1.1
 
 * Fix RUM resources never being reported when the response body is consumed

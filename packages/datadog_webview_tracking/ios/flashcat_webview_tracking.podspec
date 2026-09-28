@@ -4,7 +4,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'flashcat_webview_tracking'
-  s.version          = '0.0.1'
+  s.version          = '0.1.1'
   s.summary          = 'A Flutter plugin for Datadog webview tracking.'
   s.description      = <<-DESC
 A Flutter plugin for use with the Datadog Flutter Plugin to track webviews as part of a user's mobile session.
@@ -15,8 +15,8 @@ A Flutter plugin for use with the Datadog Flutter Plugin to track webviews as pa
   s.source           = { :path => '.' }
   s.source_files = 'flashcat_webview_tracking/Sources/**/*'
   s.dependency 'Flutter'
-  s.dependency 'FlashcatCore', '~> 0.5'
-  s.dependency 'FlashcatWebViewTracking', '~> 0.5'
+  s.dependency 'FlashcatCore', '~> 0.6.0'
+  s.dependency 'FlashcatWebViewTracking', '~> 0.6.0'
   s.dependency 'webview_flutter_wkwebview'
   s.platform = :ios, '13.0'
 

@@ -60,6 +60,19 @@ class DdRumMethodChannel extends DdRumPlatform {
   }
 
   @override
+  Future<void> setForcedSession() {
+    return methodChannel.invokeMethod('setForcedSession', {});
+  }
+
+  @override
+  Future<Map<String, Object?>?> getRemoteConfig() {
+    return methodChannel.invokeMapMethod<String, Object?>(
+      'getRemoteConfig',
+      {},
+    );
+  }
+
+  @override
   Future<void> addTiming(DateTime timestamp, String name) {
     return methodChannel.invokeMethod('addTiming', {'name': name});
   }
@@ -434,7 +447,7 @@ class DdRumMethodChannel extends DdRumPlatform {
 
   @visibleForTesting
   Future<dynamic> handleMethodCall(MethodCall call) async {
-    if (call.method.startsWith('map')) {
+    if (call.method.startsWith('map') || call.method == 'beforeSampling') {
       if (_mapperProxy case final RumMethodChannelMapperProxy mapper) {
         return mapper.handleMethodCall(call);
       }

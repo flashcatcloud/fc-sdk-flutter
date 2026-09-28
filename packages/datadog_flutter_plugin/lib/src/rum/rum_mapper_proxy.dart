@@ -19,6 +19,7 @@ abstract class RumMapperProxy {
   final RumErrorEventMapper? _errorEventMapper;
   final RumLongTaskEventMapper? _longTaskEventMapper;
   final RumVitalOperationEventMapper? _vitalOperationEventMapper;
+  final RumBeforeSamplingCallback? _beforeSampling;
 
   RumMapperProxy({
     required RumViewEventMapper? viewEventMapper,
@@ -27,12 +28,41 @@ abstract class RumMapperProxy {
     required RumErrorEventMapper? errorEventMapper,
     required RumLongTaskEventMapper? longTaskEventMapper,
     required RumVitalOperationEventMapper? vitalOperationEventMapper,
+    required RumBeforeSamplingCallback? beforeSampling,
   })  : _viewEventMapper = viewEventMapper,
         _actionEventMapper = actionEventMapper,
         _resourceEventMapper = resourceEventMapper,
         _errorEventMapper = errorEventMapper,
         _longTaskEventMapper = longTaskEventMapper,
-        _vitalOperationEventMapper = vitalOperationEventMapper;
+        _vitalOperationEventMapper = vitalOperationEventMapper,
+        _beforeSampling = beforeSampling;
+
+  double? beforeSampling(Map<String, dynamic> encodedContext) {
+    final callback = _beforeSampling;
+    if (callback == null) return null;
+
+    final sessionSampleRate = encodedContext['sessionSampleRate'];
+    if (sessionSampleRate is! num) return null;
+
+    Map<String, Object?>? custom;
+    final encodedCustom = encodedContext['custom'];
+    if (encodedCustom is Map) {
+      custom = encodedCustom.map(
+        (key, value) => MapEntry(key.toString(), value),
+      );
+    }
+
+    final result = callback(
+      RumBeforeSamplingContext(
+        sessionSampleRate: sessionSampleRate.toDouble(),
+        custom: custom,
+      ),
+    );
+    if (result == null || !result.isFinite || result < 0 || result > 100) {
+      return null;
+    }
+    return result;
+  }
 
   Map<String, dynamic> mapViewEvent(Map<String, dynamic> viewEventJson) {
     if (_viewEventMapper case final mapper?) {
@@ -129,6 +159,7 @@ abstract class RumMethodChannelMapperProxy extends RumMapperProxy {
     super.errorEventMapper,
     super.longTaskEventMapper,
     super.vitalOperationEventMapper,
+    super.beforeSampling,
   }) : super();
 
   Future<dynamic> handleMethodCall(MethodCall methodCall);

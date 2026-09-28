@@ -136,6 +136,8 @@ class DatadogRumPlugin : MethodChannel.MethodCallHandler {
             when (call.method) {
                 "deinitialize" -> deinitialize(call, result)
                 "getCurrentSessionId" -> getCurrentSessionId(call, result)
+                "setForcedSession" -> setForcedSession(call, result)
+                "getRemoteConfig" -> getRemoteConfig(call, result)
                 "startView" -> startView(call, result)
                 "stopView" -> stopView(call, result)
                 "addTiming" -> addTiming(call, result)
@@ -243,6 +245,15 @@ class DatadogRumPlugin : MethodChannel.MethodCallHandler {
                 result.success(sessionId)
             }
         }
+    }
+
+    private fun setForcedSession(call: MethodCall, result: Result) {
+        rum?.setForcedSession()
+        result.success(null)
+    }
+
+    private fun getRemoteConfig(call: MethodCall, result: Result) {
+        result.success(rum?.getRemoteConfig()?.sanitizeForFlutter())
     }
 
     private fun mapTelemetryConfiguration(
@@ -628,6 +639,9 @@ fun RumConfiguration.Builder.withEncoded(encoded: Map<String, Any?>): RumConfigu
     (encoded["sessionSampleRate"] as? Number)?.let {
         builder = builder.setSessionSampleRate(it.toFloat())
     }
+    (encoded["remoteConfigurationEnabled"] as? Boolean)?.let {
+        builder = builder.setRemoteConfigurationEnabled(it)
+    }
     (encoded["longTaskThreshold"] as? Number)?.let {
         builder = builder.trackLongTasks((it.toFloat() * 1000).toLong())
     }
@@ -664,6 +678,60 @@ fun RumConfiguration.Builder.withEncoded(encoded: Map<String, Any?>): RumConfigu
     }
 
     return builder
+}
+
+internal fun Map<String, Any?>.sanitizeForFlutter(): Map<String, Any?> {
+    return buildMap {
+        this@sanitizeForFlutter.forEach { (key, value) ->
+            val sanitized = sanitizeValueForFlutter(value)
+            if (sanitized !== UnsupportedFlutterValue) {
+                put(key, sanitized)
+            }
+        }
+    }
+}
+
+private object UnsupportedFlutterValue
+
+private fun sanitizeValueForFlutter(value: Any?): Any? {
+    return when (value) {
+        null,
+        is Boolean,
+        is String,
+        is Byte,
+        is Short,
+        is Int,
+        is Long,
+        is Float,
+        is Double -> value
+        is Map<*, *> -> buildMap<String, Any?> {
+            value.forEach { (key, item) ->
+                if (key is String) {
+                    val sanitized = sanitizeValueForFlutter(item)
+                    if (sanitized !== UnsupportedFlutterValue) {
+                        put(key, sanitized)
+                    }
+                } else {
+                    Log.w(DATADOG_FLUTTER_TAG, "Dropping a remote config entry with a non-string key.")
+                }
+            }
+        }
+        is Iterable<*> -> buildList<Any?> {
+            value.forEach { item ->
+                val sanitized = sanitizeValueForFlutter(item)
+                if (sanitized !== UnsupportedFlutterValue) {
+                    add(sanitized)
+                }
+            }
+        }
+        else -> {
+            Log.w(
+                DATADOG_FLUTTER_TAG,
+                "Dropping unsupported remote config value of type ${value.javaClass.name}."
+            )
+            UnsupportedFlutterValue
+        }
+    }
 }
 
 fun parseRumHttpMethod(value: String): RumResourceMethod {

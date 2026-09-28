@@ -27,6 +27,8 @@ abstract class DdRumPlatform extends PlatformInterface {
   Future<void> deinitialize();
 
   Future<String?> getCurrentSessionId();
+  Future<void> setForcedSession();
+  Future<Map<String, Object?>?> getRemoteConfig();
 
   Future<void> startView(
     DateTime timestamp,

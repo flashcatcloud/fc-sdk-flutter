@@ -16,8 +16,8 @@ Add both the `flashcat_webview_tracking` package and the `webview_flutter` packa
 ```yaml
 dependencies:
   webview_flutter: ^4.0.4
-  flashcat_flutter_plugin: ^0.1.0
-  flashcat_webview_tracking: ^0.1.0
+  flashcat_flutter_plugin: ^0.2.0
+  flashcat_webview_tracking: ^0.1.1
 ```
 
 To add Web View Tracking, call the `trackDatadogEvents` extension method on `WebViewController`, providing the list of allowed hosts.

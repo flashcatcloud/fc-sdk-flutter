@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.2.0
+
+* Add opt-in RUM remote configuration through
+  `remoteConfigurationEnabled`, which defaults to `false`.
+* Add `beforeSampling` so applications can synchronously override the sample
+  rate for each new session. The callback also runs when remote configuration
+  is disabled; in that case it receives the local sample rate and no custom
+  values.
+* Add `DatadogRum.setForcedSession()` and
+  `DatadogRum.getRemoteConfig()`. Forced collection lasts for the current
+  process and does not imply Session Replay support in Flutter.
+* Upgrade the native FlashCat SDKs to Android 0.7.0 and iOS 0.6.0. The Android
+  upgrade includes the default NTP endpoint change introduced in Android
+  0.6.0.
+
 ## 0.1.3
 
 * Ship the OkHttp TLS-provider `-dontwarn` rules in the plugin's consumer

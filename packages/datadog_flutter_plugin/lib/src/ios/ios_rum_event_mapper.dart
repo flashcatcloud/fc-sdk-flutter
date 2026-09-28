@@ -22,14 +22,16 @@ class IosRumEventMapper extends RumMethodChannelMapperProxy {
   final InternalLogger _internalLogger;
 
   IosRumEventMapper(DatadogRumConfiguration config, InternalLogger logger)
-    : _internalLogger = logger,
-      super(
-        viewEventMapper: config.viewEventMapper,
-        actionEventMapper: config.actionEventMapper,
-        resourceEventMapper: config.resourceEventMapper,
-        errorEventMapper: config.errorEventMapper,
-        longTaskEventMapper: config.longTaskEventMapper,
-      );
+      : _internalLogger = logger,
+        super(
+          viewEventMapper: config.viewEventMapper,
+          actionEventMapper: config.actionEventMapper,
+          resourceEventMapper: config.resourceEventMapper,
+          errorEventMapper: config.errorEventMapper,
+          longTaskEventMapper: config.longTaskEventMapper,
+          vitalOperationEventMapper: config.vitalOperationStepEventMapper,
+          beforeSampling: config.beforeSampling,
+        );
 
   @override
   Future<dynamic> handleMethodCall(MethodCall call) async {
@@ -45,6 +47,8 @@ class IosRumEventMapper extends RumMethodChannelMapperProxy {
           return _mapErrorEvent(call);
         case 'mapLongTaskEvent':
           return _mapLongTaskEvent(call);
+        case 'beforeSampling':
+          return _beforeSampling(call);
       }
       throw MissingPluginException(
         'Could not find a method to call for ${call.method}',
@@ -55,6 +59,12 @@ class IosRumEventMapper extends RumMethodChannelMapperProxy {
         st,
         e.runtimeType.toString(),
       );
+      if (call.method == 'beforeSampling') {
+        _internalLogger.error(
+          '${call.method} threw an exception: ${e.toString()}.\nKeeping the native sampling rate.',
+        );
+        return null;
+      }
       _internalLogger.error(
         '${call.method} threw an exception: ${e.toString()}.\nReturning mapper error.',
       );
@@ -85,6 +95,14 @@ class IosRumEventMapper extends RumMethodChannelMapperProxy {
   Map<Object, Object?>? _mapLongTaskEvent(MethodCall call) {
     final eventJson = (call.arguments['event'] as Map).toJsonMap();
     return mapLongTaskEvent(eventJson);
+  }
+
+  double? _beforeSampling(MethodCall call) {
+    final arguments = call.arguments;
+    if (arguments is! Map) return null;
+    final encodedContext = arguments['context'];
+    if (encodedContext is! Map) return null;
+    return beforeSampling(encodedContext.toJsonMap());
   }
 }
 

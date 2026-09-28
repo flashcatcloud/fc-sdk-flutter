@@ -9,7 +9,7 @@ dependencies:
   flutter:
     sdk: flutter
 
-  flashcat_flutter_plugin: ^0.1.0
+  flashcat_flutter_plugin: ^0.2.0
   flashcat_webview_tracking:
     path: ../
   webview_flutter: ^4.0.4

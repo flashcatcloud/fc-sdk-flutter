@@ -117,6 +117,17 @@ class DdRumWeb extends DdRumPlatform {
   }
 
   @override
+  Future<void> setForcedSession() async {
+    // NOOP - Not supported by the Browser SDK.
+  }
+
+  @override
+  Future<Map<String, Object?>?> getRemoteConfig() async {
+    // Not supported by the Browser SDK.
+    return null;
+  }
+
+  @override
   Future<void> addAttribute(String key, dynamic value) async {
     DD_RUM?.setGlobalContextProperty(key, valueToJs(value, 'context'));
   }
