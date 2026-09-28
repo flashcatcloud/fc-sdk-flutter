@@ -10,7 +10,7 @@ import com.datadog.android.rum.model.LongTaskEvent
 import com.datadog.android.rum.model.ResourceEvent
 import com.datadog.android.rum.model.RumVitalOperationStepEvent
 import com.datadog.android.rum.model.ViewEvent
-import com.google.gson.Gson
+import com.google.gson.GsonBuilder
 import com.google.gson.JsonParser
 
 /**
@@ -76,8 +76,11 @@ class DatadogRumEventMapper {
     }
 
     internal fun beforeSampling(context: BeforeSamplingContext): Float? {
+        // serializeNulls so explicit null custom entries reach Dart as null rather than being
+        // dropped, letting callbacks distinguish an absent setting from a cleared one (matching
+        // getRemoteConfig and the iOS bridge).
         val encodedContext = try {
-            Gson().toJson(
+            GsonBuilder().serializeNulls().create().toJson(
                 mapOf(
                     "sessionSampleRate" to context.sessionSampleRate,
                     "custom" to context.custom?.sanitizeForFlutter()

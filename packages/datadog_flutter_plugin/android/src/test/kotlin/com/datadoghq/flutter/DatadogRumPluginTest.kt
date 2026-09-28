@@ -22,6 +22,7 @@ import com.datadog.android.rum.RumResourceMethod
 import com.datadog.android.rum.configuration.VitalsUpdateFrequency
 import com.datadog.android.rum.featureoperations.FailureReason
 import com.datadog.android.rum.metric.networksettled.TimeBasedInitialResourceIdentifier
+import com.google.gson.JsonParser
 import fr.xgouchet.elmyr.Forge
 import fr.xgouchet.elmyr.annotation.BoolForgery
 import fr.xgouchet.elmyr.annotation.FloatForgery
@@ -276,6 +277,38 @@ class DatadogRumPluginTest {
                         it.contains("\"debugUsers\":[\"user-a\"]") &&
                         it.contains("\"list\":[\"one\",2]") &&
                         !it.contains("unsupported")
+                }
+            )
+        }
+    }
+
+    @Test
+    fun `M preserve null custom entries W native callback is invoked`() {
+        val mapper = DatadogRumEventMapper()
+        val callback = mockk<DatadogRumEventMapper.EventMapper>()
+        every { callback.beforeSampling(any()) } returns "42.5"
+        mapper.eventMapper = callback
+
+        mapper.beforeSampling(
+            BeforeSamplingContext(
+                sessionSampleRate = 25f,
+                custom = mapOf(
+                    "override" to null,
+                    "nested" to mapOf("inner" to null)
+                )
+            )
+        )
+
+        verify {
+            callback.beforeSampling(
+                match {
+                    val custom = JsonParser.parseString(it)
+                        .asJsonObject
+                        .getAsJsonObject("custom")
+                    custom.has("override") &&
+                        custom.get("override").isJsonNull &&
+                        custom.getAsJsonObject("nested").has("inner") &&
+                        custom.getAsJsonObject("nested").get("inner").isJsonNull
                 }
             )
         }
