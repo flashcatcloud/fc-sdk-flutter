@@ -113,6 +113,28 @@ When attaching Flutter to an already initialized native SDK,
 the native application during RUM initialization. The two runtime methods can
 still operate on the existing RUM monitor.
 
+### Keeping the sessions that report an error
+
+`sessionOnError` keeps, among the sessions `sessionSamplingRate` leaves out,
+those that report an error. Such a session is collected in memory and nothing
+of it is uploaded until it reports an error; then its last minute is uploaded
+and the session carries on like any collected one. A session that ends without
+an error is never sent.
+
+```dart
+rumConfiguration: DatadogRumConfiguration(
+  applicationId: '<RUM_APPLICATION_ID>',
+  sessionSamplingRate: 0,
+  sessionOnError: true,
+)
+```
+
+Errors reported from Dart count, whether they come through `DatadogSdk.runApp`,
+`handleFlutterError` or `addError` / `addErrorInfo`, unless `errorEventMapper`
+drops them. A `beforeSampling` returning `0` turns the switch off for that
+session. With `remoteConfigurationEnabled`, the console's value takes
+precedence.
+
 ### Initialize the library
 
 You can initialize RUM using one of two methods in the `main.dart` file.

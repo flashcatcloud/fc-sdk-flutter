@@ -20,6 +20,7 @@ public extension RUM.Configuration {
 
         urlSessionTracking = .init()
         sessionSampleRate = (encoded["sessionSampleRate"] as? NSNumber)?.floatValue ?? 100.0
+        sessionOnError = (encoded["sessionOnError"] as? NSNumber)?.boolValue ?? false
         longTaskThreshold = (encoded["longTaskThreshold"] as? NSNumber)?.doubleValue ?? 0.1
         trackFrustrations = (encoded["trackFrustrations"] as? NSNumber)?.boolValue ?? true
         trackAnonymousUser = (encoded["trackAnonymousUser"] as? NSNumber)?.boolValue ?? true

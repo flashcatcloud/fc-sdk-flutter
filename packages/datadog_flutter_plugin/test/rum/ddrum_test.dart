@@ -103,6 +103,7 @@ void main() {
     final configuration = DatadogRumConfiguration(applicationId: 'fake-app-id');
 
     expect(configuration.sessionSamplingRate, 100.0);
+    expect(configuration.sessionOnError, false);
     expect(configuration.traceSampleRate, 100.0);
     expect(configuration.traceContextInjection, TraceContextInjection.sampled);
     expect(configuration.detectLongTasks, true);
@@ -116,6 +117,7 @@ void main() {
     expect(configuration.remoteConfigurationEnabled, false);
     expect(configuration.beforeSampling, isNull);
     expect(configuration.encode()['remoteConfigurationEnabled'], false);
+    expect(configuration.encode()['sessionOnError'], false);
   });
 
   test('configuration is encoded correctly', () {
@@ -127,6 +129,7 @@ void main() {
     final configuration = DatadogRumConfiguration(
       applicationId: applicationId,
       sessionSamplingRate: 12.0,
+      sessionOnError: true,
       traceSampleRate: 50.2,
       detectLongTasks: detectLongTasks,
       longTaskThreshold: 0.3,
@@ -145,6 +148,7 @@ void main() {
     final encoded = configuration.encode();
     expect(encoded['applicationId'], applicationId);
     expect(encoded['sessionSampleRate'], 12.0);
+    expect(encoded['sessionOnError'], true);
     expect(encoded['detectLongTasks'], detectLongTasks);
     expect(encoded['longTaskThreshold'], 0.3);
     expect(encoded['trackFrustrations'], trackFrustrations);

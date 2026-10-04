@@ -639,6 +639,9 @@ fun RumConfiguration.Builder.withEncoded(encoded: Map<String, Any?>): RumConfigu
     (encoded["sessionSampleRate"] as? Number)?.let {
         builder = builder.setSessionSampleRate(it.toFloat())
     }
+    (encoded["sessionOnError"] as? Boolean)?.let {
+        builder = builder.setSessionOnError(it)
+    }
     (encoded["remoteConfigurationEnabled"] as? Boolean)?.let {
         builder = builder.setRemoteConfigurationEnabled(it)
     }

@@ -102,6 +102,25 @@ class DatadogRumConfiguration {
   /// Defaults to `100.0`.
   double sessionSamplingRate;
 
+  /// Also keep the sessions [sessionSamplingRate] does not keep, but only
+  /// those that report an error.
+  ///
+  /// Such a session is collected in memory without uploading anything, keeping
+  /// only its last minute. If it reports an error, that minute is uploaded and
+  /// the session carries on like any collected one; if it ends without one,
+  /// nothing of it is ever sent. Such a session reports a session sample rate
+  /// of `0`, since it stands for itself rather than for the sessions a rate
+  /// would imply.
+  ///
+  /// Errors reported from Dart (through [DatadogSdk.runApp],
+  /// [DatadogRum.addError] or [DatadogRum.handleFlutterError]) count, unless
+  /// [errorEventMapper] drops them. A [beforeSampling] returning `0` turns this
+  /// off for that session. With [remoteConfigurationEnabled], the console's
+  /// value takes precedence.
+  ///
+  /// Defaults to `false`.
+  bool sessionOnError;
+
   /// Sets the sampling rate for resource tracing
   ///
   /// The sampling rate must be a value between `0.0` and `100.0`. A value of
@@ -264,6 +283,7 @@ class DatadogRumConfiguration {
   DatadogRumConfiguration({
     required this.applicationId,
     double sessionSamplingRate = 100.0,
+    this.sessionOnError = false,
     double traceSampleRate = 100.0,
     this.traceContextInjection = TraceContextInjection.sampled,
     this.detectLongTasks = true,
@@ -295,6 +315,7 @@ class DatadogRumConfiguration {
     return {
       'applicationId': applicationId,
       'sessionSampleRate': sessionSamplingRate,
+      'sessionOnError': sessionOnError,
       'detectLongTasks': detectLongTasks,
       'longTaskThreshold': longTaskThreshold,
       'trackFrustrations': trackFrustrations,

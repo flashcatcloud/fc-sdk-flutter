@@ -275,6 +275,24 @@ class DatadogRumPluginTests: XCTestCase {
         XCTAssertEqual(config?.remoteConfigurationEnabled, true)
     }
 
+    func testRumConfiguration_SessionOnErrorDefaultsToDisabled() {
+        let config = RUM.Configuration.init(fromEncoded: [
+            "applicationId": "fake-application-id"
+        ])
+
+        XCTAssertEqual(config?.sessionOnError, false)
+    }
+
+    func testRumConfiguration_WithSessionOnError_IsSetCorrectly() {
+        let sessionOnError = Bool.mockRandom()
+        let config = RUM.Configuration.init(fromEncoded: [
+            "applicationId": "fake-application-id",
+            "sessionOnError": sessionOnError
+        ])
+
+        XCTAssertEqual(config?.sessionOnError, sessionOnError)
+    }
+
     func testRepeatEnable_FromMethodChannelSameOptions_DoesNothing() {
         // Uninitialize plugin
         plugin?.inject(rum: nil)

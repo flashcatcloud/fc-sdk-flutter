@@ -192,9 +192,11 @@ class DatadogRumPluginTest {
         val trackAnonymousUser = forge.aBool()
         val trackBackgroundEvents = forge.aBool()
         val remoteConfigurationEnabled = forge.aBool()
+        val sessionOnError = forge.aBool()
         val attributes = forge.exhaustiveAttributes()
         val configArg = mapOf(
             "sessionSampleRate" to sessionSampleRate,
+            "sessionOnError" to sessionOnError,
             "longTaskThreshold" to longTaskThreshold,
             "trackFrustrations" to trackFrustration,
             "trackNonFatalAnrs" to trackNonFatalAnrs,
@@ -216,6 +218,7 @@ class DatadogRumPluginTest {
         // THEN
         val featureConfiguration: Any = config.getFieldValue("featureConfiguration")
         assertThat(featureConfiguration.getPrivate("sampleRate")).isEqualTo(sessionSampleRate)
+        assertThat(featureConfiguration.getPrivate("sessionOnError")).isEqualTo(sessionOnError)
         assertThat(featureConfiguration.getPrivate("trackFrustrations")).isEqualTo(trackFrustration)
         if (trackNonFatalAnrs != null) {
             assertThat(featureConfiguration.getPrivate("trackNonFatalAnrs")).isEqualTo(trackNonFatalAnrs)
@@ -249,6 +252,18 @@ class DatadogRumPluginTest {
 
         val featureConfiguration: Any = config.getFieldValue("featureConfiguration")
         assertThat(featureConfiguration.getPrivate("remoteConfigurationEnabled")).isEqualTo(false)
+    }
+
+    @Test
+    fun `M keep sessionOnError disabled W encoded field is missing`(
+        forge: Forge
+    ) {
+        val config = RumConfiguration.Builder(forge.aString())
+            .withEncoded(emptyMap())
+            .build()
+
+        val featureConfiguration: Any = config.getFieldValue("featureConfiguration")
+        assertThat(featureConfiguration.getPrivate("sessionOnError")).isEqualTo(false)
     }
 
     @Test
