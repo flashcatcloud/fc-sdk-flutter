@@ -120,6 +120,40 @@ void main() {
     expect(configuration.encode()['sessionOnError'], false);
   });
 
+  test('default configuration encodes to the same payload plus sessionOnError',
+      () {
+    // Guards the customers who never set the switch: what reaches the native
+    // SDKs must be what it was before, with only the new key added.
+    final configuration = DatadogRumConfiguration(applicationId: 'fake-app-id');
+
+    expect(configuration.encode(), {
+      'applicationId': 'fake-app-id',
+      'sessionSampleRate': 100.0,
+      'sessionOnError': false,
+      'detectLongTasks': true,
+      'longTaskThreshold': 0.1,
+      'trackFrustrations': true,
+      'vitalsUpdateFrequency': 'VitalsFrequency.average',
+      'reportFlutterPerformance': false,
+      'trackNonFatalAnrs': null,
+      'appHangThreshold': null,
+      'trackAnonymousUser': true,
+      'trackBackgroundEvents': false,
+      'initialResourceThreshold': 0.1,
+      'customEndpoint': null,
+      'remoteConfigurationEnabled': false,
+      'attachBeforeSampling': false,
+      'telemetrySampleRate': 20.0,
+      'attachViewEventMapper': false,
+      'attachActionEventMapper': false,
+      'attachResourceEventMapper': false,
+      'attachErrorEventMapper': false,
+      'attachLongTaskEventMapper': false,
+      'attachVitalOperationStepEventMapper': false,
+      'additionalConfig': <String, Object?>{},
+    });
+  });
+
   test('configuration is encoded correctly', () {
     final applicationId = randomString();
     final detectLongTasks = randomBool();
