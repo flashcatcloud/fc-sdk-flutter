@@ -97,7 +97,8 @@ final custom = await DatadogSdk.instance.rum?.getRemoteConfig();
 
 Forced collection cannot be reverted until the process restarts. It reports a
 session sample rate of 100 without a remote-configuration version and does not
-enable Session Replay in Flutter. `getRemoteConfig()` returns only the
+enable Session Replay in Flutter. A session kept by `sessionOnError` and then
+forced is released right away and keeps reporting a rate of 0. `getRemoteConfig()` returns only the
 console's `custom` object. Treat it as public information and never store
 secrets in it.
 
@@ -112,6 +113,31 @@ When attaching Flutter to an already initialized native SDK,
 `remoteConfigurationEnabled` and `beforeSampling` must have been configured by
 the native application during RUM initialization. The two runtime methods can
 still operate on the existing RUM monitor.
+
+### Keeping the sessions that report an error
+
+`sessionOnError` keeps, among the sessions `sessionSamplingRate` leaves out,
+those that report an error. Such a session is collected in memory and nothing
+of it is uploaded until it reports an error; then up to its last minute of
+events is uploaded and the session carries on like any collected one. A session
+that ends without an error is never sent, unless `setForcedSession` releases it
+first. A native crash is reported at the next launch with its last view, without
+the minute before it.
+
+```dart
+rumConfiguration: DatadogRumConfiguration(
+  applicationId: '<RUM_APPLICATION_ID>',
+  sessionSamplingRate: 0,
+  sessionOnError: true,
+)
+```
+
+Any RUM error counts, whether it comes through `DatadogSdk.runApp`,
+`handleFlutterError`, `addError` / `addErrorInfo` or `stopResourceWithError` /
+`stopResourceWithErrorInfo`, unless `errorEventMapper` drops it. A resource
+that completes with an HTTP error status is not an error by itself. A
+`beforeSampling` returning `0` turns the switch off for that session. With
+`remoteConfigurationEnabled`, a value the console sets takes precedence.
 
 ### Initialize the library
 

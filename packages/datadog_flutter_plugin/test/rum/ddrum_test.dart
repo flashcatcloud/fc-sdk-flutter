@@ -103,6 +103,7 @@ void main() {
     final configuration = DatadogRumConfiguration(applicationId: 'fake-app-id');
 
     expect(configuration.sessionSamplingRate, 100.0);
+    expect(configuration.sessionOnError, false);
     expect(configuration.traceSampleRate, 100.0);
     expect(configuration.traceContextInjection, TraceContextInjection.sampled);
     expect(configuration.detectLongTasks, true);
@@ -116,6 +117,41 @@ void main() {
     expect(configuration.remoteConfigurationEnabled, false);
     expect(configuration.beforeSampling, isNull);
     expect(configuration.encode()['remoteConfigurationEnabled'], false);
+    expect(configuration.encode()['sessionOnError'], false);
+  });
+
+  test('default configuration encodes to the same payload plus sessionOnError',
+      () {
+    // Guards the customers who never set the switch: what reaches the native
+    // SDKs must be what it was before, with only the new key added.
+    final configuration = DatadogRumConfiguration(applicationId: 'fake-app-id');
+
+    expect(configuration.encode(), {
+      'applicationId': 'fake-app-id',
+      'sessionSampleRate': 100.0,
+      'sessionOnError': false,
+      'detectLongTasks': true,
+      'longTaskThreshold': 0.1,
+      'trackFrustrations': true,
+      'vitalsUpdateFrequency': 'VitalsFrequency.average',
+      'reportFlutterPerformance': false,
+      'trackNonFatalAnrs': null,
+      'appHangThreshold': null,
+      'trackAnonymousUser': true,
+      'trackBackgroundEvents': false,
+      'initialResourceThreshold': 0.1,
+      'customEndpoint': null,
+      'remoteConfigurationEnabled': false,
+      'attachBeforeSampling': false,
+      'telemetrySampleRate': 20.0,
+      'attachViewEventMapper': false,
+      'attachActionEventMapper': false,
+      'attachResourceEventMapper': false,
+      'attachErrorEventMapper': false,
+      'attachLongTaskEventMapper': false,
+      'attachVitalOperationStepEventMapper': false,
+      'additionalConfig': <String, Object?>{},
+    });
   });
 
   test('configuration is encoded correctly', () {
@@ -127,6 +163,7 @@ void main() {
     final configuration = DatadogRumConfiguration(
       applicationId: applicationId,
       sessionSamplingRate: 12.0,
+      sessionOnError: true,
       traceSampleRate: 50.2,
       detectLongTasks: detectLongTasks,
       longTaskThreshold: 0.3,
@@ -145,6 +182,7 @@ void main() {
     final encoded = configuration.encode();
     expect(encoded['applicationId'], applicationId);
     expect(encoded['sessionSampleRate'], 12.0);
+    expect(encoded['sessionOnError'], true);
     expect(encoded['detectLongTasks'], detectLongTasks);
     expect(encoded['longTaskThreshold'], 0.3);
     expect(encoded['trackFrustrations'], trackFrustrations);
