@@ -110,9 +110,11 @@ class DatadogRumConfiguration {
   /// up to its last minute of events. If it reports an error, what was kept is
   /// uploaded and the session carries on like any collected one; if it ends
   /// without one, nothing of it is ever sent. [DatadogRum.setForcedSession]
-  /// releases what was kept for upload right away, error or not. Such a
-  /// session reports a session sample rate of `0`, since it stands for itself
-  /// rather than for the sessions a rate would imply.
+  /// releases what was kept for upload right away, error or not. A native
+  /// crash is reported at the next launch with its last view, without the
+  /// minute before it. Such a session reports a session sample rate of `0`,
+  /// since it stands for itself rather than for the sessions a rate would
+  /// imply.
   ///
   /// Any RUM error counts, whether reported through [DatadogSdk.runApp],
   /// [DatadogRum.handleFlutterError], [DatadogRum.addError],

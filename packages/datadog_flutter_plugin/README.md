@@ -121,7 +121,8 @@ those that report an error. Such a session is collected in memory and nothing
 of it is uploaded until it reports an error; then up to its last minute of
 events is uploaded and the session carries on like any collected one. A session
 that ends without an error is never sent, unless `setForcedSession` releases it
-first.
+first. A native crash is reported at the next launch with its last view, without
+the minute before it.
 
 ```dart
 rumConfiguration: DatadogRumConfiguration(

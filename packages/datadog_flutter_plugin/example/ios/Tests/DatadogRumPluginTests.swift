@@ -283,14 +283,13 @@ class DatadogRumPluginTests: XCTestCase {
         XCTAssertEqual(config?.sessionOnError, false)
     }
 
-    func testRumConfiguration_WithSessionOnError_IsSetCorrectly() {
-        let sessionOnError = Bool.mockRandom()
+    func testRumConfiguration_WithSessionOnError_IsEnabled() {
         let config = RUM.Configuration.init(fromEncoded: [
             "applicationId": "fake-application-id",
-            "sessionOnError": sessionOnError
+            "sessionOnError": true
         ])
 
-        XCTAssertEqual(config?.sessionOnError, sessionOnError)
+        XCTAssertEqual(config?.sessionOnError, true)
     }
 
     func testRepeatEnable_FromMethodChannelSameOptions_DoesNothing() {

@@ -267,6 +267,18 @@ class DatadogRumPluginTest {
     }
 
     @Test
+    fun `M enable sessionOnError W encoded field is true`(
+        forge: Forge
+    ) {
+        val config = RumConfiguration.Builder(forge.aString())
+            .withEncoded(mapOf("sessionOnError" to true))
+            .build()
+
+        val featureConfiguration: Any = config.getFieldValue("featureConfiguration")
+        assertThat(featureConfiguration.getPrivate("sessionOnError")).isEqualTo(true)
+    }
+
+    @Test
     fun `M call Flutter beforeSampling W native callback is invoked`() {
         val mapper = DatadogRumEventMapper()
         val callback = mockk<DatadogRumEventMapper.EventMapper>()
