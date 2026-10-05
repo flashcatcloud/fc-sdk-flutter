@@ -4,8 +4,9 @@
 
 * Add `DatadogRumConfiguration.sessionOnError` (default `false`): sessions the
   session sample rate leaves out are collected in memory and uploaded only if
-  they report an error. Errors reported from Dart count unless
-  `errorEventMapper` drops them. Requires native SDKs that support the option.
+  they report an error or `setForcedSession` is called. Errors reported from
+  Dart count unless `errorEventMapper` drops them. Requires native SDKs that
+  support the option.
 
 ## 0.2.0
 

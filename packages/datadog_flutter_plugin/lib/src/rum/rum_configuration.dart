@@ -110,14 +110,16 @@ class DatadogRumConfiguration {
   /// up to its last minute of events. If it reports an error, what was kept is
   /// uploaded and the session carries on like any collected one; if it ends
   /// without one, nothing of it is ever sent. [DatadogRum.setForcedSession]
-  /// uploads what was kept right away, error or not. Such a session reports a
-  /// session sample rate of `0`, since it stands for itself rather than for
-  /// the sessions a rate would imply.
+  /// releases what was kept for upload right away, error or not. Such a
+  /// session reports a session sample rate of `0`, since it stands for itself
+  /// rather than for the sessions a rate would imply.
   ///
   /// Any RUM error counts, whether reported through [DatadogSdk.runApp],
   /// [DatadogRum.handleFlutterError], [DatadogRum.addError],
-  /// [DatadogRum.addErrorInfo] or a failed resource, unless [errorEventMapper]
-  /// drops it. A [beforeSampling] returning `0` turns this off for that
+  /// [DatadogRum.addErrorInfo], [DatadogRum.stopResourceWithError] or
+  /// [DatadogRum.stopResourceWithErrorInfo], unless [errorEventMapper] drops
+  /// it. A resource that completes with an HTTP error status is not an error
+  /// by itself. A [beforeSampling] returning `0` turns this off for that
   /// session. With [remoteConfigurationEnabled], a value the console sets
   /// takes precedence over this one.
   ///

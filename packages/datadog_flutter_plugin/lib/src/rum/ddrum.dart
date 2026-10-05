@@ -290,9 +290,10 @@ class DatadogRum {
   ///
   /// If the current session was sampled out, the native SDK ends it and starts
   /// a collected session. A session already being collected continues. A
-  /// session kept by [DatadogRumConfiguration.sessionOnError] uploads what it
-  /// kept right away and continues as a collected session. This setting cannot
-  /// be reverted without restarting the process.
+  /// session kept by [DatadogRumConfiguration.sessionOnError] releases what it
+  /// kept for upload right away and continues as a collected session, still
+  /// reporting a session sample rate of `0`. This setting cannot be reverted
+  /// without restarting the process.
   void setForcedSession() {
     wrap('rum.setForcedSession', logger, null, () {
       return _platform.setForcedSession();
