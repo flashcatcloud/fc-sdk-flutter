@@ -117,9 +117,10 @@ still operate on the existing RUM monitor.
 
 `sessionOnError` keeps, among the sessions `sessionSamplingRate` leaves out,
 those that report an error. Such a session is collected in memory and nothing
-of it is uploaded until it reports an error; then its last minute is uploaded
-and the session carries on like any collected one. A session that ends without
-an error is never sent.
+of it is uploaded until it reports an error; then up to its last minute of
+events is uploaded and the session carries on like any collected one. A session
+that ends without an error is never sent, unless `setForcedSession` uploads it
+first.
 
 ```dart
 rumConfiguration: DatadogRumConfiguration(
@@ -129,11 +130,11 @@ rumConfiguration: DatadogRumConfiguration(
 )
 ```
 
-Errors reported from Dart count, whether they come through `DatadogSdk.runApp`,
-`handleFlutterError` or `addError` / `addErrorInfo`, unless `errorEventMapper`
-drops them. A `beforeSampling` returning `0` turns the switch off for that
-session. With `remoteConfigurationEnabled`, the console's value takes
-precedence.
+Any RUM error counts, whether it comes through `DatadogSdk.runApp`,
+`handleFlutterError`, `addError` / `addErrorInfo` or a failed resource, unless
+`errorEventMapper` drops it. A `beforeSampling` returning `0` turns the switch
+off for that session. With `remoteConfigurationEnabled`, a value the console
+sets takes precedence.
 
 ### Initialize the library
 

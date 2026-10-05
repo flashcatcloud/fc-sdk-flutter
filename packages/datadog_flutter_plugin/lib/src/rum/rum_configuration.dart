@@ -96,8 +96,9 @@ class DatadogRumConfiguration {
   /// Sets the sampling rate for RUM Sessions.
   ///
   /// The sampling rate must be a value between `0.0` and `100.0`. A value of
-  /// `0.0` means no RUM events will be sent, `100.0` means all sessions will be
-  /// sent
+  /// `0.0` means no session is collected by this rate, `100.0` means all
+  /// sessions are collected. With [sessionOnError], the sessions this rate
+  /// leaves out are still uploaded if they report an error.
   ///
   /// Defaults to `100.0`.
   double sessionSamplingRate;
@@ -106,17 +107,19 @@ class DatadogRumConfiguration {
   /// those that report an error.
   ///
   /// Such a session is collected in memory without uploading anything, keeping
-  /// only its last minute. If it reports an error, that minute is uploaded and
-  /// the session carries on like any collected one; if it ends without one,
-  /// nothing of it is ever sent. Such a session reports a session sample rate
-  /// of `0`, since it stands for itself rather than for the sessions a rate
-  /// would imply.
+  /// up to its last minute of events. If it reports an error, what was kept is
+  /// uploaded and the session carries on like any collected one; if it ends
+  /// without one, nothing of it is ever sent. [DatadogRum.setForcedSession]
+  /// uploads what was kept right away, error or not. Such a session reports a
+  /// session sample rate of `0`, since it stands for itself rather than for
+  /// the sessions a rate would imply.
   ///
-  /// Errors reported from Dart (through [DatadogSdk.runApp],
-  /// [DatadogRum.addError] or [DatadogRum.handleFlutterError]) count, unless
-  /// [errorEventMapper] drops them. A [beforeSampling] returning `0` turns this
-  /// off for that session. With [remoteConfigurationEnabled], the console's
-  /// value takes precedence.
+  /// Any RUM error counts, whether reported through [DatadogSdk.runApp],
+  /// [DatadogRum.handleFlutterError], [DatadogRum.addError],
+  /// [DatadogRum.addErrorInfo] or a failed resource, unless [errorEventMapper]
+  /// drops it. A [beforeSampling] returning `0` turns this off for that
+  /// session. With [remoteConfigurationEnabled], a value the console sets
+  /// takes precedence over this one.
   ///
   /// Defaults to `false`.
   bool sessionOnError;

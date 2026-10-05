@@ -289,8 +289,10 @@ class DatadogRum {
   /// Forces RUM sessions to be collected for the lifetime of this process.
   ///
   /// If the current session was sampled out, the native SDK ends it and starts
-  /// a collected session. A session already being collected continues. This
-  /// setting cannot be reverted without restarting the process.
+  /// a collected session. A session already being collected continues. A
+  /// session kept by [DatadogRumConfiguration.sessionOnError] uploads what it
+  /// kept right away and continues as a collected session. This setting cannot
+  /// be reverted without restarting the process.
   void setForcedSession() {
     wrap('rum.setForcedSession', logger, null, () {
       return _platform.setForcedSession();
