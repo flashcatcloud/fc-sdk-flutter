@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.1
+
+* Upgrade the native FlashCat SDKs to Android 0.7.2 and iOS 0.6.2. Both
+  native SDKs now report the wrapper's source (`flutter`) in the `sdk`
+  parameter of the remote configuration request instead of a hard-coded
+  `android` or `ios`, so remote configuration rules targeting `sdk=flutter`
+  match Flutter applications.
+
 ## 0.2.0
 
 * Add opt-in RUM remote configuration through
