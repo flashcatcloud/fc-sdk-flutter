@@ -27,7 +27,7 @@ This release requires Flutter 3.27+ and supports iOS and Android only.
 
 | iOS SDK | Android SDK |
 | :-----: | :---------: |
-| 0.6.0 | 0.7.0 |
+| 0.6.2 | 0.7.2 |
 
 ### iOS
 
