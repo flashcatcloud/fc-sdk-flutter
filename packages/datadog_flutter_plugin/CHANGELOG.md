@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.2
+
+* Upgrade the native FlashCat Android SDK to 0.7.3. With remote configuration
+  enabled, the settings stored on the device are no longer keyed by the app
+  version, so the first session after an app upgrade keeps the previously
+  stored settings instead of starting from the values passed to init. The iOS
+  SDK already behaved this way and stays on 0.6.2.
+
 ## 0.2.1
 
 * Upgrade the native FlashCat SDKs to Android 0.7.2 and iOS 0.6.2. Both

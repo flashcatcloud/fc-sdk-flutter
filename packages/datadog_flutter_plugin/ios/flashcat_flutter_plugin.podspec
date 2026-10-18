@@ -4,7 +4,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'flashcat_flutter_plugin'
-  s.version          = '0.2.1'
+  s.version          = '0.2.2'
   s.summary          = 'Instrument your application with Datadog.'
   s.description      = <<-DESC
 Instrument your application with Datadog.
