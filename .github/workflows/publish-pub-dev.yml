@@ -38,6 +38,7 @@ jobs:
     environment: pub.dev
     permissions:
       id-token: write # Required for OIDC authentication against pub.dev
+      contents: write
     steps:
       - uses: actions/checkout@v4
         with:
@@ -85,6 +86,16 @@ jobs:
             exit 1
           fi
 
+      - name: Extract release notes
+        env:
+          PACKAGE_DIR: ${{ steps.package.outputs.dir }}
+          VERSION: ${{ steps.package.outputs.version }}
+        run: |
+          bash .github/scripts/extract-release-notes.sh \
+            --changelog "$PACKAGE_DIR/CHANGELOG.md" \
+            --version "$VERSION" --level 2 \
+            --output "$RUNNER_TEMP/release-notes.md"
+
       # `flutter pub get` below resolves flashcat_flutter_plugin from pub.dev, so
       # a dependent package tagged before it fails with an opaque version-solving
       # error. Check the constraint's lower bound up front instead.
@@ -123,6 +134,22 @@ jobs:
       - name: Publish ${{ steps.package.outputs.name }}
         working-directory: ${{ steps.package.outputs.dir }}
         run: flutter pub publish --force
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+          VERSION: ${{ steps.package.outputs.version }}
+        run: |
+          release_flags=()
+          if [[ "$VERSION" == *-* ]]; then
+            release_flags+=(--prerelease)
+          fi
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release edit "$TAG" --notes-file "$RUNNER_TEMP/release-notes.md" --latest=false "${release_flags[@]}"
+          else
+            gh release create "$TAG" --title "$TAG" --notes-file "$RUNNER_TEMP/release-notes.md" --verify-tag --latest=false "${release_flags[@]}"
+          fi
 
       - name: Notify deployment success
         if: success()
